@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Target, BookOpen, MessageSquare, ClipboardCheck, ArrowRight } from "lucide-react";
+import { Target, BookOpen, MessageSquare, ClipboardCheck, ArrowRight, Clock } from "lucide-react";
 import type { SkillTarget, StepType } from "@/types/learning";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +19,11 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
   const completedSteps = target.steps.filter((s) => s.status === "completed" || s.status === "skipped").length;
   const totalSteps = target.steps.length;
 
+  // Find next step (first in_progress or available)
+  const nextStep = target.steps
+    .sort((a, b) => a.order - b.order)
+    .find((s) => s.status === "in_progress" || s.status === "available");
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -29,7 +34,7 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
         to={`/skill-target/${target.id}`}
         className="group block rounded-xl bg-card p-5 shadow-card transition-all duration-300 hover:shadow-card-hover hover:-translate-y-0.5 border border-border/60"
       >
-        {/* Category badge */}
+        {/* Category badge + due date */}
         <div className="mb-3 flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
             <Target className="h-3 w-3" />
@@ -49,6 +54,35 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
         <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
           {target.description}
         </p>
+
+        {/* Next step indicator */}
+        {nextStep && (
+          <div className="mb-4 rounded-lg bg-secondary/50 border border-border/50 px-3 py-2.5">
+            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-1">
+              {nextStep.status === "in_progress" ? "Continue" : "Up Next"}
+            </p>
+            <div className="flex items-center gap-2">
+              {(() => {
+                const Icon = stepTypeIcons[nextStep.type];
+                return (
+                  <div className={cn(
+                    "flex h-5 w-5 items-center justify-center rounded",
+                    nextStep.status === "in_progress" ? "text-info" : "text-accent"
+                  )}>
+                    <Icon className="h-3.5 w-3.5" />
+                  </div>
+                );
+              })()}
+              <span className="text-xs font-medium text-foreground truncate">{nextStep.title}</span>
+              {nextStep.duration && (
+                <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground ml-auto whitespace-nowrap">
+                  <Clock className="h-2.5 w-2.5" />
+                  {nextStep.duration}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Step type pills */}
         <div className="mb-4 flex flex-wrap gap-1.5">

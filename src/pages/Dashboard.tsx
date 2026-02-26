@@ -1,30 +1,120 @@
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
 import { AppHeader } from "@/components/layout/AppHeader";
 import { mockSkillTargets } from "@/data/mock";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
 import { useUser } from "@/contexts/UserContext";
+import { cn } from "@/lib/utils";
+
+type Filter = "all" | "in_progress" | "completed" | "not_started";
+
+const filters: { value: Filter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "completed", label: "Completed" },
+  { value: "not_started", label: "Not Started" },
+];
 
 export default function Dashboard() {
   const { user } = useUser();
-  const targets = mockSkillTargets.filter((st) => st.assignedTo.includes(user.id));
+  const [activeFilter, setActiveFilter] = useState<Filter>("all");
+
+  const targets = useMemo(() => {
+    const assigned = mockSkillTargets.filter((st) => st.assignedTo.includes(user.id));
+    switch (activeFilter) {
+      case "in_progress":
+        return assigned.filter((st) => st.progress > 0 && st.progress < 100);
+      case "completed":
+        return assigned.filter((st) => st.progress === 100);
+      case "not_started":
+        return assigned.filter((st) => st.progress === 0);
+      default:
+        return assigned;
+    }
+  }, [user.id, activeFilter]);
+
+  const allTargets = mockSkillTargets.filter((st) => st.assignedTo.includes(user.id));
+  const stats = {
+    total: allTargets.length,
+    inProgress: allTargets.filter((st) => st.progress > 0 && st.progress < 100).length,
+    completed: allTargets.filter((st) => st.progress === 100).length,
+  };
 
   return (
     <div>
       <AppHeader title="Learning Spaces" />
-      <div className="p-6">
-        <div className="mb-6">
+      <div className="p-6 max-w-6xl mx-auto">
+        {/* Welcome */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="mb-8"
+        >
           <h3 className="font-display text-2xl font-bold text-foreground">
             Welcome back, {user.name.split(" ")[0]} 👋
           </h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            You have {targets.length} skill targets assigned. Keep up the great work!
+            {stats.inProgress > 0
+              ? `You have ${stats.inProgress} skill target${stats.inProgress > 1 ? "s" : ""} in progress and ${stats.total - stats.inProgress - stats.completed} awaiting.`
+              : `You have ${stats.total} skill targets assigned. Let's get started!`}
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {targets.map((target, i) => (
-            <SkillTargetCard key={target.id} target={target} index={i} />
+        {/* Stats row */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.35 }}
+          className="grid grid-cols-3 gap-4 mb-8"
+        >
+          {[
+            { label: "Assigned", value: stats.total, color: "text-foreground" },
+            { label: "In Progress", value: stats.inProgress, color: "text-info" },
+            { label: "Completed", value: stats.completed, color: "text-success" },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-xl bg-card border border-border p-4 shadow-card text-center"
+            >
+              <p className={cn("font-display text-2xl font-bold", stat.color)}>
+                {stat.value}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Filters */}
+        <div className="flex items-center gap-1 rounded-lg bg-secondary p-1 mb-6 w-fit">
+          {filters.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => setActiveFilter(f.value)}
+              className={cn(
+                "rounded-md px-3.5 py-1.5 text-xs font-medium transition-all duration-200",
+                activeFilter === f.value
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {f.label}
+            </button>
           ))}
         </div>
+
+        {/* Cards grid */}
+        {targets.length > 0 ? (
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {targets.map((target, i) => (
+              <SkillTargetCard key={target.id} target={target} index={i} />
+            ))}
+          </div>
+        ) : (
+          <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
+            No skill targets match this filter.
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,39 +1,31 @@
 
 
-## Plan: Remove Role Switcher + Build Milestones 2-3
+## Plan: Role Play Card "Add to Skill Target" + Chat/Voice Mode Selection
 
-### 1. Remove role switcher from AppHeader
-- Strip the learner/manager/admin toggle from `AppHeader.tsx` — just show the title
-- Keep `UserContext` intact (still useful later), but no UI for switching
+### 1. Add "Add to Skill Target" button on Role Play Bank cards
+- On each card in `RolePlayBank.tsx`, add a small button/dropdown (e.g., `+` or "Add to Skill Target")
+- Clicking opens a popover/dialog listing available skill targets from `mockSkillTargets`
+- Selecting one shows a toast confirming the role play was added (mock action — no persistent state needed)
 
-### 2. Build Skill Target Detail page (Milestone 2-3)
-Replace the placeholder in `SkillTargetDetail.tsx` with a full ordered step list:
+### 2. Add interaction mode selection to Role Play flow
+- Update the pre-session briefing screen in `RolePlaySession.tsx` to show two mode options: **Chat Role Play** and **Voice Role Play**
+- Store selected mode in component state (`"chat" | "voice"`)
 
-- **Header section**: Target title, description, category badge, progress bar, due date
-- **Ordered step list**: Vertical timeline/list showing each step with:
-  - Step number and connecting line between steps
-  - Type icon (assessment / role_play / module)
-  - Title, description, duration
-  - Status indicator: completed (checkmark, green), in_progress (blue pulse), available (clickable), locked (grey, lock icon), skipped (strikethrough)
-  - "Skippable" badge with skip condition text when applicable
-  - Click-through links: available/in_progress steps link to their respective routes (`/skill-target/:id/assessment/:aid`, etc.)
-  - Locked steps are visually disabled, not clickable
+### 3. Chat mode (existing behavior)
+- No changes needed — current text-based chat continues as-is
 
-### 3. Create `StepListItem` component
-New file `src/components/skill-target/StepListItem.tsx`:
-- Renders a single step row with icon, status styling, and conditional link
-- Uses framer-motion for staggered entrance animation
-- Shows lock icon for locked steps, check for completed, skip indicator for skipped
+### 4. Voice mode UI
+- Replace the text input area with mic/speaker controls: a large **Mic** toggle button and a **Speaker** mute toggle
+- Show a visual indicator when recording (pulsing mic icon) and when AI is speaking (animated speaker icon)
+- Display both user and AI messages as **subtitle-style overlays** at the bottom of the chat area — similar to captions
+- Voice is simulated (no real audio API) — clicking mic "records" for ~2 seconds then shows a mock user transcript, followed by a mock AI response with a speaking animation delay
+- The conversation history still renders as chat bubbles above, but the active exchange appears as subtitles
 
-### 4. Create `StepTimeline` component
-New file `src/components/skill-target/StepTimeline.tsx`:
-- Wraps the ordered list of `StepListItem` components
-- Renders the vertical connecting line between steps
-- Handles the visual progression (completed line is accent-colored, rest is muted)
+### 5. Add route for standalone Role Play from bank
+- Add a new route `/role-play-bank/:rid` in `App.tsx` pointing to `RolePlaySession` so bank cards can link directly to a session without a skill target context
 
 ### Files to modify:
-1. `src/components/layout/AppHeader.tsx` — remove role switcher
-2. `src/pages/SkillTargetDetail.tsx` — full step list UI
-3. `src/components/skill-target/StepListItem.tsx` — new component
-4. `src/components/skill-target/StepTimeline.tsx` — new component
+1. `src/App.tsx` — add `/role-play-bank/:rid` route
+2. `src/pages/RolePlayBank.tsx` — add "Add to Skill Target" button on cards
+3. `src/pages/RolePlaySession.tsx` — add mode selection (chat/voice), voice mode UI with mic/speaker and subtitles
 

@@ -12,6 +12,7 @@ import RolePlaySession from "./pages/RolePlaySession";
 import LearningModulePage from "./pages/LearningModulePage";
 import RolePlayBank from "./pages/RolePlayBank";
 import PeopleGraph from "./pages/PeopleGraph";
+import My360 from "./pages/My360";
 import ManagerView from "./pages/ManagerView";
 import AdminView from "./pages/AdminView";
 import NotFound from "./pages/NotFound";
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/skill-target/:id/module/:mid" element={<LearningModulePage />} />
               <Route path="/role-play-bank" element={<RolePlayBank />} />
               <Route path="/role-play-bank/:rid" element={<RolePlaySession />} />
+              <Route path="/my-360" element={<My360 />} />
               <Route path="/people-graph" element={<PeopleGraph />} />
               <Route path="/manager" element={<ManagerView />} />
               <Route path="/admin" element={<AdminView />} />

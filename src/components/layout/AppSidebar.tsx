@@ -3,25 +3,35 @@ import {
   LayoutDashboard,
   Target,
   MessageSquare,
-  BookOpen,
   Users,
   Shield,
   BarChart3,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface NavItem {
   label: string;
   path: string;
   icon: React.ElementType;
   roles: Array<"learner" | "manager" | "admin">;
+  children?: { label: string; path: string; icon: React.ElementType }[];
 }
 
 const navItems: NavItem[] = [
-  { label: "Dashboard", path: "/", icon: LayoutDashboard, roles: ["learner", "manager", "admin"] },
-  { label: "Role Play Bank", path: "/role-play-bank", icon: MessageSquare, roles: ["learner", "manager", "admin"] },
+  {
+    label: "Learning Spaces",
+    path: "/",
+    icon: LayoutDashboard,
+    roles: ["learner", "manager", "admin"],
+    children: [
+      { label: "Skill Targets", path: "/", icon: Target },
+      { label: "Role Play", path: "/role-play-bank", icon: MessageSquare },
+    ],
+  },
   { label: "People Graph", path: "/people-graph", icon: BarChart3, roles: ["manager", "admin"] },
   { label: "Manager", path: "/manager", icon: Users, roles: ["manager", "admin"] },
   { label: "Admin", path: "/admin", icon: Shield, roles: ["admin"] },
@@ -31,6 +41,14 @@ export function AppSidebar() {
   const { user } = useUser();
   const location = useLocation();
   const filteredItems = navItems.filter((item) => item.roles.includes(user.role));
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({ "Learning Spaces": true });
+
+  const toggleMenu = (label: string) => {
+    setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
+  };
+
+  const isPathActive = (path: string) =>
+    location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
@@ -50,8 +68,58 @@ export function AppSidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3 py-4">
         {filteredItems.map((item) => {
-          const isActive = location.pathname === item.path || 
-            (item.path !== "/" && location.pathname.startsWith(item.path));
+          if (item.children) {
+            const isOpen = openMenus[item.label] ?? false;
+            const isChildActive = item.children.some((c) => isPathActive(c.path));
+
+            return (
+              <div key={item.label} className="space-y-0.5">
+                <button
+                  onClick={() => toggleMenu(item.label)}
+                  className={cn(
+                    "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
+                    isChildActive
+                      ? "text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  )}
+                >
+                  <item.icon className={cn("h-4.5 w-4.5", isChildActive && "text-sidebar-primary")} />
+                  <span className="flex-1 text-left">{item.label}</span>
+                  <ChevronDown
+                    className={cn(
+                      "h-4 w-4 transition-transform duration-200",
+                      isOpen && "rotate-180"
+                    )}
+                  />
+                </button>
+
+                {isOpen && (
+                  <div className="ml-4 space-y-0.5 border-l border-sidebar-border pl-3">
+                    {item.children.map((child) => {
+                      const active = isPathActive(child.path);
+                      return (
+                        <NavLink
+                          key={child.path}
+                          to={child.path}
+                          className={cn(
+                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
+                            active
+                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                              : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                          )}
+                        >
+                          <child.icon className={cn("h-4 w-4", active && "text-sidebar-primary")} />
+                          {child.label}
+                        </NavLink>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          const isActive = isPathActive(item.path);
           return (
             <NavLink
               key={item.path}

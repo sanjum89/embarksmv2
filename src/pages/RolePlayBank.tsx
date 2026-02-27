@@ -1,10 +1,12 @@
 import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MessageSquare, Search, Bot } from "lucide-react";
+import { MessageSquare, Search, Bot, Plus } from "lucide-react";
 import { AppHeader } from "@/components/layout/AppHeader";
-import { mockRolePlayBank } from "@/data/mock";
+import { mockRolePlayBank, mockSkillTargets } from "@/data/mock";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useToast } from "@/hooks/use-toast";
 
 type DifficultyFilter = "all" | "beginner" | "intermediate" | "advanced";
 
@@ -18,6 +20,7 @@ export default function RolePlayBank() {
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState<DifficultyFilter>("all");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
@@ -33,6 +36,13 @@ export default function RolePlayBank() {
       return true;
     });
   }, [search, difficulty, selectedTag]);
+
+  const handleAddToSkillTarget = (rpTitle: string, stTitle: string) => {
+    toast({
+      title: "Added to Skill Target",
+      description: `"${rpTitle}" added to "${stTitle}"`,
+    });
+  };
 
   return (
     <div>
@@ -101,10 +111,11 @@ export default function RolePlayBank() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06, duration: 0.35 }}
+              className="group relative rounded-xl bg-card border border-border p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300"
             >
               <Link
-                to={`/skill-target/bank/role-play/${rp.id}`}
-                className="group block rounded-xl bg-card border border-border p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300"
+                to={`/role-play-bank/${rp.id}`}
+                className="block"
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10">
@@ -132,6 +143,31 @@ export default function RolePlayBank() {
                   ))}
                 </div>
               </Link>
+
+              {/* Add to Skill Target */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute top-4 right-14 z-10 flex h-7 w-7 items-center justify-center rounded-md bg-secondary text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-all opacity-0 group-hover:opacity-100"
+                    title="Add to Skill Target"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-2" align="end">
+                  <p className="text-xs font-medium text-foreground mb-2 px-2">Add to Skill Target</p>
+                  {mockSkillTargets.map((st) => (
+                    <button
+                      key={st.id}
+                      onClick={() => handleAddToSkillTarget(rp.title, st.title)}
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-foreground hover:bg-accent/10 transition-colors text-left"
+                    >
+                      <span className="truncate">{st.title}</span>
+                    </button>
+                  ))}
+                </PopoverContent>
+              </Popover>
             </motion.div>
           ))}
         </div>

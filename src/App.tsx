@@ -33,6 +33,7 @@ const App = () => (
               <Route path="/skill-target/:id/role-play/:rid" element={<RolePlaySession />} />
               <Route path="/skill-target/:id/module/:mid" element={<LearningModulePage />} />
               <Route path="/role-play-bank" element={<RolePlayBank />} />
+              <Route path="/role-play-bank/:rid" element={<RolePlaySession />} />
               <Route path="/people-graph" element={<PeopleGraph />} />
               <Route path="/manager" element={<ManagerView />} />
               <Route path="/admin" element={<AdminView />} />

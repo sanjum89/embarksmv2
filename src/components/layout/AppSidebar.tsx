@@ -8,6 +8,7 @@ import {
   BarChart3,
   Sparkles,
   ChevronDown,
+  CircleUser,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,7 @@ const navItems: NavItem[] = [
       { label: "Role Play", path: "/role-play-bank", icon: MessageSquare },
     ],
   },
+  { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "manager", "admin"] },
   { label: "People Graph", path: "/people-graph", icon: BarChart3, roles: ["manager", "admin"] },
   { label: "Manager", path: "/manager", icon: Users, roles: ["manager", "admin"] },
   { label: "Admin", path: "/admin", icon: Shield, roles: ["admin"] },

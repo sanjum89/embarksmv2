@@ -102,8 +102,8 @@ export function AppSidebar() {
         {expanded ? (
           <>
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary shrink-0">
-                <Building2 className="h-5 w-5 text-primary-foreground" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent shrink-0">
+                <Building2 className="h-5 w-5 text-accent-foreground" />
               </div>
               <span className="font-display font-bold text-sm text-sidebar-foreground">ABC Company</span>
             </div>
@@ -123,8 +123,8 @@ export function AppSidebar() {
                 <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
               </div>
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary">
-                <Building2 className="h-5 w-5 text-primary-foreground" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent">
+                <Building2 className="h-5 w-5 text-accent-foreground" />
               </div>
             )}
           </div>

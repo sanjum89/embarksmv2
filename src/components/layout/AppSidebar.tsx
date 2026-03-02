@@ -54,6 +54,7 @@ export function AppSidebar() {
   const location = useLocation();
   const filteredItems = navItems.filter((item) => item.roles.includes(user.role));
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
+  const [brandHovered, setBrandHovered] = useState(false);
 
   const isPathActive = (path: string) =>
     location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
@@ -98,20 +99,42 @@ export function AppSidebar() {
     >
       {/* Brand + toggle */}
       <div className={cn("flex items-center border-b border-sidebar-border w-full py-4", expanded ? "justify-between px-4" : "justify-center")}>
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent shrink-0">
-          <Sparkles className="h-5 w-5 text-accent-foreground" />
-        </div>
-        {expanded && <span className="font-display font-bold text-sm text-foreground">SkillSpace</span>}
-        <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
-          {expanded ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
-        </button>
+        {expanded ? (
+          <>
+            <div className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent shrink-0">
+                <Sparkles className="h-5 w-5 text-accent-foreground" />
+              </div>
+              <span className="font-display font-bold text-sm text-foreground">SkillSpace</span>
+            </div>
+            <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
+          </>
+        ) : (
+          <div
+            className="relative flex h-9 w-9 items-center justify-center cursor-pointer"
+            onMouseEnter={() => setBrandHovered(true)}
+            onMouseLeave={() => setBrandHovered(false)}
+            onClick={toggle}
+          >
+            {brandHovered ? (
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent transition-colors">
+                <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
+              </div>
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent">
+                <Sparkles className="h-5 w-5 text-accent-foreground" />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
       <nav className={cn("flex-1 flex flex-col gap-0.5 py-4 w-full", expanded ? "px-3" : "px-2 items-center")}>
         {filteredItems.map((item) => {
           if (item.children) {
-            // Render group with nesting when expanded
             if (expanded) {
               return (
                 <div key={item.label} className="mb-1">
@@ -137,7 +160,6 @@ export function AppSidebar() {
                 </div>
               );
             }
-            // Collapsed: show children directly as icons
             return item.children.map((child) => (
               <div key={child.path}>{renderLink(child.path, child.icon, child.label)}</div>
             ));

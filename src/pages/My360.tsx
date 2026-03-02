@@ -228,20 +228,42 @@ export default function My360() {
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <div ref={otherRef} className="flex flex-nowrap gap-2 overflow-hidden" style={{ maxHeight: '2.5rem' }}>
-                {profileData.otherSkills.slice(0, otherVisible).map((skill) => (
-                  <span
-                    key={skill.name}
-                    className="inline-flex items-center rounded-full border border-border pl-4 pr-1.5 py-2 text-sm font-medium text-foreground gap-1.5 whitespace-nowrap shrink-0"
-                  >
-                    <span>{skill.name}</span>
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
-                      {skill.level}
-                    </span>
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
-                      {skill.year}
-                    </span>
-                  </span>
-                ))}
+                {profileData.otherSkills.slice(0, otherVisible).map((skill) => {
+                  const levelMap: Record<string, string> = { B: "Basic", I: "Intermediate", A: "Advanced", E: "Expert", M: "Master" };
+                  const yearFull = skill.year.replace("'", "20");
+                  return (
+                    <div key={skill.name} className="relative group shrink-0">
+                      <span className="inline-flex items-center rounded-full border border-border pl-4 pr-1.5 py-2 text-sm font-medium text-foreground gap-1.5 whitespace-nowrap cursor-default">
+                        <span>{skill.name}</span>
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
+                          {skill.level}
+                        </span>
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
+                          {skill.year}
+                        </span>
+                      </span>
+                      {/* Hover card */}
+                      <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block z-50">
+                        <div className="rounded-xl bg-card border border-border p-4 shadow-card-hover min-w-[200px]">
+                          <p className="font-display text-sm font-bold text-foreground">{skill.name}</p>
+                          <div className="mt-2 space-y-1">
+                            <div className="flex justify-between text-xs">
+                              <span className="text-muted-foreground">Proficiency</span>
+                              <span className="font-medium text-foreground">{levelMap[skill.level] || skill.level}</span>
+                            </div>
+                            <div className="flex justify-between text-xs">
+                              <span className="text-muted-foreground">Last assessed</span>
+                              <span className="font-medium text-foreground">{yearFull}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex justify-center">
+                          <div className="h-2 w-2 rotate-45 bg-card border-r border-b border-border -mt-1" />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
                 {otherExtra > 0 && (
                   <span data-overflow="true" className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
                     +{otherExtra} more

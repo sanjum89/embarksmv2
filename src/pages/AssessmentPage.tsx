@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
-import { AppHeader } from "@/components/layout/AppHeader";
+
 import { mockAssessments } from "@/data/mock";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +18,6 @@ export default function AssessmentPage() {
   if (!assessment) {
     return (
       <div>
-        <AppHeader title="Assessment" />
         <div className="flex items-center justify-center p-20 text-muted-foreground">
           Assessment not found.
         </div>
@@ -64,7 +63,7 @@ export default function AssessmentPage() {
 
   return (
     <div>
-      <AppHeader title={assessment.title} />
+      
       <div className="mx-auto max-w-2xl p-6">
         <Link
           to={`/skill-target/${skillTargetId}`}

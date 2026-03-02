@@ -18,7 +18,7 @@ import {
   Radar,
   ResponsiveContainer,
 } from "recharts";
-import { AppHeader } from "@/components/layout/AppHeader";
+
 import { AIChatPanel, AIChatPanelHandle } from "@/components/chat/AIChatPanel";
 import { useUser } from "@/contexts/UserContext";
 import { cn } from "@/lib/utils";
@@ -111,7 +111,7 @@ export default function My360() {
 
   return (
     <div>
-      <AppHeader title="My 360" />
+      
       <div className="flex">
         <div className="flex-1 p-4 lg:p-5 max-w-5xl mx-auto">
           {/* Page title */}

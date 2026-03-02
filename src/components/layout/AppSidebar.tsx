@@ -7,7 +7,6 @@ import {
   Users,
   Shield,
   BarChart3,
-  Sparkles,
   CircleUser,
   PanelLeftClose,
   PanelLeftOpen,
@@ -22,6 +21,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import cornerstoneLogo from "@/assets/cornerstone-logo.png";
 
 interface NavItem {
   label: string;
@@ -102,10 +102,8 @@ export function AppSidebar() {
         {expanded ? (
           <>
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent shrink-0">
-                <Sparkles className="h-5 w-5 text-accent-foreground" />
-              </div>
-              <span className="font-display font-bold text-sm text-foreground">SkillSpace</span>
+              <img src={cornerstoneLogo} alt="Cornerstone" className="h-9 w-9 rounded-lg object-contain shrink-0" />
+              <span className="font-display font-bold text-sm text-foreground">Cornerstone</span>
             </div>
             <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
               <PanelLeftClose className="h-4 w-4" />
@@ -123,9 +121,7 @@ export function AppSidebar() {
                 <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
               </div>
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent">
-                <Sparkles className="h-5 w-5 text-accent-foreground" />
-              </div>
+              <img src={cornerstoneLogo} alt="Cornerstone" className="h-9 w-9 rounded-lg object-contain" />
             )}
           </div>
         )}

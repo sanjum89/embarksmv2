@@ -8,8 +8,11 @@ import {
   BarChart3,
   Sparkles,
   CircleUser,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { useSidebarState } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -44,86 +47,95 @@ const navItems: NavItem[] = [
 
 export function AppSidebar() {
   const { user } = useUser();
+  const { expanded, toggle } = useSidebarState();
   const location = useLocation();
   const filteredItems = navItems.filter((item) => item.roles.includes(user.role));
 
   const isPathActive = (path: string) =>
     location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
 
+  const renderLink = (path: string, icon: React.ElementType, label: string) => {
+    const Icon = icon;
+    const active = isPathActive(path);
+    const link = (
+      <NavLink
+        to={path}
+        className={cn(
+          "flex items-center rounded-lg transition-all duration-200",
+          expanded ? "h-10 gap-3 px-3 w-full" : "h-10 w-10 justify-center",
+          active
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+        )}
+      >
+        <Icon className={cn("h-4.5 w-4.5 shrink-0", active && "text-sidebar-primary")} />
+        {expanded && <span className="text-sm font-medium truncate">{label}</span>}
+      </NavLink>
+    );
+
+    if (expanded) return link;
+
+    return (
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>{link}</TooltipTrigger>
+        <TooltipContent side="right" sideOffset={8}>{label}</TooltipContent>
+      </Tooltip>
+    );
+  };
+
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-16 flex-col items-center bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
-      {/* Brand */}
-      <div className="flex items-center justify-center py-4 border-b border-sidebar-border w-full">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent">
+    <aside
+      className={cn(
+        "fixed left-0 top-0 z-40 flex h-screen flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-200",
+        expanded ? "w-56" : "w-16",
+        expanded ? "items-stretch" : "items-center"
+      )}
+    >
+      {/* Brand + toggle */}
+      <div className={cn("flex items-center border-b border-sidebar-border w-full py-4", expanded ? "justify-between px-4" : "justify-center")}>
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent shrink-0">
           <Sparkles className="h-5 w-5 text-accent-foreground" />
         </div>
+        {expanded && <span className="font-display font-bold text-sm text-foreground">SkillSpace</span>}
+        <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
+          {expanded ? <PanelLeftClose className="h-4 w-4" /> : <PanelLeftOpen className="h-4 w-4" />}
+        </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 flex flex-col items-center gap-1 py-4 w-full px-2">
+      <nav className={cn("flex-1 flex flex-col gap-1 py-4 w-full", expanded ? "px-3" : "px-2 items-center")}>
         {filteredItems.map((item) => {
           if (item.children) {
-            return item.children.map((child) => {
-              const active = isPathActive(child.path);
-              return (
-                <Tooltip key={child.path} delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <NavLink
-                      to={child.path}
-                      className={cn(
-                        "flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200",
-                        active
-                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                      )}
-                    >
-                      <child.icon className={cn("h-4.5 w-4.5", active && "text-sidebar-primary")} />
-                    </NavLink>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" sideOffset={8}>
-                    {child.label}
-                  </TooltipContent>
-                </Tooltip>
-              );
-            });
+            return item.children.map((child) => (
+              <div key={child.path}>{renderLink(child.path, child.icon, child.label)}</div>
+            ));
           }
-
-          const isActive = isPathActive(item.path);
-          return (
-            <Tooltip key={item.path} delayDuration={0}>
-              <TooltipTrigger asChild>
-                <NavLink
-                  to={item.path}
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200",
-                    isActive
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                  )}
-                >
-                  <item.icon className={cn("h-4.5 w-4.5", isActive && "text-sidebar-primary")} />
-                </NavLink>
-              </TooltipTrigger>
-              <TooltipContent side="right" sideOffset={8}>
-                {item.label}
-              </TooltipContent>
-            </Tooltip>
-          );
+          return <div key={item.path}>{renderLink(item.path, item.icon, item.label)}</div>;
         })}
       </nav>
 
       {/* User info */}
-      <div className="border-t border-sidebar-border py-4 w-full flex justify-center">
+      <div className={cn("border-t border-sidebar-border py-4 w-full", expanded ? "px-3" : "flex justify-center")}>
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground cursor-default">
-              {user.name.split(" ").map((n) => n[0]).join("")}
+            <div className={cn("flex items-center gap-3", expanded ? "px-1" : "justify-center")}>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground cursor-default shrink-0">
+                {user.name.split(" ").map((n) => n[0]).join("")}
+              </div>
+              {expanded && (
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{user.name}</p>
+                  <p className="text-xs capitalize text-muted-foreground">{user.role}</p>
+                </div>
+              )}
             </div>
           </TooltipTrigger>
-          <TooltipContent side="right" sideOffset={8}>
-            <p className="font-medium">{user.name}</p>
-            <p className="text-xs capitalize text-muted-foreground">{user.role}</p>
-          </TooltipContent>
+          {!expanded && (
+            <TooltipContent side="right" sideOffset={8}>
+              <p className="font-medium">{user.name}</p>
+              <p className="text-xs capitalize text-muted-foreground">{user.role}</p>
+            </TooltipContent>
+          )}
         </Tooltip>
       </div>
     </aside>

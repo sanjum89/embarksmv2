@@ -75,6 +75,7 @@ export default function My360() {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
+  const [snapshotView, setSnapshotView] = useState<"Role" | "Project">("Role");
 
   const visibleCoreSkills = profileData.coreSkills.slice(0, 4);
   const extraCoreCount = profileData.coreSkills.length - 4;
@@ -226,47 +227,39 @@ export default function My360() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left column */}
           <div className="space-y-6">
-            {/* Role Snapshot */}
+            {/* Snapshot */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.12 }}
               className="rounded-xl bg-card border border-border p-5 shadow-card"
             >
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-display text-sm font-semibold text-foreground">
-                  Role Snapshot
-                </h4>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-display text-sm font-semibold text-foreground">Snapshot</h4>
                 <button className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
                   Explore <ExternalLink className="h-3 w-3" />
                 </button>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Own the product vision and end-to-end execution of the WFAI
-                Onboarding use case. Translate complex enterprise workforce
-                challenges into scalable, AI-driven solutions.
-              </p>
-            </motion.div>
-
-            {/* Project Snapshot */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
-              className="rounded-xl bg-card border border-border p-5 shadow-card"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-display text-sm font-semibold text-foreground">
-                  Project Snapshot
-                </h4>
-                <button className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                  Explore <ExternalLink className="h-3 w-3" />
-                </button>
+              <div className="flex gap-1 rounded-lg bg-secondary p-0.5 w-fit mb-3">
+                {(["Role", "Project"] as const).map((v) => (
+                  <button
+                    key={v}
+                    onClick={() => setSnapshotView(v)}
+                    className={cn(
+                      "rounded-md px-3 py-1.5 text-xs font-medium transition-all",
+                      snapshotView === v
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {v}
+                  </button>
+                ))}
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Currently assigned to the WFAI Onboarding project, focusing on
-                building dynamic People Graph across skills, performance, and
-                training data to enable real-time deployment decisions.
+                {snapshotView === "Role"
+                  ? "Own the product vision and end-to-end execution of the WFAI Onboarding use case. Translate complex enterprise workforce challenges into scalable, AI-driven solutions."
+                  : "Currently assigned to the WFAI Onboarding project, focusing on building dynamic People Graph across skills, performance, and training data to enable real-time deployment decisions."}
               </p>
             </motion.div>
 
@@ -293,11 +286,11 @@ export default function My360() {
                   </button>
                 </div>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 overflow-x-auto">
                 {skillGapRows.map((row, i) => (
-                  <div key={i} className="flex items-center gap-3 text-xs">
+                  <div key={i} className="flex items-center gap-2 text-xs">
                     {/* Left skill (current, solid) */}
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 font-medium text-foreground min-w-[130px] truncate">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 font-medium text-foreground max-w-[120px] truncate">
                       {row.left.skill}
                       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
                         {row.left.level}
@@ -310,7 +303,7 @@ export default function My360() {
 
                     {/* Right skill (gap, dashed if not acquired) */}
                     <span className={cn(
-                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium min-w-[130px] truncate",
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium max-w-[120px] truncate",
                       row.right.hasSkill
                         ? "bg-secondary text-foreground"
                         : "border border-dashed border-muted-foreground/40 text-muted-foreground"
@@ -414,7 +407,7 @@ export default function My360() {
         </div>
 
         {/* AI Chat Panel */}
-        <div className="w-[360px] shrink-0 border-l border-border h-[calc(100vh-64px)] sticky top-16">
+        <div className="w-[320px] shrink-0 border-l border-border h-[calc(100vh-64px)] sticky top-16">
           <AIChatPanel contextLabel="My 360 → Profile" />
         </div>
       </div>

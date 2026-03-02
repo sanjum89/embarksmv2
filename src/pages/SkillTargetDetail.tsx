@@ -90,7 +90,7 @@ export default function SkillTargetDetail() {
         </div>
 
         {/* AI Chat Panel */}
-        <div className="w-[360px] shrink-0 border-l border-border h-[calc(100vh-64px)] sticky top-16">
+        <div className="w-[320px] shrink-0 border-l border-border h-[calc(100vh-64px)] sticky top-16">
           <AIChatPanel
             contextLabel={`Skill Target → ${target.title}`}
             suggestedActions={[

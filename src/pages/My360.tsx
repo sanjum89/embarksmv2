@@ -228,20 +228,20 @@ export default function My360() {
                 <span className="text-sm font-semibold text-foreground">Other Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {profileData.otherSkills.map((skill) => (
                   <span
                     key={skill.name}
-                    className="inline-flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground"
+                    className="inline-flex items-center rounded-full border border-border pl-5 pr-1.5 py-2 text-sm font-medium text-foreground gap-3"
                   >
-                    {skill.name}
-                    <span className="flex h-5 w-5 items-center justify-center rounded bg-secondary text-[10px] font-bold text-muted-foreground">
+                    <span className="flex-1">{skill.name}</span>
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
                       {skill.level}
                     </span>
-                    <span className="text-muted-foreground">{skill.year}</span>
+                    <span className="text-sm text-muted-foreground">{skill.year}</span>
                   </span>
                 ))}
-                <span className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                <span className="inline-flex items-center rounded-full border border-border px-5 py-2 text-sm font-medium text-muted-foreground">
                   +{extraOtherCount} more
                 </span>
               </div>
@@ -285,29 +285,31 @@ export default function My360() {
                 className="rounded-xl bg-card border border-border p-5 shadow-card"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-display text-sm font-semibold text-foreground">Snapshot</h4>
+                  <div className="flex items-center gap-3">
+                    <h4 className="font-display text-sm font-semibold text-foreground">Snapshot</h4>
+                    <div className="flex gap-1 rounded-lg bg-secondary p-0.5">
+                      {(["Role", "Project"] as const).map((v) => (
+                        <button
+                          key={v}
+                          onClick={() => setSnapshotView(v)}
+                          className={cn(
+                            "rounded-md px-3 py-1 text-xs font-medium transition-all",
+                            snapshotView === v
+                              ? "bg-card text-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <button
                     onClick={handleExploreClick}
                     className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Explore <ExternalLink className="h-3 w-3" />
                   </button>
-                </div>
-                <div className="flex gap-1 rounded-lg bg-secondary p-0.5 w-fit mb-3">
-                  {(["Role", "Project"] as const).map((v) => (
-                    <button
-                      key={v}
-                      onClick={() => setSnapshotView(v)}
-                      className={cn(
-                        "rounded-md px-3 py-1.5 text-xs font-medium transition-all",
-                        snapshotView === v
-                          ? "bg-card text-foreground shadow-sm"
-                          : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
-                      {v}
-                    </button>
-                  ))}
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {snapshotView === "Role"
@@ -341,33 +343,33 @@ export default function My360() {
                 </div>
                 <div className="space-y-3 overflow-x-auto">
                   {skillGapRows.map((row, i) => (
-                    <div key={i} className="flex items-center gap-2 text-xs">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 font-medium text-foreground max-w-[120px] truncate">
-                        {row.left.skill}
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
+                    <div key={i} className="flex items-center gap-2 text-sm">
+                      <span className="inline-flex items-center rounded-full border border-border pl-4 pr-1.5 py-1.5 font-medium text-foreground gap-2 min-w-0">
+                        <span className="truncate">{row.left.skill}</span>
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground shrink-0">
                           {row.left.level}
                         </span>
                       </span>
                       <span className="text-muted-foreground text-xs shrink-0">{">>"}</span>
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground shrink-0">
                         {row.left.target === "✓" ? "✓" : row.left.target}
                       </span>
 
                       <span className={cn(
-                        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium max-w-[120px] truncate",
+                        "inline-flex items-center rounded-full pl-4 pr-1.5 py-1.5 font-medium gap-2 min-w-0",
                         row.right.hasSkill
-                          ? "bg-secondary text-foreground"
+                          ? "border border-border text-foreground"
                           : "border border-dashed border-muted-foreground/40 text-muted-foreground"
                       )}>
-                        {row.right.skill}
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
+                        <span className="truncate">{row.right.skill}</span>
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground shrink-0">
                           {row.right.level}
                         </span>
                       </span>
                       {row.right.target && (
                         <>
                           <span className="text-muted-foreground text-xs shrink-0">{">>"}</span>
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground shrink-0">
                             {row.right.target}
                           </span>
                         </>

@@ -1,31 +1,20 @@
 
 
-## Plan: Remove Duplicate Page Headers
+## Plan: Update Radar Chart to Match Reference Design
 
-### Problem
-Every page has an `<AppHeader>` component rendering a sticky top bar with the page title. The sidebar already provides navigation context, creating a redundant double header.
+The reference image shows key differences from the current implementation:
 
-### Changes
+1. **Two overlapping radar shapes** — an outer (target) polygon and an inner (current) polygon, creating a gap visualization
+2. **Proficiency-level axis labels** — the radius axis shows letters M, E, A, I, B instead of numeric 0–100
+3. **Darker, more opaque fill** — the outer shape has a darker gray fill (~0.5 opacity), the inner is lighter
+4. **No numeric tick marks** on the radius axis — just the letter labels
+5. **Two icon buttons** (radar/bar toggle) in the top-right corner next to the Gap View / Action Plan tabs
 
-**1. Remove `<AppHeader>` usage from all 10 pages:**
-- `src/pages/My360.tsx` — remove AppHeader import + usage, adjust top padding
-- `src/pages/Dashboard.tsx` — same
-- `src/pages/SkillTargetDetail.tsx` — same
-- `src/pages/AssessmentPage.tsx` — same
-- `src/pages/RolePlaySession.tsx` — same
-- `src/pages/LearningModulePage.tsx` — same
-- `src/pages/RolePlayBank.tsx` — same
-- `src/pages/PeopleGraph.tsx` — same
-- `src/pages/ManagerView.tsx` — same
-- `src/pages/AdminView.tsx` — same
+### Changes to `src/pages/My360.tsx`:
 
-**2. Adjust layout calculations:**
-- Pages using `h-[calc(100vh-4rem)]` (accounting for 64px header) will change to `h-screen` or `100vh`
-- Pages with sticky chat panels referencing `top-16` will adjust to `top-0`
-
-**3. Optionally delete `src/components/layout/AppHeader.tsx`** since it will no longer be used.
-
-### Technical detail
-- Each page wraps content in `<div>` starting with `<AppHeader title="..." />` — simply remove that line
-- The `AIChatPanel` sticky container in Dashboard/My360/SkillTargetDetail uses `h-[calc(100vh-64px)] sticky top-16` — change to `h-screen sticky top-0`
+1. **Update `radarSkills` data** — add a `target` field alongside `score` for each skill (target represents the expected level, score the current)
+2. **Map proficiency levels to numeric values** — M=100, E=80, A=60, I=40, B=20 so the radar renders two distinct polygons
+3. **Render two `<Radar>` components** — outer (target) with darker fill, inner (current) with lighter fill
+4. **Custom `PolarRadiusAxis` tick** — render the letters M, E, A, I, B at the grid rings instead of numbers; hide default numeric ticks
+5. **Add two icon buttons** (grid/bar chart icons) to the right of the Gap View / Action Plan toggle
 

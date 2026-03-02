@@ -105,6 +105,10 @@ export default {
           from: { opacity: "0", transform: "scale(0.96)" },
           to: { opacity: "1", transform: "scale(1)" },
         },
+        "lightsaber-breathe": {
+          "0%, 100%": { opacity: "0.85", filter: "brightness(1)" },
+          "50%": { opacity: "1", filter: "brightness(1.15)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

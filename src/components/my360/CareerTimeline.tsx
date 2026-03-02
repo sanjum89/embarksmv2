@@ -102,8 +102,20 @@ export function CareerTimeline() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
         {/* Left: Timeline */}
         <div className="relative pl-16">
-          {/* Gradient line */}
-          <div className="absolute left-[3.25rem] top-0 bottom-0 w-1 rounded-full bg-gradient-to-b from-accent via-success to-success/40" />
+          {/* Lightsaber glow line */}
+          <div className="absolute left-[3.25rem] top-0 bottom-0 w-1.5 rounded-full animate-[lightsaber-breathe_3s_ease-in-out_infinite]"
+            style={{
+              background: 'linear-gradient(to bottom, hsl(38 92% 50%), hsl(142 70% 50%) 40%, hsl(142 70% 45%) 100%)',
+              boxShadow: '0 0 8px 2px hsl(142 70% 50% / 0.5), 0 0 20px 4px hsl(142 70% 50% / 0.25), 0 0 40px 8px hsl(142 70% 50% / 0.1)',
+            }}
+          />
+          {/* Inner bright core */}
+          <div className="absolute left-[3.35rem] top-0 bottom-0 w-0.5 rounded-full animate-[lightsaber-breathe_3s_ease-in-out_infinite]"
+            style={{
+              background: 'linear-gradient(to bottom, hsl(38 100% 80%), hsl(142 80% 80%) 40%, hsl(142 80% 75%) 100%)',
+              animationDelay: '0.5s',
+            }}
+          />
 
           <div className="space-y-6">
             {careerEntries.map((entry, i) => (
@@ -116,7 +128,9 @@ export function CareerTimeline() {
                 {/* Dot */}
                 <div className={cn(
                   "absolute -left-1 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-card z-10",
-                  entry.current ? "bg-accent" : "bg-card border-border ring-2 ring-border"
+                  entry.current
+                    ? "bg-accent shadow-[0_0_8px_2px_hsl(38_92%_50%_/_0.6)]"
+                    : "bg-card border-border ring-2 ring-border shadow-[0_0_6px_1px_hsl(142_70%_50%_/_0.3)]"
                 )} />
 
                 {/* Content */}

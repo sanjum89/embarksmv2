@@ -9,7 +9,7 @@ import {
   RadarIcon,
   BarChart3,
 } from "lucide-react";
-import { useVisibleCount } from "@/hooks/useVisibleCount";
+
 import {
   RadarChart,
   PolarGrid,
@@ -87,11 +87,11 @@ export default function My360() {
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
 
-  const { containerRef: coreRef, visibleCount: coreVisible } = useVisibleCount(profileData.coreSkills.length);
-  const { containerRef: otherRef, visibleCount: otherVisible } = useVisibleCount(profileData.otherSkills.length);
+  const [showAllCoreSkills, setShowAllCoreSkills] = useState(false);
 
-  const coreExtra = profileData.coreSkills.length - coreVisible;
-  const otherExtra = profileData.otherSkills.length - otherVisible + 24;
+  const CORE_VISIBLE_LIMIT = 4;
+  const coreExtra = profileData.coreSkills.length - CORE_VISIBLE_LIMIT;
+  const otherExtra = profileData.otherSkills.length - 3; // show first 3 other skills
 
   const handleRoleExploreClick = () => {
     chatRef.current?.sendMessage(ROLE_EXPLORE_PROMPT, ROLE_EXPLORE_RESPONSE, [
@@ -200,53 +200,77 @@ export default function My360() {
             </AnimatePresence>
 
             {/* Core Skills */}
-            <div className="mt-4">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-sm font-semibold text-foreground">Core Skills</span>
-                <Info className="h-3.5 w-3.5 text-muted-foreground" />
+            <div className="mt-5">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-lg font-bold text-foreground">Core Skills</span>
+                <Info className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div ref={coreRef} className="flex flex-nowrap gap-2 overflow-hidden" style={{ maxHeight: '2.5rem' }}>
-                {profileData.coreSkills.slice(0, coreVisible).map((skill) => (
+              <div className="flex flex-nowrap gap-2.5">
+                {profileData.coreSkills.slice(0, showAllCoreSkills ? undefined : CORE_VISIBLE_LIMIT).map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground whitespace-nowrap shrink-0"
+                    className="inline-flex items-center rounded-full bg-secondary text-base font-semibold text-foreground shrink-0 truncate"
+                    style={{ height: 56, paddingLeft: 24, paddingRight: 24, maxWidth: 230, borderRadius: 999 }}
                   >
-                    {skill}
+                    <span className="truncate">{skill}</span>
                   </span>
                 ))}
-                {coreExtra > 0 && (
-                  <span data-overflow="true" className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
+                {!showAllCoreSkills && coreExtra > 0 && (
+                  <button
+                    onClick={() => setShowAllCoreSkills(true)}
+                    className="inline-flex items-center rounded-full border border-border bg-card text-base font-bold text-muted-foreground shrink-0 hover:bg-secondary transition-colors"
+                    style={{ height: 56, paddingLeft: 24, paddingRight: 24, borderRadius: 999 }}
+                  >
                     +{coreExtra} more
-                  </span>
+                  </button>
+                )}
+                {showAllCoreSkills && (
+                  <button
+                    onClick={() => setShowAllCoreSkills(false)}
+                    className="inline-flex items-center rounded-full border border-border bg-card text-base font-bold text-muted-foreground shrink-0 hover:bg-secondary transition-colors"
+                    style={{ height: 56, paddingLeft: 24, paddingRight: 24, borderRadius: 999 }}
+                  >
+                    Show less
+                  </button>
                 )}
               </div>
             </div>
 
             {/* Other Skills */}
-            <div className="mt-3">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-sm font-semibold text-foreground">Other Skills</span>
-                <Info className="h-3.5 w-3.5 text-muted-foreground" />
+            <div className="mt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-lg font-bold text-foreground">Other Skills</span>
+                <Info className="h-4 w-4 text-muted-foreground" />
               </div>
-              <div ref={otherRef} className="flex flex-nowrap gap-2 overflow-hidden" style={{ maxHeight: '2.5rem' }}>
-                {profileData.otherSkills.slice(0, otherVisible).map((skill) => (
+              <div className="flex flex-wrap gap-2.5">
+                {profileData.otherSkills.map((skill) => (
                   <span
                     key={skill.name}
-                    className="inline-flex items-center rounded-full border border-border pl-4 pr-1.5 py-2 text-sm font-medium text-foreground gap-1.5 whitespace-nowrap shrink-0"
+                    className="inline-flex items-center rounded-full border border-border bg-card text-base font-semibold text-foreground shrink-0"
+                    style={{ height: 56, paddingLeft: 24, paddingRight: 8, borderRadius: 999, gap: 12 }}
                   >
                     <span>{skill.name}</span>
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
+                    <span
+                      className="flex items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground"
+                      style={{ height: 32, width: 32 }}
+                    >
                       {skill.level}
                     </span>
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
+                    <span
+                      className="flex items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground"
+                      style={{ height: 32, width: 32 }}
+                    >
                       {skill.year}
                     </span>
                   </span>
                 ))}
                 {otherExtra > 0 && (
-                  <span data-overflow="true" className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
+                  <button
+                    className="inline-flex items-center rounded-full border border-border bg-card text-base font-bold text-muted-foreground shrink-0 hover:bg-secondary transition-colors"
+                    style={{ height: 56, paddingLeft: 24, paddingRight: 24, borderRadius: 999 }}
+                  >
                     +{otherExtra} more
-                  </span>
+                  </button>
                 )}
               </div>
             </div>

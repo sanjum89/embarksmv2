@@ -8,6 +8,8 @@ import {
   ChevronUp,
   Info,
   ExternalLink,
+  RadarIcon,
+  BarChart3,
 } from "lucide-react";
 import {
   RadarChart,
@@ -44,15 +46,18 @@ const profileData = {
   ],
 };
 
+// Proficiency: B=20, I=40, A=60, E=80, M=100
+const proficiencyLabels = ["", "B", "I", "A", "E", "M"];
+
 const radarSkills = [
-  { skill: "Product Strategy", score: 85, fullMark: 100 },
-  { skill: "Stakeholder Mgmt", score: 78, fullMark: 100 },
-  { skill: "Product Ops", score: 62, fullMark: 100 },
-  { skill: "Prioritization", score: 70, fullMark: 100 },
-  { skill: "Figma Wireframing", score: 45, fullMark: 100 },
-  { skill: "Figma Make", score: 55, fullMark: 100 },
-  { skill: "FigJam", score: 60, fullMark: 100 },
-  { skill: "Lovable AI", score: 40, fullMark: 100 },
+  { skill: "Product Strategy", score: 80, target: 80 },
+  { skill: "Stakeholder Mgmt", score: 80, target: 80 },
+  { skill: "Product Ops", score: 60, target: 80 },
+  { skill: "Prioritization", score: 60, target: 80 },
+  { skill: "Figma Wireframing", score: 40, target: 60 },
+  { skill: "Figma Make", score: 20, target: 40 },
+  { skill: "FigJam", score: 20, target: 40 },
+  { skill: "Lovable AI", score: 40, target: 60 },
 ];
 
 const skillGapRows = [
@@ -352,22 +357,52 @@ export default function My360() {
                     </button>
                   ))}
                 </div>
+                <div className="flex gap-1">
+                  <button className="rounded-lg border border-border p-1.5 text-foreground bg-card shadow-sm">
+                    <RadarIcon className="h-4 w-4" />
+                  </button>
+                  <button className="rounded-lg border border-border p-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                    <BarChart3 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
               <ResponsiveContainer width="100%" height={340}>
                 <RadarChart data={radarSkills}>
-                  <PolarGrid stroke="hsl(220, 16%, 90%)" />
+                  <PolarGrid stroke="hsl(220, 16%, 88%)" />
                   <PolarAngleAxis
                     dataKey="skill"
                     tick={{ fontSize: 10, fill: "hsl(220, 10%, 46%)" }}
                   />
-                  <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9 }} />
+                  <PolarRadiusAxis
+                    angle={90}
+                    domain={[0, 100]}
+                    tickCount={6}
+                    tick={({ x, y, payload }) => {
+                      const label = proficiencyLabels[Math.round(payload.value / 20)] || "";
+                      if (!label) return <text />;
+                      return (
+                        <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={9} fill="hsl(220, 10%, 46%)">
+                          {label}
+                        </text>
+                      );
+                    }}
+                    axisLine={false}
+                  />
                   <Radar
-                    name="Score"
+                    name="Target"
+                    dataKey="target"
+                    stroke="hsl(220, 16%, 55%)"
+                    fill="hsl(220, 16%, 65%)"
+                    fillOpacity={0.4}
+                    strokeWidth={1.5}
+                  />
+                  <Radar
+                    name="Current"
                     dataKey="score"
-                    stroke="hsl(220, 16%, 60%)"
-                    fill="hsl(220, 16%, 70%)"
-                    fillOpacity={0.25}
-                    strokeWidth={2}
+                    stroke="hsl(220, 16%, 70%)"
+                    fill="hsl(220, 16%, 80%)"
+                    fillOpacity={0.3}
+                    strokeWidth={1.5}
                   />
                 </RadarChart>
               </ResponsiveContainer>

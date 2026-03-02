@@ -4,8 +4,9 @@ import { ExternalLink, Settings, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /* ── Palette ─────────────────────────────────────── */
-const TEAL   = { hex: "#1F7A63", ring: "rgba(31,122,99,0.55)", glow: "rgba(31,122,99,0.24)", bloom: "rgba(31,122,99,0.09)" };
-const AMBER  = { hex: "#B26A2A", ring: "rgba(178,106,42,0.55)", glow: "rgba(178,106,42,0.24)", bloom: "rgba(178,106,42,0.09)" };
+const GREEN  = { hex: "#22C55E", ring: "rgba(34,197,94,0.55)", glow: "rgba(34,197,94,0.24)", bloom: "rgba(34,197,94,0.09)" };
+const YELLOW = { hex: "#EAB308", ring: "rgba(234,179,8,0.55)", glow: "rgba(234,179,8,0.24)", bloom: "rgba(234,179,8,0.09)" };
+const ORANGE = { hex: "#F97316", ring: "rgba(249,115,22,0.55)", glow: "rgba(249,115,22,0.24)", bloom: "rgba(249,115,22,0.09)" };
 
 /* ── Data ────────────────────────────────────────── */
 interface CareerEntry {
@@ -38,7 +39,12 @@ export function CareerTimeline() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [tooltip, setTooltip] = useState<number | null>(null);
 
-  const palette = (entry: CareerEntry) => (entry.validated ? TEAL : AMBER);
+  const palette = (entry: CareerEntry) => {
+    if (entry.validated) return GREEN;
+    if (entry.month === "Mar") return ORANGE;
+    if (entry.month === "Feb") return YELLOW;
+    return ORANGE; // Jan 2026 fallback
+  };
 
   return (
     <motion.div
@@ -58,7 +64,7 @@ export function CareerTimeline() {
             <option value="all">All roles</option>
           </select>
           <button className="rounded-lg px-4 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: AMBER.hex }}>
+            style={{ background: ORANGE.hex }}>
             Add reflection
           </button>
           <button className="rounded-lg border border-border p-1.5 text-muted-foreground hover:text-foreground transition-colors">
@@ -156,7 +162,7 @@ export function CareerTimeline() {
                     {isSelected && (
                       <span
                         className="inline-flex items-center rounded-full px-4 py-1.5 text-xs font-semibold text-white shadow-sm"
-                        style={{ background: AMBER.hex }}
+                        style={{ background: ORANGE.hex }}
                       >
                         {entry.year} {entry.month}
                       </span>
@@ -192,7 +198,7 @@ export function CareerTimeline() {
                           </p>
                           <button
                             className="w-full rounded-lg px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
-                            style={{ background: AMBER.hex }}
+                            style={{ background: ORANGE.hex }}
                           >
                             Add reflection
                           </button>
@@ -214,7 +220,7 @@ export function CareerTimeline() {
             <p className="text-sm text-muted-foreground mt-1">No data captured</p>
             <button
               className="mt-3 w-full rounded-lg px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
-              style={{ background: AMBER.hex }}
+              style={{ background: ORANGE.hex }}
             >
               Add reflection
             </button>
@@ -234,7 +240,7 @@ export function CareerTimeline() {
                   <div className="text-right">
                     <span className={cn(
                       "text-sm font-medium",
-                      r.status === "Approved" ? "text-success" : "text-[#B26A2A]"
+                      r.status === "Approved" ? "text-success" : "text-[#F97316]"
                     )}>
                       {r.status}
                     </span>
@@ -250,11 +256,11 @@ export function CareerTimeline() {
             <h5 className="font-display text-base font-semibold text-foreground mb-3">Filters</h5>
             <div className="space-y-2 mb-4">
               <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full" style={{ background: TEAL.hex }} />
+                <span className="h-3 w-3 rounded-full" style={{ background: GREEN.hex }} />
                 <span className="text-sm text-foreground">Validated signals</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="h-3 w-3 rounded-full" style={{ background: AMBER.hex }} />
+                <span className="h-3 w-3 rounded-full" style={{ background: ORANGE.hex }} />
                 <span className="text-sm text-foreground">Missing data</span>
               </div>
             </div>
@@ -287,8 +293,8 @@ export function CareerTimeline() {
           50% { opacity: 0.12; filter: blur(14px); }
         }
         @keyframes active-dot-breathe {
-          0%, 100% { box-shadow: 0 0 6px 2px rgba(178,106,42,0.3); }
-          50% { box-shadow: 0 0 10px 4px rgba(178,106,42,0.45); }
+          0%, 100% { box-shadow: 0 0 6px 2px rgba(249,115,22,0.3); }
+          50% { box-shadow: 0 0 10px 4px rgba(249,115,22,0.45); }
         }
         .timeline-glow {
           animation: timeline-breathe-glow 2.6s ease-in-out infinite alternate;

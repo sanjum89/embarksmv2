@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Target, CalendarDays } from "lucide-react";
-import { AppHeader } from "@/components/layout/AppHeader";
+
 import { AIChatPanel } from "@/components/chat/AIChatPanel";
 import { StepTimeline } from "@/components/skill-target/StepTimeline";
 import { Progress } from "@/components/ui/progress";
@@ -14,7 +14,6 @@ export default function SkillTargetDetail() {
   if (!target) {
     return (
       <div>
-        <AppHeader title="Skill Target" />
         <div className="flex items-center justify-center p-20 text-muted-foreground">
           Skill Target not found.
         </div>
@@ -28,7 +27,7 @@ export default function SkillTargetDetail() {
 
   return (
     <div>
-      <AppHeader title={target.title} />
+      
       <div className="flex">
         <div className="flex-1 mx-auto max-w-2xl p-6">
           <Link
@@ -90,7 +89,7 @@ export default function SkillTargetDetail() {
         </div>
 
         {/* AI Chat Panel */}
-        <div className="w-[320px] shrink-0 border-l border-border h-[calc(100vh-64px)] sticky top-16">
+        <div className="w-[320px] shrink-0 border-l border-border h-screen sticky top-0">
           <AIChatPanel
             contextLabel={`Skill Target → ${target.title}`}
             suggestedActions={[

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Send, Eye, EyeOff, Bot, User, Mic, MicOff, Volume2, VolumeX, MessageSquare, Phone } from "lucide-react";
-import { AppHeader } from "@/components/layout/AppHeader";
+
 import { mockRolePlayBank } from "@/data/mock";
 import { cn } from "@/lib/utils";
 
@@ -57,7 +57,6 @@ export default function RolePlaySession() {
   if (!rolePlay) {
     return (
       <div>
-        <AppHeader title="Role Play" />
         <div className="flex items-center justify-center p-20 text-muted-foreground">
           Role Play not found.
         </div>
@@ -134,8 +133,7 @@ export default function RolePlaySession() {
 
   return (
     <div>
-      <AppHeader title={rolePlay.title} />
-      <div className="flex h-[calc(100vh-4rem)] flex-col">
+      <div className="flex h-screen flex-col">
         {/* Top bar */}
         <div className="border-b border-border px-6 py-3 flex items-center justify-between">
           <Link

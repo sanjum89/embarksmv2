@@ -16,7 +16,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { AppHeader } from "@/components/layout/AppHeader";
+
 import {
   mockTeamMembers,
   mockPeopleGraphSignals,
@@ -77,7 +77,7 @@ export default function PeopleGraph() {
 
   return (
     <div>
-      <AppHeader title="People Graph" />
+      
       <div className="p-6 max-w-6xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h3 className="font-display text-2xl font-bold text-foreground">People Graph</h3>

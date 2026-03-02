@@ -1,9 +1,6 @@
-import { AppHeader } from "@/components/layout/AppHeader";
-
 export default function AdminView() {
   return (
     <div>
-      <AppHeader title="Admin" />
       <div className="flex items-center justify-center p-20">
         <div className="text-center">
           <p className="font-display text-lg font-semibold text-foreground">Admin Panel</p>

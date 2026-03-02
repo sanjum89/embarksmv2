@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Play, FileText, Bot, Send, X } from "lucide-react";
-import { AppHeader } from "@/components/layout/AppHeader";
+
 import { mockLearningModules } from "@/data/mock";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +24,6 @@ export default function LearningModulePage() {
   if (!module) {
     return (
       <div>
-        <AppHeader title="Learning Module" />
         <div className="flex items-center justify-center p-20 text-muted-foreground">
           Module not found.
         </div>
@@ -51,8 +50,7 @@ export default function LearningModulePage() {
 
   return (
     <div>
-      <AppHeader title={module.title} />
-      <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex h-screen">
         {/* Main content area */}
         <div className={cn("flex-1 overflow-y-auto p-6", showCompanion && "pr-0")}>
           <div className="mx-auto max-w-3xl">

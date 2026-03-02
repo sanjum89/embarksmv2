@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MessageSquare, Search, Bot, Plus } from "lucide-react";
-import { AppHeader } from "@/components/layout/AppHeader";
+
 import { mockRolePlayBank, mockSkillTargets } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -46,7 +46,7 @@ export default function RolePlayBank() {
 
   return (
     <div>
-      <AppHeader title="Role Play Bank" />
+      
       <div className="p-6 max-w-5xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <h3 className="font-display text-2xl font-bold text-foreground">Role Play Bank</h3>

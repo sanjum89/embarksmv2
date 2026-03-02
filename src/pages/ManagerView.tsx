@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Users, Target, AlertTriangle, CheckCircle2, Clock, TrendingUp } from "lucide-react";
-import { AppHeader } from "@/components/layout/AppHeader";
+
 import { mockTeamMembers, mockTeamProgress, mockSkillTargets } from "@/data/mock";
 import { cn } from "@/lib/utils";
 
@@ -39,7 +39,7 @@ export default function ManagerView() {
 
   return (
     <div>
-      <AppHeader title="Manager Dashboard" />
+      
       <div className="p-6 max-w-6xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
           <h3 className="font-display text-2xl font-bold text-foreground">Team Overview</h3>

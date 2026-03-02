@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { AppHeader } from "@/components/layout/AppHeader";
+
 import { AIChatPanel } from "@/components/chat/AIChatPanel";
 import { mockSkillTargets } from "@/data/mock";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
@@ -43,7 +43,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      <AppHeader title="Learning Spaces" />
+      
       <div className="flex">
         <div className="flex-1 p-6 max-w-5xl mx-auto">
           {/* Welcome */}
@@ -120,7 +120,7 @@ export default function Dashboard() {
         </div>
 
         {/* AI Chat Panel */}
-        <div className="w-[320px] shrink-0 border-l border-border h-[calc(100vh-64px)] sticky top-16">
+        <div className="w-[320px] shrink-0 border-l border-border h-screen sticky top-0">
           <AIChatPanel contextLabel="Learning Spaces → Dashboard" />
         </div>
       </div>

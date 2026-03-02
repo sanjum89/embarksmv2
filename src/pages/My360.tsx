@@ -55,11 +55,11 @@ const radarSkills = [
   { skill: "Lovable AI", score: 40, fullMark: 100 },
 ];
 
-const skillGaps = [
-  { skill: "Product Strategy", currentLevel: "A", targetLevel: "E", hasSkill: true },
-  { skill: "Stakeholder Mgmt", currentLevel: "B", targetLevel: "A", hasSkill: true },
-  { skill: "Figma Wireframing", currentLevel: null, targetLevel: "I", hasSkill: false },
-  { skill: "Lovable AI", currentLevel: null, targetLevel: "I", hasSkill: false },
+const skillGapRows = [
+  { left: { skill: "Product Stra…", level: "E", target: "✓", hasSkill: true },  right: { skill: "Figma Wiref…", level: "I", target: "A", hasSkill: true } },
+  { left: { skill: "Stakeholder…", level: "E", target: "✓", hasSkill: true },   right: { skill: "Figma Make", level: "B", target: null, hasSkill: false } },
+  { left: { skill: "Product Ops…", level: "A", target: "E", hasSkill: true },   right: { skill: "FigJam", level: "B", target: null, hasSkill: false } },
+  { left: { skill: "Prioritization…", level: "A", target: "E", hasSkill: true }, right: { skill: "Lovable AI", level: "I", target: null, hasSkill: false } },
 ];
 
 const tabs = ["Role & Skills", "Career Timeline", "Growth Path"] as const;
@@ -286,26 +286,41 @@ export default function My360() {
                   </button>
                 </div>
               </div>
-              <div className="space-y-2.5">
-                {skillGaps.map((gap, i) => (
-                  <div key={i} className="flex items-center gap-2 text-xs">
+              <div className="space-y-3">
+                {skillGapRows.map((row, i) => (
+                  <div key={i} className="flex items-center gap-3 text-xs">
+                    {/* Left skill (current, solid) */}
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 font-medium text-foreground min-w-[130px] truncate">
+                      {row.left.skill}
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
+                        {row.left.level}
+                      </span>
+                    </span>
+                    <span className="text-muted-foreground text-xs shrink-0">{">>"}</span>
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
+                      {row.left.target === "✓" ? "✓" : row.left.target}
+                    </span>
+
+                    {/* Right skill (gap, dashed if not acquired) */}
                     <span className={cn(
-                      "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-medium min-w-[140px] truncate",
-                      gap.hasSkill
+                      "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-medium min-w-[130px] truncate",
+                      row.right.hasSkill
                         ? "bg-secondary text-foreground"
                         : "border border-dashed border-muted-foreground/40 text-muted-foreground"
                     )}>
-                      {gap.skill}
-                      {gap.currentLevel && (
-                        <span className="flex h-4 w-4 items-center justify-center rounded bg-muted text-[10px] font-bold text-muted-foreground">
-                          {gap.currentLevel}
+                      {row.right.skill}
+                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
+                        {row.right.level}
+                      </span>
+                    </span>
+                    {row.right.target && (
+                      <>
+                        <span className="text-muted-foreground text-xs shrink-0">{">>"}</span>
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
+                          {row.right.target}
                         </span>
-                      )}
-                    </span>
-                    <span className="text-muted-foreground">{">>"}</span>
-                    <span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 font-medium text-foreground min-w-[50px]">
-                      {gap.targetLevel}
-                    </span>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>

@@ -56,10 +56,10 @@ const radarSkills = [
 ];
 
 const skillGaps = [
-  { current: "Product Strategy", currentLevel: "E", target: "Figma Wireframing", targetLevel: "I" },
-  { current: "Stakeholder Mgmt", currentLevel: "E", target: "Figma Make", targetLevel: "B" },
-  { current: "Product Ops", currentLevel: "A", target: "FigJam", targetLevel: "B" },
-  { current: "Prioritization", currentLevel: "A", target: "Lovable AI", targetLevel: "I" },
+  { skill: "Product Strategy", currentLevel: "A", targetLevel: "E", hasSkill: true },
+  { skill: "Stakeholder Mgmt", currentLevel: "B", targetLevel: "A", hasSkill: true },
+  { skill: "Figma Wireframing", currentLevel: null, targetLevel: "I", hasSkill: false },
+  { skill: "Lovable AI", currentLevel: null, targetLevel: "I", hasSkill: false },
 ];
 
 const tabs = ["Role & Skills", "Career Timeline", "Growth Path"] as const;
@@ -289,18 +289,22 @@ export default function My360() {
               <div className="space-y-2.5">
                 {skillGaps.map((gap, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
-                    <span className="inline-flex items-center gap-1.5 rounded-md bg-secondary px-2.5 py-1 font-medium text-foreground min-w-[110px] truncate">
-                      {gap.current}
-                      <span className="flex h-4 w-4 items-center justify-center rounded bg-muted text-[10px] font-bold text-muted-foreground">
-                        {gap.currentLevel}
-                      </span>
+                    <span className={cn(
+                      "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-medium min-w-[140px] truncate",
+                      gap.hasSkill
+                        ? "bg-secondary text-foreground"
+                        : "border border-dashed border-muted-foreground/40 text-muted-foreground"
+                    )}>
+                      {gap.skill}
+                      {gap.currentLevel && (
+                        <span className="flex h-4 w-4 items-center justify-center rounded bg-muted text-[10px] font-bold text-muted-foreground">
+                          {gap.currentLevel}
+                        </span>
+                      )}
                     </span>
                     <span className="text-muted-foreground">{">>"}</span>
-                    <span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 font-medium text-foreground min-w-[110px] truncate">
-                      {gap.target}
-                      <span className="flex h-4 w-4 items-center justify-center rounded bg-muted text-[10px] font-bold text-muted-foreground">
-                        {gap.targetLevel}
-                      </span>
+                    <span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1 font-medium text-foreground min-w-[50px]">
+                      {gap.targetLevel}
                     </span>
                   </div>
                 ))}

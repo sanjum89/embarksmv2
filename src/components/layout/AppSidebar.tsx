@@ -7,12 +7,15 @@ import {
   Shield,
   BarChart3,
   Sparkles,
-  ChevronDown,
   CircleUser,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface NavItem {
   label: string;
@@ -43,114 +46,85 @@ export function AppSidebar() {
   const { user } = useUser();
   const location = useLocation();
   const filteredItems = navItems.filter((item) => item.roles.includes(user.role));
-  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({ "Learning Spaces": true });
-
-  const toggleMenu = (label: string) => {
-    setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
-  };
 
   const isPathActive = (path: string) =>
     location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
 
   return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
+    <aside className="fixed left-0 top-0 z-40 flex h-screen w-16 flex-col items-center bg-sidebar text-sidebar-foreground border-r border-sidebar-border">
       {/* Brand */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
+      <div className="flex items-center justify-center py-4 border-b border-sidebar-border w-full">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-accent">
           <Sparkles className="h-5 w-5 text-accent-foreground" />
-        </div>
-        <div>
-          <h1 className="font-display text-base font-bold text-sidebar-accent-foreground">
-            WFAI
-          </h1>
-          <p className="text-xs text-sidebar-foreground/60">Learning Spaces</p>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 flex flex-col items-center gap-1 py-4 w-full px-2">
         {filteredItems.map((item) => {
           if (item.children) {
-            const isOpen = openMenus[item.label] ?? false;
-            const isChildActive = item.children.some((c) => isPathActive(c.path));
-
-            return (
-              <div key={item.label} className="space-y-0.5">
-                <button
-                  onClick={() => toggleMenu(item.label)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                    isChildActive
-                      ? "text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                  )}
-                >
-                  <item.icon className={cn("h-4.5 w-4.5", isChildActive && "text-sidebar-primary")} />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  <ChevronDown
-                    className={cn(
-                      "h-4 w-4 transition-transform duration-200",
-                      isOpen && "rotate-180"
-                    )}
-                  />
-                </button>
-
-                {isOpen && (
-                  <div className="ml-4 space-y-0.5 border-l border-sidebar-border pl-3">
-                    {item.children.map((child) => {
-                      const active = isPathActive(child.path);
-                      return (
-                        <NavLink
-                          key={child.path}
-                          to={child.path}
-                          className={cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200",
-                            active
-                              ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                              : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-                          )}
-                        >
-                          <child.icon className={cn("h-4 w-4", active && "text-sidebar-primary")} />
-                          {child.label}
-                        </NavLink>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
+            return item.children.map((child) => {
+              const active = isPathActive(child.path);
+              return (
+                <Tooltip key={child.path} delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <NavLink
+                      to={child.path}
+                      className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200",
+                        active
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                      )}
+                    >
+                      <child.icon className={cn("h-4.5 w-4.5", active && "text-sidebar-primary")} />
+                    </NavLink>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={8}>
+                    {child.label}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            });
           }
 
           const isActive = isPathActive(item.path);
           return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
-                isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-              )}
-            >
-              <item.icon className={cn("h-4.5 w-4.5", isActive && "text-sidebar-primary")} />
-              {item.label}
-            </NavLink>
+            <Tooltip key={item.path} delayDuration={0}>
+              <TooltipTrigger asChild>
+                <NavLink
+                  to={item.path}
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-lg transition-all duration-200",
+                    isActive
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  )}
+                >
+                  <item.icon className={cn("h-4.5 w-4.5", isActive && "text-sidebar-primary")} />
+                </NavLink>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>
+                {item.label}
+              </TooltipContent>
+            </Tooltip>
           );
         })}
       </nav>
 
       {/* User info */}
-      <div className="border-t border-sidebar-border px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground">
-            {user.name.split(" ").map((n) => n[0]).join("")}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-sidebar-accent-foreground">{user.name}</p>
-            <p className="truncate text-xs text-sidebar-foreground/50 capitalize">{user.role}</p>
-          </div>
-        </div>
+      <div className="border-t border-sidebar-border py-4 w-full flex justify-center">
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground cursor-default">
+              {user.name.split(" ").map((n) => n[0]).join("")}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={8}>
+            <p className="font-medium">{user.name}</p>
+            <p className="text-xs capitalize text-muted-foreground">{user.role}</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </aside>
   );

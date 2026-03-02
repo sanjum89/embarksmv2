@@ -73,20 +73,7 @@ const tabs = ["Role & Skills", "Career Timeline", "Growth Path"] as const;
 const PROJECT_EXPLORE_PROMPT =
   "Give me more details on the project I am currently assigned to, including objectives, stakeholders, and latest updates.";
 
-const PROJECT_EXPLORE_RESPONSE = `Here is a quick summary for you
-
-## Overview
-
-You're working on **WFAI — an agentic workforce intelligence platform** that builds a dynamic People Graph across skills, performance, and training data. **The goal** is to enable real-time deployment and upskilling decisions using AI-driven workforce insights at scale.
-
-## Opportunity
-
-This is a chance to define a new category beyond LMS and static skills tools—by operationalising workforce intelligence across the enterprise sector.
-
-## Responsibilities
-
-- Own the product vision and end-to-end execution of the WFAI Onboarding use case.
-- Translate complex enterprise workforce challenges into scalable, AI-driven solutions.`;
+const PROJECT_EXPLORE_RESPONSE = `Here is a quick summary for you\n\n## Overview\n\nYou're working on **WFAI — an agentic workforce intelligence platform** that builds a dynamic People Graph across skills, performance, and training data. **The goal** is to enable real-time deployment and upskilling decisions using AI-driven workforce insights at scale.\n\n## Opportunity\n\nThis is a chance to define a new category beyond LMS and static skills tools—by operationalising workforce intelligence across the enterprise sector.\n\n## Responsibilities\n\n- Own the product vision and end-to-end execution of the WFAI Onboarding use case.\n- Translate complex enterprise workforce challenges into scalable, AI-driven solutions.`;
 
 export default function My360() {
   const { user } = useUser();
@@ -94,39 +81,36 @@ export default function My360() {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
-  const [snapshotView, setSnapshotView] = useState<"Role" | "Project">("Role");
 
   const { containerRef: coreRef, visibleCount: coreVisible } = useVisibleCount(profileData.coreSkills.length);
   const { containerRef: otherRef, visibleCount: otherVisible } = useVisibleCount(profileData.otherSkills.length);
 
   const coreExtra = profileData.coreSkills.length - coreVisible;
-  const otherExtra = profileData.otherSkills.length - otherVisible + 24; // +24 hidden skills
+  const otherExtra = profileData.otherSkills.length - otherVisible + 24;
 
   const handleExploreClick = () => {
-    if (snapshotView === "Project") {
-      chatRef.current?.sendMessage(PROJECT_EXPLORE_PROMPT, PROJECT_EXPLORE_RESPONSE, [
-        { label: "Explore Further" },
-        { label: "Your impact so far" },
-        { label: "Skills to build" },
-      ]);
-    }
+    chatRef.current?.sendMessage(PROJECT_EXPLORE_PROMPT, PROJECT_EXPLORE_RESPONSE, [
+      { label: "Explore Further" },
+      { label: "Your impact so far" },
+      { label: "Skills to build" },
+    ]);
   };
 
   return (
     <div>
       <AppHeader title="My 360" />
       <div className="flex">
-        <div className="flex-1 p-6 max-w-5xl mx-auto">
+        <div className="flex-1 p-4 lg:p-5 max-w-5xl mx-auto">
           {/* Page title */}
-          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-display text-2xl font-bold text-foreground">My 360</h3>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <h3 className="font-display text-xl font-bold text-foreground">My 360</h3>
+                <p className="mt-0.5 text-sm text-muted-foreground">
                   Your profile and how to progress
                 </p>
               </div>
-              <button className="rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+              <button className="rounded-lg border border-border bg-card px-4 py-1.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors">
                 Manage Profile
               </button>
             </div>
@@ -137,17 +121,17 @@ export default function My360() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="rounded-xl bg-card border border-border p-6 shadow-card mb-6"
+            className="rounded-xl bg-card border border-border p-5 shadow-card mb-4"
           >
-            <div className="flex items-start gap-5">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-secondary text-lg font-bold text-foreground">
+            <div className="flex items-start gap-4">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-secondary text-base font-bold text-foreground">
                 {user.name.split(" ").map((n) => n[0]).join("")}
               </div>
 
               <div className="flex-1 min-w-0">
-                <h4 className="font-display text-xl font-bold text-foreground">{user.name}</h4>
+                <h4 className="font-display text-lg font-bold text-foreground">{user.name}</h4>
                 <p className="text-sm text-muted-foreground">{profileData.title}</p>
-                <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+                <div className="flex items-center gap-4 mt-0.5 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5" />
                     {profileData.location}
@@ -159,7 +143,7 @@ export default function My360() {
                 </div>
                 <button
                   onClick={() => setShowMoreDetails(!showMoreDetails)}
-                  className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-foreground underline"
+                  className="mt-1.5 inline-flex items-center gap-1 text-sm font-medium text-foreground underline"
                 >
                   More Details
                   {showMoreDetails ? (
@@ -170,7 +154,7 @@ export default function My360() {
                 </button>
               </div>
 
-              <div className="shrink-0 flex flex-col items-center justify-center rounded-xl border border-border px-5 py-3">
+              <div className="shrink-0 flex flex-col items-center justify-center rounded-xl border border-border px-5 py-2.5">
                 <span className="font-display text-2xl font-bold text-foreground">
                   {profileData.yearsExperience}
                 </span>
@@ -188,7 +172,7 @@ export default function My360() {
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <div className="mt-4 rounded-lg bg-muted/50 border border-border p-4">
+                  <div className="mt-3 rounded-lg bg-muted/50 border border-border p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="rounded-full border border-border px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground">
                         Summarised by WFAI
@@ -203,12 +187,12 @@ export default function My360() {
             </AnimatePresence>
 
             {/* Core Skills */}
-            <div className="mt-5">
-              <div className="flex items-center gap-1.5 mb-2">
+            <div className="mt-4">
+              <div className="flex items-center gap-1.5 mb-1.5">
                 <span className="text-sm font-semibold text-foreground">Core Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div ref={coreRef} className="flex flex-nowrap gap-2 overflow-hidden" style={{ maxHeight: '2.5rem' }}>
+              <div ref={coreRef} className="flex flex-nowrap gap-2 overflow-hidden" style={{ maxHeight: '2.25rem' }}>
                 {profileData.coreSkills.slice(0, coreVisible).map((skill) => (
                   <span
                     key={skill}
@@ -226,26 +210,26 @@ export default function My360() {
             </div>
 
             {/* Other Skills */}
-            <div className="mt-4">
-              <div className="flex items-center gap-1.5 mb-2">
+            <div className="mt-3">
+              <div className="flex items-center gap-1.5 mb-1.5">
                 <span className="text-sm font-semibold text-foreground">Other Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div ref={otherRef} className="flex flex-nowrap gap-3 overflow-hidden" style={{ maxHeight: '3rem' }}>
+              <div ref={otherRef} className="flex flex-nowrap gap-3 overflow-hidden" style={{ maxHeight: '2.75rem' }}>
                 {profileData.otherSkills.slice(0, otherVisible).map((skill) => (
                   <span
                     key={skill.name}
-                    className="inline-flex items-center rounded-full border border-border pl-5 pr-1.5 py-2 text-sm font-medium text-foreground gap-3 whitespace-nowrap shrink-0"
+                    className="inline-flex items-center rounded-full border border-border pl-4 pr-1.5 py-1.5 text-sm font-medium text-foreground gap-2 whitespace-nowrap shrink-0"
                   >
                     <span>{skill.name}</span>
-                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
                       {skill.level}
                     </span>
-                    <span className="text-sm text-muted-foreground">{skill.year}</span>
+                    <span className="text-xs text-muted-foreground">{skill.year}</span>
                   </span>
                 ))}
                 {otherExtra > 0 && (
-                  <span data-overflow="true" className="inline-flex items-center rounded-full border border-border px-5 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
+                  <span data-overflow="true" className="inline-flex items-center rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
                     +{otherExtra} more
                   </span>
                 )}
@@ -258,7 +242,7 @@ export default function My360() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="mb-6"
+            className="mb-4"
           >
             <div className="flex gap-1 rounded-xl bg-secondary p-1 w-fit">
               {tabs.map((tab) => (
@@ -266,7 +250,7 @@ export default function My360() {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={cn(
-                    "rounded-lg px-4 py-2 text-sm font-medium transition-all",
+                    "rounded-lg px-4 py-1.5 text-sm font-medium transition-all",
                     activeTab === tab
                       ? "bg-card text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
@@ -279,36 +263,36 @@ export default function My360() {
           </motion.div>
 
           {/* Content grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Left column */}
-            <div className="space-y-6">
-              {/* Snapshot */}
+            <div className="space-y-4">
+              {/* Role Snapshot */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.12 }}
-                className="rounded-xl bg-card border border-border p-5 shadow-card"
+                className="rounded-xl bg-card border border-border p-4 shadow-card"
               >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <h4 className="font-display text-sm font-semibold text-foreground">Snapshot</h4>
-                    <div className="flex gap-1 rounded-lg bg-secondary p-0.5">
-                      {(["Role", "Project"] as const).map((v) => (
-                        <button
-                          key={v}
-                          onClick={() => setSnapshotView(v)}
-                          className={cn(
-                            "rounded-md px-3 py-1 text-xs font-medium transition-all",
-                            snapshotView === v
-                              ? "bg-card text-foreground shadow-sm"
-                              : "text-muted-foreground hover:text-foreground"
-                          )}
-                        >
-                          {v}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-display text-sm font-semibold text-foreground">Role Snapshot</h4>
+                  <button className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                    Explore <ExternalLink className="h-3 w-3" />
+                  </button>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Own the product vision and end-to-end execution of the WFAI Onboarding use case. Translate complex enterprise workforce challenges into scalable, AI-driven solutions.
+                </p>
+              </motion.div>
+
+              {/* Project Snapshot */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="rounded-xl bg-card border border-border p-4 shadow-card"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-display text-sm font-semibold text-foreground">Project Snapshot</h4>
                   <button
                     onClick={handleExploreClick}
                     className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
@@ -317,9 +301,7 @@ export default function My360() {
                   </button>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  {snapshotView === "Role"
-                    ? "Own the product vision and end-to-end execution of the WFAI Onboarding use case. Translate complex enterprise workforce challenges into scalable, AI-driven solutions."
-                    : "Currently assigned to the WFAI Onboarding project, focusing on building dynamic People Graph across skills, performance, and training data to enable real-time deployment decisions."}
+                  Currently assigned to the WFAI Onboarding project, focusing on building dynamic People Graph across skills, performance, and training data to enable real-time deployment decisions.
                 </p>
               </motion.div>
 
@@ -328,53 +310,53 @@ export default function My360() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.18 }}
-                className="rounded-xl bg-card border border-border p-5 shadow-card"
+                className="rounded-xl bg-card border border-border p-4 shadow-card"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-display text-base font-bold text-foreground">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-display text-sm font-semibold text-foreground">
                     Skills & Gap
                   </h4>
                   <div className="flex items-center gap-2">
-                    <select className="rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground">
+                    <select className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground">
                       <option>Project</option>
                     </select>
-                    <select className="rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground">
+                    <select className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground">
                       <option>Gap</option>
                     </select>
-                    <button className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                      Explore <ExternalLink className="h-3.5 w-3.5" />
+                    <button className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                      Explore <ExternalLink className="h-3 w-3" />
                     </button>
                   </div>
                 </div>
-                <div className="space-y-4 overflow-x-auto">
+                <div className="space-y-3 overflow-x-auto">
                   {skillGapRows.map((row, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm">
-                      <span className="inline-flex items-center rounded-full border border-border pl-5 pr-1.5 py-2 font-medium text-foreground gap-2 min-w-0">
+                    <div key={i} className="flex items-center gap-1.5 text-xs">
+                      <span className="inline-flex items-center rounded-full border border-border pl-3 pr-1 py-1 font-medium text-foreground gap-1.5 min-w-0">
                         <span className="truncate">{row.left.skill}</span>
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-bold text-muted-foreground shrink-0">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-muted-foreground shrink-0">
                           {row.left.level}
                         </span>
                       </span>
-                      <span className="text-muted-foreground text-sm shrink-0">{">>"}</span>
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-bold text-foreground shrink-0">
+                      <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
                         {row.left.target === "✓" ? "✓" : row.left.target}
                       </span>
 
                       <span className={cn(
-                        "inline-flex items-center rounded-full pl-5 pr-1.5 py-2 font-medium gap-2 min-w-0",
+                        "inline-flex items-center rounded-full pl-3 pr-1 py-1 font-medium gap-1.5 min-w-0",
                         row.right.hasSkill
                           ? "border border-border text-foreground"
                           : "border border-dashed border-muted-foreground/40 text-muted-foreground"
                       )}>
                         <span className="truncate">{row.right.skill}</span>
-                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-bold text-muted-foreground shrink-0">
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-muted-foreground shrink-0">
                           {row.right.level}
                         </span>
                       </span>
                       {row.right.target && (
                         <>
-                          <span className="text-muted-foreground text-sm shrink-0">{">>"}</span>
-                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-bold text-foreground shrink-0">
+                          <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
                             {row.right.target}
                           </span>
                         </>
@@ -386,21 +368,21 @@ export default function My360() {
             </div>
 
             {/* Right column — Radar chart */}
-            <div className="space-y-6">
+            <div className="space-y-4">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.12 }}
-                className="rounded-xl bg-card border border-border p-5 shadow-card"
+                className="rounded-xl bg-card border border-border p-4 shadow-card"
               >
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-3">
                   <div className="flex gap-1 rounded-lg bg-secondary p-0.5">
                     {(["Gap View", "Action Plan"] as const).map((v) => (
                       <button
                         key={v}
                         onClick={() => setGapView(v)}
                         className={cn(
-                          "rounded-md px-3 py-1.5 text-xs font-medium transition-all",
+                          "rounded-md px-3 py-1 text-xs font-medium transition-all",
                           gapView === v
                             ? "bg-card text-foreground shadow-sm"
                             : "text-muted-foreground hover:text-foreground"
@@ -419,7 +401,7 @@ export default function My360() {
                     </button>
                   </div>
                 </div>
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={320}>
                   <RadarChart data={radarSkills}>
                     <PolarGrid stroke="hsl(220, 16%, 88%)" />
                     <PolarAngleAxis

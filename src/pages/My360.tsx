@@ -9,6 +9,7 @@ import {
   RadarIcon,
   BarChart3,
 } from "lucide-react";
+import { useVisibleCount } from "@/hooks/useVisibleCount";
 import {
   RadarChart,
   PolarGrid,
@@ -95,9 +96,11 @@ export default function My360() {
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
   const [snapshotView, setSnapshotView] = useState<"Role" | "Project">("Role");
 
-  const visibleCoreSkills = profileData.coreSkills.slice(0, 4);
-  const extraCoreCount = profileData.coreSkills.length - 4;
-  const extraOtherCount = 24;
+  const { containerRef: coreRef, visibleCount: coreVisible } = useVisibleCount(profileData.coreSkills.length);
+  const { containerRef: otherRef, visibleCount: otherVisible } = useVisibleCount(profileData.otherSkills.length);
+
+  const coreExtra = profileData.coreSkills.length - coreVisible;
+  const otherExtra = profileData.otherSkills.length - otherVisible + 24; // +24 hidden skills
 
   const handleExploreClick = () => {
     if (snapshotView === "Project") {
@@ -205,18 +208,18 @@ export default function My360() {
                 <span className="text-sm font-semibold text-foreground">Core Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div className="flex flex-wrap gap-2">
-                {visibleCoreSkills.map((skill) => (
+              <div ref={coreRef} className="flex flex-nowrap gap-2 overflow-hidden" style={{ maxHeight: '2.5rem' }}>
+                {profileData.coreSkills.slice(0, coreVisible).map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
+                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground whitespace-nowrap shrink-0"
                   >
                     {skill}
                   </span>
                 ))}
-                {extraCoreCount > 0 && (
-                  <span className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground">
-                    +{extraCoreCount} more
+                {coreExtra > 0 && (
+                  <span data-overflow="true" className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap shrink-0">
+                    +{coreExtra} more
                   </span>
                 )}
               </div>
@@ -228,22 +231,24 @@ export default function My360() {
                 <span className="text-sm font-semibold text-foreground">Other Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div className="flex flex-wrap gap-3">
-                {profileData.otherSkills.map((skill) => (
+              <div ref={otherRef} className="flex flex-nowrap gap-3 overflow-hidden" style={{ maxHeight: '3rem' }}>
+                {profileData.otherSkills.slice(0, otherVisible).map((skill) => (
                   <span
                     key={skill.name}
-                    className="inline-flex items-center rounded-full border border-border pl-5 pr-1.5 py-2 text-sm font-medium text-foreground gap-3"
+                    className="inline-flex items-center rounded-full border border-border pl-5 pr-1.5 py-2 text-sm font-medium text-foreground gap-3 whitespace-nowrap shrink-0"
                   >
-                    <span className="flex-1">{skill.name}</span>
+                    <span>{skill.name}</span>
                     <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
                       {skill.level}
                     </span>
                     <span className="text-sm text-muted-foreground">{skill.year}</span>
                   </span>
                 ))}
-                <span className="inline-flex items-center rounded-full border border-border px-5 py-2 text-sm font-medium text-muted-foreground">
-                  +{extraOtherCount} more
-                </span>
+                {otherExtra > 0 && (
+                  <span data-overflow="true" className="inline-flex items-center rounded-full border border-border px-5 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
+                    +{otherExtra} more
+                  </span>
+                )}
               </div>
             </div>
           </motion.div>
@@ -326,50 +331,50 @@ export default function My360() {
                 className="rounded-xl bg-card border border-border p-5 shadow-card"
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h4 className="font-display text-sm font-semibold text-foreground">
+                  <h4 className="font-display text-base font-bold text-foreground">
                     Skills & Gap
                   </h4>
                   <div className="flex items-center gap-2">
-                    <select className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground">
+                    <select className="rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground">
                       <option>Project</option>
                     </select>
-                    <select className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground">
+                    <select className="rounded-md border border-border bg-card px-3 py-1.5 text-sm text-foreground">
                       <option>Gap</option>
                     </select>
-                    <button className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
-                      Explore <ExternalLink className="h-3 w-3" />
+                    <button className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+                      Explore <ExternalLink className="h-3.5 w-3.5" />
                     </button>
                   </div>
                 </div>
-                <div className="space-y-3 overflow-x-auto">
+                <div className="space-y-4 overflow-x-auto">
                   {skillGapRows.map((row, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm">
-                      <span className="inline-flex items-center rounded-full border border-border pl-4 pr-1.5 py-1.5 font-medium text-foreground gap-2 min-w-0">
+                      <span className="inline-flex items-center rounded-full border border-border pl-5 pr-1.5 py-2 font-medium text-foreground gap-2 min-w-0">
                         <span className="truncate">{row.left.skill}</span>
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground shrink-0">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-bold text-muted-foreground shrink-0">
                           {row.left.level}
                         </span>
                       </span>
-                      <span className="text-muted-foreground text-xs shrink-0">{">>"}</span>
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground shrink-0">
+                      <span className="text-muted-foreground text-sm shrink-0">{">>"}</span>
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-bold text-foreground shrink-0">
                         {row.left.target === "✓" ? "✓" : row.left.target}
                       </span>
 
                       <span className={cn(
-                        "inline-flex items-center rounded-full pl-4 pr-1.5 py-1.5 font-medium gap-2 min-w-0",
+                        "inline-flex items-center rounded-full pl-5 pr-1.5 py-2 font-medium gap-2 min-w-0",
                         row.right.hasSkill
                           ? "border border-border text-foreground"
                           : "border border-dashed border-muted-foreground/40 text-muted-foreground"
                       )}>
                         <span className="truncate">{row.right.skill}</span>
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground shrink-0">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-bold text-muted-foreground shrink-0">
                           {row.right.level}
                         </span>
                       </span>
                       {row.right.target && (
                         <>
-                          <span className="text-muted-foreground text-xs shrink-0">{">>"}</span>
-                          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-secondary text-xs font-bold text-foreground shrink-0">
+                          <span className="text-muted-foreground text-sm shrink-0">{">>"}</span>
+                          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-secondary text-sm font-bold text-foreground shrink-0">
                             {row.right.target}
                           </span>
                         </>

@@ -1,25 +1,31 @@
 
 
-## Plan: Single-Line Skills & Resize Gap Pills
+## Plan: Remove Duplicate Page Headers
 
-### 1. Core Skills — single line with dynamic overflow
-- Use `flex-nowrap overflow-hidden` on the container with a fixed height (single row)
-- Use a `useRef` + `useEffect` + `ResizeObserver` to measure which pills fit in one line
-- Dynamically compute `visibleCount` and show `+N more` for the rest
-- Same approach for Other Skills row
+### Problem
+Every page has an `<AppHeader>` component rendering a sticky top bar with the page title. The sidebar already provides navigation context, creating a redundant double header.
 
-### 2. Other Skills — single line with dynamic overflow
-- Same overflow logic: measure container, show only pills that fit, dynamic `+N more`
+### Changes
 
-### 3. Skills & Gap pill sizing to match screenshot
-From the reference image, the pills are noticeably larger:
-- **Title**: `text-base font-bold` (currently `text-sm font-semibold`)
-- **Filter selects/buttons**: slightly larger padding, `text-sm` (currently `text-xs`)
-- **Skill pills**: `py-2 pl-5 pr-1.5 text-sm` with larger level badges `h-8 w-8 text-sm` (currently `h-7 w-7 text-xs`)
-- **Target badges**: `h-8 w-8 text-sm font-bold`
-- **">>" separator**: `text-sm` (currently `text-xs`)
-- **Row spacing**: `space-y-4` (currently `space-y-3`)
+**1. Remove `<AppHeader>` usage from all 10 pages:**
+- `src/pages/My360.tsx` — remove AppHeader import + usage, adjust top padding
+- `src/pages/Dashboard.tsx` — same
+- `src/pages/SkillTargetDetail.tsx` — same
+- `src/pages/AssessmentPage.tsx` — same
+- `src/pages/RolePlaySession.tsx` — same
+- `src/pages/LearningModulePage.tsx` — same
+- `src/pages/RolePlayBank.tsx` — same
+- `src/pages/PeopleGraph.tsx` — same
+- `src/pages/ManagerView.tsx` — same
+- `src/pages/AdminView.tsx` — same
 
-### Files to edit
-- `src/pages/My360.tsx` — all changes in this single file
+**2. Adjust layout calculations:**
+- Pages using `h-[calc(100vh-4rem)]` (accounting for 64px header) will change to `h-screen` or `100vh`
+- Pages with sticky chat panels referencing `top-16` will adjust to `top-0`
+
+**3. Optionally delete `src/components/layout/AppHeader.tsx`** since it will no longer be used.
+
+### Technical detail
+- Each page wraps content in `<div>` starting with `<AppHeader title="..." />` — simply remove that line
+- The `AIChatPanel` sticky container in Dashboard/My360/SkillTargetDetail uses `h-[calc(100vh-64px)] sticky top-16` — change to `h-screen sticky top-0`
 

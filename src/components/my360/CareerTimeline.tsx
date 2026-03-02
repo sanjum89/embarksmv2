@@ -42,8 +42,7 @@ export function CareerTimeline() {
   const palette = (entry: CareerEntry) => {
     if (entry.validated) return GREEN;
     if (entry.month === "Mar") return ORANGE;
-    if (entry.month === "Feb") return YELLOW;
-    return ORANGE; // Jan 2026 fallback
+    return YELLOW; // Jan & Feb 2026
   };
 
   return (

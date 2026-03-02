@@ -227,7 +227,7 @@ export default function My360() {
                 <span className="text-sm font-semibold text-foreground">Other Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div ref={otherRef} className="flex flex-nowrap gap-2 overflow-hidden" style={{ maxHeight: '2.5rem' }}>
+              <div ref={otherRef} className="relative flex flex-nowrap gap-2" style={{ overflow: 'visible' }}>
                 {profileData.otherSkills.slice(0, otherVisible).map((skill) => {
                   const levelMap: Record<string, string> = { B: "Basic", I: "Intermediate", A: "Advanced", E: "Expert", M: "Master" };
                   const yearFull = skill.year.replace("'", "20");

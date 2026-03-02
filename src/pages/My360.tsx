@@ -20,6 +20,7 @@ import {
 } from "recharts";
 
 import { AIChatPanel, AIChatPanelHandle } from "@/components/chat/AIChatPanel";
+import { CareerTimeline } from "@/components/my360/CareerTimeline";
 import { useUser } from "@/contexts/UserContext";
 import { cn } from "@/lib/utils";
 
@@ -87,10 +88,8 @@ export default function My360() {
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
 
-  const { containerRef: coreRef, visibleCount: coreVisible } = useVisibleCount(profileData.coreSkills.length);
   const { containerRef: otherRef, visibleCount: otherVisible } = useVisibleCount(profileData.otherSkills.length);
 
-  const coreExtra = profileData.coreSkills.length - coreVisible;
   const otherExtra = profileData.otherSkills.length - otherVisible + 24;
 
   const handleRoleExploreClick = () => {
@@ -205,8 +204,8 @@ export default function My360() {
                 <span className="text-sm font-semibold text-foreground">Core Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div ref={coreRef} className="flex flex-nowrap gap-2 overflow-hidden" style={{ maxHeight: '2.5rem' }}>
-                {profileData.coreSkills.slice(0, coreVisible).map((skill) => (
+              <div className="flex flex-nowrap gap-2">
+                {profileData.coreSkills.slice(0, 4).map((skill) => (
                   <span
                     key={skill}
                     className="rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground whitespace-nowrap shrink-0"
@@ -214,9 +213,9 @@ export default function My360() {
                     {skill}
                   </span>
                 ))}
-                {coreExtra > 0 && (
-                  <span data-overflow="true" className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
-                    +{coreExtra} more
+                {profileData.coreSkills.length > 4 && (
+                  <span className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
+                    +{profileData.coreSkills.length - 4} more
                   </span>
                 )}
               </div>
@@ -277,195 +276,205 @@ export default function My360() {
             </div>
           </motion.div>
 
-          {/* Content grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Left column */}
-            <div className="space-y-4">
-              {/* Role Snapshot */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.12 }}
-                className="rounded-xl bg-card border border-border p-4 shadow-card"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-display text-sm font-semibold text-foreground">Role Snapshot</h4>
-                  <button
-                    onClick={handleRoleExploreClick}
-                    className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Explore <ExternalLink className="h-3 w-3" />
-                  </button>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Own the product vision and end-to-end execution of the WFAI Onboarding use case. Translate complex enterprise workforce challenges into scalable, AI-driven solutions.
-                </p>
-              </motion.div>
-
-              {/* Project Snapshot */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15 }}
-                className="rounded-xl bg-card border border-border p-4 shadow-card"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-display text-sm font-semibold text-foreground">Project Snapshot</h4>
-                  <button
-                    onClick={handleProjectExploreClick}
-                    className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Explore <ExternalLink className="h-3 w-3" />
-                  </button>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  Currently assigned to the WFAI Onboarding project, focusing on building dynamic People Graph across skills, performance, and training data to enable real-time deployment decisions.
-                </p>
-              </motion.div>
-
-              {/* Skills & Gap */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.18 }}
-                className="rounded-xl bg-card border border-border p-4 shadow-card"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-display text-sm font-semibold text-foreground">
-                    Skills & Gap
-                  </h4>
-                  <div className="flex items-center gap-2">
-                    <select className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground">
-                      <option>Project</option>
-                    </select>
-                    <select className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground">
-                      <option>Gap</option>
-                    </select>
-                    <button className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+          {/* Tab Content */}
+          {activeTab === "Role & Skills" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Left column */}
+              <div className="space-y-4">
+                {/* Role Snapshot */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.12 }}
+                  className="rounded-xl bg-card border border-border p-4 shadow-card"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-display text-sm font-semibold text-foreground">Role Snapshot</h4>
+                    <button
+                      onClick={handleRoleExploreClick}
+                      className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                    >
                       Explore <ExternalLink className="h-3 w-3" />
                     </button>
                   </div>
-                </div>
-                <div className="space-y-3 overflow-x-auto">
-                  {skillGapRows.map((row, i) => (
-                    <div key={i} className="flex items-center gap-1.5 text-xs">
-                      <span className="inline-flex items-center rounded-full border border-border pl-3 pr-1 py-1 font-medium text-foreground gap-1.5 min-w-0">
-                        <span className="truncate">{row.left.skill}</span>
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-muted-foreground shrink-0">
-                          {row.left.level}
-                        </span>
-                      </span>
-                      <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
-                        {row.left.target === "✓" ? "✓" : row.left.target}
-                      </span>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Own the product vision and end-to-end execution of the WFAI Onboarding use case. Translate complex enterprise workforce challenges into scalable, AI-driven solutions.
+                  </p>
+                </motion.div>
 
-                      <span className={cn(
-                        "inline-flex items-center rounded-full pl-3 pr-1 py-1 font-medium gap-1.5 min-w-0",
-                        row.right.hasSkill
-                          ? "border border-border text-foreground"
-                          : "border border-dashed border-muted-foreground/40 text-muted-foreground"
-                      )}>
-                        <span className="truncate">{row.right.skill}</span>
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-muted-foreground shrink-0">
-                          {row.right.level}
-                        </span>
-                      </span>
-                      {row.right.target && (
-                        <>
-                          <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
-                            {row.right.target}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            </div>
+                {/* Project Snapshot */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  className="rounded-xl bg-card border border-border p-4 shadow-card"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-display text-sm font-semibold text-foreground">Project Snapshot</h4>
+                    <button
+                      onClick={handleProjectExploreClick}
+                      className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Explore <ExternalLink className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Currently assigned to the WFAI Onboarding project, focusing on building dynamic People Graph across skills, performance, and training data to enable real-time deployment decisions.
+                  </p>
+                </motion.div>
 
-            {/* Right column — Radar chart */}
-            <div className="space-y-4">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.12 }}
-                className="rounded-xl bg-card border border-border p-4 shadow-card"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex gap-1 rounded-lg bg-secondary p-0.5">
-                    {(["Gap View", "Action Plan"] as const).map((v) => (
-                      <button
-                        key={v}
-                        onClick={() => setGapView(v)}
-                        className={cn(
-                          "rounded-md px-3 py-1 text-xs font-medium transition-all",
-                          gapView === v
-                            ? "bg-card text-foreground shadow-sm"
-                            : "text-muted-foreground hover:text-foreground"
-                        )}
-                      >
-                        {v}
+                {/* Skills & Gap */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.18 }}
+                  className="rounded-xl bg-card border border-border p-4 shadow-card"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-display text-sm font-semibold text-foreground">
+                      Skills & Gap
+                    </h4>
+                    <div className="flex items-center gap-2">
+                      <select className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground">
+                        <option>Project</option>
+                      </select>
+                      <select className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground">
+                        <option>Gap</option>
+                      </select>
+                      <button className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                        Explore <ExternalLink className="h-3 w-3" />
                       </button>
+                    </div>
+                  </div>
+                  <div className="space-y-3 overflow-x-auto">
+                    {skillGapRows.map((row, i) => (
+                      <div key={i} className="flex items-center gap-1.5 text-xs">
+                        <span className="inline-flex items-center rounded-full border border-border pl-3 pr-1 py-1 font-medium text-foreground gap-1.5 min-w-0">
+                          <span className="truncate">{row.left.skill}</span>
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-muted-foreground shrink-0">
+                            {row.left.level}
+                          </span>
+                        </span>
+                        <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
+                          {row.left.target === "✓" ? "✓" : row.left.target}
+                        </span>
+
+                        <span className={cn(
+                          "inline-flex items-center rounded-full pl-3 pr-1 py-1 font-medium gap-1.5 min-w-0",
+                          row.right.hasSkill
+                            ? "border border-border text-foreground"
+                            : "border border-dashed border-muted-foreground/40 text-muted-foreground"
+                        )}>
+                          <span className="truncate">{row.right.skill}</span>
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-muted-foreground shrink-0">
+                            {row.right.level}
+                          </span>
+                        </span>
+                        {row.right.target && (
+                          <>
+                            <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
+                              {row.right.target}
+                            </span>
+                          </>
+                        )}
+                      </div>
                     ))}
                   </div>
-                  <div className="flex gap-1">
-                    <button className="rounded-lg border border-border p-1.5 text-foreground bg-card shadow-sm">
-                      <RadarIcon className="h-4 w-4" />
-                    </button>
-                    <button className="rounded-lg border border-border p-1.5 text-muted-foreground hover:text-foreground transition-colors">
-                      <BarChart3 className="h-4 w-4" />
-                    </button>
+                </motion.div>
+              </div>
+
+              {/* Right column — Radar chart */}
+              <div className="space-y-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.12 }}
+                  className="rounded-xl bg-card border border-border p-4 shadow-card"
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex gap-1 rounded-lg bg-secondary p-0.5">
+                      {(["Gap View", "Action Plan"] as const).map((v) => (
+                        <button
+                          key={v}
+                          onClick={() => setGapView(v)}
+                          className={cn(
+                            "rounded-md px-3 py-1 text-xs font-medium transition-all",
+                            gapView === v
+                              ? "bg-card text-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="flex gap-1">
+                      <button className="rounded-lg border border-border p-1.5 text-foreground bg-card shadow-sm">
+                        <RadarIcon className="h-4 w-4" />
+                      </button>
+                      <button className="rounded-lg border border-border p-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                        <BarChart3 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <ResponsiveContainer width="100%" height={320}>
-                  <RadarChart data={radarSkills}>
-                    <PolarGrid stroke="hsl(220, 16%, 88%)" />
-                    <PolarAngleAxis
-                      dataKey="skill"
-                      tick={{ fontSize: 10, fill: "hsl(220, 10%, 46%)" }}
-                    />
-                    <PolarRadiusAxis
-                      angle={90}
-                      domain={[0, 100]}
-                      tickCount={6}
-                      tick={({ x, y, payload }) => {
-                        const label = proficiencyLabels[Math.round(payload.value / 20)] || "";
-                        if (!label) return <text />;
-                        return (
-                          <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={9} fill="hsl(220, 10%, 46%)">
-                            {label}
-                          </text>
-                        );
-                      }}
-                      axisLine={false}
-                    />
-                    <Radar
-                      name="Target"
-                      dataKey="target"
-                      stroke="hsl(220, 16%, 55%)"
-                      fill="hsl(220, 16%, 65%)"
-                      fillOpacity={0.4}
-                      strokeWidth={1.5}
-                    />
-                    <Radar
-                      name="Current"
-                      dataKey="score"
-                      stroke="hsl(220, 16%, 70%)"
-                      fill="hsl(220, 16%, 80%)"
-                      fillOpacity={0.3}
-                      strokeWidth={1.5}
-                    />
-                  </RadarChart>
-                </ResponsiveContainer>
-              </motion.div>
+                  <ResponsiveContainer width="100%" height={320}>
+                    <RadarChart data={radarSkills}>
+                      <PolarGrid stroke="hsl(220, 16%, 88%)" />
+                      <PolarAngleAxis
+                        dataKey="skill"
+                        tick={{ fontSize: 10, fill: "hsl(220, 10%, 46%)" }}
+                      />
+                      <PolarRadiusAxis
+                        angle={90}
+                        domain={[0, 100]}
+                        tickCount={6}
+                        tick={({ x, y, payload }) => {
+                          const label = proficiencyLabels[Math.round(payload.value / 20)] || "";
+                          if (!label) return <text />;
+                          return (
+                            <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={9} fill="hsl(220, 10%, 46%)">
+                              {label}
+                            </text>
+                          );
+                        }}
+                        axisLine={false}
+                      />
+                      <Radar
+                        name="Target"
+                        dataKey="target"
+                        stroke="hsl(220, 16%, 55%)"
+                        fill="hsl(220, 16%, 65%)"
+                        fillOpacity={0.4}
+                        strokeWidth={1.5}
+                      />
+                      <Radar
+                        name="Current"
+                        dataKey="score"
+                        stroke="hsl(220, 16%, 70%)"
+                        fill="hsl(220, 16%, 80%)"
+                        fillOpacity={0.3}
+                        strokeWidth={1.5}
+                      />
+                    </RadarChart>
+                  </ResponsiveContainer>
+                </motion.div>
+              </div>
             </div>
-          </div>
+          )}
+
+          {activeTab === "Career Timeline" && <CareerTimeline />}
+
+          {activeTab === "Growth Path" && (
+            <div className="rounded-xl bg-card border border-border p-8 shadow-card text-center">
+              <p className="text-sm text-muted-foreground">Growth Path content coming soon.</p>
+            </div>
+          )}
         </div>
 
         {/* AI Chat Panel */}
-        <div className="w-[320px] shrink-0 border-l border-border h-[calc(100vh-64px)] sticky top-16">
+        <div className="w-[320px] shrink-0 border-l border-border h-screen sticky top-0">
           <AIChatPanel ref={chatRef} contextLabel="My 360 → Profile" />
         </div>
       </div>

@@ -6,56 +6,81 @@ import { cn } from "@/lib/utils";
 const careerEntries = [
   {
     year: 2026,
-    label: "Jan-Mar",
+    month: "Mar",
     current: true,
+    color: "orange" as const,
+    company: null,
+    role: null,
+    details: null,
+  },
+  {
+    year: 2026,
+    month: "Feb",
+    current: false,
+    color: "yellow" as const,
+    company: null,
+    role: null,
+    details: null,
+  },
+  {
+    year: 2026,
+    month: "Jan",
+    current: false,
+    color: "green" as const,
     company: null,
     role: null,
     details: null,
   },
   {
     year: 2025,
-    label: null,
+    month: null,
     current: false,
+    color: "green" as const,
     company: "Beta Corp",
     role: "Senior Manager",
     details: "Remote · Full-Time · 2025",
   },
   {
     year: 2025,
-    label: null,
+    month: null,
     current: false,
+    color: "green" as const,
     company: "Alpha Solutions",
     role: "Project Lead",
     details: "San Francisco, CA · 2023–2024",
   },
   {
     year: 2024,
-    label: null,
+    month: null,
     current: false,
+    color: "green" as const,
     company: null,
     role: null,
     details: null,
   },
   {
     year: 2022,
-    label: null,
+    month: null,
     current: false,
+    color: "green" as const,
     company: "Gamma Tech",
     role: "Business Analyst",
     details: "New York, NY · 2018–2021",
   },
   {
     year: 2021,
-    label: null,
+    month: null,
     current: false,
+    color: "green" as const,
     company: null,
     role: null,
     details: null,
   },
   {
     year: 2011,
-    label: null,
+    month: null,
     current: false,
+    color: "green" as const,
     company: "First Company Inc.",
     role: "Junior Developer",
     details: "Chicago, IL · 2011–2014",
@@ -63,9 +88,30 @@ const careerEntries = [
 ];
 
 const reflections = [
-  { date: "Apr 08, 2024", project: "Project X", status: "Approved" as const },
-  { date: "Mar 15, 2024", project: "AI Task Force", status: "Pending" as const },
+  { date: "Jan 22, 2026", project: "WFAI Platform", status: "Pending" as const },
+  { date: "Dec 15, 2025", project: "Project X", status: "Approved" as const },
 ];
+
+const segmentColors = {
+  green: {
+    bg: 'hsl(142 70% 50%)',
+    core: 'hsl(142 80% 80%)',
+    shadow: '0 0 8px 2px hsl(142 70% 50% / 0.5), 0 0 20px 4px hsl(142 70% 50% / 0.25)',
+    dot: 'bg-[hsl(142,70%,50%)] shadow-[0_0_8px_2px_hsl(142_70%_50%_/_0.5)]',
+  },
+  yellow: {
+    bg: 'hsl(50 95% 55%)',
+    core: 'hsl(50 100% 85%)',
+    shadow: '0 0 8px 2px hsl(50 95% 55% / 0.5), 0 0 20px 4px hsl(50 95% 55% / 0.25)',
+    dot: 'bg-[hsl(50,95%,55%)] shadow-[0_0_8px_2px_hsl(50_95%_55%_/_0.5)]',
+  },
+  orange: {
+    bg: 'hsl(25 95% 53%)',
+    core: 'hsl(25 100% 80%)',
+    shadow: '0 0 8px 2px hsl(25 95% 53% / 0.5), 0 0 20px 4px hsl(25 95% 53% / 0.25)',
+    dot: 'bg-[hsl(25,95%,53%)] shadow-[0_0_8px_2px_hsl(25_95%_53%_/_0.5)]',
+  },
+};
 
 export function CareerTimeline() {
   const [roleFilter, setRoleFilter] = useState("all");
@@ -102,54 +148,79 @@ export function CareerTimeline() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6">
         {/* Left: Timeline */}
         <div className="relative pl-16">
-          {/* Lightsaber glow line */}
-          <div className="absolute left-[3.25rem] top-0 bottom-0 w-1.5 rounded-full animate-[lightsaber-breathe_3s_ease-in-out_infinite]"
-            style={{
-              background: 'linear-gradient(to bottom, hsl(38 92% 50%), hsl(142 70% 50%) 40%, hsl(142 70% 45%) 100%)',
-              boxShadow: '0 0 8px 2px hsl(142 70% 50% / 0.5), 0 0 20px 4px hsl(142 70% 50% / 0.25), 0 0 40px 8px hsl(142 70% 50% / 0.1)',
-            }}
-          />
-          {/* Inner bright core */}
-          <div className="absolute left-[3.35rem] top-0 bottom-0 w-0.5 rounded-full animate-[lightsaber-breathe_3s_ease-in-out_infinite]"
-            style={{
-              background: 'linear-gradient(to bottom, hsl(38 100% 80%), hsl(142 80% 80%) 40%, hsl(142 80% 75%) 100%)',
-              animationDelay: '0.5s',
-            }}
-          />
+          {/* Segmented lightsaber lines — one per entry */}
+          {careerEntries.map((entry, i) => {
+            const colors = segmentColors[entry.color];
+            const segH = `calc(${100 / careerEntries.length}% )`;
+            const segTop = `calc(${(i / careerEntries.length) * 100}%)`;
+            return (
+              <div key={`seg-${i}`}>
+                {/* Outer glow */}
+                <div
+                  className="absolute left-[3.25rem] w-1.5 animate-[lightsaber-breathe_3s_ease-in-out_infinite]"
+                  style={{
+                    top: segTop,
+                    height: segH,
+                    background: colors.bg,
+                    boxShadow: colors.shadow,
+                  }}
+                />
+                {/* Inner core */}
+                <div
+                  className="absolute left-[3.35rem] w-0.5 animate-[lightsaber-breathe_3s_ease-in-out_infinite]"
+                  style={{
+                    top: segTop,
+                    height: segH,
+                    background: colors.core,
+                    animationDelay: '0.5s',
+                  }}
+                />
+              </div>
+            );
+          })}
 
           <div className="space-y-6">
-            {careerEntries.map((entry, i) => (
-              <div key={i} className="relative flex items-start gap-4">
-                {/* Year label */}
-                <span className="absolute -left-16 top-0.5 text-sm font-medium text-muted-foreground w-12 text-right">
-                  {entry.year}
-                </span>
-
-                {/* Dot */}
-                <div className={cn(
-                  "absolute -left-1 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-card z-10",
-                  entry.current
-                    ? "bg-accent shadow-[0_0_8px_2px_hsl(38_92%_50%_/_0.6)]"
-                    : "bg-card border-border ring-2 ring-border shadow-[0_0_6px_1px_hsl(142_70%_50%_/_0.3)]"
-                )} />
-
-                {/* Content */}
-                <div className="ml-4 min-h-[2rem]">
-                  {entry.current && entry.label && (
-                    <span className="inline-flex items-center rounded-md bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-                      {entry.year} {entry.label}
+            {careerEntries.map((entry, i) => {
+              const colors = segmentColors[entry.color];
+              return (
+                <div key={i} className="relative flex items-start gap-4">
+                  {/* Year/month label */}
+                  <span className="absolute -left-16 top-0.5 text-sm font-medium text-muted-foreground w-12 text-right">
+                    {entry.month ? entry.month : entry.year}
+                  </span>
+                  {entry.month && (
+                    <span className="absolute -left-16 top-5 text-[10px] text-muted-foreground/60 w-12 text-right">
+                      {entry.year}
                     </span>
                   )}
-                  {entry.company && (
-                    <div className="rounded-lg border border-border bg-card p-3 shadow-sm">
-                      <p className="font-display text-sm font-bold text-foreground">{entry.company}</p>
-                      <p className="text-sm text-foreground">{entry.role}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{entry.details}</p>
-                    </div>
-                  )}
+
+                  {/* Dot */}
+                  <div className={cn(
+                    "absolute -left-1 top-1.5 h-3.5 w-3.5 rounded-full border-2 border-card z-10",
+                    colors.dot
+                  )} />
+
+                  {/* Content */}
+                  <div className="ml-4 min-h-[2rem]">
+                    {entry.current && (
+                      <span
+                        className="inline-flex items-center rounded-md px-3 py-1 text-xs font-semibold text-accent-foreground"
+                        style={{ background: colors.bg }}
+                      >
+                        {entry.year} {entry.month}
+                      </span>
+                    )}
+                    {entry.company && (
+                      <div className="rounded-lg border border-border bg-card p-3 shadow-sm">
+                        <p className="font-display text-sm font-bold text-foreground">{entry.company}</p>
+                        <p className="text-sm text-foreground">{entry.role}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{entry.details}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -157,7 +228,7 @@ export function CareerTimeline() {
         <div className="space-y-4">
           {/* Current period */}
           <div className="rounded-xl border border-border p-4">
-            <p className="font-display text-base font-semibold text-foreground">Jan–Mar 2026</p>
+            <p className="font-display text-base font-semibold text-foreground">Feb–Mar 2026</p>
             <p className="text-sm text-muted-foreground mt-1">No data captured</p>
             <button className="mt-3 w-full rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90 transition-opacity">
               Add reflection

@@ -20,6 +20,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { AppHeader } from "@/components/layout/AppHeader";
+import { AIChatPanel } from "@/components/chat/AIChatPanel";
 import { useUser } from "@/contexts/UserContext";
 import { cn } from "@/lib/utils";
 
@@ -82,7 +83,8 @@ export default function My360() {
   return (
     <div>
       <AppHeader title="My 360" />
-      <div className="p-6 max-w-6xl mx-auto">
+      <div className="flex">
+        <div className="flex-1 p-6 max-w-5xl mx-auto">
         {/* Page title */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center justify-between">
@@ -366,7 +368,7 @@ export default function My360() {
                   </button>
                 </div>
               </div>
-              <ResponsiveContainer width="100%" height={340}>
+              <ResponsiveContainer width="100%" height={300}>
                 <RadarChart data={radarSkills}>
                   <PolarGrid stroke="hsl(220, 16%, 88%)" />
                   <PolarAngleAxis
@@ -408,6 +410,12 @@ export default function My360() {
               </ResponsiveContainer>
             </motion.div>
           </div>
+        </div>
+        </div>
+
+        {/* AI Chat Panel */}
+        <div className="w-[360px] shrink-0 border-l border-border h-[calc(100vh-64px)] sticky top-16">
+          <AIChatPanel contextLabel="My 360 → Profile" />
         </div>
       </div>
     </div>

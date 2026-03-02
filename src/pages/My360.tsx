@@ -70,6 +70,11 @@ const skillGapRows = [
 
 const tabs = ["Role & Skills", "Career Timeline", "Growth Path"] as const;
 
+const ROLE_EXPLORE_PROMPT =
+  "Tell me more about my current role, responsibilities, and what's expected of me.";
+
+const ROLE_EXPLORE_RESPONSE = `Here's an overview of your role\n\n## Senior Director, Product Management\n\nAs **Senior Director of Product Management**, you are responsible for driving product strategy and execution across the WFAI platform.\n\n## Key Responsibilities\n\n- **Vision & Strategy:** Define and communicate the product vision aligned with enterprise workforce intelligence goals.\n- **Cross-functional Leadership:** Partner with Engineering, Design, Data Science, and Sales to deliver scalable AI-driven solutions.\n- **Stakeholder Management:** Engage with C-level sponsors, enterprise clients (Flipkart, Tata, ICICI), and internal leadership.\n- **Team Development:** Mentor and grow a team of product managers, fostering a culture of experimentation and data-driven decisions.\n\n## Success Metrics\n\n- Product adoption and NPS across enterprise accounts\n- Time-to-value for new client onboarding\n- Revenue impact from product-led growth initiatives`;
+
 const PROJECT_EXPLORE_PROMPT =
   "Give me more details on the project I am currently assigned to, including objectives, stakeholders, and latest updates.";
 
@@ -88,7 +93,15 @@ export default function My360() {
   const coreExtra = profileData.coreSkills.length - coreVisible;
   const otherExtra = profileData.otherSkills.length - otherVisible + 24;
 
-  const handleExploreClick = () => {
+  const handleRoleExploreClick = () => {
+    chatRef.current?.sendMessage(ROLE_EXPLORE_PROMPT, ROLE_EXPLORE_RESPONSE, [
+      { label: "Growth opportunities" },
+      { label: "Key stakeholders" },
+      { label: "Expected outcomes" },
+    ]);
+  };
+
+  const handleProjectExploreClick = () => {
     chatRef.current?.sendMessage(PROJECT_EXPLORE_PROMPT, PROJECT_EXPLORE_RESPONSE, [
       { label: "Explore Further" },
       { label: "Your impact so far" },
@@ -192,17 +205,17 @@ export default function My360() {
                 <span className="text-sm font-semibold text-foreground">Core Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div ref={coreRef} className="flex flex-nowrap gap-2 overflow-hidden" style={{ maxHeight: '2.25rem' }}>
+              <div ref={coreRef} className="flex flex-nowrap gap-2 overflow-hidden" style={{ maxHeight: '2.5rem' }}>
                 {profileData.coreSkills.slice(0, coreVisible).map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground whitespace-nowrap shrink-0"
+                    className="rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground whitespace-nowrap shrink-0"
                   >
                     {skill}
                   </span>
                 ))}
                 {coreExtra > 0 && (
-                  <span data-overflow="true" className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-muted-foreground whitespace-nowrap shrink-0">
+                  <span data-overflow="true" className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
                     +{coreExtra} more
                   </span>
                 )}
@@ -215,21 +228,23 @@ export default function My360() {
                 <span className="text-sm font-semibold text-foreground">Other Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div ref={otherRef} className="flex flex-nowrap gap-3 overflow-hidden" style={{ maxHeight: '2.75rem' }}>
+              <div ref={otherRef} className="flex flex-nowrap gap-2 overflow-hidden" style={{ maxHeight: '2.5rem' }}>
                 {profileData.otherSkills.slice(0, otherVisible).map((skill) => (
                   <span
                     key={skill.name}
-                    className="inline-flex items-center rounded-full border border-border pl-4 pr-1.5 py-1.5 text-sm font-medium text-foreground gap-2 whitespace-nowrap shrink-0"
+                    className="inline-flex items-center rounded-full border border-border pl-4 pr-1.5 py-2 text-sm font-medium text-foreground gap-1.5 whitespace-nowrap shrink-0"
                   >
                     <span>{skill.name}</span>
                     <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
                       {skill.level}
                     </span>
-                    <span className="text-xs text-muted-foreground">{skill.year}</span>
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
+                      {skill.year}
+                    </span>
                   </span>
                 ))}
                 {otherExtra > 0 && (
-                  <span data-overflow="true" className="inline-flex items-center rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
+                  <span data-overflow="true" className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
                     +{otherExtra} more
                   </span>
                 )}
@@ -275,7 +290,10 @@ export default function My360() {
               >
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-display text-sm font-semibold text-foreground">Role Snapshot</h4>
-                  <button className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
+                  <button
+                    onClick={handleRoleExploreClick}
+                    className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
                     Explore <ExternalLink className="h-3 w-3" />
                   </button>
                 </div>
@@ -294,7 +312,7 @@ export default function My360() {
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-display text-sm font-semibold text-foreground">Project Snapshot</h4>
                   <button
-                    onClick={handleExploreClick}
+                    onClick={handleProjectExploreClick}
                     className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Explore <ExternalLink className="h-3 w-3" />

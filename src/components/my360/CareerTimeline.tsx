@@ -45,10 +45,9 @@ export function CareerTimeline() {
     return GREEN;
   };
 
-  // Rail segment color: the segment BELOW an entry uses the color of the entry below it
+  // Rail segment color: uses the current entry's color (segment connects downward)
   const railPalette = (i: number) => {
-    if (i >= careerEntries.length - 1) return palette(careerEntries[i]);
-    return palette(careerEntries[i + 1]);
+    return palette(careerEntries[i]);
   };
 
   return (

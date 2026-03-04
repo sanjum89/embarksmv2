@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserProvider } from "@/contexts/UserContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { SkillTargetsProvider } from "@/contexts/SkillTargetsContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import SkillTargetDetail from "./pages/SkillTargetDetail";
@@ -25,6 +26,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
     <UserProvider>
+      <SkillTargetsProvider>
       <SidebarProvider>
       <TooltipProvider>
         <Toaster />
@@ -49,6 +51,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
       </SidebarProvider>
+      </SkillTargetsProvider>
     </UserProvider>
     </ThemeProvider>
   </QueryClientProvider>

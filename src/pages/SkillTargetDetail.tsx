@@ -5,11 +5,12 @@ import { ArrowLeft, Target, CalendarDays } from "lucide-react";
 import { AIChatPanel } from "@/components/chat/AIChatPanel";
 import { StepTimeline } from "@/components/skill-target/StepTimeline";
 import { Progress } from "@/components/ui/progress";
-import { mockSkillTargets } from "@/data/mock";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 
 export default function SkillTargetDetail() {
   const { id } = useParams();
-  const target = mockSkillTargets.find((st) => st.id === id);
+  const { skillTargets } = useSkillTargets();
+  const target = skillTargets.find((st) => st.id === id);
 
   if (!target) {
     return (

@@ -138,7 +138,7 @@ export default function My360() {
             className="rounded-xl bg-card border border-border p-5 shadow-card mb-4"
           >
             <div className="flex items-start gap-4">
-              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-secondary text-base font-bold text-foreground">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full gradient-accent text-base font-bold text-accent-foreground">
                 {user.name.split(" ").map((n) => n[0]).join("")}
               </div>
 
@@ -168,8 +168,8 @@ export default function My360() {
                 </button>
               </div>
 
-              <div className="shrink-0 flex flex-col items-center justify-center rounded-xl border border-border px-5 py-2.5">
-                <span className="font-display text-2xl font-bold text-foreground">
+              <div className="shrink-0 flex flex-col items-center justify-center rounded-xl border-2 border-accent/30 bg-accent/5 px-5 py-2.5">
+                <span className="font-display text-2xl font-bold text-accent">
                   {profileData.yearsExperience}
                 </span>
                 <span className="text-xs text-muted-foreground">Years</span>
@@ -207,14 +207,25 @@ export default function My360() {
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <div className="flex flex-nowrap gap-2">
-                {profileData.coreSkills.slice(0, 4).map((skill) => (
-                  <span
-                    key={skill}
-                    className="rounded-full bg-secondary px-4 py-2 text-sm font-medium text-foreground whitespace-nowrap shrink-0"
-                  >
-                    {skill}
-                  </span>
-                ))}
+                {profileData.coreSkills.slice(0, 4).map((skill, i) => {
+                  const skillColors = [
+                    "bg-accent/10 text-accent border border-accent/20",
+                    "bg-info/10 text-info border border-info/20",
+                    "bg-success/10 text-success border border-success/20",
+                    "bg-primary/10 text-primary border border-primary/20",
+                  ];
+                  return (
+                    <span
+                      key={skill}
+                      className={cn(
+                        "rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap shrink-0",
+                        skillColors[i % skillColors.length]
+                      )}
+                    >
+                      {skill}
+                    </span>
+                  );
+                })}
                 {profileData.coreSkills.length > 4 && (
                   <span className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
                     +{profileData.coreSkills.length - 4} more
@@ -310,7 +321,7 @@ export default function My360() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.12 }}
-                  className="rounded-xl bg-card border border-border p-4 shadow-card"
+                  className="rounded-xl bg-card border border-border p-4 shadow-card border-l-4 border-l-info"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-display text-sm font-semibold text-foreground">Role Snapshot</h4>
@@ -331,7 +342,7 @@ export default function My360() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.15 }}
-                  className="rounded-xl bg-card border border-border p-4 shadow-card"
+                  className="rounded-xl bg-card border border-border p-4 shadow-card border-l-4 border-l-success"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-display text-sm font-semibold text-foreground">Project Snapshot</h4>
@@ -352,7 +363,7 @@ export default function My360() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.18 }}
-                  className="rounded-xl bg-card border border-border p-4 shadow-card"
+                  className="rounded-xl bg-card border border-border p-4 shadow-card border-l-4 border-l-accent"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-display text-sm font-semibold text-foreground">
@@ -375,12 +386,18 @@ export default function My360() {
                       <div key={i} className="flex items-center gap-1.5 text-xs">
                         <span className="inline-flex items-center rounded-full border border-border pl-3 pr-1 py-1 font-medium text-foreground gap-1.5 min-w-0">
                           <span className="truncate">{row.left.skill}</span>
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-muted-foreground shrink-0">
+                          <span className={cn(
+                            "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
+                            row.left.target === "✓" ? "bg-success/15 text-success" : "bg-accent/15 text-accent"
+                          )}>
                             {row.left.level}
                           </span>
                         </span>
                         <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
+                        <span className={cn(
+                          "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
+                          row.left.target === "✓" ? "bg-success/15 text-success" : "bg-accent/15 text-accent"
+                        )}>
                           {row.left.target === "✓" ? "✓" : row.left.target}
                         </span>
 
@@ -391,14 +408,17 @@ export default function My360() {
                             : "border border-dashed border-muted-foreground/40 text-muted-foreground"
                         )}>
                           <span className="truncate">{row.right.skill}</span>
-                          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-muted-foreground shrink-0">
+                          <span className={cn(
+                            "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
+                            row.right.hasSkill ? "bg-info/15 text-info" : "bg-warning/15 text-warning"
+                          )}>
                             {row.right.level}
                           </span>
                         </span>
                         {row.right.target && (
                           <>
                             <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-bold text-foreground shrink-0">
+                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-info/15 text-[10px] font-bold text-info shrink-0">
                               {row.right.target}
                             </span>
                           </>

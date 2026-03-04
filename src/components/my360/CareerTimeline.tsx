@@ -138,7 +138,7 @@ export function CareerTimeline() {
                   {/* Dot — white center + colored ring */}
                   <div
                     className={cn(
-                      "absolute -left-[5px] top-1 z-10 h-4 w-4 rounded-full border-[2.5px] bg-white transition-shadow duration-300",
+                      "absolute -left-[5px] top-1 z-10 h-4 w-4 rounded-full border-[2.5px] bg-card transition-shadow duration-300",
                       isSelected && "timeline-active-dot"
                     )}
                     style={{
@@ -169,11 +169,10 @@ export function CareerTimeline() {
 
                     {/* Career card */}
                     {entry.company && (
-                      <div className="rounded-2xl border bg-white p-4 shadow-card"
-                        style={{ borderColor: "#E6E8EE" }}>
+                      <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
                         <p className="font-display text-lg font-bold text-foreground">{entry.company}</p>
                         <p className="text-base font-medium text-foreground mt-0.5">{entry.role}</p>
-                        <p className="text-sm text-[#667085] mt-1">{entry.details}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{entry.details}</p>
                       </div>
                     )}
 

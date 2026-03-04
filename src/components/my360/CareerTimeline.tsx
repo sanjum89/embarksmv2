@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 /* ── Palette ─────────────────────────────────────── */
 const GREEN  = { hex: "#22C55E", ring: "rgba(34,197,94,0.55)", glow: "rgba(34,197,94,0.24)", bloom: "rgba(34,197,94,0.09)" };
 const YELLOW = { hex: "#EAB308", ring: "rgba(234,179,8,0.55)", glow: "rgba(234,179,8,0.24)", bloom: "rgba(234,179,8,0.09)" };
-const ORANGE = { hex: "#F97316", ring: "rgba(249,115,22,0.55)", glow: "rgba(249,115,22,0.24)", bloom: "rgba(249,115,22,0.09)" };
+const ORANGE = { hex: "hsl(38,92%,50%)", ring: "hsla(38,92%,50%,0.55)", glow: "hsla(38,92%,50%,0.24)", bloom: "hsla(38,92%,50%,0.09)" };
 
 /* ── Data ────────────────────────────────────────── */
 interface CareerEntry {
@@ -62,8 +62,7 @@ export function CareerTimeline() {
           >
             <option value="all">All roles</option>
           </select>
-          <button className="rounded-lg px-4 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-            style={{ background: ORANGE.hex }}>
+          <button className="rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90">
             Add reflection
           </button>
           <button className="rounded-lg border border-border p-1.5 text-muted-foreground hover:text-foreground transition-colors">
@@ -159,10 +158,7 @@ export function CareerTimeline() {
                   <div className="ml-6 min-h-[2rem] relative">
                     {/* Selected chip */}
                     {isSelected && (
-                      <span
-                        className="inline-flex items-center rounded-full px-4 py-1.5 text-xs font-semibold text-white shadow-sm"
-                        style={{ background: ORANGE.hex }}
-                      >
+                      <span className="inline-flex items-center rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground shadow-sm">
                         {entry.year} {entry.month}
                       </span>
                     )}
@@ -194,10 +190,7 @@ export function CareerTimeline() {
                           <p className="text-xs text-muted-foreground mb-3">
                             We didn't receive any work signals for this period.
                           </p>
-                          <button
-                            className="w-full rounded-lg px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
-                            style={{ background: ORANGE.hex }}
-                          >
+                          <button className="w-full rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90 transition-opacity">
                             Add reflection
                           </button>
                         </motion.div>
@@ -216,10 +209,7 @@ export function CareerTimeline() {
           <div className="rounded-xl border border-border p-4">
             <p className="font-display text-base font-semibold text-foreground">Feb–Mar 2026</p>
             <p className="text-sm text-muted-foreground mt-1">No data captured</p>
-            <button
-              className="mt-3 w-full rounded-lg px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-opacity"
-              style={{ background: ORANGE.hex }}
-            >
+            <button className="mt-3 w-full rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90 transition-opacity">
               Add reflection
             </button>
             <button className="mt-2 w-full text-sm text-info underline">How data is captured</button>
@@ -238,7 +228,7 @@ export function CareerTimeline() {
                   <div className="text-right">
                     <span className={cn(
                       "text-sm font-medium",
-                      r.status === "Approved" ? "text-success" : "text-[#F97316]"
+                      r.status === "Approved" ? "text-success" : "text-accent"
                     )}>
                       {r.status}
                     </span>
@@ -291,8 +281,8 @@ export function CareerTimeline() {
           50% { opacity: 0.12; filter: blur(14px); }
         }
         @keyframes active-dot-breathe {
-          0%, 100% { box-shadow: 0 0 6px 2px rgba(249,115,22,0.3); }
-          50% { box-shadow: 0 0 10px 4px rgba(249,115,22,0.45); }
+          0%, 100% { box-shadow: 0 0 6px 2px hsl(38 92% 50% / 0.3); }
+          50% { box-shadow: 0 0 10px 4px hsl(38 92% 50% / 0.45); }
         }
         .timeline-glow {
           animation: timeline-breathe-glow 2.6s ease-in-out infinite alternate;

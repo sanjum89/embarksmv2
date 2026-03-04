@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { useChartColors } from "@/hooks/useChartColors";
 import { BarChart3, TrendingUp, User, Filter } from "lucide-react";
 import {
   RadarChart,
@@ -26,7 +27,7 @@ import { cn } from "@/lib/utils";
 
 export default function PeopleGraph() {
   const [selectedUser, setSelectedUser] = useState("u1");
-
+  const colors = useChartColors();
   const learners = mockTeamMembers.filter((m) => m.role === "learner");
 
   // Radar data: avg score per skill target for selected user
@@ -73,7 +74,7 @@ export default function PeopleGraph() {
     module_completion: "Module",
   };
 
-  const chartColors = ["hsl(38, 92%, 50%)", "hsl(210, 80%, 52%)", "hsl(152, 60%, 40%)", "hsl(0, 72%, 51%)"];
+  const chartColors = [colors.accent, colors.info, colors.success, colors.destructive];
 
   return (
     <div>
@@ -120,14 +121,14 @@ export default function PeopleGraph() {
             </h4>
             <ResponsiveContainer width="100%" height={280}>
               <RadarChart data={radarData}>
-                <PolarGrid stroke="hsl(220, 16%, 90%)" />
-                <PolarAngleAxis dataKey="skill" tick={{ fontSize: 11, fill: "hsl(220, 10%, 46%)" }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10 }} />
+                <PolarGrid stroke={colors.grid} />
+                <PolarAngleAxis dataKey="skill" tick={{ fontSize: 11, fill: colors.tickFill }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 10, fill: colors.tickFill }} />
                 <Radar
                   name="Score"
                   dataKey="score"
-                  stroke="hsl(38, 92%, 50%)"
-                  fill="hsl(38, 92%, 50%)"
+                  stroke={colors.accent}
+                  fill={colors.accent}
                   fillOpacity={0.2}
                   strokeWidth={2}
                 />
@@ -147,15 +148,16 @@ export default function PeopleGraph() {
             </h4>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={comparisonData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220, 16%, 90%)" />
-                <XAxis dataKey="skill" tick={{ fontSize: 11, fill: "hsl(220, 10%, 46%)" }} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} />
+                <XAxis dataKey="skill" tick={{ fontSize: 11, fill: colors.tickFill }} />
+                <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: colors.tickFill }} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "hsl(0, 0%, 100%)",
-                    border: "1px solid hsl(220, 16%, 90%)",
+                    backgroundColor: colors.tooltipBg,
+                    border: `1px solid ${colors.tooltipBorder}`,
                     borderRadius: "8px",
                     fontSize: "12px",
+                    color: "inherit",
                   }}
                 />
                 <Legend wrapperStyle={{ fontSize: "11px" }} />

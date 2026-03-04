@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserProvider } from "@/contexts/UserContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import SkillTargetDetail from "./pages/SkillTargetDetail";
@@ -22,6 +23,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
     <UserProvider>
       <SidebarProvider>
       <TooltipProvider>
@@ -48,6 +50,7 @@ const App = () => (
       </TooltipProvider>
       </SidebarProvider>
     </UserProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

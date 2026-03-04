@@ -21,7 +21,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Building2 } from "lucide-react";
+import { Building2, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface NavItem {
   label: string;
@@ -51,6 +52,7 @@ const navItems: NavItem[] = [
 export function AppSidebar() {
   const { user } = useUser();
   const { expanded, toggle } = useSidebarState();
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const filteredItems = navItems.filter((item) => item.roles.includes(user.role));
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
@@ -167,6 +169,29 @@ export function AppSidebar() {
           return <div key={item.path}>{renderLink(item.path, item.icon, item.label)}</div>;
         })}
       </nav>
+
+      {/* Theme toggle */}
+      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <button
+              onClick={toggleTheme}
+              className={cn(
+                "flex items-center rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                expanded ? "h-9 gap-3 w-full px-3" : "h-10 w-10 justify-center"
+              )}
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
+              {expanded && <span className="text-sm font-medium">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>}
+            </button>
+          </TooltipTrigger>
+          {!expanded && (
+            <TooltipContent side="right" sideOffset={8}>
+              {theme === "dark" ? "Light Mode" : "Dark Mode"}
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </div>
 
       {/* User info */}
       <div className={cn("border-t border-sidebar-border py-4 w-full", expanded ? "px-3" : "flex justify-center")}>

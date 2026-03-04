@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -23,6 +23,7 @@ import { AIChatPanel, AIChatPanelHandle } from "@/components/chat/AIChatPanel";
 import { CareerTimeline } from "@/components/my360/CareerTimeline";
 import { useUser } from "@/contexts/UserContext";
 import { cn } from "@/lib/utils";
+import { useChartColors } from "@/hooks/useChartColors";
 
 /* ─── Mock profile data ─── */
 const profileData = {
@@ -87,6 +88,7 @@ export default function My360() {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
+  const colors = useChartColors();
 
   const { containerRef: otherRef, visibleCount: otherVisible } = useVisibleCount(profileData.otherSkills.length);
 
@@ -443,10 +445,10 @@ export default function My360() {
                   </div>
                   <ResponsiveContainer width="100%" height={320}>
                     <RadarChart data={radarSkills}>
-                      <PolarGrid stroke="hsl(220, 16%, 88%)" />
+                      <PolarGrid stroke={colors.grid} />
                       <PolarAngleAxis
                         dataKey="skill"
-                        tick={{ fontSize: 10, fill: "hsl(220, 10%, 46%)" }}
+                        tick={{ fontSize: 10, fill: colors.tickFill }}
                       />
                       <PolarRadiusAxis
                         angle={90}
@@ -456,7 +458,7 @@ export default function My360() {
                           const label = proficiencyLabels[Math.round(payload.value / 20)] || "";
                           if (!label) return <text />;
                           return (
-                            <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={9} fill="hsl(220, 10%, 46%)">
+                            <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={9} fill={colors.tickFill}>
                               {label}
                             </text>
                           );
@@ -466,16 +468,16 @@ export default function My360() {
                       <Radar
                         name="Target"
                         dataKey="target"
-                        stroke="hsl(220, 16%, 55%)"
-                        fill="hsl(220, 16%, 65%)"
+                        stroke={colors.radarTargetStroke}
+                        fill={colors.radarTargetFill}
                         fillOpacity={0.4}
                         strokeWidth={1.5}
                       />
                       <Radar
                         name="Current"
                         dataKey="score"
-                        stroke="hsl(220, 16%, 70%)"
-                        fill="hsl(220, 16%, 80%)"
+                        stroke={colors.radarCurrentStroke}
+                        fill={colors.radarCurrentFill}
                         fillOpacity={0.3}
                         strokeWidth={1.5}
                       />

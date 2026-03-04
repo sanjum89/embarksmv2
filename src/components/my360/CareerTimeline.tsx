@@ -4,9 +4,9 @@ import { ExternalLink, Settings, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /* ── Palette ─────────────────────────────────────── */
-const GREEN  = { hex: "#22C55E", ring: "rgba(34,197,94,0.55)", glow: "rgba(34,197,94,0.24)", bloom: "rgba(34,197,94,0.09)" };
-const YELLOW = { hex: "#EAB308", ring: "rgba(234,179,8,0.55)", glow: "rgba(234,179,8,0.24)", bloom: "rgba(234,179,8,0.09)" };
-const ORANGE = { hex: "hsl(38,92%,50%)", ring: "hsla(38,92%,50%,0.55)", glow: "hsla(38,92%,50%,0.24)", bloom: "hsla(38,92%,50%,0.09)" };
+const GREEN  = { hex: "hsl(152,60%,40%)", ring: "hsla(152,60%,40%,0.55)", glow: "hsla(152,60%,40%,0.24)", bloom: "hsla(152,60%,40%,0.09)" };
+const YELLOW = { hex: "hsl(45,90%,50%)", ring: "hsla(45,90%,50%,0.55)", glow: "hsla(45,90%,50%,0.24)", bloom: "hsla(45,90%,50%,0.09)" };
+const ORANGE = { hex: "hsl(25,85%,55%)", ring: "hsla(25,85%,55%,0.55)", glow: "hsla(25,85%,55%,0.24)", bloom: "hsla(25,85%,55%,0.09)" };
 
 /* ── Data ────────────────────────────────────────── */
 interface CareerEntry {
@@ -21,12 +21,12 @@ interface CareerEntry {
 const careerEntries: CareerEntry[] = [
   { year: 2026, month: "Mar", validated: false },
   { year: 2026, month: "Feb", validated: false },
-  { year: 2026, month: "Jan", validated: false },
+  { year: 2026, month: "Jan", validated: true },
   { year: 2025, validated: true, company: "Beta Corp", role: "Senior Manager", details: "Remote · Full-Time · 2025" },
-  { year: 2025, validated: true, company: "Alpha Solutions", role: "Project Lead", details: "San Francisco, CA · 2023–2024" },
-  { year: 2024, validated: true, company: "Gamma Tech", role: "Business Analyst", details: "New York, NY · 2018–2021" },
-  { year: 2022, validated: true, company: "First Company Inc.", role: "Junior Developer", details: "Chicago, IL · 2011–2014" },
-  { year: 2011, validated: true },
+  { year: 2024, validated: true, company: "Alpha Solutions", role: "Project Lead", details: "San Francisco, CA · 2023–2024" },
+  { year: 2022, validated: true, company: "Gamma Tech", role: "Business Analyst", details: "New York, NY · 2018–2021" },
+  { year: 2014, validated: true, company: "First Company Inc.", role: "Junior Developer", details: "Chicago, IL · 2011–2014" },
+  { year: 2011, validated: true, company: "Delta Systems", role: "Intern", details: "Boston, MA · 2010–2011" },
 ];
 
 const reflections = [
@@ -40,9 +40,9 @@ export function CareerTimeline() {
   const [tooltip, setTooltip] = useState<number | null>(null);
 
   const palette = (entry: CareerEntry) => {
-    if (entry.validated) return GREEN;
     if (entry.month === "Mar") return ORANGE;
-    return YELLOW; // Jan & Feb 2026
+    if (entry.month === "Feb") return YELLOW;
+    return GREEN; // Jan 2026 and all validated entries
   };
 
   return (
@@ -62,9 +62,6 @@ export function CareerTimeline() {
           >
             <option value="all">All roles</option>
           </select>
-          <button className="rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground transition-opacity hover:opacity-90">
-            Add reflection
-          </button>
           <button className="rounded-lg border border-border p-1.5 text-muted-foreground hover:text-foreground transition-colors">
             <ExternalLink className="h-4 w-4" />
           </button>
@@ -281,8 +278,8 @@ export function CareerTimeline() {
           50% { opacity: 0.12; filter: blur(14px); }
         }
         @keyframes active-dot-breathe {
-          0%, 100% { box-shadow: 0 0 6px 2px hsl(38 92% 50% / 0.3); }
-          50% { box-shadow: 0 0 10px 4px hsl(38 92% 50% / 0.45); }
+          0%, 100% { box-shadow: 0 0 6px 2px hsl(25 85% 55% / 0.3); }
+          50% { box-shadow: 0 0 10px 4px hsl(25 85% 55% / 0.45); }
         }
         .timeline-glow {
           animation: timeline-breathe-glow 2.6s ease-in-out infinite alternate;

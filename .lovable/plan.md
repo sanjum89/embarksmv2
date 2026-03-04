@@ -1,20 +1,28 @@
 
 
-## Plan: Update Radar Chart to Match Reference Design
+## Problem
 
-The reference image shows key differences from the current implementation:
+The `railPalette` function currently colors each segment based on the entry *below* it. This means:
+- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
+- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
+- The segment from **Jan → 2025** gets 2025's color (Green) — correct
 
-1. **Two overlapping radar shapes** — an outer (target) polygon and an inner (current) polygon, creating a gap visualization
-2. **Proficiency-level axis labels** — the radius axis shows letters M, E, A, I, B instead of numeric 0–100
-3. **Darker, more opaque fill** — the outer shape has a darker gray fill (~0.5 opacity), the inner is lighter
-4. **No numeric tick marks** on the radius axis — just the letter labels
-5. **Two icon buttons** (radar/bar toggle) in the top-right corner next to the Gap View / Action Plan tabs
+The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
 
-### Changes to `src/pages/My360.tsx`:
+## Fix
 
-1. **Update `radarSkills` data** — add a `target` field alongside `score` for each skill (target represents the expected level, score the current)
-2. **Map proficiency levels to numeric values** — M=100, E=80, A=60, I=40, B=20 so the radar renders two distinct polygons
-3. **Render two `<Radar>` components** — outer (target) with darker fill, inner (current) with lighter fill
-4. **Custom `PolarRadiusAxis` tick** — render the letters M, E, A, I, B at the grid rings instead of numbers; hide default numeric ticks
-5. **Add two icon buttons** (grid/bar chart icons) to the right of the Gap View / Action Plan toggle
+Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
+
+```typescript
+const railPalette = (i: number) => {
+  return palette(careerEntries[i]);
+};
+```
+
+This gives:
+- **Mar segment** (Mar → Feb): Orange
+- **Feb segment** (Feb → Jan): Yellow  
+- **Jan segment and below**: Green
+
+Single line change in `src/components/my360/CareerTimeline.tsx`.
 

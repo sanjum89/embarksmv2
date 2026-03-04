@@ -73,7 +73,7 @@ export function CareerTimeline() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* ─── Left: Timeline (8 cols) ─── */}
-        <div className="lg:col-span-8 relative pl-20">
+        <div className="lg:col-span-8 relative pl-16">
 
           {/* Rail layers */}
           {careerEntries.map((entry, i) => {
@@ -84,7 +84,7 @@ export function CareerTimeline() {
               <div key={`rail-${i}`}>
                 {/* Bloom layer */}
                 <div
-                  className="absolute left-[3.75rem] w-[22px] rounded-full -translate-x-1/2 timeline-bloom"
+                  className="absolute left-[3.25rem] w-[22px] rounded-full -translate-x-1/2 timeline-bloom"
                   style={{
                     top: segTop, height: segH,
                     background: c.hex,
@@ -94,7 +94,7 @@ export function CareerTimeline() {
                 />
                 {/* Glow layer */}
                 <div
-                  className="absolute left-[3.75rem] w-[12px] rounded-full -translate-x-1/2 timeline-glow"
+                  className="absolute left-[3.25rem] w-[12px] rounded-full -translate-x-1/2 timeline-glow"
                   style={{
                     top: segTop, height: segH,
                     background: c.hex,
@@ -104,7 +104,7 @@ export function CareerTimeline() {
                 />
                 {/* Core line */}
                 <div
-                  className="absolute left-[3.75rem] w-[4px] -translate-x-1/2"
+                  className="absolute left-[3.25rem] w-[4px] -translate-x-1/2"
                   style={{
                     top: segTop, height: segH,
                     background: c.hex,
@@ -122,11 +122,11 @@ export function CareerTimeline() {
               return (
                 <div key={i} className="relative flex items-start gap-5">
                   {/* Year / month label */}
-                  <span className="absolute -left-20 top-0.5 text-sm font-medium text-muted-foreground w-14 text-right">
+                  <span className="absolute -left-[3.5rem] top-0.5 text-sm font-medium text-muted-foreground w-10 text-right">
                     {entry.month ?? entry.year}
                   </span>
                   {entry.month && (
-                    <span className="absolute -left-20 top-5 text-[11px] text-muted-foreground/60 w-14 text-right">
+                    <span className="absolute -left-[3.5rem] top-5 text-[11px] text-muted-foreground/60 w-10 text-right">
                       {entry.year}
                     </span>
                   )}
@@ -134,7 +134,7 @@ export function CareerTimeline() {
                   {/* Dot — white center + colored ring */}
                   <div
                     className={cn(
-                      "absolute -left-[5px] top-1 z-10 h-4 w-4 rounded-full border-[2.5px] bg-card transition-shadow duration-300",
+                      "absolute -left-[12px] top-1 z-10 h-4 w-4 rounded-full border-[2.5px] bg-card transition-shadow duration-300",
                       isSelected && "timeline-active-dot"
                     )}
                     style={{

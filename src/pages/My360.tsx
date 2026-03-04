@@ -17,6 +17,14 @@ import {
   PolarRadiusAxis,
   Radar,
   ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  Cell,
 } from "recharts";
 
 import { AIChatPanel, AIChatPanelHandle } from "@/components/chat/AIChatPanel";
@@ -89,6 +97,7 @@ export default function My360() {
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
+  const [chartMode, setChartMode] = useState<"radar" | "bar">("radar");
   const colors = useChartColors();
 
   const { containerRef: otherRef, visibleCount: otherVisible } = useVisibleCount(profileData.otherSkills.length);
@@ -457,10 +466,22 @@ export default function My360() {
                     </div>
                     {gapView === "Gap View" && (
                       <div className="flex gap-1">
-                        <button className="rounded-lg border border-border p-1.5 text-foreground bg-card shadow-sm">
+                        <button
+                          onClick={() => setChartMode("radar")}
+                          className={cn(
+                            "rounded-lg border border-border p-1.5 transition-colors",
+                            chartMode === "radar" ? "text-foreground bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
                           <RadarIcon className="h-4 w-4" />
                         </button>
-                        <button className="rounded-lg border border-border p-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                        <button
+                          onClick={() => setChartMode("bar")}
+                          className={cn(
+                            "rounded-lg border border-border p-1.5 transition-colors",
+                            chartMode === "bar" ? "text-foreground bg-card shadow-sm" : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
                           <BarChart3 className="h-4 w-4" />
                         </button>
                       </div>
@@ -468,46 +489,89 @@ export default function My360() {
                   </div>
 
                   {gapView === "Gap View" ? (
-                    <ResponsiveContainer width="100%" height={320}>
-                      <RadarChart data={radarSkills}>
-                        <PolarGrid stroke={colors.grid} />
-                        <PolarAngleAxis
-                          dataKey="skill"
-                          tick={{ fontSize: 10, fill: colors.tickFill }}
-                        />
-                        <PolarRadiusAxis
-                          angle={90}
-                          domain={[0, 100]}
-                          tickCount={6}
-                          tick={({ x, y, payload }) => {
-                            const label = proficiencyLabels[Math.round(payload.value / 20)] || "";
-                            if (!label) return <text />;
-                            return (
-                              <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={9} fill={colors.tickFill}>
-                                {label}
-                              </text>
-                            );
-                          }}
-                          axisLine={false}
-                        />
-                        <Radar
-                          name="Target"
-                          dataKey="target"
-                          stroke={colors.radarTargetStroke}
-                          fill={colors.radarTargetFill}
-                          fillOpacity={0.4}
-                          strokeWidth={1.5}
-                        />
-                        <Radar
-                          name="Current"
-                          dataKey="score"
-                          stroke={colors.radarCurrentStroke}
-                          fill={colors.radarCurrentFill}
-                          fillOpacity={0.3}
-                          strokeWidth={1.5}
-                        />
-                      </RadarChart>
-                    </ResponsiveContainer>
+                    chartMode === "radar" ? (
+                      <ResponsiveContainer width="100%" height={320}>
+                        <RadarChart data={radarSkills}>
+                          <PolarGrid stroke={colors.grid} />
+                          <PolarAngleAxis
+                            dataKey="skill"
+                            tick={{ fontSize: 10, fill: colors.tickFill }}
+                          />
+                          <PolarRadiusAxis
+                            angle={90}
+                            domain={[0, 100]}
+                            tickCount={6}
+                            tick={({ x, y, payload }) => {
+                              const label = proficiencyLabels[Math.round(payload.value / 20)] || "";
+                              if (!label) return <text />;
+                              return (
+                                <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={9} fill={colors.tickFill}>
+                                  {label}
+                                </text>
+                              );
+                            }}
+                            axisLine={false}
+                          />
+                          <Radar
+                            name="Target"
+                            dataKey="target"
+                            stroke={colors.radarTargetStroke}
+                            fill={colors.radarTargetFill}
+                            fillOpacity={0.4}
+                            strokeWidth={1.5}
+                          />
+                          <Radar
+                            name="Current"
+                            dataKey="score"
+                            stroke={colors.radarCurrentStroke}
+                            fill={colors.radarCurrentFill}
+                            fillOpacity={0.3}
+                            strokeWidth={1.5}
+                          />
+                        </RadarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <ResponsiveContainer width="100%" height={320}>
+                        <BarChart data={radarSkills} barGap={2} barSize={14}>
+                          <CartesianGrid strokeDasharray="3 3" stroke={colors.grid} vertical={false} />
+                          <XAxis
+                            dataKey="skill"
+                            tick={{ fontSize: 9, fill: colors.tickFill }}
+                            axisLine={{ stroke: colors.grid }}
+                            tickLine={false}
+                            interval={0}
+                            angle={-30}
+                            textAnchor="end"
+                            height={60}
+                          />
+                          <YAxis
+                            domain={[0, 100]}
+                            tickCount={6}
+                            tickFormatter={(v: number) => proficiencyLabels[Math.round(v / 20)] || ""}
+                            tick={{ fontSize: 10, fill: colors.tickFill }}
+                            axisLine={false}
+                            tickLine={false}
+                          />
+                          <Tooltip
+                            contentStyle={{
+                              background: colors.tooltipBg,
+                              border: `1px solid ${colors.tooltipBorder}`,
+                              borderRadius: 8,
+                              fontSize: 12,
+                            }}
+                            formatter={(value: number, name: string) => {
+                              const label = proficiencyLabels[Math.round(value / 20)] || "";
+                              return [`${label} (${value})`, name];
+                            }}
+                          />
+                          <Legend
+                            wrapperStyle={{ fontSize: 11, paddingTop: 4 }}
+                          />
+                          <Bar dataKey="target" name="Target" fill={colors.radarTargetFill} radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="score" name="Current" fill={colors.accent} radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    )
                   ) : (
                     <ActionPlanView />
                   )}

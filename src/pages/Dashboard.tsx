@@ -2,9 +2,9 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 
 import { AIChatPanel } from "@/components/chat/AIChatPanel";
-import { mockSkillTargets } from "@/data/mock";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
 import { useUser } from "@/contexts/UserContext";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { cn } from "@/lib/utils";
 
 type Filter = "all" | "in_progress" | "completed" | "not_started";
@@ -18,6 +18,7 @@ const filters: { value: Filter; label: string }[] = [
 
 export default function Dashboard() {
   const { user } = useUser();
+  const { skillTargets: mockSkillTargets } = useSkillTargets();
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
 
   const targets = useMemo(() => {

@@ -21,6 +21,7 @@ import {
 
 import { AIChatPanel, AIChatPanelHandle } from "@/components/chat/AIChatPanel";
 import { CareerTimeline } from "@/components/my360/CareerTimeline";
+import { ActionPlanView } from "@/components/my360/ActionPlanView";
 import { useUser } from "@/contexts/UserContext";
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/hooks/useChartColors";
@@ -429,7 +430,7 @@ export default function My360() {
                 </motion.div>
               </div>
 
-              {/* Right column — Radar chart */}
+              {/* Right column — Radar chart or Action Plan */}
               <div className="space-y-4">
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -454,55 +455,62 @@ export default function My360() {
                         </button>
                       ))}
                     </div>
-                    <div className="flex gap-1">
-                      <button className="rounded-lg border border-border p-1.5 text-foreground bg-card shadow-sm">
-                        <RadarIcon className="h-4 w-4" />
-                      </button>
-                      <button className="rounded-lg border border-border p-1.5 text-muted-foreground hover:text-foreground transition-colors">
-                        <BarChart3 className="h-4 w-4" />
-                      </button>
-                    </div>
+                    {gapView === "Gap View" && (
+                      <div className="flex gap-1">
+                        <button className="rounded-lg border border-border p-1.5 text-foreground bg-card shadow-sm">
+                          <RadarIcon className="h-4 w-4" />
+                        </button>
+                        <button className="rounded-lg border border-border p-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                          <BarChart3 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <ResponsiveContainer width="100%" height={320}>
-                    <RadarChart data={radarSkills}>
-                      <PolarGrid stroke={colors.grid} />
-                      <PolarAngleAxis
-                        dataKey="skill"
-                        tick={{ fontSize: 10, fill: colors.tickFill }}
-                      />
-                      <PolarRadiusAxis
-                        angle={90}
-                        domain={[0, 100]}
-                        tickCount={6}
-                        tick={({ x, y, payload }) => {
-                          const label = proficiencyLabels[Math.round(payload.value / 20)] || "";
-                          if (!label) return <text />;
-                          return (
-                            <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={9} fill={colors.tickFill}>
-                              {label}
-                            </text>
-                          );
-                        }}
-                        axisLine={false}
-                      />
-                      <Radar
-                        name="Target"
-                        dataKey="target"
-                        stroke={colors.radarTargetStroke}
-                        fill={colors.radarTargetFill}
-                        fillOpacity={0.4}
-                        strokeWidth={1.5}
-                      />
-                      <Radar
-                        name="Current"
-                        dataKey="score"
-                        stroke={colors.radarCurrentStroke}
-                        fill={colors.radarCurrentFill}
-                        fillOpacity={0.3}
-                        strokeWidth={1.5}
-                      />
-                    </RadarChart>
-                  </ResponsiveContainer>
+
+                  {gapView === "Gap View" ? (
+                    <ResponsiveContainer width="100%" height={320}>
+                      <RadarChart data={radarSkills}>
+                        <PolarGrid stroke={colors.grid} />
+                        <PolarAngleAxis
+                          dataKey="skill"
+                          tick={{ fontSize: 10, fill: colors.tickFill }}
+                        />
+                        <PolarRadiusAxis
+                          angle={90}
+                          domain={[0, 100]}
+                          tickCount={6}
+                          tick={({ x, y, payload }) => {
+                            const label = proficiencyLabels[Math.round(payload.value / 20)] || "";
+                            if (!label) return <text />;
+                            return (
+                              <text x={x} y={y} textAnchor="middle" dominantBaseline="central" fontSize={9} fill={colors.tickFill}>
+                                {label}
+                              </text>
+                            );
+                          }}
+                          axisLine={false}
+                        />
+                        <Radar
+                          name="Target"
+                          dataKey="target"
+                          stroke={colors.radarTargetStroke}
+                          fill={colors.radarTargetFill}
+                          fillOpacity={0.4}
+                          strokeWidth={1.5}
+                        />
+                        <Radar
+                          name="Current"
+                          dataKey="score"
+                          stroke={colors.radarCurrentStroke}
+                          fill={colors.radarCurrentFill}
+                          fillOpacity={0.3}
+                          strokeWidth={1.5}
+                        />
+                      </RadarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <ActionPlanView />
+                  )}
                 </motion.div>
               </div>
             </div>

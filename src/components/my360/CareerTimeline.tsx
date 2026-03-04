@@ -42,7 +42,13 @@ export function CareerTimeline() {
   const palette = (entry: CareerEntry) => {
     if (entry.month === "Mar") return ORANGE;
     if (entry.month === "Feb") return YELLOW;
-    return GREEN; // Jan 2026 and all validated entries
+    return GREEN;
+  };
+
+  // Rail segment color: the segment BELOW an entry uses the color of the entry below it
+  const railPalette = (i: number) => {
+    if (i >= careerEntries.length - 1) return palette(careerEntries[i]);
+    return palette(careerEntries[i + 1]);
   };
 
   return (
@@ -73,18 +79,18 @@ export function CareerTimeline() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* ─── Left: Timeline (8 cols) ─── */}
-        <div className="lg:col-span-8 relative pl-16">
+        <div className="lg:col-span-8 relative pl-24">
 
           {/* Rail layers */}
           {careerEntries.map((entry, i) => {
-            const c = palette(entry);
+            const c = railPalette(i);
             const segH = `calc(${100 / careerEntries.length}%)`;
             const segTop = `calc(${(i / careerEntries.length) * 100}%)`;
             return (
               <div key={`rail-${i}`}>
                 {/* Bloom layer */}
                 <div
-                  className="absolute left-[3.25rem] w-[22px] rounded-full -translate-x-1/2 timeline-bloom"
+                  className="absolute left-[4.75rem] w-[22px] rounded-full -translate-x-1/2 timeline-bloom"
                   style={{
                     top: segTop, height: segH,
                     background: c.hex,
@@ -94,7 +100,7 @@ export function CareerTimeline() {
                 />
                 {/* Glow layer */}
                 <div
-                  className="absolute left-[3.25rem] w-[12px] rounded-full -translate-x-1/2 timeline-glow"
+                  className="absolute left-[4.75rem] w-[12px] rounded-full -translate-x-1/2 timeline-glow"
                   style={{
                     top: segTop, height: segH,
                     background: c.hex,
@@ -104,7 +110,7 @@ export function CareerTimeline() {
                 />
                 {/* Core line */}
                 <div
-                  className="absolute left-[3.25rem] w-[4px] -translate-x-1/2"
+                  className="absolute left-[4.75rem] w-[4px] -translate-x-1/2"
                   style={{
                     top: segTop, height: segH,
                     background: c.hex,
@@ -122,11 +128,11 @@ export function CareerTimeline() {
               return (
                 <div key={i} className="relative flex items-start gap-5">
                   {/* Year / month label */}
-                  <span className="absolute -left-[3.5rem] top-0.5 text-sm font-medium text-muted-foreground w-10 text-right">
+                  <span className="absolute -left-[5rem] top-0.5 text-sm font-medium text-muted-foreground w-14 text-right">
                     {entry.month ?? entry.year}
                   </span>
                   {entry.month && (
-                    <span className="absolute -left-[3.5rem] top-5 text-[11px] text-muted-foreground/60 w-10 text-right">
+                    <span className="absolute -left-[5rem] top-5 text-[11px] text-muted-foreground/60 w-14 text-right">
                       {entry.year}
                     </span>
                   )}

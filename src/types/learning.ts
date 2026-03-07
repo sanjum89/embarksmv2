@@ -86,3 +86,41 @@ export interface PeopleGraphSignal {
   timestamp: string;
   excludeFromGraph: boolean;
 }
+
+/* ─── Skill Proficiency ─── */
+export type Proficiency = "Beginner" | "Intermediate" | "Advanced" | "Expert" | "Master";
+
+export interface SkillEntry {
+  skill_name: string;
+  proficiency: Proficiency;
+  assessment_year: number;
+}
+
+export interface SkillRequirement {
+  skill_name: string;
+  proficiency: Proficiency;
+}
+
+export const proficiencyShort: Record<Proficiency, string> = {
+  Beginner: "B",
+  Intermediate: "I",
+  Advanced: "A",
+  Expert: "E",
+  Master: "M",
+};
+
+export const proficiencyNumeric: Record<Proficiency, number> = {
+  Beginner: 20,
+  Intermediate: 40,
+  Advanced: 60,
+  Expert: 80,
+  Master: 100,
+};
+
+export const proficiencyFromShort: Record<string, Proficiency> = {
+  B: "Beginner",
+  I: "Intermediate",
+  A: "Advanced",
+  E: "Expert",
+  M: "Master",
+};

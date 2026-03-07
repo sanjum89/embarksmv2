@@ -22,6 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Building2, Moon, Sun } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -51,7 +52,7 @@ const navItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-  const { user } = useUser();
+  const { user, switchUser, availableUsers } = useUser();
   const { expanded, toggle } = useSidebarState();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();

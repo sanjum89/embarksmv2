@@ -637,7 +637,7 @@ export default function My360() {
             </div>
           )}
 
-          {activeTab === "Career Timeline" && <CareerTimeline />}
+          {activeTab === "Career Timeline" && <CareerTimeline userId={user.id} />}
 
           {activeTab === "Growth Path" && (
             <div className="rounded-xl bg-card border border-border p-8 shadow-card text-center">

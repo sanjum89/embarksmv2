@@ -1,38 +1,28 @@
 
 
-## Update Maya's Career Timeline with Per-User Data
+## Problem
 
-### Problem
-Career timeline is hardcoded with generic placeholder data. Need to show Maya's actual career history, with cards displaying only Company, Role, and Location — full details shown on hover tooltip.
+The `railPalette` function currently colors each segment based on the entry *below* it. This means:
+- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
+- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
+- The segment from **Jan → 2025** gets 2025's color (Green) — correct
 
-### Changes
+The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
 
-**1. Update `CareerEntry` interface and data (`src/components/my360/CareerTimeline.tsx`)**
+## Fix
 
-Add fields to `CareerEntry`:
-- `location?: string` — displayed on card
-- `period?: string` — e.g. "Mar 2026 – Present"
-- `program?: string` — e.g. "Apple Support Program"  
-- `hoverDetails?: string` — long description shown on hover
+Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
 
-**2. Make timeline user-aware**
+```typescript
+const railPalette = (i: number) => {
+  return palette(careerEntries[i]);
+};
+```
 
-- Accept `userId` prop (or use `useUser` hook)
-- Define two data sets: one for Maya (u6), keep existing for others
-- Maya's entries:
-  - **Mar 2026 – Present**: Apple, L1 Customer Support Executive, Apple Support Program location. Current/selected entry (orange). Hover: onboarding details
-  - **Jun 2024 – Feb 2026**: BrightPath Helpdesk, Technical Support Representative. Validated (green). Hover: first-line tech support details
-  - **Jan 2023 – May 2024**: Northlane Digital Services, Customer Support Associate. Validated (green). Hover: chat/email support details
+This gives:
+- **Mar segment** (Mar → Feb): Orange
+- **Feb segment** (Feb → Jan): Yellow  
+- **Jan segment and below**: Green
 
-**3. Update card rendering**
-
-Cards show only: **Company name**, **Role**, **Location/program**. On hover, show a tooltip with period + full description text. Use the existing `AnimatePresence` tooltip pattern already in the component.
-
-**4. Pass user context**
-
-In `My360.tsx`, pass `user.id` to `<CareerTimeline userId={user.id} />`. The component selects the right dataset based on userId.
-
-### Files Changed
-- `src/components/my360/CareerTimeline.tsx` — new data, user-aware, hover tooltips on career cards
-- `src/pages/My360.tsx` — pass userId prop
+Single line change in `src/components/my360/CareerTimeline.tsx`.
 

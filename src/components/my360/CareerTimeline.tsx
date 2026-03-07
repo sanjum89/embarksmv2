@@ -15,18 +15,42 @@ interface CareerEntry {
   validated: boolean;
   company?: string;
   role?: string;
+  location?: string;
+  period?: string;
+  hoverDetails?: string;
   details?: string;
 }
 
-const careerEntries: CareerEntry[] = [
+const defaultEntries: CareerEntry[] = [
   { year: 2026, month: "Mar", validated: false },
   { year: 2026, month: "Feb", validated: false },
   { year: 2026, month: "Jan", validated: true },
-  { year: 2025, validated: true, company: "Beta Corp", role: "Senior Manager", details: "Remote · Full-Time · 2025" },
-  { year: 2024, validated: true, company: "Alpha Solutions", role: "Project Lead", details: "San Francisco, CA · 2023–2024" },
-  { year: 2022, validated: true, company: "Gamma Tech", role: "Business Analyst", details: "New York, NY · 2018–2021" },
-  { year: 2014, validated: true, company: "First Company Inc.", role: "Junior Developer", details: "Chicago, IL · 2011–2014" },
-  { year: 2011, validated: true, company: "Delta Systems", role: "Intern", details: "Boston, MA · 2010–2011" },
+  { year: 2025, validated: true, company: "Beta Corp", role: "Senior Manager", location: "Remote", details: "Remote · Full-Time · 2025" },
+  { year: 2024, validated: true, company: "Alpha Solutions", role: "Project Lead", location: "San Francisco, CA", details: "San Francisco, CA · 2023–2024" },
+  { year: 2022, validated: true, company: "Gamma Tech", role: "Business Analyst", location: "New York, NY", details: "New York, NY · 2018–2021" },
+  { year: 2014, validated: true, company: "First Company Inc.", role: "Junior Developer", location: "Chicago, IL", details: "Chicago, IL · 2011–2014" },
+  { year: 2011, validated: true, company: "Delta Systems", role: "Intern", location: "Boston, MA", details: "Boston, MA · 2010–2011" },
+];
+
+const mayaEntries: CareerEntry[] = [
+  {
+    year: 2026, month: "Mar", validated: false,
+    company: "Apple", role: "L1 Customer Support Executive", location: "Apple Support Program",
+    period: "Mar 2026 – Present",
+    hoverDetails: "Joined as a new hire to support Apple customers at L1 level. Currently going through onboarding, Apple product readiness, support workflows, and role-based training.",
+  },
+  {
+    year: 2024, month: "Jun", validated: true,
+    company: "BrightPath Helpdesk", role: "Technical Support Representative", location: "Remote",
+    period: "Jun 2024 – Feb 2026",
+    hoverDetails: "Handled first-line technical support for consumer devices and digital services. Supported login issues, device setup queries, connectivity issues, and account-related troubleshooting. Worked on ticketing systems and SLA-based case handling.",
+  },
+  {
+    year: 2023, month: "Jan", validated: true,
+    company: "Northlane Digital Services", role: "Customer Support Associate", location: "Remote",
+    period: "Jan 2023 – May 2024",
+    hoverDetails: "Managed chat and email support for consumer customers. Resolved account access issues, subscription questions, refund queries, and general troubleshooting requests. Built strong communication, documentation, and escalation habits.",
+  },
 ];
 
 const reflections = [
@@ -34,14 +58,25 @@ const reflections = [
   { date: "Dec 15, 2025", project: "Project X", status: "Approved" as const },
 ];
 
+function getEntries(userId?: string) {
+  if (userId === "u6") return mayaEntries;
+  return defaultEntries;
+}
+
 /* ── Component ───────────────────────────────────── */
-export function CareerTimeline() {
+interface CareerTimelineProps {
+  userId?: string;
+}
+
+export function CareerTimeline({ userId }: CareerTimelineProps) {
   const [roleFilter, setRoleFilter] = useState("all");
   const [tooltip, setTooltip] = useState<number | null>(null);
+  const [hoverCard, setHoverCard] = useState<number | null>(null);
+
+  const careerEntries = getEntries(userId);
 
   const palette = (entry: CareerEntry) => {
-    if (entry.month === "Mar") return ORANGE;
-    if (entry.month === "Feb") return YELLOW;
+    if (!entry.validated) return ORANGE;
     return GREEN;
   };
 
@@ -123,7 +158,7 @@ export function CareerTimeline() {
           <div className="space-y-10">
             {careerEntries.map((entry, i) => {
               const c = palette(entry);
-              const isSelected = entry.year === 2026 && entry.month === "Mar";
+              const isSelected = i === 0 && !entry.validated;
               return (
                 <div key={i} className="relative flex items-start gap-5">
                   {/* Year / month label */}
@@ -148,7 +183,7 @@ export function CareerTimeline() {
                     }}
                     onMouseEnter={(e) => {
                       (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 8px 3px ${c.ring}`;
-                      if (!entry.validated) setTooltip(i);
+                      if (!entry.validated && !entry.company) setTooltip(i);
                     }}
                     onMouseLeave={(e) => {
                       (e.currentTarget as HTMLDivElement).style.boxShadow = `0 0 0 0 transparent`;
@@ -159,7 +194,7 @@ export function CareerTimeline() {
                   {/* Content */}
                   <div className="ml-6 min-h-[2rem] relative">
                     {/* Selected chip */}
-                    {isSelected && (
+                    {isSelected && !entry.company && (
                       <span className="inline-flex items-center rounded-full bg-accent px-4 py-1.5 text-xs font-semibold text-accent-foreground shadow-sm">
                         {entry.year} {entry.month}
                       </span>
@@ -167,16 +202,42 @@ export function CareerTimeline() {
 
                     {/* Career card */}
                     {entry.company && (
-                      <div className="rounded-2xl border border-border bg-card p-4 shadow-card">
+                      <div
+                        className="rounded-2xl border border-border bg-card p-4 shadow-card relative cursor-pointer"
+                        onMouseEnter={() => setHoverCard(i)}
+                        onMouseLeave={() => setHoverCard(null)}
+                      >
+                        {isSelected && (
+                          <span className="inline-flex items-center rounded-full bg-accent px-3 py-1 text-[11px] font-semibold text-accent-foreground shadow-sm mb-2">
+                            Current
+                          </span>
+                        )}
                         <p className="font-display text-lg font-bold text-foreground">{entry.company}</p>
                         <p className="text-base font-medium text-foreground mt-0.5">{entry.role}</p>
-                        <p className="text-sm text-muted-foreground mt-1">{entry.details}</p>
+                        <p className="text-sm text-muted-foreground mt-1">{entry.location}</p>
+
+                        {/* Hover tooltip with full details */}
+                        <AnimatePresence>
+                          {hoverCard === i && entry.hoverDetails && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 4 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: 4 }}
+                              className="absolute left-0 top-full mt-2 z-50 rounded-xl border border-border bg-card p-4 shadow-card-hover min-w-[300px] max-w-[380px]"
+                            >
+                              {entry.period && (
+                                <p className="text-xs font-semibold text-accent-foreground mb-1.5">{entry.period}</p>
+                              )}
+                              <p className="text-sm text-muted-foreground leading-relaxed">{entry.hoverDetails}</p>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </div>
                     )}
 
                     {/* Missing data tooltip */}
                     <AnimatePresence>
-                      {tooltip === i && !entry.validated && !isSelected && (
+                      {tooltip === i && !entry.validated && !entry.company && (
                         <motion.div
                           initial={{ opacity: 0, y: 4 }}
                           animate={{ opacity: 1, y: 0 }}

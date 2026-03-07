@@ -83,11 +83,11 @@ export function AppSidebar() {
           expanded ? "h-9 gap-3 w-full" : "h-10 w-10 justify-center",
           expanded && indented ? "pl-9 pr-3" : expanded ? "px-3" : "",
           active
-            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            ? isTraditional ? "bg-primary/10 text-primary" : "bg-sidebar-accent text-sidebar-accent-foreground"
             : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
         )}
       >
-        <Icon className={cn("h-4 w-4 shrink-0", active && "text-sidebar-primary")} />
+        <Icon className={cn("h-4 w-4 shrink-0", active && (isTraditional ? "text-primary" : "text-sidebar-primary"))} />
         {expanded && <span className="text-sm font-medium truncate">{label}</span>}
       </NavLink>
     );

@@ -115,6 +115,20 @@ export const mockLearningModules: LearningModule[] = [
   { id: "m3", title: "Enterprise Suite Overview", contentType: "video", contentUrl: "https://example.com/enterprise-overview", duration: "30 min", transcript: "Welcome to the Enterprise Suite product overview. In this training, you'll learn about our core platform capabilities, key differentiators, and the value propositions that resonate with enterprise buyers." },
   { id: "m4", title: "Competitive Positioning", contentType: "document", contentUrl: "https://example.com/competitive-positioning.pdf", duration: "20 min" },
   { id: "m5", title: "Active Listening Techniques", contentType: "video", contentUrl: "https://example.com/active-listening", duration: "20 min", transcript: "Active listening is more than just hearing words — it's about fully engaging with the speaker. This module covers techniques including mirroring, paraphrasing, and emotional labeling." },
+  { id: "m6", title: "Apple Product Ecosystem Overview", contentType: "video", contentUrl: "https://example.com/apple-ecosystem", duration: "25 min" },
+  { id: "m7", title: "Apple ID and iCloud Fundamentals", contentType: "video", contentUrl: "https://example.com/apple-id-icloud", duration: "30 min" },
+  { id: "m8", title: "iPhone and iPad Basics", contentType: "video", contentUrl: "https://example.com/iphone-ipad-basics", duration: "25 min" },
+  { id: "m9", title: "Mac Basics for Support", contentType: "document", contentUrl: "https://example.com/mac-basics.pdf", duration: "20 min" },
+  { id: "m10", title: "Classroom: Live Device Handling Lab", contentType: "video", contentUrl: "https://example.com/device-handling-lab", duration: "60 min" },
+  { id: "m11", title: "Apple Billing and Subscriptions", contentType: "document", contentUrl: "https://example.com/apple-billing.pdf", duration: "20 min" },
+  { id: "m12", title: "Warranty and Repair Processes", contentType: "document", contentUrl: "https://example.com/warranty-repair.pdf", duration: "25 min" },
+  { id: "m13", title: "Guided Troubleshooting Workflows", contentType: "video", contentUrl: "https://example.com/troubleshooting-workflows", duration: "30 min" },
+  { id: "m14", title: "Apple Service and Support Options", contentType: "document", contentUrl: "https://example.com/service-options.pdf", duration: "20 min" },
+  { id: "m15", title: "Customer Verification and Privacy", contentType: "video", contentUrl: "https://example.com/verification-privacy", duration: "20 min" },
+  { id: "m16", title: "Escalation Procedures", contentType: "document", contentUrl: "https://example.com/escalation.pdf", duration: "15 min" },
+  { id: "m17", title: "Case Documentation Best Practices", contentType: "document", contentUrl: "https://example.com/case-docs.pdf", duration: "20 min" },
+  { id: "m18", title: "Apple Ecosystem Navigation Deep Dive", contentType: "video", contentUrl: "https://example.com/ecosystem-deep-dive", duration: "25 min" },
+  { id: "m19", title: "Live Readiness Review", contentType: "video", contentUrl: "https://example.com/readiness-review", duration: "20 min" },
 ];
 
 /* ─── Skill Targets ─── */
@@ -166,6 +180,33 @@ export const mockSkillTargets: SkillTarget[] = [
       { id: "s14", type: "assessment", title: "Post-Assessment: Empathy Mastery", description: "Final empathy communication check.", order: 4, skippable: false, status: "in_progress", duration: "15 min", referenceId: "a6" },
     ],
   },
+  {
+    id: "st4",
+    title: "Apple L1 Customer Support Readiness",
+    description: "Complete onboarding path for new hires joining as Apple L1 Customer Support Executive.",
+    category: "Apple Support Program",
+    assignedTo: ["u6"],
+    progress: 0,
+    dueDate: "2026-04-15",
+    steps: [
+      { id: "s15", type: "assessment", title: "Pre-Assessment: Apple Support Fundamentals", description: "Baseline assessment covering Apple ID, iCloud, billing, and device basics.", order: 1, skippable: false, status: "available", duration: "15 min", referenceId: "a7" },
+      { id: "s16", type: "module", title: "Apple Product Ecosystem Overview", description: "Overview of the Apple hardware and software ecosystem.", order: 2, skippable: true, skipCondition: "Pre-assessment score > 80%", status: "locked", duration: "25 min", referenceId: "m6" },
+      { id: "s17", type: "module", title: "Apple ID and iCloud Fundamentals", description: "Deep dive into Apple ID management and iCloud services.", order: 3, skippable: true, skipCondition: "Pre-assessment score ≥ 90%", status: "locked", duration: "30 min", referenceId: "m7" },
+      { id: "s18", type: "module", title: "iPhone and iPad Basics", description: "Core knowledge for supporting iPhone and iPad users.", order: 4, skippable: false, status: "locked", duration: "25 min", referenceId: "m8" },
+      { id: "s19", type: "module", title: "Mac Basics for Support", description: "Essential Mac knowledge for L1 support agents.", order: 5, skippable: false, status: "locked", duration: "20 min", referenceId: "m9" },
+      { id: "s20", type: "module", title: "Classroom: Live Device Handling Lab", description: "Offline / Classroom session — hands-on practice with Apple devices.", order: 6, skippable: false, status: "locked", duration: "60 min", referenceId: "m10" },
+      { id: "s21", type: "module", title: "Apple Billing and Subscriptions", description: "Understanding Apple billing, subscriptions, and refund processes.", order: 7, skippable: false, status: "locked", duration: "20 min", referenceId: "m11" },
+      { id: "s22", type: "module", title: "Warranty and Repair Processes", description: "Apple warranty policies, AppleCare+, and repair workflows.", order: 8, skippable: false, status: "locked", duration: "25 min", referenceId: "m12" },
+      { id: "s23", type: "module", title: "Guided Troubleshooting Workflows", description: "Step-by-step troubleshooting guides for common Apple issues.", order: 9, skippable: false, status: "locked", duration: "30 min", referenceId: "m13" },
+      { id: "s24", type: "module", title: "Apple Service and Support Options", description: "Overview of Apple support channels, service tiers, and options.", order: 10, skippable: false, status: "locked", duration: "20 min", referenceId: "m14" },
+      { id: "s25", type: "module", title: "Customer Verification and Privacy", description: "Identity verification protocols and Apple privacy standards.", order: 11, skippable: false, status: "locked", duration: "20 min", referenceId: "m15" },
+      { id: "s26", type: "module", title: "Escalation Procedures", description: "When and how to escalate issues to L2 or specialist teams.", order: 12, skippable: false, status: "locked", duration: "15 min", referenceId: "m16" },
+      { id: "s27", type: "module", title: "Case Documentation Best Practices", description: "Writing clear, complete case notes for handoffs and audits.", order: 13, skippable: false, status: "locked", duration: "20 min", referenceId: "m17" },
+      { id: "s28", type: "module", title: "Apple Ecosystem Navigation Deep Dive", description: "Advanced navigation across Apple tools, portals, and knowledge bases.", order: 14, skippable: false, status: "locked", duration: "25 min", referenceId: "m18" },
+      { id: "s29", type: "module", title: "Live Readiness Review", description: "Final review session before live customer handling.", order: 15, skippable: false, status: "locked", duration: "20 min", referenceId: "m19" },
+      { id: "s30", type: "role_play", title: "Live Customer Call Simulation", description: "End-to-end simulated customer call covering Apple L1 support scenarios.", order: 16, skippable: false, status: "locked", duration: "25 min", referenceId: "rp13" },
+    ],
+  },
 ];
 
 /* ─── Role Plays ─── */
@@ -182,6 +223,7 @@ export const mockRolePlayBank: RolePlay[] = [
   { id: "rp10", title: "Service Outage — iCloud Sync Issues", scenario: "A customer reports that their iCloud photos and documents haven't synced for 3 days across their devices. They rely on iCloud for their small business.", difficulty: "intermediate", isPrivate: false, tags: ["support", "apple", "empathy", "technical"], aiCloneConfig: { persona: "Small business owner", context: "iCloud sync broken for 3 days, uses it for business documents, losing productivity" } },
   { id: "rp11", title: "Warranty Claim — Cracked Screen", scenario: "A customer's iPhone screen cracked after a minor drop. They believe it should be covered under warranty. The device is 10 months old but has no AppleCare+.", difficulty: "advanced", isPrivate: false, tags: ["support", "apple", "warranty", "escalation"], aiCloneConfig: { persona: "Upset iPhone owner", context: "Cracked screen, no AppleCare+, device 10 months old, expects free repair" } },
   { id: "rp12", title: "Subscription Cancellation — Apple One", scenario: "A customer wants to cancel their Apple One family plan. They feel it's too expensive and only use Apple Music. They need guidance on what they'll lose and alternatives.", difficulty: "beginner", isPrivate: false, tags: ["support", "billing", "apple", "retention"], aiCloneConfig: { persona: "Cost-conscious family plan subscriber", context: "Paying $32.95/mo for Apple One Family, only uses Music, wants to downgrade" } },
+  { id: "rp13", title: "Live Customer Call Simulation — Apple L1", scenario: "A customer calls with a complex issue involving Apple ID recovery, iCloud sync problems, and a billing dispute. Handle the full interaction end-to-end following Apple support protocols.", difficulty: "advanced", isPrivate: false, tags: ["support", "apple", "live-sim", "L1"], aiCloneConfig: { persona: "Frustrated Apple customer with multiple issues", context: "Apple ID locked, iCloud not syncing, unexpected charge on account, wants all resolved in one call" } },
 ];
 
 /* ─── People Graph Signals ─── */

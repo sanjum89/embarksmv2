@@ -63,6 +63,38 @@ const projectGaps: SkillGap[] = [
   { skill: "Lovable AI", currentLevel: null, targetLevel: "I", isNew: true },
 ];
 
+const group1Skills = ["Product Ops & Scaling", "Prioritization Rigor"];
+const group2Skills = ["Figma Wireframing", "Figma Make", "FigJam", "Lovable AI"];
+
+const gapModules: Record<string, { title: string; type: "video" | "document"; duration: string }[]> = {
+  "Product Ops & Scaling": [
+    { title: "Scaling Product Operations", type: "video", duration: "30 min" },
+    { title: "Advanced Product Ops Frameworks", type: "document", duration: "20 min" },
+    { title: "Product Ops Case Studies", type: "video", duration: "25 min" },
+  ],
+  "Prioritization Rigor": [
+    { title: "RICE & ICE Scoring Deep Dive", type: "video", duration: "25 min" },
+    { title: "Stakeholder Alignment Workshop", type: "document", duration: "15 min" },
+    { title: "Prioritization Under Uncertainty", type: "video", duration: "20 min" },
+  ],
+  "Figma Wireframing": [
+    { title: "Wireframing Best Practices", type: "video", duration: "30 min" },
+    { title: "Component-based Wireframes", type: "document", duration: "20 min" },
+  ],
+  "Figma Make": [
+    { title: "Intro to Figma Make", type: "video", duration: "20 min" },
+    { title: "Building Your First Prototype", type: "video", duration: "25 min" },
+  ],
+  "FigJam": [
+    { title: "FigJam Essentials", type: "video", duration: "15 min" },
+    { title: "Collaborative Whiteboarding", type: "document", duration: "10 min" },
+  ],
+  "Lovable AI": [
+    { title: "Getting Started with Lovable AI", type: "video", duration: "20 min" },
+    { title: "Building Full-stack Apps with AI", type: "video", duration: "30 min" },
+  ],
+};
+
 /* ─── AI mock generator ─── */
 function generateMockTarget(prompt: string): {
   title: string;

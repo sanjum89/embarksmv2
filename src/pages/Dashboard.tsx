@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, Info } from "lucide-react";
 
 import { AIChatPanel } from "@/components/chat/AIChatPanel";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
@@ -36,9 +36,10 @@ export default function Dashboard() {
       default:
         return assigned;
     }
-  }, [user.id, activeFilter]);
+  }, [user.id, activeFilter, mockSkillTargets]);
 
   const allTargets = mockSkillTargets.filter((st) => st.assignedTo.includes(user.id));
+  const hasAnyTargets = allTargets.length > 0;
   const stats = {
     total: allTargets.length,
     inProgress: allTargets.filter((st) => st.progress > 0 && st.progress < 100).length,
@@ -119,7 +120,31 @@ export default function Dashboard() {
           </div>
 
           {/* Cards grid */}
-          {targets.length > 0 ? (
+          {!hasAnyTargets ? (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.35 }}
+              className="flex flex-col items-center rounded-xl border-2 border-dashed border-border bg-card p-10 text-center"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-info/10 mb-4">
+                <Info className="h-6 w-6 text-info" />
+              </div>
+              <h4 className="font-display text-lg font-semibold text-foreground mb-1">
+                No Skill Targets Assigned
+              </h4>
+              <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+                Your manager will assign skill targets to you, or you can create your own to get started.
+              </p>
+              <button
+                onClick={() => setCreateOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg gradient-accent text-accent-foreground px-4 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
+              >
+                <Plus className="h-4 w-4" />
+                Create Skill Target
+              </button>
+            </motion.div>
+          ) : targets.length > 0 ? (
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
               {targets.map((target, i) => (
                 <SkillTargetCard key={target.id} target={target} index={i} />

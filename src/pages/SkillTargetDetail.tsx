@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Target, CalendarDays } from "lucide-react";
 
-import { AIChatPanel } from "@/components/chat/AIChatPanel";
+import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
 import { StepTimeline } from "@/components/skill-target/StepTimeline";
 import { Progress } from "@/components/ui/progress";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
@@ -89,17 +89,14 @@ export default function SkillTargetDetail() {
           </motion.div>
         </div>
 
-        {/* AI Chat Panel */}
-        <div className="w-[320px] shrink-0 border-l border-border h-screen sticky top-0">
-          <AIChatPanel
-            contextLabel={`Skill Target → ${target.title}`}
-            suggestedActions={[
-              { label: "Explain this skill" },
-              { label: "What should I focus on?" },
-              { label: "Show my progress" },
-            ]}
-          />
-        </div>
+        <AIChatWrapper
+          contextLabel={`Skill Target → ${target.title}`}
+          suggestedActions={[
+            { label: "Explain this skill" },
+            { label: "What should I focus on?" },
+            { label: "Show my progress" },
+          ]}
+        />
       </div>
     </div>
   );

@@ -87,7 +87,7 @@ export function AppSidebar() {
             <div className="flex items-center gap-2 w-full justify-between">
               <div className="flex items-center gap-2">
                 <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
-                <span className="font-display font-bold text-sm text-foreground">cornerstone</span>
+                <span className="font-display font-bold text-sm text-foreground">Cornerstone</span>
               </div>
               <button onClick={toggle} className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors">
                 <PanelLeftClose className="h-4 w-4" />
@@ -421,9 +421,9 @@ export function AppSidebar() {
           <>
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent shrink-0">
-                <Building2 className="h-5 w-5 text-accent-foreground" />
+                <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
               </div>
-              <span className="font-display font-bold text-sm text-sidebar-foreground">ABC Company</span>
+              <span className="font-display font-bold text-sm text-sidebar-foreground">Cornerstone</span>
             </div>
             <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
               <PanelLeftClose className="h-4 w-4" />
@@ -442,7 +442,7 @@ export function AppSidebar() {
               </div>
             ) : (
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent">
-                <Building2 className="h-5 w-5 text-accent-foreground" />
+                <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
               </div>
             )}
           </div>

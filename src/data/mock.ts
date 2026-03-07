@@ -18,10 +18,10 @@ export const currentUser: User = {
   avatarUrl: "",
 };
 
-export const samTaylor: User = {
+export const mayaThompson: User = {
   id: "u6",
-  name: "Sam Taylor",
-  email: "sam@wfai.com",
+  name: "Maya Thompson",
+  email: "maya@wfai.com",
   role: "learner",
   avatarUrl: "",
 };

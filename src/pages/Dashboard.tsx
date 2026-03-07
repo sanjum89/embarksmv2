@@ -1,15 +1,17 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Plus, Info } from "lucide-react";
+import { Plus, Info, LayoutGrid, List } from "lucide-react";
 
 import { AIChatPanel } from "@/components/chat/AIChatPanel";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
+import { SkillTargetListItem } from "@/components/skill-target/SkillTargetListItem";
 import { CreateSkillTargetDialog } from "@/components/skill-target/CreateSkillTargetDialog";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { cn } from "@/lib/utils";
 
 type Filter = "all" | "in_progress" | "completed" | "not_started";
+type ViewMode = "cards" | "list";
 
 const filters: { value: Filter; label: string }[] = [
   { value: "all", label: "All" },
@@ -22,6 +24,7 @@ export default function Dashboard() {
   const { user } = useUser();
   const { skillTargets: mockSkillTargets } = useSkillTargets();
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
+  const [viewMode, setViewMode] = useState<ViewMode>("cards");
   const [createOpen, setCreateOpen] = useState(false);
 
   const targets = useMemo(() => {
@@ -48,7 +51,6 @@ export default function Dashboard() {
 
   return (
     <div>
-      
       <div className="flex">
         <div className="flex-1 p-6 max-w-5xl mx-auto">
           {/* Welcome */}
@@ -92,24 +94,53 @@ export default function Dashboard() {
             ))}
           </motion.div>
 
-          {/* Filters + Create Button */}
+          {/* Filters + View Toggle + Create Button */}
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-1 rounded-lg bg-secondary p-1 w-fit">
-              {filters.map((f) => (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1 rounded-lg bg-secondary p-1 w-fit">
+                {filters.map((f) => (
+                  <button
+                    key={f.value}
+                    onClick={() => setActiveFilter(f.value)}
+                    className={cn(
+                      "rounded-md px-3.5 py-1.5 text-xs font-medium transition-all duration-200",
+                      activeFilter === f.value
+                        ? "bg-card text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* View toggle */}
+              <div className="flex items-center gap-0.5 rounded-lg bg-secondary p-1">
                 <button
-                  key={f.value}
-                  onClick={() => setActiveFilter(f.value)}
+                  onClick={() => setViewMode("cards")}
                   className={cn(
-                    "rounded-md px-3.5 py-1.5 text-xs font-medium transition-all duration-200",
-                    activeFilter === f.value
+                    "flex items-center justify-center h-7 w-7 rounded-md transition-all duration-200",
+                    viewMode === "cards"
                       ? "bg-card text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  {f.label}
+                  <LayoutGrid className="h-3.5 w-3.5" />
                 </button>
-              ))}
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={cn(
+                    "flex items-center justify-center h-7 w-7 rounded-md transition-all duration-200",
+                    viewMode === "list"
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  <List className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
+
             <button
               onClick={() => setCreateOpen(true)}
               className="inline-flex items-center gap-1.5 rounded-lg gradient-accent text-accent-foreground px-3.5 py-2 text-xs font-medium hover:opacity-90 transition-opacity"
@@ -119,7 +150,7 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* Cards grid */}
+          {/* Content */}
           {!hasAnyTargets ? (
             <motion.div
               initial={{ opacity: 0, y: 8 }}
@@ -145,11 +176,19 @@ export default function Dashboard() {
               </button>
             </motion.div>
           ) : targets.length > 0 ? (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-              {targets.map((target, i) => (
-                <SkillTargetCard key={target.id} target={target} index={i} />
-              ))}
-            </div>
+            viewMode === "cards" ? (
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                {targets.map((target, i) => (
+                  <SkillTargetCard key={target.id} target={target} index={i} />
+                ))}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {targets.map((target, i) => (
+                  <SkillTargetListItem key={target.id} target={target} index={i} />
+                ))}
+              </div>
+            )
           ) : (
             <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
               No skill targets match this filter.

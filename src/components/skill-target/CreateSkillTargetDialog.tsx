@@ -314,9 +314,13 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
 
                   {/* Skill Gap Recommendations */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Recommended from your Skill Gaps
-                    </h4>
+                    {/* AI recommendation banner */}
+                    <div className="flex items-center gap-2 rounded-lg bg-accent/10 border border-accent/20 px-4 py-3">
+                      <Sparkles className="h-4 w-4 text-accent shrink-0" />
+                      <p className="text-sm text-foreground">
+                        <span className="font-semibold">AI-powered recommendations</span> based on your skills gap analysis
+                      </p>
+                    </div>
 
                     {/* Role gaps — no gaps */}
                     <div className="flex items-center gap-2 rounded-lg bg-success/10 border border-success/20 px-4 py-3">
@@ -327,33 +331,29 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
                       </div>
                     </div>
 
-                    {/* Project gaps */}
-                    <div className="space-y-1.5">
-                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                        <Target className="h-3 w-3" /> Project skill gaps
-                      </p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {projectGaps.map((gap) => (
-                          <button
-                            key={gap.skill}
-                            onClick={() => handleGapClick(gap)}
-                            className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2.5 text-left transition-all hover:border-accent/40 hover:shadow-sm"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-foreground truncate">{gap.skill}</p>
-                              {gap.isNew && (
-                                <span className="text-[10px] font-semibold text-accent">NEW</span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <LevelBadge level={gap.currentLevel} />
-                              <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                              <LevelBadge level={gap.targetLevel} />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    {/* Group 1: Product & Prioritization */}
+                    <GapGroupCard
+                      title="Product & Prioritization Mastery"
+                      subtitle="Upgrade existing skills to Expert level"
+                      iconColor="text-success"
+                      iconBg="bg-success/10"
+                      gaps={projectGaps.filter((g) => group1Skills.includes(g.skill))}
+                      onGapClick={handleGapClick}
+                      onCreateGroup={() => handleCreateGroupFromGaps("group1")}
+                      groupCreated={groupCreated.has("group1")}
+                    />
+
+                    {/* Group 2: Design & Prototyping */}
+                    <GapGroupCard
+                      title="Design & Prototyping Toolkit"
+                      subtitle="Acquire new design and prototyping skills"
+                      iconColor="text-info"
+                      iconBg="bg-info/10"
+                      gaps={projectGaps.filter((g) => group2Skills.includes(g.skill))}
+                      onGapClick={handleGapClick}
+                      onCreateGroup={() => handleCreateGroupFromGaps("group2")}
+                      groupCreated={groupCreated.has("group2")}
+                    />
                   </div>
                 </motion.div>
               )}

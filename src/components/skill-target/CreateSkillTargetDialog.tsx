@@ -214,6 +214,33 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
     setAiPrompt(`I want to improve my ${gap.skill} skill from ${gap.currentLevel ?? "—"} to ${gap.targetLevel}`);
     setStep("ai");
   };
+  const handleCreateGroupFromGaps = (group: "group1" | "group2") => {
+    const isGroup1 = group === "group1";
+    const skills = isGroup1 ? group1Skills : group2Skills;
+    const recs = projectGaps.filter((g) => skills.includes(g.skill));
+    const title = isGroup1 ? "Product & Prioritization Mastery" : "Design & Prototyping Toolkit";
+    const steps: StepItem[] = recs.flatMap((rec, ri) =>
+      (gapModules[rec.skill] ?? []).map((mod, mi) => ({
+        id: `step-grp-${Date.now()}-${ri}-${mi}`,
+        type: "module" as const,
+        title: mod.title,
+        description: `Part of ${rec.skill} learning path.`,
+        order: ri * 10 + mi + 1,
+        skippable: mi > 0,
+        status: ri === 0 && mi === 0 ? ("available" as const) : ("locked" as const),
+        duration: mod.duration,
+        referenceId: `ref-grp-${Date.now()}-${ri}-${mi}`,
+      }))
+    );
+    const target = buildSkillTarget(title, isGroup1
+      ? "Advance your product operations and prioritization skills to Expert level."
+      : "Build foundational skills in design and prototyping tools.",
+      isGroup1 ? "Product Skills" : "Design Tools", steps);
+    setCreatedTarget(target);
+    addSkillTargets([target]);
+    setGroupCreated((prev) => new Set(prev).add(group));
+    setStep("confirm");
+  };
 
   /* AI flow */
   const handleAiGenerate = () => {

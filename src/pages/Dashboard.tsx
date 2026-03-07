@@ -1,8 +1,10 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
+import { Plus } from "lucide-react";
 
 import { AIChatPanel } from "@/components/chat/AIChatPanel";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
+import { CreateSkillTargetDialog } from "@/components/skill-target/CreateSkillTargetDialog";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { cn } from "@/lib/utils";

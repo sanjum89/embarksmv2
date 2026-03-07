@@ -179,6 +179,9 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
   const [selectedModules, setSelectedModules] = useState<Set<string>>(new Set());
   const [moduleSearch, setModuleSearch] = useState("");
 
+  // Group creation tracking
+  const [groupCreated, setGroupCreated] = useState<Set<string>>(new Set());
+
   // Confirmation result
   const [createdTarget, setCreatedTarget] = useState<SkillTarget | null>(null);
 
@@ -602,5 +605,82 @@ function ModuleIcon({ mod }: { mod: LearningModule }) {
     <Video className="h-3.5 w-3.5 text-info shrink-0" />
   ) : (
     <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+  );
+}
+
+/* ─── Gap Group Card (matches ActionPlanView layout) ─── */
+function GapGroupCard({
+  title, subtitle, iconColor, iconBg, gaps, onGapClick, onCreateGroup, groupCreated,
+}: {
+  title: string;
+  subtitle: string;
+  iconColor: string;
+  iconBg: string;
+  gaps: SkillGap[];
+  onGapClick: (gap: SkillGap) => void;
+  onCreateGroup: () => void;
+  groupCreated: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 shadow-card">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", iconBg)}>
+            <Target className={cn("h-4 w-4", iconColor)} />
+          </div>
+          <div>
+            <h5 className="font-display text-sm font-semibold text-foreground">{title}</h5>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          </div>
+        </div>
+        <button
+          onClick={onCreateGroup}
+          disabled={groupCreated}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
+            groupCreated
+              ? "bg-success/10 text-success cursor-default"
+              : "gradient-accent text-accent-foreground hover:opacity-90"
+          )}
+        >
+          {groupCreated ? (
+            <>
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Created
+            </>
+          ) : (
+            <>
+              <Plus className="h-3.5 w-3.5" />
+              Create Skill Target
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="space-y-1">
+        {gaps.map((gap) => (
+          <button
+            key={gap.skill}
+            onClick={() => onGapClick(gap)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border hover:bg-secondary/50 transition-colors text-left"
+          >
+            <span className="text-sm font-medium text-foreground flex-1 truncate">{gap.skill}</span>
+            {gap.isNew && (
+              <span className="rounded-full bg-accent/10 border border-accent/20 px-2 py-0.5 text-[10px] font-semibold text-accent shrink-0">
+                NEW
+              </span>
+            )}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <LevelBadge level={gap.currentLevel} />
+              <ArrowRight className="h-3 w-3 text-muted-foreground" />
+              <LevelBadge level={gap.targetLevel} />
+            </div>
+            <span className="text-xs text-muted-foreground shrink-0">
+              {gapModules[gap.skill]?.length ?? 0} modules
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

@@ -22,6 +22,7 @@ export default function Dashboard() {
   const { user } = useUser();
   const { skillTargets: mockSkillTargets } = useSkillTargets();
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
+  const [createOpen, setCreateOpen] = useState(false);
 
   const targets = useMemo(() => {
     const assigned = mockSkillTargets.filter((st) => st.assignedTo.includes(user.id));

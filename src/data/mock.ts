@@ -16,12 +16,23 @@ export const currentUser: User = {
   avatarUrl: "",
 };
 
+export const samTaylor: User = {
+  id: "u6",
+  name: "Sam Taylor",
+  email: "sam@wfai.com",
+  role: "learner",
+  avatarUrl: "",
+};
+
+export const availableUsers: User[] = [currentUser, samTaylor];
+
 export const mockTeamMembers: User[] = [
   currentUser,
   { id: "u2", name: "Jordan Chen", email: "jordan@wfai.com", role: "learner" },
   { id: "u3", name: "Priya Sharma", email: "priya@wfai.com", role: "learner" },
   { id: "u4", name: "Marcus Williams", email: "marcus@wfai.com", role: "learner" },
   { id: "u5", name: "Sofia Martinez", email: "sofia@wfai.com", role: "manager" },
+  samTaylor,
 ];
 
 /* ─── Assessments ─── */
@@ -163,6 +174,12 @@ export const mockRolePlayBank: RolePlay[] = [
   { id: "rp4", title: "Upsell Conversation", scenario: "An existing customer on the basic plan is showing growth signals — their team doubled and they're using 90% of plan limits. Time to discuss upgrading.", difficulty: "beginner", isPrivate: false, tags: ["upsell", "growth", "retention"], aiCloneConfig: { persona: "Happy customer, growing team", context: "Using 90% of plan limits, team doubled in size, very satisfied with product" } },
   { id: "rp5", title: "Contract Renewal Negotiation", scenario: "A procurement manager has internal pressure to cut costs by 15%. Your contract is up for renewal and they want a significant discount or they'll evaluate alternatives.", difficulty: "advanced", isPrivate: false, tags: ["renewal", "negotiation", "pricing"], aiCloneConfig: { persona: "Procurement manager", context: "Internal pressure to cut costs by 15%, 3-year customer, high usage" } },
   { id: "rp6", title: "Cold Call – New Prospect", scenario: "You're cold-calling a marketing director who has never heard of your product. You have 60 seconds to earn their interest.", difficulty: "beginner", isPrivate: false, tags: ["cold-call", "prospecting", "opening"], aiCloneConfig: { persona: "Busy marketing director", context: "No prior awareness, gets 10 cold calls a day, skeptical but open-minded" } },
+  { id: "rp7", title: "Billing Dispute — Overcharged Customer", scenario: "A customer notices an unexpected charge on their Apple account and calls in demanding an immediate refund. They are frustrated and mention switching to Android.", difficulty: "intermediate", isPrivate: false, tags: ["support", "billing", "empathy", "apple"], aiCloneConfig: { persona: "Frustrated Apple customer", context: "Overcharged $49.99, loyal customer for 5 years, considering switching platforms" } },
+  { id: "rp8", title: "Device Setup — First-Time iPhone User", scenario: "An elderly customer just purchased their first iPhone and needs help setting up iCloud, contacts, and basic navigation. They are patient but easily overwhelmed.", difficulty: "beginner", isPrivate: false, tags: ["support", "device", "apple", "onboarding"], aiCloneConfig: { persona: "First-time iPhone owner, age 68", context: "Switched from a flip phone, needs help with basics, patient but confused" } },
+  { id: "rp9", title: "Account Recovery — Locked Apple ID", scenario: "A customer is locked out of their Apple ID after multiple failed password attempts. They need access urgently for a work presentation stored in iCloud.", difficulty: "intermediate", isPrivate: false, tags: ["support", "account", "apple", "urgent"], aiCloneConfig: { persona: "Panicked professional", context: "Locked out of Apple ID, critical presentation in iCloud, meeting in 2 hours" } },
+  { id: "rp10", title: "Service Outage — iCloud Sync Issues", scenario: "A customer reports that their iCloud photos and documents haven't synced for 3 days across their devices. They rely on iCloud for their small business.", difficulty: "intermediate", isPrivate: false, tags: ["support", "apple", "empathy", "technical"], aiCloneConfig: { persona: "Small business owner", context: "iCloud sync broken for 3 days, uses it for business documents, losing productivity" } },
+  { id: "rp11", title: "Warranty Claim — Cracked Screen", scenario: "A customer's iPhone screen cracked after a minor drop. They believe it should be covered under warranty. The device is 10 months old but has no AppleCare+.", difficulty: "advanced", isPrivate: false, tags: ["support", "apple", "warranty", "escalation"], aiCloneConfig: { persona: "Upset iPhone owner", context: "Cracked screen, no AppleCare+, device 10 months old, expects free repair" } },
+  { id: "rp12", title: "Subscription Cancellation — Apple One", scenario: "A customer wants to cancel their Apple One family plan. They feel it's too expensive and only use Apple Music. They need guidance on what they'll lose and alternatives.", difficulty: "beginner", isPrivate: false, tags: ["support", "billing", "apple", "retention"], aiCloneConfig: { persona: "Cost-conscious family plan subscriber", context: "Paying $32.95/mo for Apple One Family, only uses Music, wants to downgrade" } },
 ];
 
 /* ─── People Graph Signals ─── */
@@ -196,3 +213,102 @@ export const mockTeamProgress: TeamMemberProgress[] = [
   { user: mockTeamMembers[3], skillTargetId: "st2", progress: 20, lastActivity: "2026-02-22T09:00:00Z", status: "at_risk" },
   { user: mockTeamMembers[3], skillTargetId: "st3", progress: 50, lastActivity: "2026-02-24T11:00:00Z", status: "on_track" },
 ];
+
+/* ─── Per-User Profile Data ─── */
+export interface ProfileData {
+  title: string;
+  location: string;
+  manager: string;
+  yearsExperience: number;
+  summary: string;
+  coreSkills: string[];
+  otherSkills: { name: string; level: string; year: string }[];
+  roleSnapshotText: string;
+  projectSnapshotText: string;
+  radarSkills: { skill: string; score: number; target: number }[];
+  skillGapRows: {
+    left: { skill: string; level: string; target: string; hasSkill: boolean };
+    right: { skill: string; level: string; target: string | null; hasSkill: boolean };
+  }[];
+}
+
+export const profileDataByUser: Record<string, ProfileData> = {
+  u1: {
+    title: "Senior Director, Product Management",
+    location: "San Francisco, CA",
+    manager: "Hitesh Dholakia",
+    yearsExperience: 14,
+    summary:
+      "Developer turned product and sales leader with 12+ years of experience building, and commercializing SaaS platforms. Co-founded and grew a bootstrapped B2B SaaS startup that managed client workflows exceeding $200M. Closed multi-year contracts with leading e-commerce and BFSI enterprises, including Flipkart, Tata, AngelOne and ICICI.",
+    coreSkills: [
+      "Product Strategy",
+      "Stakeholder Management",
+      "Product Ops & Scaling",
+      "Prioritization Rigor",
+      "Lovable AI",
+      "FigJam",
+      "Figma Wireframing",
+      "Figma Make",
+    ],
+    otherSkills: [
+      { name: "Python", level: "I", year: "'24" },
+      { name: "SQL", level: "I", year: "'25" },
+      { name: "OpenKnime - Analytics", level: "A", year: "'25" },
+    ],
+    roleSnapshotText: "Own the product vision and end-to-end execution of the WFAI Onboarding use case. Translate complex enterprise workforce challenges into scalable, AI-driven solutions.",
+    projectSnapshotText: "Currently assigned to the WFAI Onboarding project, focusing on building dynamic People Graph across skills, performance, and training data to enable real-time deployment decisions.",
+    radarSkills: [
+      { skill: "Product Strategy", score: 80, target: 80 },
+      { skill: "Stakeholder Mgmt", score: 80, target: 80 },
+      { skill: "Product Ops", score: 60, target: 80 },
+      { skill: "Prioritization", score: 60, target: 80 },
+      { skill: "Figma Wireframing", score: 40, target: 60 },
+      { skill: "Figma Make", score: 20, target: 40 },
+      { skill: "FigJam", score: 20, target: 40 },
+      { skill: "Lovable AI", score: 40, target: 60 },
+    ],
+    skillGapRows: [
+      { left: { skill: "Product Stra…", level: "E", target: "✓", hasSkill: true },  right: { skill: "Figma Wiref…", level: "I", target: "A", hasSkill: true } },
+      { left: { skill: "Stakeholder…", level: "E", target: "✓", hasSkill: true },   right: { skill: "Figma Make", level: "B", target: null, hasSkill: false } },
+      { left: { skill: "Product Ops…", level: "A", target: "E", hasSkill: true },   right: { skill: "FigJam", level: "B", target: null, hasSkill: false } },
+      { left: { skill: "Prioritization…", level: "A", target: "E", hasSkill: true }, right: { skill: "Lovable AI", level: "I", target: null, hasSkill: false } },
+    ],
+  },
+  u6: {
+    title: "L1 Customer Support Executive",
+    location: "Austin, TX",
+    manager: "Rachel Kim",
+    yearsExperience: 2,
+    summary:
+      "Customer-focused support specialist with 2 years of experience in L1 technical and billing support for consumer electronics. Currently assigned to the Apple Customer Support Project handling iPhone, iCloud, and Apple One inquiries. Known for high first-call resolution rates and strong empathy scores.",
+    coreSkills: [
+      "Customer Communication",
+      "Apple Product Knowledge",
+      "Issue Triage",
+      "CRM Tools",
+    ],
+    otherSkills: [
+      { name: "Zendesk", level: "A", year: "'25" },
+      { name: "Salesforce", level: "I", year: "'25" },
+      { name: "Apple GSX", level: "I", year: "'26" },
+    ],
+    roleSnapshotText: "Provide first-level technical and billing support for Apple products. Resolve customer issues within SLA, escalate complex cases to L2, and maintain a CSAT score above 90%.",
+    projectSnapshotText: "Currently assigned to the Apple Customer Support Project, handling inbound calls and chats for iPhone, iCloud, Apple One, and warranty-related inquiries across the US region.",
+    radarSkills: [
+      { skill: "Communication", score: 80, target: 80 },
+      { skill: "Apple Products", score: 60, target: 80 },
+      { skill: "Issue Triage", score: 60, target: 80 },
+      { skill: "CRM Tools", score: 40, target: 60 },
+      { skill: "Empathy", score: 80, target: 80 },
+      { skill: "Escalation Mgmt", score: 40, target: 60 },
+      { skill: "Billing Systems", score: 40, target: 60 },
+      { skill: "Technical Debug", score: 20, target: 60 },
+    ],
+    skillGapRows: [
+      { left: { skill: "Communication", level: "E", target: "✓", hasSkill: true },  right: { skill: "CRM Tools", level: "I", target: "A", hasSkill: true } },
+      { left: { skill: "Empathy", level: "E", target: "✓", hasSkill: true },        right: { skill: "Escalation Mgmt", level: "I", target: "A", hasSkill: true } },
+      { left: { skill: "Apple Products", level: "A", target: "E", hasSkill: true }, right: { skill: "Billing Systems", level: "I", target: "A", hasSkill: true } },
+      { left: { skill: "Issue Triage", level: "A", target: "E", hasSkill: true },   right: { skill: "Technical Debug", level: "B", target: "A", hasSkill: true } },
+    ],
+  },
+};

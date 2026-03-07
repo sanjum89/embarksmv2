@@ -31,53 +31,11 @@ import { AIChatPanel, AIChatPanelHandle } from "@/components/chat/AIChatPanel";
 import { CareerTimeline } from "@/components/my360/CareerTimeline";
 import { ActionPlanView } from "@/components/my360/ActionPlanView";
 import { useUser } from "@/contexts/UserContext";
+import { profileDataByUser } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/hooks/useChartColors";
 
-/* ─── Mock profile data ─── */
-const profileData = {
-  title: "Senior Director, Product Management",
-  location: "San Francisco, CA",
-  manager: "Hitesh Dholakia",
-  yearsExperience: 14,
-  summary:
-    "Developer turned product and sales leader with 12+ years of experience building, and commercializing SaaS platforms. Co-founded and grew a bootstrapped B2B SaaS startup that managed client workflows exceeding $200M. Closed multi-year contracts with leading e-commerce and BFSI enterprises, including Flipkart, Tata, AngelOne and ICICI.",
-  coreSkills: [
-    "Product Strategy",
-    "Stakeholder Management",
-    "Product Ops & Scaling",
-    "Prioritization Rigor",
-    "Lovable AI",
-    "FigJam",
-    "Figma Wireframing",
-    "Figma Make",
-  ],
-  otherSkills: [
-    { name: "Python", level: "I", year: "'24" },
-    { name: "SQL", level: "I", year: "'25" },
-    { name: "OpenKnime - Analytics", level: "A", year: "'25" },
-  ],
-};
-
 const proficiencyLabels = ["", "B", "I", "A", "E", "M"];
-
-const radarSkills = [
-  { skill: "Product Strategy", score: 80, target: 80 },
-  { skill: "Stakeholder Mgmt", score: 80, target: 80 },
-  { skill: "Product Ops", score: 60, target: 80 },
-  { skill: "Prioritization", score: 60, target: 80 },
-  { skill: "Figma Wireframing", score: 40, target: 60 },
-  { skill: "Figma Make", score: 20, target: 40 },
-  { skill: "FigJam", score: 20, target: 40 },
-  { skill: "Lovable AI", score: 40, target: 60 },
-];
-
-const skillGapRows = [
-  { left: { skill: "Product Stra…", level: "E", target: "✓", hasSkill: true },  right: { skill: "Figma Wiref…", level: "I", target: "A", hasSkill: true } },
-  { left: { skill: "Stakeholder…", level: "E", target: "✓", hasSkill: true },   right: { skill: "Figma Make", level: "B", target: null, hasSkill: false } },
-  { left: { skill: "Product Ops…", level: "A", target: "E", hasSkill: true },   right: { skill: "FigJam", level: "B", target: null, hasSkill: false } },
-  { left: { skill: "Prioritization…", level: "A", target: "E", hasSkill: true }, right: { skill: "Lovable AI", level: "I", target: null, hasSkill: false } },
-];
 
 const tabs = ["Role & Skills", "Career Timeline", "Growth Path"] as const;
 
@@ -93,6 +51,9 @@ const PROJECT_EXPLORE_RESPONSE = `Here is a quick summary for you\n\n## Overview
 
 export default function My360() {
   const { user } = useUser();
+  const profileData = profileDataByUser[user.id] || profileDataByUser["u1"];
+  const radarSkills = profileData.radarSkills;
+  const skillGapRows = profileData.skillGapRows;
   const chatRef = useRef<AIChatPanelHandle>(null);
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
@@ -343,7 +304,7 @@ export default function My360() {
                     </button>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Own the product vision and end-to-end execution of the WFAI Onboarding use case. Translate complex enterprise workforce challenges into scalable, AI-driven solutions.
+                    {profileData.roleSnapshotText}
                   </p>
                 </motion.div>
 
@@ -364,7 +325,7 @@ export default function My360() {
                     </button>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Currently assigned to the WFAI Onboarding project, focusing on building dynamic People Graph across skills, performance, and training data to enable real-time deployment decisions.
+                    {profileData.projectSnapshotText}
                   </p>
                 </motion.div>
 

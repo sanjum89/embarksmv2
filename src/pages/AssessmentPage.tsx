@@ -5,6 +5,7 @@ import { ArrowLeft, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 
 import { mockAssessments } from "@/data/mock";
 import { cn } from "@/lib/utils";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 
 export default function AssessmentPage() {
   const { aid } = useParams();

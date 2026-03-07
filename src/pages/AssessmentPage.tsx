@@ -11,6 +11,7 @@ export default function AssessmentPage() {
   const { aid } = useParams();
   const { id: skillTargetId } = useParams();
   const assessment = mockAssessments.find((a) => a.id === aid);
+  const { updateSkillTarget } = useSkillTargets();
 
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});

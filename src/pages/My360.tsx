@@ -285,8 +285,8 @@ export default function My360() {
                       )}
                     >
                       <span className="w-[5.5rem] truncate">{displayName}</span>
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary/50 text-xs font-bold">{shortLevel}</span>
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary/50 text-xs font-bold">{shortYear}</span>
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-background text-xs font-bold">{shortLevel}</span>
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-background text-xs font-bold">{shortYear}</span>
                     </span>
                   );
                 }}

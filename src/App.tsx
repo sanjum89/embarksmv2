@@ -20,6 +20,7 @@ import ManagerView from "./pages/ManagerView";
 import AdminView from "./pages/AdminView";
 import NotFound from "./pages/NotFound";
 
+
 const queryClient = new QueryClient();
 
 const App = () => (

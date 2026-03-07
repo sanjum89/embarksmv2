@@ -213,3 +213,102 @@ export const mockTeamProgress: TeamMemberProgress[] = [
   { user: mockTeamMembers[3], skillTargetId: "st2", progress: 20, lastActivity: "2026-02-22T09:00:00Z", status: "at_risk" },
   { user: mockTeamMembers[3], skillTargetId: "st3", progress: 50, lastActivity: "2026-02-24T11:00:00Z", status: "on_track" },
 ];
+
+/* ─── Per-User Profile Data ─── */
+export interface ProfileData {
+  title: string;
+  location: string;
+  manager: string;
+  yearsExperience: number;
+  summary: string;
+  coreSkills: string[];
+  otherSkills: { name: string; level: string; year: string }[];
+  roleSnapshotText: string;
+  projectSnapshotText: string;
+  radarSkills: { skill: string; score: number; target: number }[];
+  skillGapRows: {
+    left: { skill: string; level: string; target: string; hasSkill: boolean };
+    right: { skill: string; level: string; target: string | null; hasSkill: boolean };
+  }[];
+}
+
+export const profileDataByUser: Record<string, ProfileData> = {
+  u1: {
+    title: "Senior Director, Product Management",
+    location: "San Francisco, CA",
+    manager: "Hitesh Dholakia",
+    yearsExperience: 14,
+    summary:
+      "Developer turned product and sales leader with 12+ years of experience building, and commercializing SaaS platforms. Co-founded and grew a bootstrapped B2B SaaS startup that managed client workflows exceeding $200M. Closed multi-year contracts with leading e-commerce and BFSI enterprises, including Flipkart, Tata, AngelOne and ICICI.",
+    coreSkills: [
+      "Product Strategy",
+      "Stakeholder Management",
+      "Product Ops & Scaling",
+      "Prioritization Rigor",
+      "Lovable AI",
+      "FigJam",
+      "Figma Wireframing",
+      "Figma Make",
+    ],
+    otherSkills: [
+      { name: "Python", level: "I", year: "'24" },
+      { name: "SQL", level: "I", year: "'25" },
+      { name: "OpenKnime - Analytics", level: "A", year: "'25" },
+    ],
+    roleSnapshotText: "Own the product vision and end-to-end execution of the WFAI Onboarding use case. Translate complex enterprise workforce challenges into scalable, AI-driven solutions.",
+    projectSnapshotText: "Currently assigned to the WFAI Onboarding project, focusing on building dynamic People Graph across skills, performance, and training data to enable real-time deployment decisions.",
+    radarSkills: [
+      { skill: "Product Strategy", score: 80, target: 80 },
+      { skill: "Stakeholder Mgmt", score: 80, target: 80 },
+      { skill: "Product Ops", score: 60, target: 80 },
+      { skill: "Prioritization", score: 60, target: 80 },
+      { skill: "Figma Wireframing", score: 40, target: 60 },
+      { skill: "Figma Make", score: 20, target: 40 },
+      { skill: "FigJam", score: 20, target: 40 },
+      { skill: "Lovable AI", score: 40, target: 60 },
+    ],
+    skillGapRows: [
+      { left: { skill: "Product Stra…", level: "E", target: "✓", hasSkill: true },  right: { skill: "Figma Wiref…", level: "I", target: "A", hasSkill: true } },
+      { left: { skill: "Stakeholder…", level: "E", target: "✓", hasSkill: true },   right: { skill: "Figma Make", level: "B", target: null, hasSkill: false } },
+      { left: { skill: "Product Ops…", level: "A", target: "E", hasSkill: true },   right: { skill: "FigJam", level: "B", target: null, hasSkill: false } },
+      { left: { skill: "Prioritization…", level: "A", target: "E", hasSkill: true }, right: { skill: "Lovable AI", level: "I", target: null, hasSkill: false } },
+    ],
+  },
+  u6: {
+    title: "L1 Customer Support Executive",
+    location: "Austin, TX",
+    manager: "Rachel Kim",
+    yearsExperience: 2,
+    summary:
+      "Customer-focused support specialist with 2 years of experience in L1 technical and billing support for consumer electronics. Currently assigned to the Apple Customer Support Project handling iPhone, iCloud, and Apple One inquiries. Known for high first-call resolution rates and strong empathy scores.",
+    coreSkills: [
+      "Customer Communication",
+      "Apple Product Knowledge",
+      "Issue Triage",
+      "CRM Tools",
+    ],
+    otherSkills: [
+      { name: "Zendesk", level: "A", year: "'25" },
+      { name: "Salesforce", level: "I", year: "'25" },
+      { name: "Apple GSX", level: "I", year: "'26" },
+    ],
+    roleSnapshotText: "Provide first-level technical and billing support for Apple products. Resolve customer issues within SLA, escalate complex cases to L2, and maintain a CSAT score above 90%.",
+    projectSnapshotText: "Currently assigned to the Apple Customer Support Project, handling inbound calls and chats for iPhone, iCloud, Apple One, and warranty-related inquiries across the US region.",
+    radarSkills: [
+      { skill: "Communication", score: 80, target: 80 },
+      { skill: "Apple Products", score: 60, target: 80 },
+      { skill: "Issue Triage", score: 60, target: 80 },
+      { skill: "CRM Tools", score: 40, target: 60 },
+      { skill: "Empathy", score: 80, target: 80 },
+      { skill: "Escalation Mgmt", score: 40, target: 60 },
+      { skill: "Billing Systems", score: 40, target: 60 },
+      { skill: "Technical Debug", score: 20, target: 60 },
+    ],
+    skillGapRows: [
+      { left: { skill: "Communication", level: "E", target: "✓", hasSkill: true },  right: { skill: "CRM Tools", level: "I", target: "A", hasSkill: true } },
+      { left: { skill: "Empathy", level: "E", target: "✓", hasSkill: true },        right: { skill: "Escalation Mgmt", level: "I", target: "A", hasSkill: true } },
+      { left: { skill: "Apple Products", level: "A", target: "E", hasSkill: true }, right: { skill: "Billing Systems", level: "I", target: "A", hasSkill: true } },
+      { left: { skill: "Issue Triage", level: "A", target: "E", hasSkill: true },   right: { skill: "Technical Debug", level: "B", target: "A", hasSkill: true } },
+    ],
+  },
+};

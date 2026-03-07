@@ -318,17 +318,17 @@ export function AppSidebar() {
                 <p className="text-xs font-medium text-muted-foreground px-2 pb-1.5">Style</p>
                 <button
                   onClick={() => setStyleTheme("new")}
-                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", styleTheme === "new" ? "bg-primary/10 font-medium" : "hover:bg-secondary")}
+                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", !isTraditional ? "bg-primary/10 font-medium" : "hover:bg-secondary")}
                 >
                   <span className="flex-1 text-left">New Theme</span>
-                  {styleTheme === "new" && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                  {!isTraditional && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
                 </button>
                 <button
                   onClick={() => setStyleTheme("traditional")}
-                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", styleTheme === "traditional" ? "bg-primary/10 font-medium" : "hover:bg-secondary")}
+                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", isTraditional ? "bg-primary/10 font-medium" : "hover:bg-secondary")}
                 >
                   <span className="flex-1 text-left">Traditional</span>
-                  {styleTheme === "traditional" && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                  {isTraditional && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
                 </button>
               </PopoverContent>
             </Popover>
@@ -505,17 +505,17 @@ export function AppSidebar() {
             <p className="text-xs font-medium text-muted-foreground px-2 pb-1.5">Style</p>
             <button
               onClick={() => setStyleTheme("new")}
-              className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", styleTheme === "new" ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
+              className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", !isTraditional ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
             >
               <span className="flex-1 text-left">New Theme</span>
-              {styleTheme === "new" && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
+              {!isTraditional && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
             </button>
             <button
               onClick={() => setStyleTheme("traditional")}
-              className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", styleTheme === "traditional" ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
+              className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", isTraditional ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
             >
               <span className="flex-1 text-left">Traditional</span>
-              {styleTheme === "traditional" && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
+              {isTraditional && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
             </button>
             <Separator className="my-1.5" />
             <button

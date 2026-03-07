@@ -16,12 +16,23 @@ export const currentUser: User = {
   avatarUrl: "",
 };
 
+export const samTaylor: User = {
+  id: "u6",
+  name: "Sam Taylor",
+  email: "sam@wfai.com",
+  role: "learner",
+  avatarUrl: "",
+};
+
+export const availableUsers: User[] = [currentUser, samTaylor];
+
 export const mockTeamMembers: User[] = [
   currentUser,
   { id: "u2", name: "Jordan Chen", email: "jordan@wfai.com", role: "learner" },
   { id: "u3", name: "Priya Sharma", email: "priya@wfai.com", role: "learner" },
   { id: "u4", name: "Marcus Williams", email: "marcus@wfai.com", role: "learner" },
   { id: "u5", name: "Sofia Martinez", email: "sofia@wfai.com", role: "manager" },
+  samTaylor,
 ];
 
 /* ─── Assessments ─── */
@@ -163,6 +174,12 @@ export const mockRolePlayBank: RolePlay[] = [
   { id: "rp4", title: "Upsell Conversation", scenario: "An existing customer on the basic plan is showing growth signals — their team doubled and they're using 90% of plan limits. Time to discuss upgrading.", difficulty: "beginner", isPrivate: false, tags: ["upsell", "growth", "retention"], aiCloneConfig: { persona: "Happy customer, growing team", context: "Using 90% of plan limits, team doubled in size, very satisfied with product" } },
   { id: "rp5", title: "Contract Renewal Negotiation", scenario: "A procurement manager has internal pressure to cut costs by 15%. Your contract is up for renewal and they want a significant discount or they'll evaluate alternatives.", difficulty: "advanced", isPrivate: false, tags: ["renewal", "negotiation", "pricing"], aiCloneConfig: { persona: "Procurement manager", context: "Internal pressure to cut costs by 15%, 3-year customer, high usage" } },
   { id: "rp6", title: "Cold Call – New Prospect", scenario: "You're cold-calling a marketing director who has never heard of your product. You have 60 seconds to earn their interest.", difficulty: "beginner", isPrivate: false, tags: ["cold-call", "prospecting", "opening"], aiCloneConfig: { persona: "Busy marketing director", context: "No prior awareness, gets 10 cold calls a day, skeptical but open-minded" } },
+  { id: "rp7", title: "Billing Dispute — Overcharged Customer", scenario: "A customer notices an unexpected charge on their Apple account and calls in demanding an immediate refund. They are frustrated and mention switching to Android.", difficulty: "intermediate", isPrivate: false, tags: ["support", "billing", "empathy", "apple"], aiCloneConfig: { persona: "Frustrated Apple customer", context: "Overcharged $49.99, loyal customer for 5 years, considering switching platforms" } },
+  { id: "rp8", title: "Device Setup — First-Time iPhone User", scenario: "An elderly customer just purchased their first iPhone and needs help setting up iCloud, contacts, and basic navigation. They are patient but easily overwhelmed.", difficulty: "beginner", isPrivate: false, tags: ["support", "device", "apple", "onboarding"], aiCloneConfig: { persona: "First-time iPhone owner, age 68", context: "Switched from a flip phone, needs help with basics, patient but confused" } },
+  { id: "rp9", title: "Account Recovery — Locked Apple ID", scenario: "A customer is locked out of their Apple ID after multiple failed password attempts. They need access urgently for a work presentation stored in iCloud.", difficulty: "intermediate", isPrivate: false, tags: ["support", "account", "apple", "urgent"], aiCloneConfig: { persona: "Panicked professional", context: "Locked out of Apple ID, critical presentation in iCloud, meeting in 2 hours" } },
+  { id: "rp10", title: "Service Outage — iCloud Sync Issues", scenario: "A customer reports that their iCloud photos and documents haven't synced for 3 days across their devices. They rely on iCloud for their small business.", difficulty: "intermediate", isPrivate: false, tags: ["support", "apple", "empathy", "technical"], aiCloneConfig: { persona: "Small business owner", context: "iCloud sync broken for 3 days, uses it for business documents, losing productivity" } },
+  { id: "rp11", title: "Warranty Claim — Cracked Screen", scenario: "A customer's iPhone screen cracked after a minor drop. They believe it should be covered under warranty. The device is 10 months old but has no AppleCare+.", difficulty: "advanced", isPrivate: false, tags: ["support", "apple", "warranty", "escalation"], aiCloneConfig: { persona: "Upset iPhone owner", context: "Cracked screen, no AppleCare+, device 10 months old, expects free repair" } },
+  { id: "rp12", title: "Subscription Cancellation — Apple One", scenario: "A customer wants to cancel their Apple One family plan. They feel it's too expensive and only use Apple Music. They need guidance on what they'll lose and alternatives.", difficulty: "beginner", isPrivate: false, tags: ["support", "billing", "apple", "retention"], aiCloneConfig: { persona: "Cost-conscious family plan subscriber", context: "Paying $32.95/mo for Apple One Family, only uses Music, wants to downgrade" } },
 ];
 
 /* ─── People Graph Signals ─── */

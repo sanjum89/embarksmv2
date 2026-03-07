@@ -14,18 +14,6 @@ import {
   ChevronRight,
   Check,
 } from "lucide-react";
-  LayoutDashboard,
-  Target,
-  MessageSquare,
-  Users,
-  Shield,
-  BarChart3,
-  CircleUser,
-  PanelLeftClose,
-  PanelLeftOpen,
-  ChevronDown,
-  ChevronRight,
-} from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { cn } from "@/lib/utils";

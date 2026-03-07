@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Plus, Info, LayoutGrid, List, ChevronDown } from "lucide-react";
 
-import { AIChatPanel } from "@/components/chat/AIChatPanel";
+import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
 import { SkillTargetListItem } from "@/components/skill-target/SkillTargetListItem";
 import { CreateSkillTargetDialog } from "@/components/skill-target/CreateSkillTargetDialog";
@@ -124,10 +124,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* AI Chat Panel */}
-          <div className="w-[320px] shrink-0 border-l border-border h-screen sticky top-0">
-            <AIChatPanel contextLabel="Learning Spaces → Dashboard" />
-          </div>
+          <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />
         </div>
 
         <CreateSkillTargetDialog open={createOpen} onOpenChange={setCreateOpen} />
@@ -283,10 +280,7 @@ export default function Dashboard() {
           )}
         </div>
 
-        {/* AI Chat Panel */}
-        <div className="w-[320px] shrink-0 border-l border-border h-screen sticky top-0">
-          <AIChatPanel contextLabel="Learning Spaces → Dashboard" />
-        </div>
+        <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />
       </div>
 
       <CreateSkillTargetDialog open={createOpen} onOpenChange={setCreateOpen} />

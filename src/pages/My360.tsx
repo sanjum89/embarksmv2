@@ -26,7 +26,7 @@ import {
   Legend,
 } from "recharts";
 
-import { AIChatPanel, AIChatPanelHandle } from "@/components/chat/AIChatPanel";
+import { AIChatWrapper, AIChatWrapperHandle } from "@/components/chat/AIChatWrapper";
 import { CareerTimeline } from "@/components/my360/CareerTimeline";
 import { ActionPlanView } from "@/components/my360/ActionPlanView";
 import { useUser } from "@/contexts/UserContext";
@@ -92,7 +92,7 @@ type GapFilter = "All" | "Gap" | "No gap";
 export default function My360() {
   const { user } = useUser();
   const profileData = profileDataByUser[user.id] || profileDataByUser["u1"];
-  const chatRef = useRef<AIChatPanelHandle>(null);
+  const chatRef = useRef<AIChatWrapperHandle>(null);
 
   // Clear chat when profile changes
   useEffect(() => {
@@ -672,10 +672,7 @@ export default function My360() {
           )}
         </div>
 
-        {/* AI Chat Panel */}
-        <div className="w-[320px] shrink-0 border-l border-border h-screen sticky top-0">
-          <AIChatPanel ref={chatRef} contextLabel="My 360 → Profile" />
-        </div>
+        <AIChatWrapper ref={chatRef} contextLabel="My 360 → Profile" />
       </div>
     </div>
   );

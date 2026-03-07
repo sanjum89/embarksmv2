@@ -49,14 +49,16 @@ export default function SkillTargetDetail() {
             </p>
           </div>
 
-          {/* Tabs */}
+          {/* Tabs — Chapters only visible when a module is active */}
           <div className="flex border-b border-border px-6">
             <button className="text-sm font-medium text-primary border-b-2 border-primary px-1 py-2.5 mr-6">
               Conversation
             </button>
-            <button className="text-sm font-medium text-muted-foreground hover:text-foreground px-1 py-2.5">
-              Chapters
-            </button>
+            {activeStep && (
+              <button className="text-sm font-medium text-muted-foreground hover:text-foreground px-1 py-2.5">
+                Chapters
+              </button>
+            )}
           </div>
 
           {/* Chat area — grows to fill */}

@@ -2,27 +2,14 @@
 
 ## Problem
 
-The `railPalette` function currently colors each segment based on the entry *below* it. This means:
-- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
-- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
-- The segment from **Jan → 2025** gets 2025's color (Green) — correct
+In the Traditional UI, the sidebar has a logo row at the top (~56px), and below it the nav bar strip begins. However, the main content area starts at the very top of the viewport (y=0), overlapping with the logo row. The content should instead start at the same vertical position as the nav bar — leaving the logo row area blank on the content side.
 
-The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
+## Plan
 
-## Fix
+**File: `src/components/layout/AppLayout.tsx`**
 
-Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
+1. Import `useTheme` from ThemeContext.
+2. When `styleTheme === "traditional"`, add a top padding to the `<main>` element (approximately `pt-14` / 56px) to push content down to align with where the nav strip starts.
 
-```typescript
-const railPalette = (i: number) => {
-  return palette(careerEntries[i]);
-};
-```
-
-This gives:
-- **Mar segment** (Mar → Feb): Orange
-- **Feb segment** (Feb → Jan): Yellow  
-- **Jan segment and below**: Green
-
-Single line change in `src/components/my360/CareerTimeline.tsx`.
+This is a single-line change — add conditional top padding to the main content wrapper so it clears the logo row height in Traditional UI mode.
 

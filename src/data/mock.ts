@@ -5,6 +5,8 @@ import type {
   Assessment,
   LearningModule,
   PeopleGraphSignal,
+  SkillEntry,
+  SkillRequirement,
 } from "@/types/learning";
 
 /* ─── Users ─── */

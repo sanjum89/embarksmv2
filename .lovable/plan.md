@@ -1,28 +1,31 @@
 
 
-## Problem
+## Fix Other Skills Overflow
 
-The `railPalette` function currently colors each segment based on the entry *below* it. This means:
-- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
-- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
-- The segment from **Jan → 2025** gets 2025's color (Green) — correct
+### Problem
+The Other Skills section overflows because of two bugs:
+1. **Line 139**: `otherExtra = profileData.otherSkills.length - otherVisible + 24` — the `+ 24` is wrong, should just be `profileData.otherSkills.length - otherVisible`
+2. **Line 302**: `style={{ overflow: 'visible' }}` defeats the flex-nowrap clipping, causing pills to spill outside the container
 
-The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
+### Fix
 
-## Fix
+**In `src/pages/My360.tsx`:**
 
-Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
+1. **Line 139** — Remove the `+ 24`:
+   ```typescript
+   const otherExtra = profileData.otherSkills.length - otherVisible;
+   ```
 
-```typescript
-const railPalette = (i: number) => {
-  return palette(careerEntries[i]);
-};
-```
+2. **Line 302** — Remove `style={{ overflow: 'visible' }}` and add `overflow-hidden` to clip pills that don't fit:
+   ```html
+   <div ref={otherRef} className="relative flex flex-nowrap gap-2 overflow-hidden">
+   ```
 
-This gives:
-- **Mar segment** (Mar → Feb): Orange
-- **Feb segment** (Feb → Jan): Yellow  
-- **Jan segment and below**: Green
+The `useVisibleCount` hook + ResizeObserver will then correctly measure how many pills fit in one row and show the accurate "+N more" badge for the rest. Hover tooltips use `position: absolute` with `z-50` so they'll still appear above the container via the `group` parent's `relative` positioning — but we need to keep the container's overflow visible for tooltips. Alternative: move tooltips to a portal or use `overflow-x: hidden; overflow-y: visible` — simplest fix is to just remove the inline style and let the hook handle clipping by only rendering the visible count of pills (no CSS clipping needed since we slice the array).
 
-Single line change in `src/components/my360/CareerTimeline.tsx`.
+**Revised approach** — keep `overflow: visible` but fix the count bug:
+1. Fix line 139: remove `+ 24`
+2. That's likely the primary issue — the `+ 24` makes `otherExtra` always positive, which means the "+N more" badge always shows and the visible count logic gets confused
+
+Single line change in `src/pages/My360.tsx`.
 

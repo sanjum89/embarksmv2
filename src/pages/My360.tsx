@@ -24,7 +24,6 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  Cell,
 } from "recharts";
 
 import { AIChatPanel, AIChatPanelHandle } from "@/components/chat/AIChatPanel";
@@ -34,6 +33,8 @@ import { useUser } from "@/contexts/UserContext";
 import { profileDataByUser } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/hooks/useChartColors";
+import { proficiencyShort } from "@/types/learning";
+import { deriveSkillGaps, deriveRadarSkills, deriveSkillGapRows } from "@/lib/skillUtils";
 
 const proficiencyLabels = ["", "B", "I", "A", "E", "M"];
 
@@ -49,17 +50,48 @@ const PROJECT_EXPLORE_PROMPT =
 
 const PROJECT_EXPLORE_RESPONSE = `Here is a quick summary for you\n\n## Overview\n\nYou're working on **WFAI — an agentic workforce intelligence platform** that builds a dynamic People Graph across skills, performance, and training data. **The goal** is to enable real-time deployment and upskilling decisions using AI-driven workforce insights at scale.\n\n## Opportunity\n\nThis is a chance to define a new category beyond LMS and static skills tools—by operationalising workforce intelligence across the enterprise sector.\n\n## Responsibilities\n\n- Own the product vision and end-to-end execution of the WFAI Onboarding use case.\n- Translate complex enterprise workforce challenges into scalable, AI-driven solutions.`;
 
+type GapSource = "Role" | "Project";
+type GapFilter = "All" | "Gap" | "No gap";
+
 export default function My360() {
   const { user } = useUser();
   const profileData = profileDataByUser[user.id] || profileDataByUser["u1"];
-  const radarSkills = profileData.radarSkills;
-  const skillGapRows = profileData.skillGapRows;
   const chatRef = useRef<AIChatPanelHandle>(null);
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
   const [chartMode, setChartMode] = useState<"radar" | "bar">("radar");
+  const [gapSource, setGapSource] = useState<GapSource>("Project");
+  const [gapFilter, setGapFilter] = useState<GapFilter>("All");
   const colors = useChartColors();
+
+  // Derived core skills from role skills current
+  const coreSkillNames = useMemo(
+    () => profileData.roleSkillsCurrent.map((s) => s.skill_name),
+    [profileData.roleSkillsCurrent]
+  );
+
+  // Derived radar data based on gap source
+  const radarSkills = useMemo(() => {
+    if (gapSource === "Role") {
+      return deriveRadarSkills(profileData.roleSkillsCurrent, profileData.roleSkillsRequired);
+    }
+    return deriveRadarSkills(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
+  }, [profileData, gapSource]);
+
+  // Derived gap rows
+  const allGapRows = useMemo(() => {
+    const gaps = gapSource === "Role"
+      ? deriveSkillGaps(profileData.roleSkillsCurrent, profileData.roleSkillsRequired)
+      : deriveSkillGaps(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
+    return deriveSkillGapRows(gaps);
+  }, [profileData, gapSource]);
+
+  const filteredGapRows = useMemo(() => {
+    if (gapFilter === "Gap") return allGapRows.filter((r) => r.hasGap);
+    if (gapFilter === "No gap") return allGapRows.filter((r) => !r.hasGap);
+    return allGapRows;
+  }, [allGapRows, gapFilter]);
 
   const { containerRef: otherRef, visibleCount: otherVisible } = useVisibleCount(profileData.otherSkills.length);
 
@@ -114,9 +146,16 @@ export default function My360() {
               </div>
 
               <div className="flex-1 min-w-0">
-                <h4 className="font-display text-lg font-bold text-foreground">{user.name}</h4>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-display text-lg font-bold text-foreground">{user.name}</h4>
+                  {profileData.status && (
+                    <span className="rounded-full bg-info/10 border border-info/20 px-2.5 py-0.5 text-[10px] font-medium text-info">
+                      {profileData.status}
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">{profileData.title}</p>
-                <div className="flex items-center gap-4 mt-0.5 text-sm text-muted-foreground">
+                <div className="flex items-center gap-4 mt-0.5 text-sm text-muted-foreground flex-wrap">
                   <span className="flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5" />
                     {profileData.location}
@@ -125,7 +164,15 @@ export default function My360() {
                     Manager:{" "}
                     <span className="underline text-foreground">{profileData.manager}</span>
                   </span>
+                  {profileData.team && (
+                    <span>Team: <span className="text-foreground">{profileData.team}</span></span>
+                  )}
                 </div>
+                {profileData.program && (
+                  <div className="mt-0.5 text-sm text-muted-foreground">
+                    Program: <span className="text-foreground">{profileData.program}</span>
+                  </div>
+                )}
                 <button
                   onClick={() => setShowMoreDetails(!showMoreDetails)}
                   className="mt-1.5 inline-flex items-center gap-1 text-sm font-medium text-foreground underline"
@@ -178,7 +225,7 @@ export default function My360() {
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <div className="flex flex-nowrap gap-2">
-                {profileData.coreSkills.slice(0, 4).map((skill, i) => {
+                {coreSkillNames.slice(0, 4).map((skill, i) => {
                   const skillColors = [
                     "bg-accent/10 text-accent border border-accent/20",
                     "bg-info/10 text-info border border-info/20",
@@ -197,9 +244,9 @@ export default function My360() {
                     </span>
                   );
                 })}
-                {profileData.coreSkills.length > 4 && (
+                {coreSkillNames.length > 4 && (
                   <span className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
-                    +{profileData.coreSkills.length - 4} more
+                    +{coreSkillNames.length - 4} more
                   </span>
                 )}
               </div>
@@ -213,31 +260,32 @@ export default function My360() {
               </div>
               <div ref={otherRef} className="relative flex flex-nowrap gap-2" style={{ overflow: 'visible' }}>
                 {profileData.otherSkills.slice(0, otherVisible).map((skill) => {
-                  const levelMap: Record<string, string> = { B: "Basic", I: "Intermediate", A: "Advanced", E: "Expert", M: "Master" };
-                  const yearFull = skill.year.replace("'", "20");
+                  const levelMap: Record<string, string> = { B: "Beginner", I: "Intermediate", A: "Advanced", E: "Expert", M: "Master" };
+                  const shortLevel = proficiencyShort[skill.proficiency];
+                  const shortYear = `'${String(skill.assessment_year).slice(-2)}`;
                   return (
-                    <div key={skill.name} className="relative group shrink-0">
+                    <div key={skill.skill_name} className="relative group shrink-0">
                       <span className="inline-flex items-center rounded-full border border-border pl-4 pr-1.5 py-2 text-sm font-medium text-foreground gap-1.5 whitespace-nowrap cursor-default">
-                        <span>{skill.name}</span>
+                        <span>{skill.skill_name}</span>
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
-                          {skill.level}
+                          {shortLevel}
                         </span>
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
-                          {skill.year}
+                          {shortYear}
                         </span>
                       </span>
                       {/* Hover card */}
                       <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block z-50">
                         <div className="rounded-xl bg-card border border-border p-4 shadow-card-hover min-w-[200px]">
-                          <p className="font-display text-sm font-bold text-foreground">{skill.name}</p>
+                          <p className="font-display text-sm font-bold text-foreground">{skill.skill_name}</p>
                           <div className="mt-2 space-y-1">
                             <div className="flex justify-between text-xs">
                               <span className="text-muted-foreground">Proficiency</span>
-                              <span className="font-medium text-foreground">{levelMap[skill.level] || skill.level}</span>
+                              <span className="font-medium text-foreground">{skill.proficiency}</span>
                             </div>
                             <div className="flex justify-between text-xs">
                               <span className="text-muted-foreground">Last assessed</span>
-                              <span className="font-medium text-foreground">{yearFull}</span>
+                              <span className="font-medium text-foreground">{skill.assessment_year}</span>
                             </div>
                           </div>
                         </div>
@@ -341,61 +389,68 @@ export default function My360() {
                       Skills & Gap
                     </h4>
                     <div className="flex items-center gap-2">
-                      <select className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground">
-                        <option>Project</option>
+                      <select
+                        value={gapSource}
+                        onChange={(e) => setGapSource(e.target.value as GapSource)}
+                        className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground"
+                      >
+                        <option value="Role">Role</option>
+                        <option value="Project">Project</option>
                       </select>
-                      <select className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground">
-                        <option>Gap</option>
+                      <select
+                        value={gapFilter}
+                        onChange={(e) => setGapFilter(e.target.value as GapFilter)}
+                        className="rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground"
+                      >
+                        <option value="All">All</option>
+                        <option value="Gap">Gap</option>
+                        <option value="No gap">No gap</option>
                       </select>
                       <button className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors">
                         Explore <ExternalLink className="h-3 w-3" />
                       </button>
                     </div>
                   </div>
-                  <div className="space-y-3 overflow-x-auto">
-                    {skillGapRows.map((row, i) => (
-                      <div key={i} className="flex items-center gap-1.5 text-xs">
-                        <span className="inline-flex items-center rounded-full border border-border pl-3 pr-1 py-1 font-medium text-foreground gap-1.5 min-w-0">
-                          <span className="truncate">{row.left.skill}</span>
+                  <div className="space-y-2 overflow-x-auto">
+                    {filteredGapRows.length === 0 ? (
+                      <p className="text-xs text-muted-foreground py-2">
+                        {gapFilter === "Gap" ? "No gaps found — all skills meet or exceed requirements." : "No matching skills."}
+                      </p>
+                    ) : (
+                      filteredGapRows.map((row) => (
+                        <div key={row.skill} className="flex items-center gap-1.5 text-xs">
                           <span className={cn(
-                            "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
-                            row.left.target === "✓" ? "bg-success/15 text-success" : "bg-accent/15 text-accent"
+                            "inline-flex items-center rounded-full border pl-3 pr-1 py-1 font-medium gap-1.5 min-w-0",
+                            row.hasGap
+                              ? "border-border text-foreground"
+                              : "border-success/30 text-foreground"
                           )}>
-                            {row.left.level}
-                          </span>
-                        </span>
-                        <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
-                        <span className={cn(
-                          "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
-                          row.left.target === "✓" ? "bg-success/15 text-success" : "bg-accent/15 text-accent"
-                        )}>
-                          {row.left.target === "✓" ? "✓" : row.left.target}
-                        </span>
-
-                        <span className={cn(
-                          "inline-flex items-center rounded-full pl-3 pr-1 py-1 font-medium gap-1.5 min-w-0",
-                          row.right.hasSkill
-                            ? "border border-border text-foreground"
-                            : "border border-dashed border-muted-foreground/40 text-muted-foreground"
-                        )}>
-                          <span className="truncate">{row.right.skill}</span>
-                          <span className={cn(
-                            "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
-                            row.right.hasSkill ? "bg-info/15 text-info" : "bg-warning/15 text-warning"
-                          )}>
-                            {row.right.level}
-                          </span>
-                        </span>
-                        {row.right.target && (
-                          <>
-                            <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
-                            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-info/15 text-[10px] font-bold text-info shrink-0">
-                              {row.right.target}
+                            <span className="truncate max-w-[140px]">{row.skill}</span>
+                            <span className={cn(
+                              "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
+                              row.hasGap ? "bg-accent/15 text-accent" : "bg-success/15 text-success"
+                            )}>
+                              {row.level}
                             </span>
-                          </>
-                        )}
-                      </div>
-                    ))}
+                          </span>
+                          <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
+                          <span className={cn(
+                            "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
+                            !row.hasGap ? "bg-success/15 text-success" : row.gapLevel === "High gap" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"
+                          )}>
+                            {!row.hasGap ? "✓" : row.target}
+                          </span>
+                          {row.hasGap && (
+                            <span className={cn(
+                              "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                              row.gapLevel === "High gap" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"
+                            )}>
+                              {row.gapLevel}
+                            </span>
+                          )}
+                        </div>
+                      ))
+                    )}
                   </div>
                 </motion.div>
               </div>

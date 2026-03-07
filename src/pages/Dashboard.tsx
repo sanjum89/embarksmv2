@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Plus, Info, LayoutGrid, List } from "lucide-react";
+import { Plus, Info, LayoutGrid, List, ChevronDown } from "lucide-react";
 
 import { AIChatPanel } from "@/components/chat/AIChatPanel";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
@@ -8,6 +8,7 @@ import { SkillTargetListItem } from "@/components/skill-target/SkillTargetListIt
 import { CreateSkillTargetDialog } from "@/components/skill-target/CreateSkillTargetDialog";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 
 type Filter = "all" | "in_progress" | "completed" | "not_started";
@@ -23,9 +24,12 @@ const filters: { value: Filter; label: string }[] = [
 export default function Dashboard() {
   const { user } = useUser();
   const { skillTargets: mockSkillTargets } = useSkillTargets();
+  const { styleTheme } = useTheme();
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("cards");
   const [createOpen, setCreateOpen] = useState(false);
+
+  const isTraditional = styleTheme === "traditional";
 
   const targets = useMemo(() => {
     const assigned = mockSkillTargets.filter((st) => st.assignedTo.includes(user.id));
@@ -49,6 +53,89 @@ export default function Dashboard() {
     completed: allTargets.filter((st) => st.progress === 100).length,
   };
 
+  /* ── Traditional UI layout ── */
+  if (isTraditional) {
+    return (
+      <div>
+        <div className="flex">
+          <div className="flex-1 p-8 max-w-5xl mx-auto">
+            {/* Header bar */}
+            <div className="flex items-center justify-between mb-8">
+              <h1 className="font-display text-2xl font-bold text-foreground">
+                Your learning spaces
+              </h1>
+              <div className="flex items-center gap-3">
+                {/* Status dropdown */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Status</span>
+                  <div className="relative">
+                    <select
+                      value={activeFilter}
+                      onChange={(e) => setActiveFilter(e.target.value as Filter)}
+                      className="appearance-none rounded-lg border border-border bg-card pl-3 pr-8 py-1.5 text-sm text-foreground cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                    >
+                      {filters.map((f) => (
+                        <option key={f.value} value={f.value}>{f.label}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+                  </div>
+                </div>
+                <button
+                  onClick={() => setCreateOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create learning space
+                </button>
+              </div>
+            </div>
+
+            {/* List view */}
+            {hasAnyTargets && targets.length > 0 ? (
+              <div className="flex flex-col gap-3">
+                {targets.map((target, i) => (
+                  <SkillTargetListItem key={target.id} target={target} index={i} />
+                ))}
+              </div>
+            ) : !hasAnyTargets ? (
+              <div className="flex flex-col items-center rounded-xl border-2 border-dashed border-border bg-card p-10 text-center">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-info/10 mb-4">
+                  <Info className="h-6 w-6 text-info" />
+                </div>
+                <h4 className="font-display text-lg font-semibold text-foreground mb-1">
+                  No Learning Spaces
+                </h4>
+                <p className="text-sm text-muted-foreground mb-6 max-w-sm">
+                  Create a learning space to get started.
+                </p>
+                <button
+                  onClick={() => setCreateOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create learning space
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
+                No learning spaces match this filter.
+              </div>
+            )}
+          </div>
+
+          {/* AI Chat Panel */}
+          <div className="w-[320px] shrink-0 border-l border-border h-screen sticky top-0">
+            <AIChatPanel contextLabel="Learning Spaces → Dashboard" />
+          </div>
+        </div>
+
+        <CreateSkillTargetDialog open={createOpen} onOpenChange={setCreateOpen} />
+      </div>
+    );
+  }
+
+  /* ── New UI layout ── */
   return (
     <div>
       <div className="flex">

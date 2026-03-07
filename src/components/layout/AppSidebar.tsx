@@ -186,6 +186,7 @@ export function AppSidebar() {
                         <div className="mt-0.5 space-y-0.5">
                           {item.children.map((child) => {
                             const active = isPathActive(child.path);
+                            const childLabel = child.label === "Skill Targets" ? "Spaces" : child.label;
                             return (
                               <NavLink
                                 key={child.path}
@@ -198,7 +199,7 @@ export function AppSidebar() {
                                 )}
                               >
                                 <child.icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
-                                <span className="truncate">{child.label}</span>
+                                <span className="truncate">{childLabel}</span>
                               </NavLink>
                             );
                           })}

@@ -32,7 +32,7 @@ interface StepListItemProps {
   showAccentLine?: boolean;
 }
 
-export function StepListItem({ step, index, skillTargetId, isLast }: StepListItemProps) {
+export function StepListItem({ step, index, skillTargetId, isLast, showAccentLine }: StepListItemProps) {
   const TypeIcon = stepTypeIcons[step.type];
   const isClickable = step.status === "available" || step.status === "in_progress";
   const routeSegment = stepTypeRoutes[step.type];
@@ -144,16 +144,29 @@ export function StepListItem({ step, index, skillTargetId, isLast }: StepListIte
   );
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -12 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.08, duration: 0.35, ease: "easeOut" }}
-    >
-      {isClickable ? (
-        <Link to={href}>{content}</Link>
-      ) : (
-        content
+    <div className="flex flex-col items-start">
+      <motion.div
+        className="w-full"
+        initial={{ opacity: 0, x: -12 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: index * 0.08, duration: 0.35, ease: "easeOut" }}
+      >
+        {isClickable ? (
+          <Link to={href}>{content}</Link>
+        ) : (
+          content
+        )}
+      </motion.div>
+
+      {/* Connecting line between steps */}
+      {!isLast && (
+        <div className="flex justify-start pl-[1.65rem] py-0">
+          <div className={cn(
+            "w-0.5 h-3",
+            showAccentLine ? "gradient-accent" : "bg-border"
+          )} />
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 }

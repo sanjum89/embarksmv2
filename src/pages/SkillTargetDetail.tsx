@@ -19,6 +19,7 @@ export default function SkillTargetDetail() {
   const { styleTheme } = useTheme();
   const target = skillTargets.find((st) => st.id === id);
   const [activeStep, setActiveStep] = useState<StepItem | null>(null);
+  const [activeTab, setActiveTab] = useState<"conversation" | "chapters">("conversation");
 
   const isTraditional = styleTheme === "traditional";
 

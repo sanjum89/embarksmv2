@@ -136,7 +136,7 @@ export default function My360() {
 
   const { containerRef: otherRef, visibleCount: otherVisible } = useVisibleCount(profileData.otherSkills.length);
 
-  const otherExtra = profileData.otherSkills.length - otherVisible + 24;
+  const otherExtra = profileData.otherSkills.length - otherVisible;
 
   const handleRoleExploreClick = () => {
     chatRef.current?.sendMessage(ROLE_EXPLORE_PROMPT, ROLE_EXPLORE_RESPONSE, [

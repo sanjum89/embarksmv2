@@ -136,7 +136,7 @@ export default function My360() {
 
   const { containerRef: otherRef, visibleCount: otherVisible } = useVisibleCount(profileData.otherSkills.length);
 
-  const otherExtra = profileData.otherSkills.length - otherVisible;
+  const otherExtra = Math.max(0, profileData.otherSkills.length - otherVisible);
 
   const handleRoleExploreClick = () => {
     chatRef.current?.sendMessage(ROLE_EXPLORE_PROMPT, ROLE_EXPLORE_RESPONSE, [
@@ -299,7 +299,7 @@ export default function My360() {
                 <span className="text-sm font-semibold text-foreground">Other Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div ref={otherRef} className="relative flex flex-nowrap gap-2" style={{ overflow: 'visible' }}>
+              <div ref={otherRef} className="relative flex flex-wrap gap-2 overflow-hidden">
                 {profileData.otherSkills.slice(0, otherVisible).map((skill) => {
                   const levelMap: Record<string, string> = { B: "Beginner", I: "Intermediate", A: "Advanced", E: "Expert", M: "Master" };
                   const shortLevel = proficiencyShort[skill.proficiency];

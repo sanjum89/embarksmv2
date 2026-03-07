@@ -315,19 +315,19 @@ export function AppSidebar() {
                 {!expanded && <TooltipContent side="right" sideOffset={8}>Theme</TooltipContent>}
               </Tooltip>
               <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-48 p-2">
-                <p className="text-xs font-medium text-muted-foreground px-2 pb-1.5">Style</p>
+                <p className="text-xs font-medium text-muted-foreground px-2 pb-1.5">UI Style</p>
                 <button
                   onClick={() => setStyleTheme("new")}
                   className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", !isTraditional ? "bg-primary/10 font-medium" : "hover:bg-secondary")}
                 >
-                  <span className="flex-1 text-left">New Theme</span>
+                  <span className="flex-1 text-left">New UI</span>
                   {!isTraditional && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
                 </button>
                 <button
                   onClick={() => setStyleTheme("traditional")}
                   className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", isTraditional ? "bg-primary/10 font-medium" : "hover:bg-secondary")}
                 >
-                  <span className="flex-1 text-left">Traditional</span>
+                  <span className="flex-1 text-left">Traditional UI</span>
                   {isTraditional && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
                 </button>
               </PopoverContent>
@@ -502,19 +502,19 @@ export function AppSidebar() {
             {!expanded && <TooltipContent side="right" sideOffset={8}>Theme</TooltipContent>}
           </Tooltip>
           <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-48 p-2">
-            <p className="text-xs font-medium text-muted-foreground px-2 pb-1.5">Style</p>
+            <p className="text-xs font-medium text-muted-foreground px-2 pb-1.5">UI Style</p>
             <button
               onClick={() => setStyleTheme("new")}
               className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", !isTraditional ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
             >
-              <span className="flex-1 text-left">New Theme</span>
+              <span className="flex-1 text-left">New UI</span>
               {!isTraditional && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
             </button>
             <button
               onClick={() => setStyleTheme("traditional")}
               className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", isTraditional ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
             >
-              <span className="flex-1 text-left">Traditional</span>
+              <span className="flex-1 text-left">Traditional UI</span>
               {isTraditional && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
             </button>
             <Separator className="my-1.5" />

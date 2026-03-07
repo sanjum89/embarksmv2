@@ -52,19 +52,68 @@ export default function SkillTargetDetail() {
 
           {/* Tabs — Chapters only visible when a module is active */}
           <div className="flex border-b border-border px-6">
-            <button className="text-sm font-medium text-primary border-b-2 border-primary px-1 py-2.5 mr-6">
+            <button
+              onClick={() => setActiveTab("conversation")}
+              className={cn(
+                "text-sm font-medium px-1 py-2.5 mr-6 border-b-2 transition-colors",
+                activeTab === "conversation"
+                  ? "text-primary border-primary"
+                  : "text-muted-foreground border-transparent hover:text-foreground"
+              )}
+            >
               Conversation
             </button>
             {activeStep && (
-              <button className="text-sm font-medium text-muted-foreground hover:text-foreground px-1 py-2.5">
+              <button
+                onClick={() => setActiveTab("chapters")}
+                className={cn(
+                  "text-sm font-medium px-1 py-2.5 border-b-2 transition-colors",
+                  activeTab === "chapters"
+                    ? "text-primary border-primary"
+                    : "text-muted-foreground border-transparent hover:text-foreground"
+                )}
+              >
                 Chapters
               </button>
             )}
           </div>
 
-          {/* Chat area — grows to fill */}
+          {/* Chat area or Chapters list */}
           <div className="flex-1 flex flex-col min-h-0">
-            <TraditionalChatArea target={target} />
+            {activeTab === "chapters" && activeStep ? (
+              <div className="flex-1 overflow-y-auto px-6 py-5">
+                <h3 className="text-sm font-semibold text-foreground mb-4">Chapters</h3>
+                <div className="space-y-1">
+                  {target.steps.map((step, idx) => {
+                    const isCurrent = step.id === activeStep.id;
+                    return (
+                      <button
+                        key={step.id}
+                        onClick={() => {
+                          setActiveStep(step);
+                        }}
+                        className={cn(
+                          "w-full flex items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors",
+                          isCurrent
+                            ? "bg-primary/10 text-primary"
+                            : step.status === "locked"
+                            ? "text-muted-foreground/50 cursor-not-allowed"
+                            : "text-foreground hover:bg-secondary"
+                        )}
+                        disabled={step.status === "locked"}
+                      >
+                        <span className="text-xs font-medium text-muted-foreground w-5 shrink-0">
+                          {idx + 1}
+                        </span>
+                        <span className="text-sm truncate">{step.title}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <TraditionalChatArea target={target} />
+            )}
           </div>
         </div>
 

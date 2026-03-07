@@ -113,7 +113,7 @@ export function AppSidebar() {
 
         {/* Nav bar strip */}
         <aside className={cn(
-          "flex-1 flex flex-col bg-white border-r border-black/[0.06] rounded-tr-3xl transition-all duration-200",
+          "flex-1 flex flex-col bg-card border-r border-border/30 rounded-tr-3xl transition-all duration-200",
           expanded ? "w-56 items-stretch" : "w-16 items-center"
         )}>
           {/* Me / Team toggle */}

@@ -262,8 +262,10 @@ export default function My360() {
                 <span className="text-sm font-semibold text-foreground">Core Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div className="flex flex-nowrap gap-2">
-                {coreSkillNames.slice(0, 4).map((skill, i) => {
+              <ResponsivePillRow
+                totalCount={coreSkillNames.length}
+                renderPill={(i) => {
+                  const skill = coreSkillNames[i];
                   const skillColors = [
                     "bg-accent/10 text-accent border border-accent/20",
                     "bg-info/10 text-info border border-info/20",
@@ -272,22 +274,16 @@ export default function My360() {
                   ];
                   return (
                     <span
-                      key={skill}
                       className={cn(
-                        "rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap shrink-0",
+                        "rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap",
                         skillColors[i % skillColors.length]
                       )}
                     >
                       {skill}
                     </span>
                   );
-                })}
-                {coreSkillNames.length > 4 && (
-                  <span className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
-                    +{coreSkillNames.length - 4} more
-                  </span>
-                )}
-              </div>
+                }}
+              />
             </div>
 
             {/* Other Skills */}
@@ -296,13 +292,14 @@ export default function My360() {
                 <span className="text-sm font-semibold text-foreground">Other Skills</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
-              <div ref={otherRef} className="relative flex flex-wrap gap-2 overflow-hidden">
-                {profileData.otherSkills.slice(0, otherVisible).map((skill) => {
-                  const levelMap: Record<string, string> = { B: "Beginner", I: "Intermediate", A: "Advanced", E: "Expert", M: "Master" };
+              <ResponsivePillRow
+                totalCount={profileData.otherSkills.length}
+                renderPill={(i) => {
+                  const skill = profileData.otherSkills[i];
                   const shortLevel = proficiencyShort[skill.proficiency];
                   const shortYear = `'${String(skill.assessment_year).slice(-2)}`;
                   return (
-                    <div key={skill.skill_name} className="relative group shrink-0">
+                    <div className="relative group">
                       <span className="inline-flex items-center rounded-full border border-border pl-4 pr-1.5 py-2 text-sm font-medium text-foreground gap-1.5 whitespace-nowrap cursor-default">
                         <span>{skill.skill_name}</span>
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
@@ -333,13 +330,8 @@ export default function My360() {
                       </div>
                     </div>
                   );
-                })}
-                {otherExtra > 0 && (
-                  <span data-overflow="true" className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
-                    +{otherExtra} more
-                  </span>
-                )}
-              </div>
+                }}
+              />
             </div>
           </motion.div>
 

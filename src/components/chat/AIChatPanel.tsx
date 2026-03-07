@@ -23,6 +23,7 @@ interface AIChatPanelProps {
 
 export interface AIChatPanelHandle {
   sendMessage: (prompt: string, mockResponse: string, actions?: SuggestedAction[]) => void;
+  clearMessages: () => void;
 }
 
 interface ChatMessage {
@@ -62,6 +63,9 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
           };
           setMessages((prev) => [...prev, reply]);
         }, 600);
+      },
+      clearMessages: () => {
+        setMessages([]);
       },
     }));
 

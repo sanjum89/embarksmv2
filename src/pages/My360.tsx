@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -93,6 +93,11 @@ export default function My360() {
   const { user } = useUser();
   const profileData = profileDataByUser[user.id] || profileDataByUser["u1"];
   const chatRef = useRef<AIChatPanelHandle>(null);
+
+  // Clear chat when profile changes
+  useEffect(() => {
+    chatRef.current?.clearMessages();
+  }, [user.id]);
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");

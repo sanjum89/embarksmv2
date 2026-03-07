@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Target,
@@ -55,6 +55,7 @@ export function AppSidebar() {
   const { user, switchUser, availableUsers } = useUser();
   const { expanded, toggle } = useSidebarState();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const location = useLocation();
   const filteredItems = navItems.filter((item) => item.roles.includes(user.role));
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
@@ -216,7 +217,7 @@ export function AppSidebar() {
             {availableUsers.map((u) => (
               <button
                 key={u.id}
-                onClick={() => switchUser(u.id)}
+                onClick={() => { switchUser(u.id); navigate("/"); }}
                 className={cn(
                   "flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm transition-colors text-left",
                   u.id === user.id

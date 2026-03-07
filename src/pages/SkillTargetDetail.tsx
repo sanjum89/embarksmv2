@@ -122,7 +122,7 @@ export default function SkillTargetDetail() {
           {activeStep ? (
             <TraditionalContentViewer
               step={activeStep}
-              onClose={() => setActiveStep(null)}
+              onClose={() => { setActiveStep(null); setActiveTab("conversation"); }}
             />
           ) : (
             <TraditionalActivitiesPanel

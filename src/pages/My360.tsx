@@ -35,50 +35,7 @@ import { profileDataByUser } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/hooks/useChartColors";
 
-/* ─── Mock profile data ─── */
-const profileData = {
-  title: "Senior Director, Product Management",
-  location: "San Francisco, CA",
-  manager: "Hitesh Dholakia",
-  yearsExperience: 14,
-  summary:
-    "Developer turned product and sales leader with 12+ years of experience building, and commercializing SaaS platforms. Co-founded and grew a bootstrapped B2B SaaS startup that managed client workflows exceeding $200M. Closed multi-year contracts with leading e-commerce and BFSI enterprises, including Flipkart, Tata, AngelOne and ICICI.",
-  coreSkills: [
-    "Product Strategy",
-    "Stakeholder Management",
-    "Product Ops & Scaling",
-    "Prioritization Rigor",
-    "Lovable AI",
-    "FigJam",
-    "Figma Wireframing",
-    "Figma Make",
-  ],
-  otherSkills: [
-    { name: "Python", level: "I", year: "'24" },
-    { name: "SQL", level: "I", year: "'25" },
-    { name: "OpenKnime - Analytics", level: "A", year: "'25" },
-  ],
-};
-
 const proficiencyLabels = ["", "B", "I", "A", "E", "M"];
-
-const radarSkills = [
-  { skill: "Product Strategy", score: 80, target: 80 },
-  { skill: "Stakeholder Mgmt", score: 80, target: 80 },
-  { skill: "Product Ops", score: 60, target: 80 },
-  { skill: "Prioritization", score: 60, target: 80 },
-  { skill: "Figma Wireframing", score: 40, target: 60 },
-  { skill: "Figma Make", score: 20, target: 40 },
-  { skill: "FigJam", score: 20, target: 40 },
-  { skill: "Lovable AI", score: 40, target: 60 },
-];
-
-const skillGapRows = [
-  { left: { skill: "Product Stra…", level: "E", target: "✓", hasSkill: true },  right: { skill: "Figma Wiref…", level: "I", target: "A", hasSkill: true } },
-  { left: { skill: "Stakeholder…", level: "E", target: "✓", hasSkill: true },   right: { skill: "Figma Make", level: "B", target: null, hasSkill: false } },
-  { left: { skill: "Product Ops…", level: "A", target: "E", hasSkill: true },   right: { skill: "FigJam", level: "B", target: null, hasSkill: false } },
-  { left: { skill: "Prioritization…", level: "A", target: "E", hasSkill: true }, right: { skill: "Lovable AI", level: "I", target: null, hasSkill: false } },
-];
 
 const tabs = ["Role & Skills", "Career Timeline", "Growth Path"] as const;
 

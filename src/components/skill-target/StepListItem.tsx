@@ -29,6 +29,7 @@ interface StepListItemProps {
   index: number;
   skillTargetId: string;
   isLast: boolean;
+  showAccentLine?: boolean;
 }
 
 export function StepListItem({ step, index, skillTargetId, isLast }: StepListItemProps) {

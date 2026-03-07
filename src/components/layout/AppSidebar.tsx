@@ -13,9 +13,14 @@ import {
   ChevronDown,
   ChevronRight,
   Check,
+  Palette,
+  Moon,
+  Sun,
+  Building2,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useSidebarState } from "@/contexts/SidebarContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -23,8 +28,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Building2, Moon, Sun } from "lucide-react";
-import { useTheme } from "@/contexts/ThemeContext";
+import { Separator } from "@/components/ui/separator";
+import cornerstoneLogo from "@/assets/cornerstone-logo.png";
 
 interface NavItem {
   label: string;
@@ -54,12 +59,14 @@ const navItems: NavItem[] = [
 export function AppSidebar() {
   const { user, switchUser, availableUsers } = useUser();
   const { expanded, toggle } = useSidebarState();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, styleTheme, setStyleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const filteredItems = navItems.filter((item) => item.roles.includes(user.role));
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
   const [brandHovered, setBrandHovered] = useState(false);
+
+  const isTraditional = styleTheme === "traditional";
 
   const isPathActive = (path: string) =>
     location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
@@ -71,7 +78,8 @@ export function AppSidebar() {
       <NavLink
         to={path}
         className={cn(
-          "flex items-center rounded-lg transition-all duration-200",
+          "flex items-center transition-all duration-200",
+          isTraditional ? "rounded-full" : "rounded-lg",
           expanded ? "h-9 gap-3 w-full" : "h-10 w-10 justify-center",
           expanded && indented ? "pl-9 pr-3" : expanded ? "px-3" : "",
           active
@@ -94,6 +102,14 @@ export function AppSidebar() {
     );
   };
 
+  const brandIcon = isTraditional ? (
+    <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
+  ) : (
+    <Building2 className="h-5 w-5 text-accent-foreground" />
+  );
+
+  const brandName = isTraditional ? "Cornerstone" : "ABC Company";
+
   return (
     <aside
       className={cn(
@@ -107,10 +123,10 @@ export function AppSidebar() {
         {expanded ? (
           <>
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent shrink-0">
-                <Building2 className="h-5 w-5 text-accent-foreground" />
+              <div className={cn("flex h-9 w-9 items-center justify-center shrink-0", isTraditional ? "rounded-full" : "rounded-lg bg-accent")}>
+                {brandIcon}
               </div>
-              <span className="font-display font-bold text-sm text-sidebar-foreground">ABC Company</span>
+              <span className="font-display font-bold text-sm text-sidebar-foreground">{brandName}</span>
             </div>
             <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
               <PanelLeftClose className="h-4 w-4" />
@@ -128,8 +144,8 @@ export function AppSidebar() {
                 <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
               </div>
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent">
-                <Building2 className="h-5 w-5 text-accent-foreground" />
+              <div className={cn("flex h-9 w-9 items-center justify-center", isTraditional ? "rounded-full" : "rounded-lg bg-accent")}>
+                {brandIcon}
               </div>
             )}
           </div>
@@ -145,7 +161,10 @@ export function AppSidebar() {
                 <div key={item.label} className="mb-1">
                   <button
                     onClick={() => setLearningSpacesOpen(!learningSpacesOpen)}
-                    className="flex items-center gap-3 w-full rounded-lg px-3 h-9 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors"
+                    className={cn(
+                      "flex items-center gap-3 w-full px-3 h-9 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors",
+                      isTraditional ? "rounded-full" : "rounded-lg"
+                    )}
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
                     <span className="text-sm font-medium truncate flex-1 text-left">{item.label}</span>
@@ -173,27 +192,59 @@ export function AppSidebar() {
         })}
       </nav>
 
-      {/* Theme toggle */}
+      {/* Theme selector */}
       <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
+        <Popover>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <PopoverTrigger asChild>
+                <button
+                  className={cn(
+                    "flex items-center rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                    expanded ? "h-9 gap-3 w-full px-3" : "h-10 w-10 justify-center"
+                  )}
+                >
+                  <Palette className="h-4 w-4 shrink-0" />
+                  {expanded && <span className="text-sm font-medium">Theme</span>}
+                </button>
+              </PopoverTrigger>
+            </TooltipTrigger>
+            {!expanded && (
+              <TooltipContent side="right" sideOffset={8}>Theme</TooltipContent>
+            )}
+          </Tooltip>
+          <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-48 p-2">
+            <p className="text-xs font-medium text-muted-foreground px-2 pb-1.5">Style</p>
             <button
-              onClick={toggleTheme}
+              onClick={() => setStyleTheme("new")}
               className={cn(
-                "flex items-center rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-                expanded ? "h-9 gap-3 w-full px-3" : "h-10 w-10 justify-center"
+                "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors",
+                styleTheme === "new" ? "bg-accent/10 font-medium" : "hover:bg-secondary"
               )}
             >
-              {theme === "dark" ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
-              {expanded && <span className="text-sm font-medium">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>}
+              <span className="flex-1 text-left">New Theme</span>
+              {styleTheme === "new" && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
             </button>
-          </TooltipTrigger>
-          {!expanded && (
-            <TooltipContent side="right" sideOffset={8}>
-              {theme === "dark" ? "Light Mode" : "Dark Mode"}
-            </TooltipContent>
-          )}
-        </Tooltip>
+            <button
+              onClick={() => setStyleTheme("traditional")}
+              className={cn(
+                "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors",
+                styleTheme === "traditional" ? "bg-accent/10 font-medium" : "hover:bg-secondary"
+              )}
+            >
+              <span className="flex-1 text-left">Traditional</span>
+              {styleTheme === "traditional" && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
+            </button>
+            <Separator className="my-1.5" />
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm hover:bg-secondary transition-colors"
+            >
+              {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
+              <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+            </button>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* User info */}

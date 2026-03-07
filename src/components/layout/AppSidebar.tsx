@@ -12,6 +12,19 @@ import {
   PanelLeftOpen,
   ChevronDown,
   ChevronRight,
+  Check,
+} from "lucide-react";
+  LayoutDashboard,
+  Target,
+  MessageSquare,
+  Users,
+  Shield,
+  BarChart3,
+  CircleUser,
+  PanelLeftClose,
+  PanelLeftOpen,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useSidebarState } from "@/contexts/SidebarContext";
@@ -195,27 +208,42 @@ export function AppSidebar() {
 
       {/* User info */}
       <div className={cn("border-t border-sidebar-border py-4 w-full", expanded ? "px-3" : "flex justify-center")}>
-        <Tooltip delayDuration={0}>
-          <TooltipTrigger asChild>
-            <div className={cn("flex items-center gap-3", expanded ? "px-1" : "justify-center")}>
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground cursor-default shrink-0">
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className={cn("flex items-center gap-3 w-full rounded-lg hover:bg-sidebar-accent/50 transition-colors p-1", expanded ? "" : "justify-center")}>
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-xs font-bold text-sidebar-accent-foreground cursor-pointer shrink-0">
                 {user.name.split(" ").map((n) => n[0]).join("")}
               </div>
               {expanded && (
-                <div className="min-w-0">
+                <div className="min-w-0 text-left">
                   <p className="text-sm font-medium truncate">{user.name}</p>
                   <p className="text-xs capitalize text-muted-foreground">{user.role}</p>
                 </div>
               )}
-            </div>
-          </TooltipTrigger>
-          {!expanded && (
-            <TooltipContent side="right" sideOffset={8}>
-              <p className="font-medium">{user.name}</p>
-              <p className="text-xs capitalize text-muted-foreground">{user.role}</p>
-            </TooltipContent>
-          )}
-        </Tooltip>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-56 p-2">
+            <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Logged in as</p>
+            {availableUsers.map((u) => (
+              <button
+                key={u.id}
+                onClick={() => switchUser(u.id)}
+                className={cn(
+                  "flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm transition-colors text-left",
+                  u.id === user.id
+                    ? "bg-accent/10 text-foreground font-medium"
+                    : "text-foreground hover:bg-secondary"
+                )}
+              >
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-sidebar-accent text-[10px] font-bold text-sidebar-accent-foreground shrink-0">
+                  {u.name.split(" ").map((n) => n[0]).join("")}
+                </div>
+                <span className="truncate flex-1">{u.name}</span>
+                {u.id === user.id && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
+              </button>
+            ))}
+          </PopoverContent>
+        </Popover>
       </div>
     </aside>
   );

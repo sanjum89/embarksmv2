@@ -26,7 +26,7 @@ export const mayaThompson: User = {
   avatarUrl: "",
 };
 
-export const availableUsers: User[] = [currentUser, samTaylor];
+export const availableUsers: User[] = [currentUser, mayaThompson];
 
 export const mockTeamMembers: User[] = [
   currentUser,
@@ -34,7 +34,7 @@ export const mockTeamMembers: User[] = [
   { id: "u3", name: "Priya Sharma", email: "priya@wfai.com", role: "learner" },
   { id: "u4", name: "Marcus Williams", email: "marcus@wfai.com", role: "learner" },
   { id: "u5", name: "Sofia Martinez", email: "sofia@wfai.com", role: "manager" },
-  samTaylor,
+  mayaThompson,
 ];
 
 /* ─── Assessments ─── */

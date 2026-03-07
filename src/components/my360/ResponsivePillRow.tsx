@@ -1,25 +1,21 @@
 import { useState, useRef, useCallback, useEffect, ReactNode } from "react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 interface ResponsivePillRowProps {
-  /** Total number of items */
   totalCount: number;
-  /** Render a single pill by index */
   renderPill: (index: number) => ReactNode;
-  /** Gap between pills in px (should match CSS gap) */
   gap?: number;
-  /** Additional className for the container */
   className?: string;
+  /** When provided, "+N more" becomes clickable and shows this content in a popover */
+  renderExpandedList?: () => ReactNode;
 }
 
-/**
- * Renders as many pills as fit in a single row, with a "+N more" summary pill
- * when items overflow. Measures actual rendered widths via a hidden probe row.
- */
 export function ResponsivePillRow({
   totalCount,
   renderPill,
   gap = 8,
   className = "",
+  renderExpandedList,
 }: ResponsivePillRowProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const probeRef = useRef<HTMLDivElement>(null);
@@ -34,16 +30,13 @@ export function ResponsivePillRow({
 
     const containerWidth = container.getBoundingClientRect().width;
     const children = Array.from(probe.children) as HTMLElement[];
-    // Last child in probe is the "+N more" pill
     const morePillWidth = moreEl.getBoundingClientRect().width;
 
-    // Measure each real pill width
     const pillWidths: number[] = [];
     for (let i = 0; i < children.length - 1; i++) {
       pillWidths.push(children[i].getBoundingClientRect().width);
     }
 
-    // Try fitting all pills first
     let usedWidth = 0;
     let fits = 0;
     for (let i = 0; i < pillWidths.length; i++) {
@@ -56,20 +49,16 @@ export function ResponsivePillRow({
       }
     }
 
-    // All fit
     if (fits >= totalCount) {
       setVisibleCount(totalCount);
       return;
     }
 
-    // Not all fit — need to reserve space for "+N more"
-    // Walk backwards until we have room for the more pill
     let fitWithMore = fits;
     let widthWithMore = usedWidth + gap + morePillWidth;
 
     while (fitWithMore > 0 && widthWithMore > containerWidth) {
       fitWithMore--;
-      // Recalculate width
       widthWithMore = 0;
       for (let i = 0; i < fitWithMore; i++) {
         widthWithMore += (i > 0 ? gap : 0) + pillWidths[i];
@@ -88,7 +77,6 @@ export function ResponsivePillRow({
       requestAnimationFrame(measure);
     });
     ro.observe(container);
-    // Initial measure after fonts/layout settle
     requestAnimationFrame(measure);
 
     return () => ro.disconnect();
@@ -96,9 +84,15 @@ export function ResponsivePillRow({
 
   const hiddenCount = totalCount - visibleCount;
 
+  const morePill = (
+    <span className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0 cursor-pointer hover:bg-accent/10 transition-colors">
+      +{hiddenCount} more
+    </span>
+  );
+
   return (
     <div className="relative">
-      {/* Hidden probe: renders all pills + more pill offscreen for measurement */}
+      {/* Hidden probe */}
       <div
         ref={probeRef}
         aria-hidden
@@ -126,9 +120,20 @@ export function ResponsivePillRow({
           <div key={i} className="shrink-0">{renderPill(i)}</div>
         ))}
         {hiddenCount > 0 && (
-          <span className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
-            +{hiddenCount} more
-          </span>
+          renderExpandedList ? (
+            <Popover>
+              <PopoverTrigger asChild>
+                {morePill}
+              </PopoverTrigger>
+              <PopoverContent className="w-auto max-w-sm max-h-72 overflow-y-auto p-3" align="start">
+                {renderExpandedList()}
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <span className="rounded-full border border-border px-4 py-2 text-sm font-medium text-muted-foreground whitespace-nowrap shrink-0">
+              +{hiddenCount} more
+            </span>
+          )
         )}
       </div>
     </div>

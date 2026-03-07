@@ -285,11 +285,26 @@ export default function My360() {
                       )}
                     >
                       <span className="w-[5.5rem] truncate">{displayName}</span>
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-background text-xs font-bold">{shortLevel}</span>
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-background text-xs font-bold">{shortYear}</span>
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow-sm text-xs font-bold">{shortLevel}</span>
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/90 shadow-sm text-xs font-bold">{shortYear}</span>
                     </span>
                   );
                 }}
+                renderExpandedList={() => (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">All Core Skills</p>
+                    {profileData.roleSkillsCurrent.map((entry, i) => (
+                      <div key={i} className="flex items-center justify-between gap-4 text-sm">
+                        <span className="font-medium text-foreground">{entry.skill_name}</span>
+                        <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                          <span>{entry.proficiency}</span>
+                          <span>·</span>
+                          <span>{entry.assessment_year}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               />
             </div>
 
@@ -338,6 +353,21 @@ export default function My360() {
                     </div>
                   );
                 }}
+                renderExpandedList={() => (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">All Other Skills</p>
+                    {profileData.otherSkills.map((skill, i) => (
+                      <div key={i} className="flex items-center justify-between gap-4 text-sm">
+                        <span className="font-medium text-foreground">{skill.skill_name}</span>
+                        <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                          <span>{skill.proficiency}</span>
+                          <span>·</span>
+                          <span>{skill.assessment_year}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               />
             </div>
           </motion.div>

@@ -91,22 +91,31 @@ export default function Dashboard() {
             ))}
           </motion.div>
 
-          {/* Filters */}
-          <div className="flex items-center gap-1 rounded-lg bg-secondary p-1 mb-6 w-fit">
-            {filters.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setActiveFilter(f.value)}
-                className={cn(
-                  "rounded-md px-3.5 py-1.5 text-xs font-medium transition-all duration-200",
-                  activeFilter === f.value
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
+          {/* Filters + Create Button */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-1 rounded-lg bg-secondary p-1 w-fit">
+              {filters.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => setActiveFilter(f.value)}
+                  className={cn(
+                    "rounded-md px-3.5 py-1.5 text-xs font-medium transition-all duration-200",
+                    activeFilter === f.value
+                      ? "bg-card text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setCreateOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg gradient-accent text-accent-foreground px-3.5 py-2 text-xs font-medium hover:opacity-90 transition-opacity"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Create Skill Target
+            </button>
           </div>
 
           {/* Cards grid */}

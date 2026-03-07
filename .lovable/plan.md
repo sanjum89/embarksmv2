@@ -1,28 +1,33 @@
 
 
-## Problem
+## Plan: Fix Badge Visibility & Add "+N more" Popover
 
-The `railPalette` function currently colors each segment based on the entry *below* it. This means:
-- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
-- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
-- The segment from **Jan → 2025** gets 2025's color (Green) — correct
+### 1. Fix Core Skills badge visibility (light mode)
 
-The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
+The `bg-background` badges are nearly invisible against the light-tinted pill backgrounds (e.g. `bg-accent/10`). 
 
-## Fix
+**Fix:** Use `bg-white/90 shadow-sm` — a subtle white with shadow gives contrast against any tinted pill background in light mode and works in dark mode too.
 
-Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
+**File:** `src/pages/My360.tsx` lines 288-289 — change `bg-background` to `bg-white/90 shadow-sm`.
 
-```typescript
-const railPalette = (i: number) => {
-  return palette(careerEntries[i]);
-};
-```
+### 2. Make "+N more" clickable to show full skill list
 
-This gives:
-- **Mar segment** (Mar → Feb): Orange
-- **Feb segment** (Feb → Jan): Yellow  
-- **Jan segment and below**: Green
+**Approach:** Add an `onMoreClick` callback prop to `ResponsivePillRow`. In My360, wire it to open a Popover (using existing Radix popover) that lists all skills with their proficiency and year.
 
-Single line change in `src/components/my360/CareerTimeline.tsx`.
+**File: `src/components/my360/ResponsivePillRow.tsx`**
+- Add optional `onMoreClick` prop and `allItems` render prop
+- Make the "+N more" span a `<button>` when `onMoreClick` is provided
+
+**File: `src/pages/My360.tsx`**
+- Add state for which popover is open (`coreSkillsOpen` / `otherSkillsOpen`)
+- Use a Popover anchored to the "+N more" button
+- Render full skill list inside with name, proficiency, and year in a clean table/list layout
+
+Alternatively, simpler approach: wrap the "+N more" pill in a Popover directly inside `ResponsivePillRow` by accepting a `renderAllItems` prop that returns the popover content.
+
+**Chosen approach:** Add `renderExpandedList?: () => ReactNode` prop to `ResponsivePillRow`. When provided and `hiddenCount > 0`, wrap the "+N more" pill in a Radix Popover that renders the expanded list content. This keeps the component reusable.
+
+### Files to change
+- `src/pages/My360.tsx` — badge color fix + pass `renderExpandedList` for both Core and Other skills
+- `src/components/my360/ResponsivePillRow.tsx` — accept `renderExpandedList` prop, wrap "+N more" in Popover
 

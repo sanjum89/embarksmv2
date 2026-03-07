@@ -43,12 +43,48 @@ const tabs = ["Role & Skills", "Career Timeline", "Growth Path"] as const;
 const ROLE_EXPLORE_PROMPT =
   "Tell me more about my current role, responsibilities, and what's expected of me.";
 
-const ROLE_EXPLORE_RESPONSE = `Here's an overview of your role\n\n## Senior Director, Product Management\n\nAs **Senior Director of Product Management**, you are responsible for driving product strategy and execution across the WFAI platform.\n\n## Key Responsibilities\n\n- **Vision & Strategy:** Define and communicate the product vision aligned with enterprise workforce intelligence goals.\n- **Cross-functional Leadership:** Partner with Engineering, Design, Data Science, and Sales to deliver scalable AI-driven solutions.\n- **Stakeholder Management:** Engage with C-level sponsors, enterprise clients (Flipkart, Tata, ICICI), and internal leadership.\n- **Team Development:** Mentor and grow a team of product managers, fostering a culture of experimentation and data-driven decisions.\n\n## Success Metrics\n\n- Product adoption and NPS across enterprise accounts\n- Time-to-value for new client onboarding\n- Revenue impact from product-led growth initiatives`;
+const ROLE_EXPLORE_RESPONSE = `Here's an overview of your role
+
+## Customer Support Executive L1
+
+You work as a **Customer Support Executive L1**, responsible for handling first-line customer queries and delivering a smooth support experience. The role focuses on customer communication, issue understanding, guided troubleshooting, documentation, process adherence, and correct escalation.
+
+## Key Responsibilities
+
+- Handle incoming customer queries with empathy, clarity, and professionalism
+- Understand the issue through the right probing and clarifying questions
+- Provide basic troubleshooting and guided support at L1 level
+- Document issue details, actions taken, and next steps accurately
+- Follow customer verification, privacy, and support workflow guidelines
+- Escalate cases correctly when they cannot be resolved at L1
+
+## Success Metrics
+
+- Communication quality
+- Customer satisfaction
+- Accuracy of documentation
+- Resolution quality at L1
+- Process and compliance adherence
+- Escalation accuracy`;
 
 const PROJECT_EXPLORE_PROMPT =
   "Give me more details on the project I am currently assigned to, including objectives, stakeholders, and latest updates.";
 
-const PROJECT_EXPLORE_RESPONSE = `Here is a quick summary for you\n\n## Overview\n\nYou're working on **WFAI — an agentic workforce intelligence platform** that builds a dynamic People Graph across skills, performance, and training data. **The goal** is to enable real-time deployment and upskilling decisions using AI-driven workforce insights at scale.\n\n## Opportunity\n\nThis is a chance to define a new category beyond LMS and static skills tools—by operationalising workforce intelligence across the enterprise sector.\n\n## Responsibilities\n\n- Own the product vision and end-to-end execution of the WFAI Onboarding use case.\n- Translate complex enterprise workforce challenges into scalable, AI-driven solutions.`;
+const PROJECT_EXPLORE_RESPONSE = `Here's a summary of your project
+
+## Apple Support Program
+
+You're working on the **Apple Support Program** — a customer support project focused on handling first-line Apple customer queries across account access, Apple ID, iCloud, product basics, device troubleshooting, billing questions, subscriptions, and service-related support. The goal is to provide clear, accurate, and empathetic L1 support while following the right workflows for documentation, verification, resolution, and escalation.
+
+## Opportunity
+
+This project gives you the opportunity to build strong expertise in one of the world's most recognized customer support environments, while developing both customer communication and technical troubleshooting skills. It is also a strong foundation for growing into more advanced Apple support or broader tech support roles.
+
+## Responsibilities
+
+- Handle first-line customer interactions across Apple product, account, and service-related queries
+- Follow support workflows for issue clarification, knowledge base usage, case documentation, and correct escalation
+- Deliver a high-quality customer experience through empathy, accuracy, and clear next-step guidance`;
 
 type GapSource = "Role" | "Project";
 type GapFilter = "All" | "Gap" | "No gap";

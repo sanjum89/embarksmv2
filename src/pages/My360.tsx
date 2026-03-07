@@ -304,7 +304,7 @@ export default function My360() {
                     </button>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Own the product vision and end-to-end execution of the WFAI Onboarding use case. Translate complex enterprise workforce challenges into scalable, AI-driven solutions.
+                    {profileData.roleSnapshotText}
                   </p>
                 </motion.div>
 
@@ -325,7 +325,7 @@ export default function My360() {
                     </button>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    Currently assigned to the WFAI Onboarding project, focusing on building dynamic People Graph across skills, performance, and training data to enable real-time deployment decisions.
+                    {profileData.projectSnapshotText}
                   </p>
                 </motion.div>
 

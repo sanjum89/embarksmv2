@@ -31,7 +31,7 @@ export function SkillTargetListItem({ target, index }: SkillTargetListItemProps)
         className={cn(
           "group block transition-all duration-200",
           isTraditional
-            ? "rounded-2xl bg-white border border-black/[0.08] px-7 py-5 hover:border-black/[0.15] hover:shadow-sm"
+            ? "rounded-2xl bg-card border border-border/30 px-7 py-5 hover:border-border/60 hover:shadow-sm"
             : "rounded-xl bg-card border border-border/60 p-5 hover:shadow-card-hover hover:border-border"
         )}
       >
@@ -43,13 +43,13 @@ export function SkillTargetListItem({ target, index }: SkillTargetListItemProps)
         </h4>
         <p className={cn(
           "line-clamp-1 mb-2",
-          isTraditional ? "text-[13px] text-black/40" : "text-sm text-muted-foreground"
+          isTraditional ? "text-[13px] text-muted-foreground/70" : "text-sm text-muted-foreground"
         )}>
           {target.description}
         </p>
         <div className={cn(
           "flex items-center gap-1.5",
-          isTraditional ? "text-[12px] text-black/35" : "text-xs text-muted-foreground"
+          isTraditional ? "text-[12px] text-muted-foreground/60" : "text-xs text-muted-foreground"
         )}>
           <span>{isTraditional ? "1 day ago" : timeAgo}</span>
           <span>•</span>

@@ -55,7 +55,67 @@ export default function AssessmentPage() {
     if (currentQ > 0) setCurrentQ((prev) => prev - 1);
   };
 
-  const handleSubmit = () => setShowResults(true);
+  const handleSubmit = () => {
+    setShowResults(true);
+
+    if (!assessment || !skillTargetId) return;
+
+    const finalScore = Math.round(
+      (assessment.questions.filter((q) => answers[q.id] === q.correctIndex).length /
+        assessment.questions.length) *
+        100
+    );
+
+    updateSkillTarget(skillTargetId, (target) => {
+      const steps = [...target.steps].sort((a, b) => a.order - b.order);
+      const updatedSteps = target.steps.map((step) => {
+        // Mark assessment step as completed
+        if (step.referenceId === assessment.id && step.type === "assessment") {
+          return { ...step, status: "completed" as const };
+        }
+        return step;
+      });
+
+      // Find steps by order for progression
+      const stepsByOrder = [...updatedSteps].sort((a, b) => a.order - b.order);
+      const assessmentOrder = stepsByOrder.find(
+        (s) => s.referenceId === assessment.id && s.type === "assessment"
+      )?.order ?? 0;
+
+      // Determine which steps to skip/unlock based on score
+      const finalSteps = updatedSteps.map((step) => {
+        if (step.order === assessmentOrder + 1) {
+          // Module 2 (order 2): skip if score > 80%, else unlock
+          if (finalScore > 80 && step.skippable) {
+            return { ...step, status: "skipped" as const };
+          }
+          return { ...step, status: "available" as const };
+        }
+        if (step.order === assessmentOrder + 2) {
+          // Module 3 (order 3): skip if score >= 90%, else...
+          if (finalScore >= 90 && step.skippable) {
+            return { ...step, status: "skipped" as const };
+          }
+          // Unlock if module 2 was skipped (score > 80)
+          if (finalScore > 80) {
+            return { ...step, status: "available" as const };
+          }
+        }
+        if (step.order === assessmentOrder + 3 && finalScore >= 90) {
+          // Unlock module 4 if both 2 and 3 were skipped
+          return { ...step, status: "available" as const };
+        }
+        return step;
+      });
+
+      const completedCount = finalSteps.filter(
+        (s) => s.status === "completed" || s.status === "skipped"
+      ).length;
+      const progress = Math.round((completedCount / finalSteps.length) * 100);
+
+      return { ...target, steps: finalSteps, progress };
+    });
+  };
 
   const handleRetry = () => {
     setAnswers({});

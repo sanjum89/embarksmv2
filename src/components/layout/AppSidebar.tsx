@@ -113,7 +113,7 @@ export function AppSidebar() {
 
         {/* Nav bar strip */}
         <aside className={cn(
-          "flex-1 flex flex-col bg-card border-r border-border rounded-tr-2xl transition-all duration-200",
+          "flex-1 flex flex-col bg-white border-r border-black/[0.06] rounded-tr-3xl transition-all duration-200",
           expanded ? "w-56 items-stretch" : "w-16 items-center"
         )}>
           {/* Me / Team toggle */}
@@ -147,7 +147,7 @@ export function AppSidebar() {
               </div>
             </div>
           ) : (
-            <div className="pt-3 pb-1 flex flex-col items-center gap-1">
+            <div className="pt-4 pb-2 flex flex-col items-center gap-1">
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
                   <button
@@ -168,7 +168,7 @@ export function AppSidebar() {
           )}
 
           {/* Navigation */}
-          <nav className={cn("flex-1 flex flex-col gap-1 py-3 w-full", expanded ? "px-3" : "px-2 items-center")}>
+          <nav className={cn("flex-1 flex flex-col gap-2.5 py-4 w-full", expanded ? "px-3" : "px-2.5 items-center")}>
             {filteredItems.map((item) => {
               if (item.children) {
                 if (expanded) {
@@ -217,11 +217,11 @@ export function AppSidebar() {
                       className={cn(
                         "flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200",
                         active
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          ? "bg-black/[0.04] text-foreground"
+                          : "text-black/40 hover:bg-black/[0.03] hover:text-foreground"
                       )}
                     >
-                      <child.icon className="h-4 w-4" />
+                      <child.icon className="h-[18px] w-[18px]" />
                     </NavLink>
                   );
                   return (
@@ -255,14 +255,14 @@ export function AppSidebar() {
               const link = (
                 <NavLink
                   to={item.path}
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200",
-                    active
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                  )}
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200",
+                      active
+                        ? "bg-black/[0.04] text-foreground"
+                        : "text-black/40 hover:bg-black/[0.03] hover:text-foreground"
+                    )}
                 >
-                  <item.icon className="h-4 w-4" />
+                  <item.icon className="h-[18px] w-[18px]" />
                 </NavLink>
               );
               return (
@@ -275,7 +275,7 @@ export function AppSidebar() {
           </nav>
 
           {/* Bottom section */}
-          <div className={cn("w-full pb-2", expanded ? "px-3" : "flex flex-col items-center")}>
+          <div className={cn("w-full pb-3", expanded ? "px-3" : "flex flex-col items-center gap-1")}>
             {/* Dark mode toggle */}
             {expanded ? (
               <button
@@ -290,7 +290,7 @@ export function AppSidebar() {
                 <TooltipTrigger asChild>
                   <button
                     onClick={toggleTheme}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl text-black/40 hover:bg-black/[0.03] hover:text-foreground transition-colors"
                   >
                     {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                   </button>
@@ -336,7 +336,7 @@ export function AppSidebar() {
           </div>
 
           {/* User info */}
-          <div className={cn("border-t border-border py-3 w-full", expanded ? "px-3" : "flex justify-center")}>
+          <div className={cn("border-t border-black/[0.06] py-3 w-full", expanded ? "px-3" : "flex justify-center")}>
             <Popover>
               <PopoverTrigger asChild>
                 <button className={cn("flex items-center gap-3 w-full rounded-lg hover:bg-muted/50 transition-colors p-1", expanded ? "" : "justify-center")}>

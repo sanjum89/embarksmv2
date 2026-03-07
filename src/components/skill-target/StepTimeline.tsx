@@ -13,7 +13,7 @@ export function StepTimeline({ steps, skillTargetId }: StepTimelineProps) {
   return (
     <div className="relative">
       {/* Vertical connecting line */}
-      <div className="absolute left-[1.9rem] top-6 bottom-6 w-0.5 bg-border" />
+      <div className="absolute left-[1.9rem] top-10 bottom-6 w-0.5 bg-border" />
 
       {/* Accent overlay for completed portion */}
       {(() => {
@@ -25,7 +25,7 @@ export function StepTimeline({ steps, skillTargetId }: StepTimelineProps) {
         const pct = ((lastCompletedIdx + 1) / sorted.length) * 100;
         return (
           <div
-            className="absolute left-[1.9rem] top-6 w-0.5 gradient-accent rounded-full"
+            className="absolute left-[1.9rem] top-10 w-0.5 gradient-accent rounded-full"
             style={{ height: `${pct}%` }}
           />
         );

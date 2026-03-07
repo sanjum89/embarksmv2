@@ -106,6 +106,19 @@ export const mockAssessments: Assessment[] = [
       { id: "q19", question: "Reflective listening involves:", options: ["Repeating exactly what was said", "Paraphrasing to confirm understanding", "Ignoring emotions", "Asking yes/no questions only"], correctIndex: 1 },
     ],
   },
+  {
+    id: "a7",
+    title: "Pre-Assessment: Apple Support Fundamentals",
+    type: "pre",
+    passingScore: 70,
+    questions: [
+      { id: "q20", question: "What is the primary purpose of an Apple ID?", options: ["Hardware registration only", "Single sign-on for all Apple services", "Warranty tracking", "Device encryption"], correctIndex: 1 },
+      { id: "q21", question: "iCloud storage is used for:", options: ["Only photos", "Backing up and syncing data across devices", "Running apps remotely", "Apple Pay transactions"], correctIndex: 1 },
+      { id: "q22", question: "When a customer reports a billing issue, the first step is:", options: ["Issue an immediate refund", "Verify the customer's identity and review the charge", "Transfer to billing department", "End the call"], correctIndex: 1 },
+      { id: "q23", question: "Which Apple device runs iPadOS?", options: ["MacBook", "iPhone", "iPad", "Apple Watch"], correctIndex: 2 },
+      { id: "q24", question: "AppleCare+ provides:", options: ["Free unlimited repairs", "Extended warranty with accidental damage coverage", "Free device upgrades", "Priority store access"], correctIndex: 1 },
+    ],
+  },
 ];
 
 /* ─── Learning Modules ─── */

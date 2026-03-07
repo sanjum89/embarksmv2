@@ -9,7 +9,7 @@ import {
   RadarIcon,
   BarChart3,
 } from "lucide-react";
-import { useVisibleCount } from "@/hooks/useVisibleCount";
+import { ResponsivePillRow } from "@/components/my360/ResponsivePillRow";
 import {
   RadarChart,
   PolarGrid,
@@ -134,9 +134,6 @@ export default function My360() {
     return allGapRows;
   }, [allGapRows, gapFilter]);
 
-  const { containerRef: otherRef, visibleCount: otherVisible } = useVisibleCount(profileData.otherSkills.length);
-
-  const otherExtra = Math.max(0, profileData.otherSkills.length - otherVisible);
 
   const handleRoleExploreClick = () => {
     chatRef.current?.sendMessage(ROLE_EXPLORE_PROMPT, ROLE_EXPLORE_RESPONSE, [

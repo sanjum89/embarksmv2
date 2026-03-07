@@ -223,15 +223,17 @@ export interface ProfileData {
   manager: string;
   yearsExperience: number;
   summary: string;
-  coreSkills: string[];
-  otherSkills: { name: string; level: string; year: string }[];
+  status?: string;
+  department?: string;
+  program?: string;
+  team?: string;
   roleSnapshotText: string;
   projectSnapshotText: string;
-  radarSkills: { skill: string; score: number; target: number }[];
-  skillGapRows: {
-    left: { skill: string; level: string; target: string; hasSkill: boolean };
-    right: { skill: string; level: string; target: string | null; hasSkill: boolean };
-  }[];
+  roleSkillsCurrent: SkillEntry[];
+  roleSkillsRequired: SkillRequirement[];
+  projectSkillsCurrent: SkillEntry[];
+  projectSkillsRequired: SkillRequirement[];
+  otherSkills: SkillEntry[];
 }
 
 export const profileDataByUser: Record<string, ProfileData> = {
@@ -242,75 +244,102 @@ export const profileDataByUser: Record<string, ProfileData> = {
     yearsExperience: 14,
     summary:
       "Developer turned product and sales leader with 12+ years of experience building, and commercializing SaaS platforms. Co-founded and grew a bootstrapped B2B SaaS startup that managed client workflows exceeding $200M. Closed multi-year contracts with leading e-commerce and BFSI enterprises, including Flipkart, Tata, AngelOne and ICICI.",
-    coreSkills: [
-      "Product Strategy",
-      "Stakeholder Management",
-      "Product Ops & Scaling",
-      "Prioritization Rigor",
-      "Lovable AI",
-      "FigJam",
-      "Figma Wireframing",
-      "Figma Make",
-    ],
-    otherSkills: [
-      { name: "Python", level: "I", year: "'24" },
-      { name: "SQL", level: "I", year: "'25" },
-      { name: "OpenKnime - Analytics", level: "A", year: "'25" },
-    ],
     roleSnapshotText: "Own the product vision and end-to-end execution of the WFAI Onboarding use case. Translate complex enterprise workforce challenges into scalable, AI-driven solutions.",
     projectSnapshotText: "Currently assigned to the WFAI Onboarding project, focusing on building dynamic People Graph across skills, performance, and training data to enable real-time deployment decisions.",
-    radarSkills: [
-      { skill: "Product Strategy", score: 80, target: 80 },
-      { skill: "Stakeholder Mgmt", score: 80, target: 80 },
-      { skill: "Product Ops", score: 60, target: 80 },
-      { skill: "Prioritization", score: 60, target: 80 },
-      { skill: "Figma Wireframing", score: 40, target: 60 },
-      { skill: "Figma Make", score: 20, target: 40 },
-      { skill: "FigJam", score: 20, target: 40 },
-      { skill: "Lovable AI", score: 40, target: 60 },
+    roleSkillsCurrent: [
+      { skill_name: "Product Strategy", proficiency: "Expert", assessment_year: 2026 },
+      { skill_name: "Stakeholder Management", proficiency: "Expert", assessment_year: 2026 },
+      { skill_name: "Product Ops & Scaling", proficiency: "Advanced", assessment_year: 2026 },
+      { skill_name: "Prioritization Rigor", proficiency: "Advanced", assessment_year: 2026 },
     ],
-    skillGapRows: [
-      { left: { skill: "Product Stra…", level: "E", target: "✓", hasSkill: true },  right: { skill: "Figma Wiref…", level: "I", target: "A", hasSkill: true } },
-      { left: { skill: "Stakeholder…", level: "E", target: "✓", hasSkill: true },   right: { skill: "Figma Make", level: "B", target: null, hasSkill: false } },
-      { left: { skill: "Product Ops…", level: "A", target: "E", hasSkill: true },   right: { skill: "FigJam", level: "B", target: null, hasSkill: false } },
-      { left: { skill: "Prioritization…", level: "A", target: "E", hasSkill: true }, right: { skill: "Lovable AI", level: "I", target: null, hasSkill: false } },
+    roleSkillsRequired: [
+      { skill_name: "Product Strategy", proficiency: "Expert" },
+      { skill_name: "Stakeholder Management", proficiency: "Expert" },
+      { skill_name: "Product Ops & Scaling", proficiency: "Expert" },
+      { skill_name: "Prioritization Rigor", proficiency: "Expert" },
+    ],
+    projectSkillsCurrent: [
+      { skill_name: "Lovable AI", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "FigJam", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Figma Wireframing", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Figma Make", proficiency: "Beginner", assessment_year: 2026 },
+    ],
+    projectSkillsRequired: [
+      { skill_name: "Lovable AI", proficiency: "Advanced" },
+      { skill_name: "FigJam", proficiency: "Intermediate" },
+      { skill_name: "Figma Wireframing", proficiency: "Advanced" },
+      { skill_name: "Figma Make", proficiency: "Intermediate" },
+    ],
+    otherSkills: [
+      { skill_name: "Python", proficiency: "Intermediate", assessment_year: 2024 },
+      { skill_name: "SQL", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "OpenKnime - Analytics", proficiency: "Advanced", assessment_year: 2025 },
     ],
   },
   u6: {
-    title: "L1 Customer Support Executive",
-    location: "Austin, TX",
-    manager: "Rachel Kim",
-    yearsExperience: 2,
+    title: "Apple L1 Customer Support Executive",
+    location: "Austin, Texas, USA",
+    manager: "Daniel Brooks",
+    yearsExperience: 3,
+    status: "New Hire",
+    department: "Customer Support",
+    program: "Apple Support Program",
+    team: "Apple L1 Customer Care",
     summary:
-      "Customer-focused support specialist with 2 years of experience in L1 technical and billing support for consumer electronics. Currently assigned to the Apple Customer Support Project handling iPhone, iCloud, and Apple One inquiries. Known for high first-call resolution rates and strong empathy scores.",
-    coreSkills: [
-      "Customer Communication",
-      "Apple Product Knowledge",
-      "Issue Triage",
-      "CRM Tools",
+      "Customer support professional with 3 years of experience across general customer support and technical support environments. Strong in communication, empathy, issue clarification, and documentation. Recently joined the Apple Support Program as an L1 Customer Support Executive. Shows strong customer-facing fundamentals, but needs deeper Apple product, Apple ID, iCloud, and Apple ecosystem troubleshooting knowledge to become fully ready for live customer handling.",
+    roleSnapshotText: "As a Customer Support Executive L1, you handle first-line customer queries across account access, product or service basics, troubleshooting, billing questions, and guided support.",
+    projectSnapshotText: "You're currently assigned to the Apple Support Program, supporting customers who reach out with queries related to account access, Apple ID, iCloud, product basics, device troubleshooting, billing, subscriptions, warranty, and service options.",
+    roleSkillsCurrent: [
+      { skill_name: "Customer Communication", proficiency: "Advanced", assessment_year: 2026 },
+      { skill_name: "Empathy and De-escalation", proficiency: "Advanced", assessment_year: 2026 },
+      { skill_name: "Issue Probing and Clarification", proficiency: "Advanced", assessment_year: 2026 },
+      { skill_name: "Case Documentation", proficiency: "Advanced", assessment_year: 2026 },
+      { skill_name: "Knowledge Base Navigation", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Customer Verification and Privacy Basics", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Guided Troubleshooting", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Escalation Handling", proficiency: "Intermediate", assessment_year: 2026 },
+    ],
+    roleSkillsRequired: [
+      { skill_name: "Customer Communication", proficiency: "Advanced" },
+      { skill_name: "Empathy and De-escalation", proficiency: "Advanced" },
+      { skill_name: "Issue Probing and Clarification", proficiency: "Advanced" },
+      { skill_name: "Case Documentation", proficiency: "Advanced" },
+      { skill_name: "Knowledge Base Navigation", proficiency: "Intermediate" },
+      { skill_name: "Customer Verification and Privacy Basics", proficiency: "Intermediate" },
+      { skill_name: "Guided Troubleshooting", proficiency: "Intermediate" },
+      { skill_name: "Escalation Handling", proficiency: "Intermediate" },
+    ],
+    projectSkillsCurrent: [
+      { skill_name: "Apple Product Basics", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Apple ID and iCloud Support", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "iPhone and iPad Troubleshooting", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Mac Basics", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Warranty and Repair Process Understanding", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Apple Ecosystem Navigation", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Apple Service and Support Options", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Apple Billing and Subscription Support", proficiency: "Intermediate", assessment_year: 2026 },
+    ],
+    projectSkillsRequired: [
+      { skill_name: "Apple Product Basics", proficiency: "Advanced" },
+      { skill_name: "Apple ID and iCloud Support", proficiency: "Advanced" },
+      { skill_name: "iPhone and iPad Troubleshooting", proficiency: "Intermediate" },
+      { skill_name: "Mac Basics", proficiency: "Intermediate" },
+      { skill_name: "Warranty and Repair Process Understanding", proficiency: "Intermediate" },
+      { skill_name: "Apple Ecosystem Navigation", proficiency: "Intermediate" },
+      { skill_name: "Apple Service and Support Options", proficiency: "Intermediate" },
+      { skill_name: "Apple Billing and Subscription Support", proficiency: "Intermediate" },
     ],
     otherSkills: [
-      { name: "Zendesk", level: "A", year: "'25" },
-      { name: "Salesforce", level: "I", year: "'25" },
-      { name: "Apple GSX", level: "I", year: "'26" },
-    ],
-    roleSnapshotText: "Provide first-level technical and billing support for Apple products. Resolve customer issues within SLA, escalate complex cases to L2, and maintain a CSAT score above 90%.",
-    projectSnapshotText: "Currently assigned to the Apple Customer Support Project, handling inbound calls and chats for iPhone, iCloud, Apple One, and warranty-related inquiries across the US region.",
-    radarSkills: [
-      { skill: "Communication", score: 80, target: 80 },
-      { skill: "Apple Products", score: 60, target: 80 },
-      { skill: "Issue Triage", score: 60, target: 80 },
-      { skill: "CRM Tools", score: 40, target: 60 },
-      { skill: "Empathy", score: 80, target: 80 },
-      { skill: "Escalation Mgmt", score: 40, target: 60 },
-      { skill: "Billing Systems", score: 40, target: 60 },
-      { skill: "Technical Debug", score: 20, target: 60 },
-    ],
-    skillGapRows: [
-      { left: { skill: "Communication", level: "E", target: "✓", hasSkill: true },  right: { skill: "CRM Tools", level: "I", target: "A", hasSkill: true } },
-      { left: { skill: "Empathy", level: "E", target: "✓", hasSkill: true },        right: { skill: "Escalation Mgmt", level: "I", target: "A", hasSkill: true } },
-      { left: { skill: "Apple Products", level: "A", target: "E", hasSkill: true }, right: { skill: "Billing Systems", level: "I", target: "A", hasSkill: true } },
-      { left: { skill: "Issue Triage", level: "A", target: "E", hasSkill: true },   right: { skill: "Technical Debug", level: "B", target: "A", hasSkill: true } },
+      { skill_name: "Salesforce", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "Zendesk", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "Apple GSX", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Remote Technical Troubleshooting", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "SLA-Based Case Handling", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "Customer Satisfaction Handling", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "Subscription and Billing Query Handling", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "Consumer Device Setup Support", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "Knowledge Article Usage", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "Cross-Channel Support Operations", proficiency: "Intermediate", assessment_year: 2025 },
     ],
   },
 };

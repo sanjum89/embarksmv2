@@ -63,6 +63,38 @@ const projectGaps: SkillGap[] = [
   { skill: "Lovable AI", currentLevel: null, targetLevel: "I", isNew: true },
 ];
 
+const group1Skills = ["Product Ops & Scaling", "Prioritization Rigor"];
+const group2Skills = ["Figma Wireframing", "Figma Make", "FigJam", "Lovable AI"];
+
+const gapModules: Record<string, { title: string; type: "video" | "document"; duration: string }[]> = {
+  "Product Ops & Scaling": [
+    { title: "Scaling Product Operations", type: "video", duration: "30 min" },
+    { title: "Advanced Product Ops Frameworks", type: "document", duration: "20 min" },
+    { title: "Product Ops Case Studies", type: "video", duration: "25 min" },
+  ],
+  "Prioritization Rigor": [
+    { title: "RICE & ICE Scoring Deep Dive", type: "video", duration: "25 min" },
+    { title: "Stakeholder Alignment Workshop", type: "document", duration: "15 min" },
+    { title: "Prioritization Under Uncertainty", type: "video", duration: "20 min" },
+  ],
+  "Figma Wireframing": [
+    { title: "Wireframing Best Practices", type: "video", duration: "30 min" },
+    { title: "Component-based Wireframes", type: "document", duration: "20 min" },
+  ],
+  "Figma Make": [
+    { title: "Intro to Figma Make", type: "video", duration: "20 min" },
+    { title: "Building Your First Prototype", type: "video", duration: "25 min" },
+  ],
+  "FigJam": [
+    { title: "FigJam Essentials", type: "video", duration: "15 min" },
+    { title: "Collaborative Whiteboarding", type: "document", duration: "10 min" },
+  ],
+  "Lovable AI": [
+    { title: "Getting Started with Lovable AI", type: "video", duration: "20 min" },
+    { title: "Building Full-stack Apps with AI", type: "video", duration: "30 min" },
+  ],
+};
+
 /* ─── AI mock generator ─── */
 function generateMockTarget(prompt: string): {
   title: string;
@@ -147,6 +179,9 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
   const [selectedModules, setSelectedModules] = useState<Set<string>>(new Set());
   const [moduleSearch, setModuleSearch] = useState("");
 
+  // Group creation tracking
+  const [groupCreated, setGroupCreated] = useState<Set<string>>(new Set());
+
   // Confirmation result
   const [createdTarget, setCreatedTarget] = useState<SkillTarget | null>(null);
 
@@ -178,6 +213,33 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
   const handleGapClick = (gap: SkillGap) => {
     setAiPrompt(`I want to improve my ${gap.skill} skill from ${gap.currentLevel ?? "—"} to ${gap.targetLevel}`);
     setStep("ai");
+  };
+  const handleCreateGroupFromGaps = (group: "group1" | "group2") => {
+    const isGroup1 = group === "group1";
+    const skills = isGroup1 ? group1Skills : group2Skills;
+    const recs = projectGaps.filter((g) => skills.includes(g.skill));
+    const title = isGroup1 ? "Product & Prioritization Mastery" : "Design & Prototyping Toolkit";
+    const steps: StepItem[] = recs.flatMap((rec, ri) =>
+      (gapModules[rec.skill] ?? []).map((mod, mi) => ({
+        id: `step-grp-${Date.now()}-${ri}-${mi}`,
+        type: "module" as const,
+        title: mod.title,
+        description: `Part of ${rec.skill} learning path.`,
+        order: ri * 10 + mi + 1,
+        skippable: mi > 0,
+        status: ri === 0 && mi === 0 ? ("available" as const) : ("locked" as const),
+        duration: mod.duration,
+        referenceId: `ref-grp-${Date.now()}-${ri}-${mi}`,
+      }))
+    );
+    const target = buildSkillTarget(title, isGroup1
+      ? "Advance your product operations and prioritization skills to Expert level."
+      : "Build foundational skills in design and prototyping tools.",
+      isGroup1 ? "Product Skills" : "Design Tools", steps);
+    setCreatedTarget(target);
+    addSkillTargets([target]);
+    setGroupCreated((prev) => new Set(prev).add(group));
+    setStep("confirm");
   };
 
   /* AI flow */
@@ -314,9 +376,13 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
 
                   {/* Skill Gap Recommendations */}
                   <div className="space-y-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                      Recommended from your Skill Gaps
-                    </h4>
+                    {/* AI recommendation banner */}
+                    <div className="flex items-center gap-2 rounded-lg bg-accent/10 border border-accent/20 px-4 py-3">
+                      <Sparkles className="h-4 w-4 text-accent shrink-0" />
+                      <p className="text-sm text-foreground">
+                        <span className="font-semibold">AI-powered recommendations</span> based on your skills gap analysis
+                      </p>
+                    </div>
 
                     {/* Role gaps — no gaps */}
                     <div className="flex items-center gap-2 rounded-lg bg-success/10 border border-success/20 px-4 py-3">
@@ -327,33 +393,29 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
                       </div>
                     </div>
 
-                    {/* Project gaps */}
-                    <div className="space-y-1.5">
-                      <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                        <Target className="h-3 w-3" /> Project skill gaps
-                      </p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {projectGaps.map((gap) => (
-                          <button
-                            key={gap.skill}
-                            onClick={() => handleGapClick(gap)}
-                            className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-3 py-2.5 text-left transition-all hover:border-accent/40 hover:shadow-sm"
-                          >
-                            <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-foreground truncate">{gap.skill}</p>
-                              {gap.isNew && (
-                                <span className="text-[10px] font-semibold text-accent">NEW</span>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                              <LevelBadge level={gap.currentLevel} />
-                              <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                              <LevelBadge level={gap.targetLevel} />
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                    {/* Group 1: Product & Prioritization */}
+                    <GapGroupCard
+                      title="Product & Prioritization Mastery"
+                      subtitle="Upgrade existing skills to Expert level"
+                      iconColor="text-success"
+                      iconBg="bg-success/10"
+                      gaps={projectGaps.filter((g) => group1Skills.includes(g.skill))}
+                      onGapClick={handleGapClick}
+                      onCreateGroup={() => handleCreateGroupFromGaps("group1")}
+                      groupCreated={groupCreated.has("group1")}
+                    />
+
+                    {/* Group 2: Design & Prototyping */}
+                    <GapGroupCard
+                      title="Design & Prototyping Toolkit"
+                      subtitle="Acquire new design and prototyping skills"
+                      iconColor="text-info"
+                      iconBg="bg-info/10"
+                      gaps={projectGaps.filter((g) => group2Skills.includes(g.skill))}
+                      onGapClick={handleGapClick}
+                      onCreateGroup={() => handleCreateGroupFromGaps("group2")}
+                      groupCreated={groupCreated.has("group2")}
+                    />
                   </div>
                 </motion.div>
               )}
@@ -570,5 +632,82 @@ function ModuleIcon({ mod }: { mod: LearningModule }) {
     <Video className="h-3.5 w-3.5 text-info shrink-0" />
   ) : (
     <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+  );
+}
+
+/* ─── Gap Group Card (matches ActionPlanView layout) ─── */
+function GapGroupCard({
+  title, subtitle, iconColor, iconBg, gaps, onGapClick, onCreateGroup, groupCreated,
+}: {
+  title: string;
+  subtitle: string;
+  iconColor: string;
+  iconBg: string;
+  gaps: SkillGap[];
+  onGapClick: (gap: SkillGap) => void;
+  onCreateGroup: () => void;
+  groupCreated: boolean;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 shadow-card">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", iconBg)}>
+            <Target className={cn("h-4 w-4", iconColor)} />
+          </div>
+          <div>
+            <h5 className="font-display text-sm font-semibold text-foreground">{title}</h5>
+            <p className="text-xs text-muted-foreground">{subtitle}</p>
+          </div>
+        </div>
+        <button
+          onClick={onCreateGroup}
+          disabled={groupCreated}
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
+            groupCreated
+              ? "bg-success/10 text-success cursor-default"
+              : "gradient-accent text-accent-foreground hover:opacity-90"
+          )}
+        >
+          {groupCreated ? (
+            <>
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Created
+            </>
+          ) : (
+            <>
+              <Plus className="h-3.5 w-3.5" />
+              Create Skill Target
+            </>
+          )}
+        </button>
+      </div>
+
+      <div className="space-y-1">
+        {gaps.map((gap) => (
+          <button
+            key={gap.skill}
+            onClick={() => onGapClick(gap)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border hover:bg-secondary/50 transition-colors text-left"
+          >
+            <span className="text-sm font-medium text-foreground flex-1 truncate">{gap.skill}</span>
+            {gap.isNew && (
+              <span className="rounded-full bg-accent/10 border border-accent/20 px-2 py-0.5 text-[10px] font-semibold text-accent shrink-0">
+                NEW
+              </span>
+            )}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <LevelBadge level={gap.currentLevel} />
+              <ArrowRight className="h-3 w-3 text-muted-foreground" />
+              <LevelBadge level={gap.targetLevel} />
+            </div>
+            <span className="text-xs text-muted-foreground shrink-0">
+              {gapModules[gap.skill]?.length ?? 0} modules
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }

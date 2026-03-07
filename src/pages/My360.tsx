@@ -31,6 +31,7 @@ import { AIChatPanel, AIChatPanelHandle } from "@/components/chat/AIChatPanel";
 import { CareerTimeline } from "@/components/my360/CareerTimeline";
 import { ActionPlanView } from "@/components/my360/ActionPlanView";
 import { useUser } from "@/contexts/UserContext";
+import { profileDataByUser } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/hooks/useChartColors";
 
@@ -93,6 +94,9 @@ const PROJECT_EXPLORE_RESPONSE = `Here is a quick summary for you\n\n## Overview
 
 export default function My360() {
   const { user } = useUser();
+  const profileData = profileDataByUser[user.id] || profileDataByUser["u1"];
+  const radarSkills = profileData.radarSkills;
+  const skillGapRows = profileData.skillGapRows;
   const chatRef = useRef<AIChatPanelHandle>(null);
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);

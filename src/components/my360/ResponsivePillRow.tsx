@@ -102,7 +102,7 @@ export function ResponsivePillRow({
       <div
         ref={probeRef}
         aria-hidden
-        className="absolute top-0 left-0 flex flex-nowrap pointer-events-none opacity-0 h-0 overflow-hidden"
+        className="absolute -top-[9999px] left-0 flex flex-nowrap pointer-events-none invisible overflow-hidden"
         style={{ gap: `${gap}px`, width: "max-content" }}
       >
         {Array.from({ length: totalCount }, (_, i) => (

@@ -263,9 +263,14 @@ export default function My360() {
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <ResponsivePillRow
-                totalCount={coreSkillNames.length}
+                totalCount={profileData.roleSkillsCurrent.length}
                 renderPill={(i) => {
-                  const skill = coreSkillNames[i];
+                  const entry = profileData.roleSkillsCurrent[i];
+                  const displayName = entry.skill_name.length > 13
+                    ? entry.skill_name.slice(0, 10) + "..."
+                    : entry.skill_name;
+                  const shortLevel = proficiencyShort[entry.proficiency];
+                  const shortYear = `'${String(entry.assessment_year).slice(-2)}`;
                   const skillColors = [
                     "bg-accent/10 text-accent border border-accent/20",
                     "bg-info/10 text-info border border-info/20",
@@ -275,11 +280,13 @@ export default function My360() {
                   return (
                     <span
                       className={cn(
-                        "rounded-full px-4 py-2 text-sm font-medium whitespace-nowrap",
+                        "inline-flex items-center rounded-full pl-4 pr-1.5 py-2 text-sm font-medium whitespace-nowrap gap-1.5",
                         skillColors[i % skillColors.length]
                       )}
                     >
-                      {skill}
+                      <span className="w-[5.5rem] truncate">{displayName}</span>
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary/50 text-xs font-bold">{shortLevel}</span>
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary/50 text-xs font-bold">{shortYear}</span>
                     </span>
                   );
                 }}

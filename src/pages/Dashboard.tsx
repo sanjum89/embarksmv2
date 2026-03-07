@@ -58,7 +58,7 @@ export default function Dashboard() {
     return (
       <div>
         <div className="flex">
-          <div className="flex-1 p-8 max-w-5xl mx-auto">
+          <div className="flex-1 px-10 py-8 max-w-5xl mx-auto">
             {/* Header bar */}
             <div className="flex items-center justify-between mb-8">
               <h1 className="font-display text-2xl font-bold text-foreground">
@@ -93,7 +93,7 @@ export default function Dashboard() {
 
             {/* List view */}
             {hasAnyTargets && targets.length > 0 ? (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-4">
                 {targets.map((target, i) => (
                   <SkillTargetListItem key={target.id} target={target} index={i} />
                 ))}

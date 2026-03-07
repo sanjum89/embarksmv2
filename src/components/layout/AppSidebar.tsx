@@ -217,8 +217,8 @@ export function AppSidebar() {
                       className={cn(
                         "flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200",
                         active
-                          ? "bg-black/[0.04] text-foreground"
-                          : "text-black/40 hover:bg-black/[0.03] hover:text-foreground"
+                          ? "bg-foreground/[0.05] text-foreground"
+                          : "text-muted-foreground hover:bg-foreground/[0.03] hover:text-foreground"
                       )}
                     >
                       <child.icon className="h-[18px] w-[18px]" />
@@ -258,8 +258,8 @@ export function AppSidebar() {
                     className={cn(
                       "flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200",
                       active
-                        ? "bg-black/[0.04] text-foreground"
-                        : "text-black/40 hover:bg-black/[0.03] hover:text-foreground"
+                        ? "bg-foreground/[0.05] text-foreground"
+                        : "text-muted-foreground hover:bg-foreground/[0.03] hover:text-foreground"
                     )}
                 >
                   <item.icon className="h-[18px] w-[18px]" />
@@ -290,7 +290,7 @@ export function AppSidebar() {
                 <TooltipTrigger asChild>
                   <button
                     onClick={toggleTheme}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl text-black/40 hover:bg-black/[0.03] hover:text-foreground transition-colors"
+                    className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-foreground/[0.03] hover:text-foreground transition-colors"
                   >
                     {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                   </button>
@@ -336,7 +336,7 @@ export function AppSidebar() {
           </div>
 
           {/* User info */}
-          <div className={cn("border-t border-black/[0.06] py-3 w-full", expanded ? "px-3" : "flex justify-center")}>
+          <div className={cn("border-t border-border/30 py-3 w-full", expanded ? "px-3" : "flex justify-center")}>
             <Popover>
               <PopoverTrigger asChild>
                 <button className={cn("flex items-center gap-3 w-full rounded-lg hover:bg-muted/50 transition-colors p-1", expanded ? "" : "justify-center")}>

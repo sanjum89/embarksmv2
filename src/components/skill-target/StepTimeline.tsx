@@ -31,7 +31,7 @@ export function StepTimeline({ steps, skillTargetId }: StepTimelineProps) {
         );
       })()}
 
-      <div className="relative flex flex-col gap-3">
+      <div className="relative z-10 flex flex-col gap-3">
         {sorted.map((step, i) => (
           <StepListItem
             key={step.id}

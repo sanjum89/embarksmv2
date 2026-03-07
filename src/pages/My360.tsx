@@ -353,6 +353,21 @@ export default function My360() {
                     </div>
                   );
                 }}
+                renderExpandedList={() => (
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">All Other Skills</p>
+                    {profileData.otherSkills.map((skill, i) => (
+                      <div key={i} className="flex items-center justify-between gap-4 text-sm">
+                        <span className="font-medium text-foreground">{skill.skill_name}</span>
+                        <div className="flex items-center gap-2 text-muted-foreground text-xs">
+                          <span>{skill.proficiency}</span>
+                          <span>·</span>
+                          <span>{skill.assessment_year}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               />
             </div>
           </motion.div>

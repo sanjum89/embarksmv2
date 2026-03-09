@@ -130,54 +130,59 @@ export function AppSidebar() {
           expanded ? "w-56 items-stretch" : "w-[58px] items-center"
         )}>
           {/* Me / Team toggle */}
-          {expanded ? (
-            <div className="px-4 pt-4 pb-2">
-              <div className="flex bg-muted rounded-full p-0.5">
-                <button
-                  onClick={() => setViewMode("me")}
-                  className={cn(
-                    "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
-                    viewMode === "me"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <UserRound className="h-3.5 w-3.5" />
-                  Me
-                </button>
-                <button
-                  onClick={() => setViewMode("team")}
-                  className={cn(
-                    "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
-                    viewMode === "team"
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <UsersRound className="h-3.5 w-3.5" />
-                  Team
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="pt-4 pb-2 flex flex-col items-center gap-1">
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
+          {user.canManage && (
+            expanded ? (
+              <div className="px-4 pt-4 pb-2">
+                <div className="flex bg-muted rounded-full p-0.5">
                   <button
-                    onClick={() => setViewMode(viewMode === "me" ? "team" : "me")}
+                    onClick={() => { setViewMode("me"); setRole("learner"); navigate("/"); }}
                     className={cn(
-                      "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
-                      viewMode === "team"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-white/60 text-muted-foreground hover:text-foreground"
+                      "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
+                      viewMode === "me"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    {viewMode === "team" ? <UsersRound className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
+                    <UserRound className="h-3.5 w-3.5" />
+                    Me
                   </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>{viewMode === "me" ? "Switch to Team" : "Switch to Me"}</TooltipContent>
-              </Tooltip>
-            </div>
+                  <button
+                    onClick={() => { setViewMode("team"); setRole("manager"); navigate("/manager"); }}
+                    className={cn(
+                      "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
+                      viewMode === "team"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <UsersRound className="h-3.5 w-3.5" />
+                    Team
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="pt-4 pb-2 flex flex-col items-center gap-1">
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => {
+                        if (viewMode === "me") { setViewMode("team"); setRole("manager"); navigate("/manager"); }
+                        else { setViewMode("me"); setRole("learner"); navigate("/"); }
+                      }}
+                      className={cn(
+                        "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+                        viewMode === "team"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-white/60 text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {viewMode === "team" ? <UsersRound className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={8}>{viewMode === "me" ? "Switch to Team" : "Switch to Me"}</TooltipContent>
+                </Tooltip>
+              </div>
+            )
           )}
 
           {/* Navigation */}

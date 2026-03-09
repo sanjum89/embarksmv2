@@ -71,7 +71,7 @@ const navItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-  const { user, switchUser, availableUsers } = useUser();
+  const { user, switchUser, setRole, availableUsers } = useUser();
   const { expanded, toggle } = useSidebarState();
   const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight } = useTheme();
   const navigate = useNavigate();

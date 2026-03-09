@@ -56,7 +56,7 @@ const navItems: NavItem[] = [
   },
   { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "manager", "admin"] },
   {
-    label: "Manager",
+    label: "New Chat",
     path: "/manager",
     icon: Building2,
     roles: ["manager", "admin"],

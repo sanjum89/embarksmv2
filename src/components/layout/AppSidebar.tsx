@@ -281,7 +281,7 @@ export function AppSidebar() {
             {expanded ? (
               <button
                 onClick={toggleTheme}
-                className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors text-sm font-medium"
+                className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors text-sm font-medium"
               >
                 {theme === "dark" ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
                 <span>Dark mode</span>
@@ -291,12 +291,13 @@ export function AppSidebar() {
                 <TooltipTrigger asChild>
                   <button
                     onClick={toggleTheme}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-foreground hover:bg-foreground/[0.03] hover:text-foreground transition-colors"
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors"
                   >
                     {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={8}>Dark mode</TooltipContent>
+              </Tooltip>
               </Tooltip>
             )}
 

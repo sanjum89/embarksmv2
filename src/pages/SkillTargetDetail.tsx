@@ -86,6 +86,8 @@ export default function SkillTargetDetail() {
                 <div className="space-y-1">
                   {target.steps.map((step, idx) => {
                     const isCurrent = step.id === activeStep.id;
+                    const isCompleted = step.status === "completed";
+                    const isSkipped = step.status === "skipped";
                     return (
                       <button
                         key={step.id}
@@ -98,14 +100,16 @@ export default function SkillTargetDetail() {
                             ? "bg-primary/10 text-primary"
                             : step.status === "locked"
                             ? "text-muted-foreground/50 cursor-not-allowed"
+                            : isCompleted || isSkipped
+                            ? "text-muted-foreground hover:bg-secondary"
                             : "text-foreground hover:bg-secondary"
                         )}
                         disabled={step.status === "locked"}
                       >
                         <span className="text-xs font-medium text-muted-foreground w-5 shrink-0">
-                          {idx + 1}
+                          {isCompleted ? "✓" : isSkipped ? "—" : idx + 1}
                         </span>
-                        <span className="text-sm truncate">{step.title}</span>
+                        <span className={cn("text-sm truncate", (isCompleted || isSkipped) && "line-through opacity-70")}>{step.title}</span>
                       </button>
                     );
                   })}
@@ -126,6 +130,9 @@ export default function SkillTargetDetail() {
             <TraditionalContentViewer
               step={activeStep}
               onClose={() => { setActiveStep(null); setActiveTab("conversation"); }}
+              skillTargetId={id!}
+              allSteps={target.steps}
+              onNavigateToStep={(step) => { setActiveStep(step); setActiveTab("chapters"); }}
             />
           ) : (
             <TraditionalActivitiesPanel

@@ -82,7 +82,7 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
         step.status === "completed" && "border-success/20 bg-success/5",
         step.status === "in_progress" && "border-info/30 bg-info/5 shadow-sm",
         step.status === "available" && "border-accent/20 bg-card hover:border-accent/40 hover:shadow-md cursor-pointer",
-        step.status === "skipped" && "border-border bg-muted/30",
+        step.status === "skipped" && "border-success/20 bg-success/5",
         step.status === "locked" && "border-border bg-muted/20 opacity-60"
       )}
     >

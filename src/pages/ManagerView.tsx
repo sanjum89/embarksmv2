@@ -350,10 +350,51 @@ export default function ManagerView() {
               <p className="text-xs font-medium text-primary mb-2">Or ask a question about</p>
             )}
             <div className="relative">
+              {/* Mention autocomplete popup */}
+              <AnimatePresence>
+                {showMentionPopup && filteredPrograms.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    className="absolute bottom-full mb-2 left-0 right-0 z-20 rounded-xl border border-border bg-card shadow-lg overflow-hidden"
+                  >
+                    <div className="px-3 py-2 border-b border-border">
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Programs</p>
+                    </div>
+                    {filteredPrograms.map((program) => (
+                      <button
+                        key={program.id}
+                        onClick={() => insertMention(program.name)}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 text-left hover:bg-secondary/70 transition-colors"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+                          <Layers className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground">{program.name}</p>
+                          <p className="text-[10px] text-muted-foreground">{program.category}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <Input
+                ref={inputRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
+                onChange={(e) => handleInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    if (showMentionPopup && filteredPrograms.length > 0) {
+                      insertMention(filteredPrograms[0].name);
+                    } else {
+                      handleSend(input);
+                    }
+                  }
+                  if (e.key === "Escape") setShowMentionPopup(false);
+                }}
                 placeholder={showHome ? "Diversity across departments" : "Reply..."}
                 className="pr-20 h-11 rounded-xl border-border"
                 disabled={isThinking}

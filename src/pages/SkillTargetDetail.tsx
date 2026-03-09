@@ -199,18 +199,31 @@ export default function SkillTargetDetail() {
                   </span>
                 </div>
 
-                {/* Module breakdown stats */}
-                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-4 text-xs text-muted-foreground">
-                  {target.steps.filter(s => s.type === "module").length > 0 && (
-                    <span>📘 {target.steps.filter(s => s.type === "module").length} Modules</span>
-                  )}
-                  {target.steps.filter(s => s.type === "assessment").length > 0 && (
-                    <span>📝 {target.steps.filter(s => s.type === "assessment").length} Assessments</span>
-                  )}
-                  {target.steps.filter(s => s.type === "role_play").length > 0 && (
-                    <span>🎭 {target.steps.filter(s => s.type === "role_play").length} Role Plays</span>
-                  )}
-                </div>
+                {/* Module breakdown cards */}
+                {(() => {
+                  const modulesCount = target.steps.filter(s => s.type === "module").length;
+                  const assessmentsCount = target.steps.filter(s => s.type === "assessment").length;
+                  const rolePlaysCount = target.steps.filter(s => s.type === "role_play").length;
+                  const cards = [
+                    { icon: "📘", count: modulesCount, label: "Modules" },
+                    { icon: "📝", count: assessmentsCount, label: "Assessments" },
+                    { icon: "🎭", count: rolePlaysCount, label: "Role Plays" },
+                  ].filter(c => c.count > 0);
+                  return (
+                    <div className="grid grid-cols-3 gap-3 mt-5 flex-1">
+                      {cards.map((card) => (
+                        <div
+                          key={card.label}
+                          className="flex flex-col items-center justify-center rounded-xl border border-border bg-secondary/40 p-4 text-center"
+                        >
+                          <span className="text-2xl mb-1.5">{card.icon}</span>
+                          <span className="text-xl font-bold text-foreground leading-none">{card.count}</span>
+                          <span className="text-[11px] text-muted-foreground mt-1">{card.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Right column — Skills Being Developed */}

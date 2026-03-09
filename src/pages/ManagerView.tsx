@@ -227,7 +227,7 @@ export default function ManagerView() {
       const responseData = generateResponse(prompt, skillTargets);
       const response: ChatMessage = { id: (Date.now() + 1).toString(), ...responseData };
       setMessages((prev) => [...prev, response]);
-      if (response.panel) setActivePanel(response.panel);
+      setActivePanel(response.panel || null);
       setIsThinking(false);
     }, 2000);
   }, [isThinking, skillTargets]);

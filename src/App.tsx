@@ -18,7 +18,7 @@ import RolePlayBank from "./pages/RolePlayBank";
 import PeopleGraph from "./pages/PeopleGraph";
 import My360 from "./pages/My360";
 import ManagerView from "./pages/ManagerView";
-import ManagerRolePlay from "./pages/ManagerRolePlay";
+
 import ProgramContextPage from "./pages/ProgramContextPage";
 import AdminView from "./pages/AdminView";
 import NotFound from "./pages/NotFound";
@@ -49,7 +49,7 @@ const App = () => (
               <Route path="/my-360" element={<My360 />} />
               <Route path="/people-graph" element={<PeopleGraph />} />
               <Route path="/manager" element={<ManagerView />} />
-              <Route path="/manager/role-play" element={<ManagerRolePlay />} />
+              <Route path="/manager/role-play" element={<RolePlayBank />} />
               <Route path="/manager/programs" element={<ProgramContextPage />} />
               <Route path="/admin" element={<AdminView />} />
             </Route>

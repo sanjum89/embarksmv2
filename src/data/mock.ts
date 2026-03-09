@@ -616,7 +616,6 @@ export const profileDataByUser: Record<string, ProfileData> = {
       { skill_name: "Consumer Device Setup Support", proficiency: "Intermediate", assessment_year: 2025 },
     ],
   },
-  },
   u7: {
     title: "Regional Training Manager",
     location: "Chicago, IL",

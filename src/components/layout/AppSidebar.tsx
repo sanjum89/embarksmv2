@@ -370,7 +370,7 @@ export function AppSidebar() {
                   {expanded && (
                     <div className="min-w-0 text-left">
                       <p className="text-sm font-medium truncate text-foreground">{user.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">{user.role}</p>
+                      <p className="text-xs text-muted-foreground truncate">{user.title || user.role}</p>
                     </div>
                   )}
                 </button>

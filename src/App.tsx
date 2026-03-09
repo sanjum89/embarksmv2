@@ -46,6 +46,7 @@ const App = () => (
               <Route path="/my-360" element={<My360 />} />
               <Route path="/people-graph" element={<PeopleGraph />} />
               <Route path="/manager" element={<ManagerView />} />
+              <Route path="/manager/programs" element={<ProgramContextPage />} />
               <Route path="/admin" element={<AdminView />} />
             </Route>
             <Route path="*" element={<NotFound />} />

@@ -100,7 +100,7 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
           <h4
             className={cn(
               "text-sm font-semibold",
-              step.status === "skipped" && "line-through text-muted-foreground",
+              step.status === "skipped" && "text-foreground",
               step.status === "locked" && "text-muted-foreground",
               step.status === "completed" && "text-foreground",
               step.status === "in_progress" && "text-foreground",

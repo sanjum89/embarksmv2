@@ -184,18 +184,26 @@ export function AppSidebar() {
           <nav className={cn("flex-1 flex flex-col gap-1.5 py-4 w-full", expanded ? "px-3" : "px-2 items-center")}>
             {filteredItems.map((item) => {
               if (item.children) {
+                const isLearningSpaces = item.label === "Learning Spaces";
+                const groupOpen = isLearningSpaces ? learningSpacesOpen : managerOpen;
+                const toggleGroup = () => isLearningSpaces ? setLearningSpacesOpen(!learningSpacesOpen) : setManagerOpen(!managerOpen);
+
                 if (expanded) {
                   return (
                     <div key={item.label} className="mb-1">
                       <button
-                        onClick={() => setLearningSpacesOpen(!learningSpacesOpen)}
+                        onClick={toggleGroup}
                         className="flex items-center gap-3 w-full px-3 h-9 text-muted-foreground hover:text-foreground hover:bg-white/60 rounded-lg transition-colors"
                       >
-                        <img src={learningSpacesIcon} alt="" className="h-4 w-4 shrink-0 opacity-60" />
+                        {isLearningSpaces ? (
+                          <img src={learningSpacesIcon} alt="" className="h-4 w-4 shrink-0 opacity-60" />
+                        ) : (
+                          <item.icon className="h-4 w-4 shrink-0 opacity-60" />
+                        )}
                         <span className="text-sm font-medium truncate flex-1 text-left">{item.label}</span>
-                        {learningSpacesOpen ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
+                        {groupOpen ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
                       </button>
-                      {learningSpacesOpen && (
+                      {groupOpen && (
                         <div className="mt-0.5 space-y-0.5">
                           {item.children.map((child) => {
                             const active = isPathActive(child.path);
@@ -221,7 +229,7 @@ export function AppSidebar() {
                     </div>
                   );
                 }
-                // Collapsed: show only the parent icon for Learning Spaces
+                // Collapsed: show parent icon
                 const anyChildActive = item.children.some((c) => isPathActive(c.path));
                 const parentLink = (
                   <button
@@ -234,7 +242,11 @@ export function AppSidebar() {
                         : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
                     )}
                   >
-                    <img src={learningSpacesIcon} alt="" className="h-[18px] w-[18px] opacity-70" />
+                    {isLearningSpaces ? (
+                      <img src={learningSpacesIcon} alt="" className="h-[18px] w-[18px] opacity-70" />
+                    ) : (
+                      <item.icon className="h-[18px] w-[18px] opacity-70" />
+                    )}
                   </button>
                 );
                 return (

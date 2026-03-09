@@ -1,23 +1,28 @@
 
 
-# Plan: Two-Column Header with Skills Progress Panel
+## Problem
 
-## Current State
-The Skill Target detail page (New UI) has the header card and "Skills Being Developed" as two separate stacked cards.
+The `railPalette` function currently colors each segment based on the entry *below* it. This means:
+- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
+- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
+- The segment from **Jan → 2025** gets 2025's color (Green) — correct
 
-## Changes
+The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
 
-### `src/pages/SkillTargetDetail.tsx` (lines 162-225)
-Merge the header card and skills section into a single two-column card:
+## Fix
 
-- **Left column**: Category badge, due date, title, description, overall progress bar (existing content)
-- **Right column**: "Skills Being Developed" section matching the reference image — each skill shows:
-  - Skill name
-  - Level transition badge (e.g., `B → A`)
-  - Horizontal progress bar (amber/gold colored)
-  - Percentage label
+Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
 
-The progress bars will use `0%` as default since these are newly created targets with no step completions yet. The amber color matches the reference screenshot.
+```typescript
+const railPalette = (i: number) => {
+  return palette(careerEntries[i]);
+};
+```
 
-Single file change, ~40 lines modified.
+This gives:
+- **Mar segment** (Mar → Feb): Orange
+- **Feb segment** (Feb → Jan): Yellow  
+- **Jan segment and below**: Green
+
+Single line change in `src/components/my360/CareerTimeline.tsx`.
 

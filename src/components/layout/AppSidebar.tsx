@@ -158,7 +158,7 @@ export function AppSidebar() {
                       "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
                       viewMode === "team"
                         ? "bg-primary text-primary-foreground"
-                        : "bg-muted text-muted-foreground hover:text-foreground"
+                        : "bg-white/60 text-muted-foreground hover:text-foreground"
                     )}
                   >
                     {viewMode === "team" ? <UsersRound className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}

@@ -7,6 +7,7 @@ import { UserProvider } from "@/contexts/UserContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SkillTargetsProvider } from "@/contexts/SkillTargetsContext";
+import { RolePlayProvider } from "@/contexts/RolePlayContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import SkillTargetDetail from "./pages/SkillTargetDetail";

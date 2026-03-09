@@ -344,7 +344,7 @@ export default function ManagerView() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="w-[45%] border-l border-border bg-card h-full overflow-y-auto relative"
+            className="w-[45%] border-l border-border bg-card min-h-0 flex-1 overflow-y-auto relative flex flex-col"
           >
             {/* Panel toolbar */}
             <div className="sticky top-0 z-10 flex items-center justify-end gap-1 p-3 bg-card/80 backdrop-blur-sm border-b border-border">

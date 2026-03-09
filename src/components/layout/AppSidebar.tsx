@@ -4,7 +4,7 @@ import {
   LayoutDashboard,
   Target,
   MessageSquare,
-  Users,
+  Mic,
   Shield,
   BarChart3,
   CircleUser,

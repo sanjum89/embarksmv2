@@ -218,9 +218,10 @@ export default function SkillTargetDetail() {
 
 // ── Inline Traditional chat area (simplified embedded chat) ──
 import { useState as useStateChat, useRef, useEffect } from "react";
-import { Sparkles, Mic, Send, Plus } from "lucide-react";
+import { Sparkles, Mic, Send, Plus, Loader2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import type { SkillTarget } from "@/types/learning";
+import { streamChat } from "@/lib/streamChat";
 
 interface ChatMsg {
   id: string;
@@ -232,34 +233,58 @@ interface ChatMsg {
 function TraditionalChatArea({ target }: { target: SkillTarget }) {
   const [messages, setMessages] = useStateChat<ChatMsg[]>([]);
   const [input, setInput] = useStateChat("");
+  const [isLoading, setIsLoading] = useStateChat(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  // Generate initial welcome if no messages
   const welcomeHeading = `Let's unpack ${target.category}: ${target.title}. Ask me anything.`;
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    const userMsg: ChatMsg = { id: Date.now().toString(), role: "user", content: input.trim() };
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
+    const userContent = input.trim();
+    const userMsg: ChatMsg = { id: Date.now().toString(), role: "user", content: userContent };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    setIsLoading(true);
 
-    setTimeout(() => {
-      const reply: ChatMsg = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content:
-          "Based on the conversation, you've been exploring key concepts and are now looking for relevant courses to deepen your understanding. I'd recommend focusing on the available learning modules in your activity list to build a strong foundation.",
-        actions: [
-          { label: "I'd rather explore a different activity" },
-          { label: "Test my understanding" },
-        ],
-      };
-      setMessages((prev) => [...prev, reply]);
-    }, 800);
+    const history = [...messages, userMsg].map((m) => ({ role: m.role, content: m.content }));
+    // Add context about the skill target
+    const contextMessages = [
+      { role: "user" as const, content: `Context: I'm learning about "${target.title}" in the category "${target.category}". ${target.description}` },
+      { role: "assistant" as const, content: "Got it! I'll help you with this learning topic. What would you like to know?" },
+      ...history,
+    ];
+
+    let assistantSoFar = "";
+    try {
+      await streamChat({
+        messages: contextMessages,
+        onDelta: (chunk) => {
+          assistantSoFar += chunk;
+          setMessages((prev) => {
+            const last = prev[prev.length - 1];
+            if (last?.role === "assistant" && last.id === "streaming") {
+              return prev.map((m, i) => i === prev.length - 1 ? { ...m, content: assistantSoFar } : m);
+            }
+            return [...prev, { id: "streaming", role: "assistant", content: assistantSoFar }];
+          });
+        },
+        onDone: () => {
+          setMessages((prev) => prev.map((m) => m.id === "streaming" ? { ...m, id: Date.now().toString() } : m));
+          setIsLoading(false);
+        },
+        onError: (error) => {
+          setMessages((prev) => [...prev, { id: Date.now().toString(), role: "assistant", content: `Sorry, an error occurred: ${error}` }]);
+          setIsLoading(false);
+        },
+      });
+    } catch {
+      setMessages((prev) => [...prev, { id: Date.now().toString(), role: "assistant", content: "Sorry, I couldn't connect to the AI service." }]);
+      setIsLoading(false);
+    }
   };
 
   return (

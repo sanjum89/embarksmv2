@@ -442,7 +442,7 @@ export function AppSidebar() {
                 <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
               </div>
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg">
                 <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
               </div>
             )}

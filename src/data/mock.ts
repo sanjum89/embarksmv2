@@ -262,6 +262,11 @@ export const mockSkillTargets: SkillTarget[] = [
     assignedTo: ["u1", "u2", "u3"],
     progress: 35,
     dueDate: "2026-03-15",
+    skills: [
+      { name: "Objection Handling", current: "Beginner", target: "Advanced" },
+      { name: "Reframing", current: "Beginner", target: "Intermediate" },
+      { name: "Active Listening", current: "Intermediate", target: "Advanced" },
+    ],
     steps: [
       { id: "s1", type: "assessment", title: "Pre-Assessment: Objection Basics", description: "Test your current knowledge of objection handling.", order: 1, skippable: false, status: "completed", duration: "15 min", referenceId: "a1" },
       { id: "s2", type: "module", title: "Objection Handling Framework", description: "Learn the LAER framework for handling objections.", order: 2, skippable: true, skipCondition: "Pre-assessment score > 80%", status: "in_progress", duration: "25 min", referenceId: "m1" },

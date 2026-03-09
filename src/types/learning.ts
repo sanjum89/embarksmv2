@@ -6,6 +6,8 @@ export interface User {
   email: string;
   role: UserRole;
   avatarUrl?: string;
+  title?: string;
+  canManage?: boolean;
 }
 
 export type StepType = "assessment" | "role_play" | "module";

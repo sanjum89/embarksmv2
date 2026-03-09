@@ -1,40 +1,28 @@
 
 
-# Profile Switcher: Mode Toggle + Title Subtitle
+## Problem
 
-## Changes
+The `railPalette` function currently colors each segment based on the entry *below* it. This means:
+- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
+- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
+- The segment from **Jan → 2025** gets 2025's color (Green) — correct
 
-### 1. Add `title` field to `User` type (`src/types/learning.ts`)
-Add an optional `title?: string` field to the `User` interface.
+The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
 
-### 2. Add titles to mock users (`src/data/mock.ts`)
-- Alex Rivera: `"Product Manager"` 
-- Maya Thompson: `"Apple L1 Customer Support Executive"`
-- Marcus Wellington: `"Regional Training Manager"` (or similar from existing data)
-- Raj Patel: `"Apple L1 Customer Support Executive"`
+## Fix
 
-### 3. Add `setRole` to profile switcher + show titles (`src/components/layout/AppSidebar.tsx`)
+Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
 
-**Both theme variants** — in the profile switcher popover:
+```typescript
+const railPalette = (i: number) => {
+  return palette(careerEntries[i]);
+};
+```
 
-- Show each user's `title` as a subtitle line under their name (muted, smaller text)
-- For users whose role is `"manager"` (Alex and Marcus — managers who can also view as learner), add a **Learner / Manager mode toggle** section. When switching to a manager user, show two sub-options:
-  - "As Learner" → `switchUser(id)` + `setRole("learner")` → navigates to `/`
-  - "As Manager" → `switchUser(id)` + `setRole("manager")` → navigates to `/manager`
+This gives:
+- **Mar segment** (Mar → Feb): Orange
+- **Feb segment** (Feb → Jan): Yellow  
+- **Jan segment and below**: Green
 
-- For pure learner users (Maya, Raj), clicking just switches directly as today.
-
-**In the sidebar user info area** (bottom), show `user.title` as subtitle instead of `user.role`.
-
-### 4. Update `UserContext` — expose `setRole` in switcher
-Already available via `useUser()` — just need to destructure `setRole` in `AppSidebar`.
-
-### 5. Determine which users are "manager-capable"
-Add an optional `canManage?: boolean` field to `User`, or simply check if the user appears in a managers list. Simplest: add `canManage: true` to Alex and Marcus in mock data. When `canManage` is true, the switcher shows the Learner/Manager toggle.
-
-## UI Behavior
-- Profile switcher popover shows user list with name + title subtitle
-- Manager-capable users (Alex, Marcus) show an expandable section or two clickable rows: one for Learner mode, one for Manager mode
-- Current active mode gets the checkmark
-- Sidebar bottom user info shows title instead of role
+Single line change in `src/components/my360/CareerTimeline.tsx`.
 

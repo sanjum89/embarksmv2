@@ -9,10 +9,12 @@ export function AppLayout() {
   const { styleTheme } = useTheme();
   const isTraditional = styleTheme === "traditional";
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <AppSidebar />
-      <main className={cn("transition-all duration-200", expanded ? (isTraditional ? "ml-[248px]" : "ml-56") : (isTraditional ? "ml-[82px]" : "ml-16"), isTraditional && "pt-14")}>
-        <Outlet />
+      <main className={cn("flex-1 flex flex-col transition-all duration-200", expanded ? (isTraditional ? "ml-[248px]" : "ml-56") : (isTraditional ? "ml-[82px]" : "ml-16"), isTraditional && "pt-14")}>
+        <div className="flex-1 flex flex-col h-[calc(100vh-0px)]">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

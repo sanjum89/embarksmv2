@@ -196,7 +196,7 @@ export default function ManagerView() {
   const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-1 h-full min-h-0">
       {/* Left: Chat */}
       <div className={cn("flex flex-col h-full transition-all duration-300", activePanel ? "w-[55%]" : "w-full")}>
         <div className="flex-1 overflow-y-auto">

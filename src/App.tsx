@@ -32,6 +32,7 @@ const App = () => (
     <UserProvider>
       <SkillTargetsProvider>
       <RolePlayProvider>
+      <SidebarProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />

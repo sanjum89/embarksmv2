@@ -26,15 +26,15 @@ export const mayaThompson: User = {
   avatarUrl: "",
 };
 
-export const danielBrooks: User = {
+export const marcusWellington: User = {
   id: "u7",
-  name: "Daniel Brooks",
-  email: "daniel@wfai.com",
+  name: "Marcus Wellington",
+  email: "marcus.w@wfai.com",
   role: "manager",
   avatarUrl: "",
 };
 
-export const availableUsers: User[] = [currentUser, mayaThompson, danielBrooks];
+export const availableUsers: User[] = [currentUser, mayaThompson, marcusWellington];
 
 /* ─── New Hires ─── */
 export interface NewHire {

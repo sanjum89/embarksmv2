@@ -322,8 +322,33 @@ export const mockSkillTargets: SkillTarget[] = [
       { id: "s30", type: "role_play", title: "Live Customer Call Simulation", description: "End-to-end simulated customer call covering Apple L1 support scenarios.", order: 16, skippable: false, status: "locked", duration: "25 min", referenceId: "rp13" },
     ],
   },
+  {
+    id: "st5",
+    title: "Apple L1 Customer Support Readiness",
+    description: "Complete onboarding path for new hires joining as Apple L1 Customer Support Executive. Pre-received HRIS signals have marked foundational modules as complete.",
+    category: "Apple Support Program",
+    assignedTo: ["u8"],
+    progress: 13,
+    dueDate: "2026-04-20",
+    steps: [
+      { id: "s31", type: "module", title: "Apple Product Ecosystem Overview", description: "Overview of the Apple hardware and software ecosystem.", order: 1, skippable: false, status: "completed", duration: "25 min", referenceId: "m6" },
+      { id: "s32", type: "module", title: "Apple ID and iCloud Fundamentals", description: "Deep dive into Apple ID management and iCloud services.", order: 2, skippable: false, status: "completed", duration: "30 min", referenceId: "m7" },
+      { id: "s33", type: "module", title: "iPhone and iPad Basics", description: "Core knowledge for supporting iPhone and iPad users.", order: 3, skippable: false, status: "available", duration: "25 min", referenceId: "m8" },
+      { id: "s34", type: "module", title: "Mac Basics for Support", description: "Essential Mac knowledge for L1 support agents.", order: 4, skippable: false, status: "locked", duration: "20 min", referenceId: "m9" },
+      { id: "s35", type: "module", title: "Classroom: Live Device Handling Lab", description: "Offline / Classroom session — hands-on practice with Apple devices.", order: 5, skippable: false, status: "locked", duration: "60 min", referenceId: "m10" },
+      { id: "s36", type: "module", title: "Apple Billing and Subscriptions", description: "Understanding Apple billing, subscriptions, and refund processes.", order: 6, skippable: false, status: "locked", duration: "20 min", referenceId: "m11" },
+      { id: "s37", type: "module", title: "Warranty and Repair Processes", description: "Apple warranty policies, AppleCare+, and repair workflows.", order: 7, skippable: false, status: "locked", duration: "25 min", referenceId: "m12" },
+      { id: "s38", type: "module", title: "Guided Troubleshooting Workflows", description: "Step-by-step troubleshooting guides for common Apple issues.", order: 8, skippable: false, status: "locked", duration: "30 min", referenceId: "m13" },
+      { id: "s39", type: "module", title: "Apple Service and Support Options", description: "Overview of Apple support channels, service tiers, and options.", order: 9, skippable: false, status: "locked", duration: "20 min", referenceId: "m14" },
+      { id: "s40", type: "module", title: "Customer Verification and Privacy", description: "Identity verification protocols and Apple privacy standards.", order: 10, skippable: false, status: "locked", duration: "20 min", referenceId: "m15" },
+      { id: "s41", type: "module", title: "Escalation Procedures", description: "When and how to escalate issues to L2 or specialist teams.", order: 11, skippable: false, status: "locked", duration: "15 min", referenceId: "m16" },
+      { id: "s42", type: "module", title: "Case Documentation Best Practices", description: "Writing clear, complete case notes for handoffs and audits.", order: 12, skippable: false, status: "locked", duration: "20 min", referenceId: "m17" },
+      { id: "s43", type: "module", title: "Apple Ecosystem Navigation Deep Dive", description: "Advanced navigation across Apple tools, portals, and knowledge bases.", order: 13, skippable: false, status: "locked", duration: "25 min", referenceId: "m18" },
+      { id: "s44", type: "module", title: "Live Readiness Review", description: "Final review session before live customer handling.", order: 14, skippable: false, status: "locked", duration: "20 min", referenceId: "m19" },
+      { id: "s45", type: "role_play", title: "Live Customer Call Simulation", description: "End-to-end simulated customer call covering Apple L1 support scenarios.", order: 15, skippable: false, status: "locked", duration: "25 min", referenceId: "rp13" },
+    ],
+  },
 ];
-
 /* ─── Role Plays ─── */
 export const mockRolePlayBank: RolePlay[] = [
   { id: "rp1", title: "Price Objection – SMB Customer", scenario: "A budget-conscious small business owner is evaluating your product alongside two competitors. They like the features but push back hard on pricing, asking for a 30% discount.", difficulty: "intermediate", isPrivate: false, tags: ["pricing", "objections", "SMB"], aiCloneConfig: { persona: "Budget-conscious small business owner", context: "Evaluating 3 competitors, price-sensitive, team of 12" } },

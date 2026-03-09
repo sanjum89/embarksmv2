@@ -197,9 +197,9 @@ export default function LearningModulePage() {
   // New UI: two-column with AgentOne on the right
   if (isNewUI) {
     return (
-      <div className="flex h-screen">
+      <div className="flex flex-1 min-h-0">
         {contentArea}
-        <div className="w-[320px] shrink-0 border-l border-border h-screen sticky top-0">
+        <div className="w-[320px] shrink-0 border-l border-border h-full">
           <AIChatPanel
             contextLabel={`Module: ${module.title}`}
             suggestedActions={[
@@ -215,10 +215,8 @@ export default function LearningModulePage() {
 
   // Traditional UI: just content (global FAB chat handles the rest)
   return (
-    <div>
-      <div className="flex h-screen">
-        {contentArea}
-      </div>
+    <div className="flex flex-1 min-h-0">
+      {contentArea}
     </div>
   );
 }

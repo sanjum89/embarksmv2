@@ -159,70 +159,78 @@ export default function SkillTargetDetail() {
             <ArrowLeft className="h-4 w-4" /> Back to Dashboard
           </Link>
 
-          {/* Header card */}
+          {/* Header card — two-column */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
             className="rounded-xl bg-card border border-border p-6 shadow-card mb-6"
           >
-            <div className="flex items-start justify-between gap-4 mb-3">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
-                <Target className="h-3 w-3" />
-                {target.category}
-              </span>
-              {target.dueDate && (
-                <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  Due{" "}
-                  {new Date(target.dueDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </span>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+              {/* Left column */}
+              <div>
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
+                    <Target className="h-3 w-3" />
+                    {target.category}
+                  </span>
+                  {target.dueDate && (
+                    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      Due{" "}
+                      {new Date(target.dueDate).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                  )}
+                </div>
+
+                <h1 className="font-display text-xl font-bold text-foreground mb-1.5">
+                  {target.title}
+                </h1>
+                <p className="text-sm text-muted-foreground mb-4">{target.description}</p>
+
+                <div className="flex items-center gap-3">
+                  <Progress value={target.progress} className="h-2 flex-1" />
+                  <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
+                    {completedSteps}/{target.steps.length} steps · {target.progress}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Right column — Skills Being Developed */}
+              {target.skills && target.skills.length > 0 && (
+                <div className="border-t lg:border-t-0 lg:border-l border-border pt-4 lg:pt-0 lg:pl-6">
+                  <h3 className="font-display text-sm font-semibold text-foreground mb-3">
+                    Skills Being Developed
+                  </h3>
+                  <div className="space-y-3">
+                    {target.skills.map((skill) => (
+                      <div key={skill.name}>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-sm font-medium text-foreground">{skill.name}</span>
+                          <span className="text-xs font-medium text-primary">
+                            {proficiencyShort[skill.current]} → {proficiencyShort[skill.target]}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 flex-1 rounded-full bg-secondary overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-amber-500 transition-all"
+                              style={{ width: `${target.progress}%` }}
+                            />
+                          </div>
+                          <span className="text-xs text-muted-foreground w-8 text-right">{target.progress}%</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-
-            <h1 className="font-display text-xl font-bold text-foreground mb-1.5">
-              {target.title}
-            </h1>
-            <p className="text-sm text-muted-foreground mb-4">{target.description}</p>
-
-            <div className="flex items-center gap-3">
-              <Progress value={target.progress} className="h-2 flex-1" />
-              <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">
-                {completedSteps}/{target.steps.length} steps · {target.progress}%
-              </span>
-            </div>
           </motion.div>
-
-          {/* Skills Being Developed */}
-          {target.skills && target.skills.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.35 }}
-              className="rounded-xl bg-card border border-border p-5 shadow-card mb-6"
-            >
-              <h3 className="font-display text-sm font-semibold text-foreground mb-3">
-                Skills Being Developed
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {target.skills.map((skill) => (
-                  <div
-                    key={skill.name}
-                    className="flex items-center gap-2 rounded-lg bg-secondary/50 border border-border/50 px-3 py-2"
-                  >
-                    <span className="text-sm font-medium text-foreground">{skill.name}</span>
-                    <span className="text-xs font-medium text-primary">
-                      {proficiencyShort[skill.current]} → {proficiencyShort[skill.target]}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
 
           {/* Step timeline */}
           <motion.div

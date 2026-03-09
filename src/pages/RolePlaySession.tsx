@@ -23,7 +23,24 @@ const difficultyColors = {
 export default function RolePlaySession() {
   const { rid, id: skillTargetId } = useParams();
   const { getRolePlay } = useRolePlays();
-  const rolePlay = getRolePlay(rid || "");
+  const foundRolePlay = getRolePlay(rid || "");
+
+  // Generate fallback role play from skill target step data when not in mock bank
+  const rolePlay = foundRolePlay ?? (() => {
+    // Import dynamically would be complex, so create inline fallback
+    return {
+      id: rid || "",
+      title: "Practice Scenario",
+      scenario: "This is a practice role-play scenario designed to help you build and demonstrate your skills. Engage naturally with the AI persona and apply the techniques you've learned.",
+      difficulty: "intermediate" as const,
+      isPrivate: false,
+      tags: ["practice", "skills"],
+      aiCloneConfig: {
+        persona: "A realistic practice partner",
+        context: "General practice scenario for skill development",
+      },
+    };
+  })();
 
   const [isPrivate, setIsPrivate] = useState(false);
   const [chatInput, setChatInput] = useState("");

@@ -10,8 +10,29 @@ import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 export default function AssessmentPage() {
   const { aid } = useParams();
   const { id: skillTargetId } = useParams();
-  const assessment = mockAssessments.find((a) => a.id === aid);
-  const { updateSkillTarget } = useSkillTargets();
+  const foundAssessment = mockAssessments.find((a) => a.id === aid);
+  const { updateSkillTarget, skillTargets } = useSkillTargets();
+
+  // Generate fallback assessment from skill target step data when not in mock catalog
+  const assessment = foundAssessment ?? (() => {
+    const target = skillTargets.find((st) => st.id === skillTargetId);
+    const step = target?.steps.find((s) => s.referenceId === aid);
+    if (!step) return null;
+    const topicName = step.title.replace(/Pre-Assessment:|Post-Assessment:/gi, "").trim() || target?.title || "General Knowledge";
+    return {
+      id: aid!,
+      title: step.title,
+      type: (step.title.toLowerCase().includes("pre") ? "pre" : "post") as "pre" | "post",
+      passingScore: 70,
+      questions: [
+        { id: `${aid}-q1`, question: `What is the primary objective of ${topicName}?`, options: ["Improve team collaboration", "Build core competency in this area", "Reduce operational costs", "Automate workflows"], correctIndex: 1 },
+        { id: `${aid}-q2`, question: `Which of the following best describes a key principle of ${topicName}?`, options: ["Avoid feedback loops", "Focus on continuous improvement", "Minimize stakeholder input", "Prioritize speed over quality"], correctIndex: 1 },
+        { id: `${aid}-q3`, question: `When applying ${topicName} in practice, you should first:`, options: ["Skip the planning phase", "Assess the current state and gaps", "Implement changes immediately", "Delegate to others"], correctIndex: 1 },
+        { id: `${aid}-q4`, question: `What is a common challenge when developing skills in ${topicName}?`, options: ["Too much available training", "Balancing theory with practice", "Lack of any resources", "No measurable outcomes"], correctIndex: 1 },
+        { id: `${aid}-q5`, question: `The best indicator of proficiency in ${topicName} is:`, options: ["Years of experience alone", "Ability to apply concepts in real scenarios", "Number of certifications", "Memorizing definitions"], correctIndex: 1 },
+      ],
+    };
+  })();
 
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});

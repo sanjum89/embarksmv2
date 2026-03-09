@@ -11,10 +11,25 @@ import { AIChatPanel } from "@/components/chat/AIChatPanel";
 
 export default function LearningModulePage() {
   const { mid, id: skillTargetId } = useParams();
-  const module = mockLearningModules.find((m) => m.id === mid);
-  const { updateSkillTarget } = useSkillTargets();
+  const foundModule = mockLearningModules.find((m) => m.id === mid);
+  const { updateSkillTarget, skillTargets } = useSkillTargets();
   const { styleTheme } = useTheme();
   const isNewUI = styleTheme === "new";
+
+  // Generate fallback module from skill target step data when not found in mock catalog
+  const module = foundModule ?? (() => {
+    const target = skillTargets.find((st) => st.id === skillTargetId);
+    const step = target?.steps.find((s) => s.referenceId === mid);
+    if (!step) return null;
+    return {
+      id: mid!,
+      title: step.title,
+      contentType: "video" as const,
+      contentUrl: "",
+      duration: step.duration || "20 min",
+      transcript: `This module covers ${step.title}. ${step.description}\n\nKey Topics:\n\n1. Core concepts and fundamentals\n2. Practical techniques and frameworks\n3. Real-world application scenarios\n4. Best practices and common pitfalls\n5. Summary and key takeaways\n\nBy completing this module, you'll have a solid understanding of ${step.title.toLowerCase()} and be ready to apply these skills in your day-to-day work.`,
+    };
+  })();
 
   const [completed, setCompleted] = useState(false);
 

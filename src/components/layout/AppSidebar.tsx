@@ -19,6 +19,7 @@ import {
   Building2,
   UserRound,
   UsersRound,
+  Layers,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useSidebarState } from "@/contexts/SidebarContext";
@@ -32,6 +33,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import cornerstoneLogo from "@/assets/cornerstone-logo.svg";
+import learningSpacesIcon from "@/assets/learning-spaces.svg";
 
 interface NavItem {
   label: string;

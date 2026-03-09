@@ -366,6 +366,7 @@ function TraditionalChatArea({ target }: { target: SkillTarget }) {
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
             placeholder="I want to learn about..."
             className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+            disabled={isLoading}
           />
           <div className="flex items-center gap-2 text-muted-foreground">
             <button className="hover:text-foreground transition-colors">
@@ -376,9 +377,10 @@ function TraditionalChatArea({ target }: { target: SkillTarget }) {
             </button>
             <button
               onClick={handleSend}
+              disabled={isLoading}
               className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground hover:opacity-90 transition-opacity"
             >
-              <Send className="h-4 w-4" />
+              {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             </button>
           </div>
         </div>

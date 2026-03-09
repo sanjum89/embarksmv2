@@ -76,16 +76,17 @@ export function AppSidebar() {
   const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
+  const [managerOpen, setManagerOpen] = useState(true);
+  const [brandHovered, setBrandHovered] = useState(false);
+  const [viewMode, setViewMode] = useState<"me" | "team">("me");
+
   const filteredItems = navItems.filter((item) => {
     if (!item.roles.includes(user.role)) return false;
     // Hide Learning Spaces in team/manager mode
     if (item.label === "Learning Spaces" && viewMode === "team") return false;
     return true;
   });
-  const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
-  const [managerOpen, setManagerOpen] = useState(true);
-  const [brandHovered, setBrandHovered] = useState(false);
-  const [viewMode, setViewMode] = useState<"me" | "team">("me");
 
   const isTraditional = styleTheme === "traditional";
 

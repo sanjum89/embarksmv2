@@ -616,4 +616,43 @@ export const profileDataByUser: Record<string, ProfileData> = {
       { skill_name: "Consumer Device Setup Support", proficiency: "Intermediate", assessment_year: 2025 },
     ],
   },
+  u7: {
+    title: "Regional Training Manager",
+    location: "Chicago, IL",
+    manager: "VP of Learning & Development",
+    yearsExperience: 8,
+    summary:
+      "Experienced training manager with 8+ years leading onboarding programs and upskilling initiatives across distributed teams. Skilled in instructional design, performance analytics, and stakeholder alignment. Currently overseeing the Apple L1 Customer Support onboarding program rollout.",
+    roleSnapshotText: "Lead the design, delivery, and optimization of training programs across regional teams. Ensure consistent quality and measurable learning outcomes.",
+    projectSnapshotText: "Currently managing the Apple L1 Customer Support onboarding program, overseeing training assignments, learner progress, and program effectiveness metrics.",
+    roleSkillsCurrent: [
+      { skill_name: "People Management", proficiency: "Advanced", assessment_year: 2026 },
+      { skill_name: "Training Design", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Performance Analytics", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Stakeholder Communication", proficiency: "Advanced", assessment_year: 2025 },
+    ],
+    roleSkillsRequired: [
+      { skill_name: "People Management", proficiency: "Expert" },
+      { skill_name: "Training Design", proficiency: "Advanced" },
+      { skill_name: "Performance Analytics", proficiency: "Advanced" },
+      { skill_name: "Stakeholder Communication", proficiency: "Expert" },
+    ],
+    projectSkillsCurrent: [
+      { skill_name: "LMS Administration", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Content Curation", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Data-Driven Coaching", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Program Impact Measurement", proficiency: "Beginner", assessment_year: 2026 },
+    ],
+    projectSkillsRequired: [
+      { skill_name: "LMS Administration", proficiency: "Advanced" },
+      { skill_name: "Content Curation", proficiency: "Intermediate" },
+      { skill_name: "Data-Driven Coaching", proficiency: "Advanced" },
+      { skill_name: "Program Impact Measurement", proficiency: "Advanced" },
+    ],
+    otherSkills: [
+      { skill_name: "Public Speaking", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "Facilitation", proficiency: "Expert", assessment_year: 2025 },
+      { skill_name: "Change Management", proficiency: "Intermediate", assessment_year: 2024 },
+    ],
+  },
 };

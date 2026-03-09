@@ -1,89 +1,13 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, Target, ArrowRight, CheckCircle2, Plus, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { profileDataByUser } from "@/data/mock";
+import { getRecommendationsForUser, type SkillRecommendation, type RecommendationGroup } from "@/lib/skillRecommendations";
 import type { SkillTarget } from "@/types/learning";
 import { useToast } from "@/hooks/use-toast";
-
-interface SkillRecommendation {
-  skill: string;
-  currentLevel: string | null;
-  targetLevel: string;
-  isNew: boolean;
-  modules: { title: string; type: "video" | "document" | "assessment"; duration: string }[];
-}
-
-const GROUP_1_NAME = "Product & Prioritization Mastery";
-const GROUP_2_NAME = "Design & Prototyping Toolkit";
-
-const recommendations: SkillRecommendation[] = [
-  {
-    skill: "Product Ops & Scaling",
-    currentLevel: "A",
-    targetLevel: "E",
-    isNew: false,
-    modules: [
-      { title: "Scaling Product Operations", type: "video", duration: "30 min" },
-      { title: "Advanced Product Ops Frameworks", type: "document", duration: "20 min" },
-      { title: "Product Ops Case Studies", type: "video", duration: "25 min" },
-    ],
-  },
-  {
-    skill: "Prioritization Rigor",
-    currentLevel: "A",
-    targetLevel: "E",
-    isNew: false,
-    modules: [
-      { title: "RICE & ICE Scoring Deep Dive", type: "video", duration: "25 min" },
-      { title: "Stakeholder Alignment Workshop", type: "document", duration: "15 min" },
-      { title: "Prioritization Under Uncertainty", type: "video", duration: "20 min" },
-    ],
-  },
-  {
-    skill: "Figma Wireframing",
-    currentLevel: "I",
-    targetLevel: "A",
-    isNew: false,
-    modules: [
-      { title: "Wireframing Best Practices", type: "video", duration: "30 min" },
-      { title: "Component-based Wireframes", type: "document", duration: "20 min" },
-    ],
-  },
-  {
-    skill: "Figma Make",
-    currentLevel: null,
-    targetLevel: "B",
-    isNew: true,
-    modules: [
-      { title: "Intro to Figma Make", type: "video", duration: "20 min" },
-      { title: "Building Your First Prototype", type: "video", duration: "25 min" },
-    ],
-  },
-  {
-    skill: "FigJam",
-    currentLevel: null,
-    targetLevel: "B",
-    isNew: true,
-    modules: [
-      { title: "FigJam Essentials", type: "video", duration: "15 min" },
-      { title: "Collaborative Whiteboarding", type: "document", duration: "10 min" },
-    ],
-  },
-  {
-    skill: "Lovable AI",
-    currentLevel: null,
-    targetLevel: "B",
-    isNew: true,
-    modules: [
-      { title: "Getting Started with Lovable AI", type: "video", duration: "20 min" },
-      { title: "Building Full-stack Apps with AI", type: "video", duration: "30 min" },
-    ],
-  },
-];
-
-const group1Skills = ["Product Ops & Scaling", "Prioritization Rigor"];
-const group2Skills = ["Figma Wireframing", "Figma Make", "FigJam", "Lovable AI"];
 
 const levelColors: Record<string, string> = {
   B: "bg-warning/15 text-warning",
@@ -94,33 +18,31 @@ const levelColors: Record<string, string> = {
 };
 
 export function ActionPlanView() {
+  const { user } = useUser();
   const { addSkillTargets, skillTargets } = useSkillTargets();
   const { toast } = useToast();
   const [createdGroups, setCreatedGroups] = useState<Set<string>>(new Set());
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
 
-  const group1Exists = createdGroups.has("group1") || skillTargets.some((st) => st.title === GROUP_1_NAME);
-  const group2Exists = createdGroups.has("group2") || skillTargets.some((st) => st.title === GROUP_2_NAME);
+  const profile = profileDataByUser[user.id];
+  const { groups, hasRoleGaps } = useMemo(() => getRecommendationsForUser(profile), [profile]);
 
-  const handleCreateGroup = (group: "group1" | "group2") => {
-    const isGroup1 = group === "group1";
-    const skills = isGroup1 ? group1Skills : group2Skills;
-    const recs = recommendations.filter((r) => skills.includes(r.skill));
+  const handleCreateGroup = (group: RecommendationGroup) => {
+    // Check if already exists
+    if (createdGroups.has(group.id) || skillTargets.some((st) => st.title === group.title)) return;
 
     const newTarget: SkillTarget = {
-      id: `st-${Date.now()}-${group}`,
-      title: isGroup1 ? GROUP_1_NAME : GROUP_2_NAME,
-      description: isGroup1
-        ? "Advance your product operations and prioritization skills from Advanced to Expert level."
-        : "Build foundational skills in Figma Wireframing, Figma Make, FigJam, and Lovable AI.",
-      category: isGroup1 ? "Product Skills" : "Design Tools",
-      assignedTo: ["u1"],
+      id: `st-${Date.now()}-${group.id}`,
+      title: group.title,
+      description: group.subtitle,
+      category: group.id.includes("role") ? "Role Skills" : "Project Skills",
+      assignedTo: [user.id],
       progress: 0,
-      dueDate: isGroup1 ? "2026-04-15" : "2026-04-30",
-      steps: recs.flatMap((rec, ri) =>
+      dueDate: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
+      steps: group.recommendations.flatMap((rec, ri) =>
         rec.modules.map((mod, mi) => ({
           id: `step-${Date.now()}-${ri}-${mi}`,
-          type: mod.type === "assessment" ? ("assessment" as const) : ("module" as const),
+          type: "module" as const,
           title: mod.title,
           description: `Part of ${rec.skill} learning path.`,
           order: ri * 10 + mi + 1,
@@ -133,12 +55,20 @@ export function ActionPlanView() {
     };
 
     addSkillTargets([newTarget]);
-    setCreatedGroups((prev) => new Set(prev).add(group));
+    setCreatedGroups((prev) => new Set(prev).add(group.id));
     toast({
       title: "Skill Target Created",
       description: `"${newTarget.title}" has been added to your Skill Targets.`,
     });
   };
+
+  if (!profile) {
+    return (
+      <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+        No profile data available to generate recommendations.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -150,105 +80,76 @@ export function ActionPlanView() {
         </p>
       </div>
 
-      {/* Group 1: Product & Prioritization */}
-      <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-success/10">
-              <Target className="h-4 w-4 text-success" />
+      {/* No role gaps */}
+      {!hasRoleGaps && (
+        <div className="flex items-center gap-2 rounded-lg bg-success/10 border border-success/20 px-4 py-3">
+          <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+          <div>
+            <p className="text-sm font-medium text-foreground">No role skill gaps</p>
+            <p className="text-xs text-muted-foreground">You're fully aligned with your role requirements</p>
+          </div>
+        </div>
+      )}
+
+      {/* Dynamic groups */}
+      {groups.map((group) => {
+        const groupExists = createdGroups.has(group.id) || skillTargets.some((st) => st.title === group.title);
+
+        return (
+          <div key={group.id} className="rounded-xl border border-border bg-card p-4 shadow-card">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", group.iconBg)}>
+                  <Target className={cn("h-4 w-4", group.iconColor)} />
+                </div>
+                <div>
+                  <h5 className="font-display text-sm font-semibold text-foreground">{group.title}</h5>
+                  <p className="text-xs text-muted-foreground">{group.subtitle}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => handleCreateGroup(group)}
+                disabled={groupExists}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
+                  groupExists
+                    ? "bg-success/10 text-success cursor-default"
+                    : "gradient-accent text-accent-foreground hover:opacity-90"
+                )}
+              >
+                {groupExists ? (
+                  <>
+                    <CheckCircle2 className="h-3.5 w-3.5" />
+                    Created
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-3.5 w-3.5" />
+                    Create Skill Target
+                  </>
+                )}
+              </button>
             </div>
-            <div>
-              <h5 className="font-display text-sm font-semibold text-foreground">{GROUP_1_NAME}</h5>
-              <p className="text-xs text-muted-foreground">Upgrade existing skills to Expert level</p>
+
+            <div className="space-y-2">
+              {group.recommendations.map((rec) => (
+                <RecommendationRow
+                  key={rec.skill}
+                  rec={rec}
+                  expanded={expandedSkill === rec.skill}
+                  onToggle={() => setExpandedSkill(expandedSkill === rec.skill ? null : rec.skill)}
+                />
+              ))}
             </div>
           </div>
-          <button
-            onClick={() => handleCreateGroup("group1")}
-            disabled={group1Exists}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
-              group1Exists
-                ? "bg-success/10 text-success cursor-default"
-                : "gradient-accent text-accent-foreground hover:opacity-90"
-            )}
-          >
-            {group1Exists ? (
-              <>
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Created
-              </>
-            ) : (
-              <>
-                <Plus className="h-3.5 w-3.5" />
-                Create Skill Target
-              </>
-            )}
-          </button>
-        </div>
+        );
+      })}
 
-        <div className="space-y-2">
-          {recommendations
-            .filter((r) => group1Skills.includes(r.skill))
-            .map((rec) => (
-              <RecommendationRow
-                key={rec.skill}
-                rec={rec}
-                expanded={expandedSkill === rec.skill}
-                onToggle={() => setExpandedSkill(expandedSkill === rec.skill ? null : rec.skill)}
-              />
-            ))}
+      {groups.length === 0 && (
+        <div className="flex items-center justify-center py-8 text-sm text-muted-foreground">
+          No skill gaps detected — you're meeting all requirements!
         </div>
-      </div>
-
-      {/* Group 2: Design & Prototyping */}
-      <div className="rounded-xl border border-border bg-card p-4 shadow-card">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-info/10">
-              <Target className="h-4 w-4 text-info" />
-            </div>
-            <div>
-              <h5 className="font-display text-sm font-semibold text-foreground">{GROUP_2_NAME}</h5>
-              <p className="text-xs text-muted-foreground">Acquire new design and prototyping skills</p>
-            </div>
-          </div>
-          <button
-            onClick={() => handleCreateGroup("group2")}
-            disabled={group2Exists}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
-              group2Exists
-                ? "bg-success/10 text-success cursor-default"
-                : "gradient-accent text-accent-foreground hover:opacity-90"
-            )}
-          >
-            {group2Exists ? (
-              <>
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                Created
-              </>
-            ) : (
-              <>
-                <Plus className="h-3.5 w-3.5" />
-                Create Skill Target
-              </>
-            )}
-          </button>
-        </div>
-
-        <div className="space-y-2">
-          {recommendations
-            .filter((r) => group2Skills.includes(r.skill))
-            .map((rec) => (
-              <RecommendationRow
-                key={rec.skill}
-                rec={rec}
-                expanded={expandedSkill === rec.skill}
-                onToggle={() => setExpandedSkill(expandedSkill === rec.skill ? null : rec.skill)}
-              />
-            ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -316,7 +217,7 @@ function RecommendationRow({
                 <div key={i} className="flex items-center gap-2.5 py-1">
                   <BookOpen className={cn(
                     "h-3.5 w-3.5 shrink-0",
-                    mod.type === "video" ? "text-info" : mod.type === "assessment" ? "text-accent" : "text-muted-foreground"
+                    mod.type === "video" ? "text-info" : "text-muted-foreground"
                   )} />
                   <span className="text-xs font-medium text-foreground flex-1 truncate">{mod.title}</span>
                   <span className="text-[10px] text-muted-foreground shrink-0">{mod.duration}</span>

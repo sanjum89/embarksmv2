@@ -6,9 +6,11 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useToast } from "@/hooks/use-toast";
-import { mockLearningModules } from "@/data/mock";
+import { mockLearningModules, profileDataByUser } from "@/data/mock";
+import { getRecommendationsForUser, type SkillGap, type RecommendationGroup } from "@/lib/skillRecommendations";
 import type { SkillTarget, StepItem, LearningModule } from "@/types/learning";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -45,55 +47,6 @@ function LevelBadge({ level, size = "sm" }: { level: string | null; size?: "sm" 
     </span>
   );
 }
-
-/* ─── Skill-gap data (project gaps from My360) ─── */
-interface SkillGap {
-  skill: string;
-  currentLevel: string | null;
-  targetLevel: string;
-  isNew: boolean;
-}
-
-const projectGaps: SkillGap[] = [
-  { skill: "Product Ops & Scaling", currentLevel: "A", targetLevel: "E", isNew: false },
-  { skill: "Prioritization Rigor", currentLevel: "A", targetLevel: "E", isNew: false },
-  { skill: "Figma Wireframing", currentLevel: "I", targetLevel: "A", isNew: false },
-  { skill: "Figma Make", currentLevel: null, targetLevel: "B", isNew: true },
-  { skill: "FigJam", currentLevel: null, targetLevel: "B", isNew: true },
-  { skill: "Lovable AI", currentLevel: null, targetLevel: "I", isNew: true },
-];
-
-const group1Skills = ["Product Ops & Scaling", "Prioritization Rigor"];
-const group2Skills = ["Figma Wireframing", "Figma Make", "FigJam", "Lovable AI"];
-
-const gapModules: Record<string, { title: string; type: "video" | "document"; duration: string }[]> = {
-  "Product Ops & Scaling": [
-    { title: "Scaling Product Operations", type: "video", duration: "30 min" },
-    { title: "Advanced Product Ops Frameworks", type: "document", duration: "20 min" },
-    { title: "Product Ops Case Studies", type: "video", duration: "25 min" },
-  ],
-  "Prioritization Rigor": [
-    { title: "RICE & ICE Scoring Deep Dive", type: "video", duration: "25 min" },
-    { title: "Stakeholder Alignment Workshop", type: "document", duration: "15 min" },
-    { title: "Prioritization Under Uncertainty", type: "video", duration: "20 min" },
-  ],
-  "Figma Wireframing": [
-    { title: "Wireframing Best Practices", type: "video", duration: "30 min" },
-    { title: "Component-based Wireframes", type: "document", duration: "20 min" },
-  ],
-  "Figma Make": [
-    { title: "Intro to Figma Make", type: "video", duration: "20 min" },
-    { title: "Building Your First Prototype", type: "video", duration: "25 min" },
-  ],
-  "FigJam": [
-    { title: "FigJam Essentials", type: "video", duration: "15 min" },
-    { title: "Collaborative Whiteboarding", type: "document", duration: "10 min" },
-  ],
-  "Lovable AI": [
-    { title: "Getting Started with Lovable AI", type: "video", duration: "20 min" },
-    { title: "Building Full-stack Apps with AI", type: "video", duration: "30 min" },
-  ],
-};
 
 /* ─── AI mock generator ─── */
 function generateMockTarget(prompt: string): {
@@ -136,6 +89,36 @@ function generateMockTarget(prompt: string): {
       ],
     };
   }
+  if (lower.includes("training") || lower.includes("lms") || lower.includes("coaching")) {
+    return {
+      title: "Training Program Excellence",
+      description: "Master training design and delivery for measurable learning outcomes.",
+      category: "Training & Development",
+      skill: "Training Design",
+      currentLevel: "I",
+      targetLevel: "A",
+      modules: [
+        { title: "Instructional Design Principles", type: "video", duration: "30 min" },
+        { title: "Blended Learning Strategies", type: "document", duration: "25 min" },
+        { title: "Measuring Training Impact", type: "video", duration: "20 min" },
+      ],
+    };
+  }
+  if (lower.includes("analytics") || lower.includes("data")) {
+    return {
+      title: "Performance Analytics Mastery",
+      description: "Build advanced data analytics skills for performance tracking and coaching.",
+      category: "Analytics",
+      skill: "Performance Analytics",
+      currentLevel: "I",
+      targetLevel: "A",
+      modules: [
+        { title: "Analytics Fundamentals", type: "video", duration: "25 min" },
+        { title: "Building Dashboards", type: "document", duration: "20 min" },
+        { title: "Data-Driven Decision Making", type: "video", duration: "30 min" },
+      ],
+    };
+  }
   return {
     title: "Custom Learning Path",
     description: `Personalized learning path based on: "${prompt}"`,
@@ -161,6 +144,7 @@ interface Props {
 
 export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
   const navigate = useNavigate();
+  const { user } = useUser();
   const { addSkillTargets } = useSkillTargets();
   const { toast } = useToast();
 
@@ -184,6 +168,10 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
 
   // Confirmation result
   const [createdTarget, setCreatedTarget] = useState<SkillTarget | null>(null);
+
+  // Dynamic recommendations based on current user
+  const profile = profileDataByUser[user.id];
+  const { groups, hasRoleGaps } = useMemo(() => getRecommendationsForUser(profile), [profile]);
 
   const filteredModules = useMemo(() => {
     if (!moduleSearch.trim()) return mockLearningModules;
@@ -214,13 +202,10 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
     setAiPrompt(`I want to improve my ${gap.skill} skill from ${gap.currentLevel ?? "—"} to ${gap.targetLevel}`);
     setStep("ai");
   };
-  const handleCreateGroupFromGaps = (group: "group1" | "group2") => {
-    const isGroup1 = group === "group1";
-    const skills = isGroup1 ? group1Skills : group2Skills;
-    const recs = projectGaps.filter((g) => skills.includes(g.skill));
-    const title = isGroup1 ? "Product & Prioritization Mastery" : "Design & Prototyping Toolkit";
-    const steps: StepItem[] = recs.flatMap((rec, ri) =>
-      (gapModules[rec.skill] ?? []).map((mod, mi) => ({
+
+  const handleCreateGroupFromGaps = (group: RecommendationGroup) => {
+    const steps: StepItem[] = group.recommendations.flatMap((rec, ri) =>
+      rec.modules.map((mod, mi) => ({
         id: `step-grp-${Date.now()}-${ri}-${mi}`,
         type: "module" as const,
         title: mod.title,
@@ -232,13 +217,10 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
         referenceId: `ref-grp-${Date.now()}-${ri}-${mi}`,
       }))
     );
-    const target = buildSkillTarget(title, isGroup1
-      ? "Advance your product operations and prioritization skills to Expert level."
-      : "Build foundational skills in design and prototyping tools.",
-      isGroup1 ? "Product Skills" : "Design Tools", steps);
+    const target = buildSkillTarget(group.title, group.subtitle, group.id.includes("role") ? "Role Skills" : "Project Skills", steps);
     setCreatedTarget(target);
     addSkillTargets([target]);
-    setGroupCreated((prev) => new Set(prev).add(group));
+    setGroupCreated((prev) => new Set(prev).add(group.id));
     setStep("confirm");
   };
 
@@ -309,7 +291,7 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
     title,
     description,
     category,
-    assignedTo: ["u1"],
+    assignedTo: [user.id],
     progress: 0,
     dueDate: new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0],
     steps,
@@ -384,38 +366,31 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
                       </p>
                     </div>
 
-                    {/* Role gaps — no gaps */}
-                    <div className="flex items-center gap-2 rounded-lg bg-success/10 border border-success/20 px-4 py-3">
-                      <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">No role skill gaps</p>
-                        <p className="text-xs text-muted-foreground">You're fully aligned with your role requirements</p>
+                    {/* No role gaps message */}
+                    {!hasRoleGaps && (
+                      <div className="flex items-center gap-2 rounded-lg bg-success/10 border border-success/20 px-4 py-3">
+                        <CheckCircle2 className="h-4 w-4 text-success shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">No role skill gaps</p>
+                          <p className="text-xs text-muted-foreground">You're fully aligned with your role requirements</p>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    {/* Group 1: Product & Prioritization */}
-                    <GapGroupCard
-                      title="Product & Prioritization Mastery"
-                      subtitle="Upgrade existing skills to Expert level"
-                      iconColor="text-success"
-                      iconBg="bg-success/10"
-                      gaps={projectGaps.filter((g) => group1Skills.includes(g.skill))}
-                      onGapClick={handleGapClick}
-                      onCreateGroup={() => handleCreateGroupFromGaps("group1")}
-                      groupCreated={groupCreated.has("group1")}
-                    />
+                    {/* Dynamic recommendation groups */}
+                    {groups.map((group) => (
+                      <GapGroupCard
+                        key={group.id}
+                        group={group}
+                        onGapClick={handleGapClick}
+                        onCreateGroup={() => handleCreateGroupFromGaps(group)}
+                        groupCreated={groupCreated.has(group.id)}
+                      />
+                    ))}
 
-                    {/* Group 2: Design & Prototyping */}
-                    <GapGroupCard
-                      title="Design & Prototyping Toolkit"
-                      subtitle="Acquire new design and prototyping skills"
-                      iconColor="text-info"
-                      iconBg="bg-info/10"
-                      gaps={projectGaps.filter((g) => group2Skills.includes(g.skill))}
-                      onGapClick={handleGapClick}
-                      onCreateGroup={() => handleCreateGroupFromGaps("group2")}
-                      groupCreated={groupCreated.has("group2")}
-                    />
+                    {groups.length === 0 && hasRoleGaps && (
+                      <p className="text-xs text-muted-foreground text-center py-4">No profile data available to generate recommendations.</p>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -635,15 +610,11 @@ function ModuleIcon({ mod }: { mod: LearningModule }) {
   );
 }
 
-/* ─── Gap Group Card (matches ActionPlanView layout) ─── */
+/* ─── Gap Group Card ─── */
 function GapGroupCard({
-  title, subtitle, iconColor, iconBg, gaps, onGapClick, onCreateGroup, groupCreated,
+  group, onGapClick, onCreateGroup, groupCreated,
 }: {
-  title: string;
-  subtitle: string;
-  iconColor: string;
-  iconBg: string;
-  gaps: SkillGap[];
+  group: RecommendationGroup;
   onGapClick: (gap: SkillGap) => void;
   onCreateGroup: () => void;
   groupCreated: boolean;
@@ -652,12 +623,12 @@ function GapGroupCard({
     <div className="rounded-xl border border-border bg-card p-4 shadow-card">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", iconBg)}>
-            <Target className={cn("h-4 w-4", iconColor)} />
+          <div className={cn("flex h-8 w-8 items-center justify-center rounded-lg", group.iconBg)}>
+            <Target className={cn("h-4 w-4", group.iconColor)} />
           </div>
           <div>
-            <h5 className="font-display text-sm font-semibold text-foreground">{title}</h5>
-            <p className="text-xs text-muted-foreground">{subtitle}</p>
+            <h5 className="font-display text-sm font-semibold text-foreground">{group.title}</h5>
+            <p className="text-xs text-muted-foreground">{group.subtitle}</p>
           </div>
         </div>
         <button
@@ -685,25 +656,25 @@ function GapGroupCard({
       </div>
 
       <div className="space-y-1">
-        {gaps.map((gap) => (
+        {group.recommendations.map((rec) => (
           <button
-            key={gap.skill}
-            onClick={() => onGapClick(gap)}
+            key={rec.skill}
+            onClick={() => onGapClick(rec)}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border border-border hover:bg-secondary/50 transition-colors text-left"
           >
-            <span className="text-sm font-medium text-foreground flex-1 truncate">{gap.skill}</span>
-            {gap.isNew && (
+            <span className="text-sm font-medium text-foreground flex-1 truncate">{rec.skill}</span>
+            {rec.isNew && (
               <span className="rounded-full bg-accent/10 border border-accent/20 px-2 py-0.5 text-[10px] font-semibold text-accent shrink-0">
                 NEW
               </span>
             )}
             <div className="flex items-center gap-1.5 shrink-0">
-              <LevelBadge level={gap.currentLevel} />
+              <LevelBadge level={rec.currentLevel} />
               <ArrowRight className="h-3 w-3 text-muted-foreground" />
-              <LevelBadge level={gap.targetLevel} />
+              <LevelBadge level={rec.targetLevel} />
             </div>
             <span className="text-xs text-muted-foreground shrink-0">
-              {gapModules[gap.skill]?.length ?? 0} modules
+              {rec.modules.length} modules
             </span>
           </button>
         ))}

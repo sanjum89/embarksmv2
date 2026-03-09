@@ -242,7 +242,7 @@ export default function ManagerView() {
         <div className="flex-1 overflow-y-auto min-h-0">
           {showHome ? (
             <div className="flex flex-col items-center justify-center min-h-full px-6">
-              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[540px] pt-16 pb-8">
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[680px] pt-16 pb-8">
                 <h1 className="font-display text-[28px] font-bold text-foreground mb-8">
                   Hi {firstName}, let's dive in
                 </h1>

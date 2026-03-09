@@ -492,7 +492,7 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
 
       {/* Me / Team toggle for New UI */}
       {user.canManage && (
-        <div className={cn("w-full", expanded ? "px-3 pb-2" : "flex justify-center pb-2")}>
+        <div className={cn("w-full pt-3", expanded ? "px-3 pb-2" : "flex justify-center pb-2")}>
           {expanded ? (
             <div className="flex bg-sidebar-accent/50 rounded-full p-0.5">
               <button

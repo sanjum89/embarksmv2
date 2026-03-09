@@ -421,7 +421,7 @@ export function AppSidebar() {
         {expanded ? (
           <>
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent shrink-0">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0">
                 <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
               </div>
               <span className="font-display font-bold text-sm text-sidebar-foreground">Cornerstone</span>

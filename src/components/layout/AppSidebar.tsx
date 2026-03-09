@@ -170,7 +170,7 @@ export function AppSidebar() {
           )}
 
           {/* Navigation */}
-          <nav className={cn("flex-1 flex flex-col gap-2.5 py-4 w-full", expanded ? "px-3" : "px-2.5 items-center")}>
+          <nav className={cn("flex-1 flex flex-col gap-1.5 py-4 w-full", expanded ? "px-3" : "px-2 items-center")}>
             {filteredItems.map((item) => {
               if (item.children) {
                 if (expanded) {
@@ -178,9 +178,9 @@ export function AppSidebar() {
                     <div key={item.label} className="mb-1">
                       <button
                         onClick={() => setLearningSpacesOpen(!learningSpacesOpen)}
-                        className="flex items-center gap-3 w-full px-3 h-9 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+                        className="flex items-center gap-3 w-full px-3 h-9 text-muted-foreground hover:text-foreground hover:bg-white/60 rounded-lg transition-colors"
                       >
-                        <item.icon className="h-4 w-4 shrink-0" />
+                        <img src={learningSpacesIcon} alt="" className="h-4 w-4 shrink-0 opacity-60" />
                         <span className="text-sm font-medium truncate flex-1 text-left">{item.label}</span>
                         {learningSpacesOpen ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
                       </button>
@@ -196,8 +196,8 @@ export function AppSidebar() {
                                 className={cn(
                                   "flex items-center gap-3 h-9 pl-9 pr-3 rounded-lg transition-all duration-200 text-sm font-medium",
                                   active
-                                    ? "bg-primary/10 text-primary"
-                                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                                    ? "bg-white/70 text-primary shadow-sm"
+                                    : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
                                 )}
                               >
                                 <child.icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
@@ -210,29 +210,28 @@ export function AppSidebar() {
                     </div>
                   );
                 }
-                return item.children.map((child) => {
-                  const active = isPathActive(child.path);
-                  const link = (
-                    <NavLink
-                      key={child.path}
-                      to={child.path}
-                      className={cn(
-                        "flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200",
-                        active
-                          ? "bg-foreground/[0.05] text-foreground"
-                          : "text-muted-foreground hover:bg-foreground/[0.03] hover:text-foreground"
-                      )}
-                    >
-                      <child.icon className="h-[18px] w-[18px]" />
-                    </NavLink>
-                  );
-                  return (
-                    <Tooltip key={child.path} delayDuration={0}>
-                      <TooltipTrigger asChild>{link}</TooltipTrigger>
-                      <TooltipContent side="right" sideOffset={8}>{child.label}</TooltipContent>
-                    </Tooltip>
-                  );
-                });
+                // Collapsed: show only the parent icon for Learning Spaces
+                const anyChildActive = item.children.some((c) => isPathActive(c.path));
+                const parentLink = (
+                  <button
+                    key={item.label}
+                    onClick={() => { navigate(item.children![0].path); }}
+                    className={cn(
+                      "flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200",
+                      anyChildActive
+                        ? "bg-white/70 text-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
+                    )}
+                  >
+                    <img src={learningSpacesIcon} alt="" className="h-[18px] w-[18px] opacity-70" />
+                  </button>
+                );
+                return (
+                  <Tooltip key={item.label} delayDuration={0}>
+                    <TooltipTrigger asChild>{parentLink}</TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={8}>{item.label}</TooltipContent>
+                  </Tooltip>
+                );
               }
 
               const active = isPathActive(item.path);
@@ -244,8 +243,8 @@ export function AppSidebar() {
                     className={cn(
                       "flex items-center gap-3 h-9 px-3 rounded-lg transition-all duration-200 text-sm font-medium",
                       active
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                        ? "bg-white/70 text-primary shadow-sm"
+                        : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
                     )}
                   >
                     <item.icon className={cn("h-4 w-4 shrink-0", active && "text-primary")} />
@@ -258,10 +257,10 @@ export function AppSidebar() {
                 <NavLink
                   to={item.path}
                     className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200",
+                      "flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200",
                       active
-                        ? "bg-foreground/[0.05] text-foreground"
-                        : "text-muted-foreground hover:bg-foreground/[0.03] hover:text-foreground"
+                        ? "bg-white/70 text-foreground shadow-sm"
+                        : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
                     )}
                 >
                   <item.icon className="h-[18px] w-[18px]" />

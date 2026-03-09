@@ -1,6 +1,7 @@
 type Msg = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const ROLE_PLAY_CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/role-play-chat`;
 
 export async function streamChat({
   messages,

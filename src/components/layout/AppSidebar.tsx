@@ -55,9 +55,18 @@ const navItems: NavItem[] = [
     ],
   },
   { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "manager", "admin"] },
-  { label: "Manager", path: "/manager", icon: MessageSquare, roles: ["manager", "admin"] },
-  { label: "Programs", path: "/manager/programs", icon: Layers, roles: ["manager", "admin"] },
-  { label: "People Graph", path: "/people-graph", icon: BarChart3, roles: ["manager", "admin"] },
+  {
+    label: "Manager",
+    path: "/manager",
+    icon: Building2,
+    roles: ["manager", "admin"],
+    children: [
+      { label: "Chat", path: "/manager", icon: MessageSquare },
+      { label: "Role Play", path: "/manager/role-play", icon: Mic },
+      { label: "Programs", path: "/manager/programs", icon: Layers },
+      { label: "People Graph", path: "/people-graph", icon: BarChart3 },
+    ],
+  },
   { label: "Admin", path: "/admin", icon: Shield, roles: ["admin"] },
 ];
 

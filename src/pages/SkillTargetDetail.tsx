@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Target, CalendarDays } from "lucide-react";
+import { ArrowLeft, Target, CalendarDays, BookOpen, ClipboardCheck, Drama } from "lucide-react";
 import { proficiencyShort } from "@/types/learning";
 
 import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
@@ -204,10 +204,10 @@ export default function SkillTargetDetail() {
                   const modulesCount = target.steps.filter(s => s.type === "module").length;
                   const assessmentsCount = target.steps.filter(s => s.type === "assessment").length;
                   const rolePlaysCount = target.steps.filter(s => s.type === "role_play").length;
-                  const cards = [
-                    { icon: "📘", count: modulesCount, label: "Modules" },
-                    { icon: "📝", count: assessmentsCount, label: "Assessments" },
-                    { icon: "🎭", count: rolePlaysCount, label: "Role Plays" },
+                  const cards: { icon: React.ReactNode; count: number; label: string }[] = [
+                    { icon: <BookOpen className="h-5 w-5 text-primary" />, count: modulesCount, label: "Modules" },
+                    { icon: <ClipboardCheck className="h-5 w-5 text-primary" />, count: assessmentsCount, label: "Assessments" },
+                    { icon: <Drama className="h-5 w-5 text-primary" />, count: rolePlaysCount, label: "Role Plays" },
                   ].filter(c => c.count > 0);
                   return (
                     <div className="grid grid-cols-3 gap-3 mt-5 flex-1">
@@ -216,7 +216,7 @@ export default function SkillTargetDetail() {
                           key={card.label}
                           className="flex flex-col items-center justify-center rounded-xl border border-border bg-secondary/40 p-4 text-center"
                         >
-                          <span className="text-2xl mb-1.5">{card.icon}</span>
+                          <span className="mb-1.5">{card.icon}</span>
                           <span className="text-xl font-bold text-foreground leading-none">{card.count}</span>
                           <span className="text-[11px] text-muted-foreground mt-1">{card.label}</span>
                         </div>

@@ -298,7 +298,6 @@ export function AppSidebar() {
                 </TooltipTrigger>
                 <TooltipContent side="right" sideOffset={8}>Dark mode</TooltipContent>
               </Tooltip>
-              </Tooltip>
             )}
 
             {/* Theme style switcher */}

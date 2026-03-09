@@ -78,6 +78,7 @@ export function AppSidebar() {
   const location = useLocation();
   const filteredItems = navItems.filter((item) => item.roles.includes(user.role));
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
+  const [managerOpen, setManagerOpen] = useState(true);
   const [brandHovered, setBrandHovered] = useState(false);
   const [viewMode, setViewMode] = useState<"me" | "team">("me");
 

@@ -84,8 +84,10 @@ export function AppSidebar() {
 
   const isTraditional = styleTheme === "traditional";
 
-  const isPathActive = (path: string) =>
-    location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
+  const isPathActive = (path: string) => {
+    if (path === "/" || path === "/manager") return location.pathname === path;
+    return location.pathname.startsWith(path);
+  };
 
   /* ── Traditional theme sidebar ── */
   if (isTraditional) {

@@ -34,7 +34,15 @@ export const marcusWellington: User = {
   avatarUrl: "",
 };
 
-export const availableUsers: User[] = [currentUser, mayaThompson, marcusWellington];
+export const rajPatel: User = {
+  id: "u8",
+  name: "Raj Patel",
+  email: "raj@wfai.com",
+  role: "learner",
+  avatarUrl: "",
+};
+
+export const availableUsers: User[] = [currentUser, mayaThompson, marcusWellington, rajPatel];
 
 /* ─── New Hires ─── */
 export interface NewHire {
@@ -65,7 +73,7 @@ export const mockNewHires: NewHire[] = [
     program: "Apple Support Program",
   },
   {
-    user: { id: "u8", name: "Raj Patel", email: "raj@wfai.com", role: "learner" },
+    user: rajPatel,
     title: "Apple L1 Customer Support Executive",
     startDate: "2026-02-20",
     location: "Bangalore, India",
@@ -314,8 +322,33 @@ export const mockSkillTargets: SkillTarget[] = [
       { id: "s30", type: "role_play", title: "Live Customer Call Simulation", description: "End-to-end simulated customer call covering Apple L1 support scenarios.", order: 16, skippable: false, status: "locked", duration: "25 min", referenceId: "rp13" },
     ],
   },
+  {
+    id: "st5",
+    title: "Apple L1 Customer Support Readiness",
+    description: "Complete onboarding path for new hires joining as Apple L1 Customer Support Executive. Pre-received HRIS signals have marked foundational modules as complete.",
+    category: "Apple Support Program",
+    assignedTo: ["u8"],
+    progress: 13,
+    dueDate: "2026-04-20",
+    steps: [
+      { id: "s31", type: "module", title: "Apple Product Ecosystem Overview", description: "Overview of the Apple hardware and software ecosystem.", order: 1, skippable: false, status: "completed", duration: "25 min", referenceId: "m6" },
+      { id: "s32", type: "module", title: "Apple ID and iCloud Fundamentals", description: "Deep dive into Apple ID management and iCloud services.", order: 2, skippable: false, status: "completed", duration: "30 min", referenceId: "m7" },
+      { id: "s33", type: "module", title: "iPhone and iPad Basics", description: "Core knowledge for supporting iPhone and iPad users.", order: 3, skippable: false, status: "available", duration: "25 min", referenceId: "m8" },
+      { id: "s34", type: "module", title: "Mac Basics for Support", description: "Essential Mac knowledge for L1 support agents.", order: 4, skippable: false, status: "locked", duration: "20 min", referenceId: "m9" },
+      { id: "s35", type: "module", title: "Classroom: Live Device Handling Lab", description: "Offline / Classroom session — hands-on practice with Apple devices.", order: 5, skippable: false, status: "locked", duration: "60 min", referenceId: "m10" },
+      { id: "s36", type: "module", title: "Apple Billing and Subscriptions", description: "Understanding Apple billing, subscriptions, and refund processes.", order: 6, skippable: false, status: "locked", duration: "20 min", referenceId: "m11" },
+      { id: "s37", type: "module", title: "Warranty and Repair Processes", description: "Apple warranty policies, AppleCare+, and repair workflows.", order: 7, skippable: false, status: "locked", duration: "25 min", referenceId: "m12" },
+      { id: "s38", type: "module", title: "Guided Troubleshooting Workflows", description: "Step-by-step troubleshooting guides for common Apple issues.", order: 8, skippable: false, status: "locked", duration: "30 min", referenceId: "m13" },
+      { id: "s39", type: "module", title: "Apple Service and Support Options", description: "Overview of Apple support channels, service tiers, and options.", order: 9, skippable: false, status: "locked", duration: "20 min", referenceId: "m14" },
+      { id: "s40", type: "module", title: "Customer Verification and Privacy", description: "Identity verification protocols and Apple privacy standards.", order: 10, skippable: false, status: "locked", duration: "20 min", referenceId: "m15" },
+      { id: "s41", type: "module", title: "Escalation Procedures", description: "When and how to escalate issues to L2 or specialist teams.", order: 11, skippable: false, status: "locked", duration: "15 min", referenceId: "m16" },
+      { id: "s42", type: "module", title: "Case Documentation Best Practices", description: "Writing clear, complete case notes for handoffs and audits.", order: 12, skippable: false, status: "locked", duration: "20 min", referenceId: "m17" },
+      { id: "s43", type: "module", title: "Apple Ecosystem Navigation Deep Dive", description: "Advanced navigation across Apple tools, portals, and knowledge bases.", order: 13, skippable: false, status: "locked", duration: "25 min", referenceId: "m18" },
+      { id: "s44", type: "module", title: "Live Readiness Review", description: "Final review session before live customer handling.", order: 14, skippable: false, status: "locked", duration: "20 min", referenceId: "m19" },
+      { id: "s45", type: "role_play", title: "Live Customer Call Simulation", description: "End-to-end simulated customer call covering Apple L1 support scenarios.", order: 15, skippable: false, status: "locked", duration: "25 min", referenceId: "rp13" },
+    ],
+  },
 ];
-
 /* ─── Role Plays ─── */
 export const mockRolePlayBank: RolePlay[] = [
   { id: "rp1", title: "Price Objection – SMB Customer", scenario: "A budget-conscious small business owner is evaluating your product alongside two competitors. They like the features but push back hard on pricing, asking for a 30% discount.", difficulty: "intermediate", isPrivate: false, tags: ["pricing", "objections", "SMB"], aiCloneConfig: { persona: "Budget-conscious small business owner", context: "Evaluating 3 competitors, price-sensitive, team of 12" } },
@@ -489,6 +522,63 @@ export const profileDataByUser: Record<string, ProfileData> = {
       { skill_name: "Consumer Device Setup Support", proficiency: "Intermediate", assessment_year: 2025 },
       { skill_name: "Knowledge Article Usage", proficiency: "Intermediate", assessment_year: 2025 },
       { skill_name: "Cross-Channel Support Operations", proficiency: "Intermediate", assessment_year: 2025 },
+    ],
+  },
+  u8: {
+    title: "Apple L1 Customer Support Executive",
+    location: "Bangalore, India",
+    manager: "Marcus Wellington",
+    yearsExperience: 2,
+    status: "New Hire",
+    department: "Customer Support",
+    program: "Apple Support Program",
+    team: "Apple L1 Customer Care",
+    summary:
+      "Customer support professional with 2 years of experience in general customer support and guided troubleshooting. Recently joined the Apple Support Program as an L1 Customer Support Executive. HRIS records indicate prior exposure to Apple Product Ecosystem and Apple ID/iCloud fundamentals from a previous employer, allowing those modules to be pre-credited.",
+    roleSnapshotText: "As a Customer Support Executive L1, you handle first-line customer queries across account access, product or service basics, troubleshooting, billing questions, and guided support.",
+    projectSnapshotText: "You're currently assigned to the Apple Support Program. Your foundational Apple product and iCloud modules have been pre-credited from HRIS data, so your path starts at iPhone and iPad Basics.",
+    roleSkillsCurrent: [
+      { skill_name: "Customer Communication", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Empathy and De-escalation", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Issue Probing and Clarification", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Case Documentation", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Knowledge Base Navigation", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Guided Troubleshooting", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Escalation Handling", proficiency: "Beginner", assessment_year: 2026 },
+    ],
+    roleSkillsRequired: [
+      { skill_name: "Customer Communication", proficiency: "Advanced" },
+      { skill_name: "Empathy and De-escalation", proficiency: "Advanced" },
+      { skill_name: "Issue Probing and Clarification", proficiency: "Advanced" },
+      { skill_name: "Case Documentation", proficiency: "Advanced" },
+      { skill_name: "Knowledge Base Navigation", proficiency: "Intermediate" },
+      { skill_name: "Guided Troubleshooting", proficiency: "Intermediate" },
+      { skill_name: "Escalation Handling", proficiency: "Intermediate" },
+    ],
+    projectSkillsCurrent: [
+      { skill_name: "Apple Product Basics", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Apple ID and iCloud Support", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "iPhone and iPad Troubleshooting", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Mac Basics", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Warranty and Repair Process Understanding", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Apple Ecosystem Navigation", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Apple Service and Support Options", proficiency: "Beginner", assessment_year: 2026 },
+      { skill_name: "Apple Billing and Subscription Support", proficiency: "Beginner", assessment_year: 2026 },
+    ],
+    projectSkillsRequired: [
+      { skill_name: "Apple Product Basics", proficiency: "Advanced" },
+      { skill_name: "Apple ID and iCloud Support", proficiency: "Advanced" },
+      { skill_name: "iPhone and iPad Troubleshooting", proficiency: "Intermediate" },
+      { skill_name: "Mac Basics", proficiency: "Intermediate" },
+      { skill_name: "Warranty and Repair Process Understanding", proficiency: "Intermediate" },
+      { skill_name: "Apple Ecosystem Navigation", proficiency: "Intermediate" },
+      { skill_name: "Apple Service and Support Options", proficiency: "Intermediate" },
+      { skill_name: "Apple Billing and Subscription Support", proficiency: "Intermediate" },
+    ],
+    otherSkills: [
+      { skill_name: "Freshdesk", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "Remote Technical Troubleshooting", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "Consumer Device Setup Support", proficiency: "Intermediate", assessment_year: 2025 },
     ],
   },
 };

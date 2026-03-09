@@ -84,8 +84,10 @@ export function AppSidebar() {
 
   const isTraditional = styleTheme === "traditional";
 
-  const isPathActive = (path: string) =>
-    location.pathname === path || (path !== "/" && location.pathname.startsWith(path));
+  const isPathActive = (path: string) => {
+    if (path === "/" || path === "/manager") return location.pathname === path;
+    return location.pathname.startsWith(path);
+  };
 
   /* ── Traditional theme sidebar ── */
   if (isTraditional) {
@@ -455,7 +457,7 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
       )}
     >
       {/* Brand + toggle */}
-      <div className={cn("flex items-center border-b border-sidebar-border w-full py-4", expanded ? "justify-between px-4" : "justify-center")}>
+      <div className={cn("flex items-center border-b border-sidebar-border w-full min-h-[72px] py-5", expanded ? "justify-between px-4" : "justify-center")}>
         {expanded ? (
           <>
             <div className="flex items-center gap-2">
@@ -490,7 +492,7 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
 
       {/* Me / Team toggle for New UI */}
       {user.canManage && (
-        <div className={cn("w-full", expanded ? "px-3 pb-2" : "flex justify-center pb-2")}>
+        <div className={cn("w-full pt-3", expanded ? "px-3 pb-2" : "flex justify-center pb-2")}>
           {expanded ? (
             <div className="flex bg-sidebar-accent/50 rounded-full p-0.5">
               <button

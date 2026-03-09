@@ -242,7 +242,7 @@ export default function ManagerView() {
         <div className="flex-1 overflow-y-auto min-h-0">
           {showHome ? (
             <div className="flex flex-col items-center justify-center min-h-full px-6">
-              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[540px] pt-16 pb-8">
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[680px] pt-16 pb-8">
                 <h1 className="font-display text-[28px] font-bold text-foreground mb-8">
                   Hi {firstName}, let's dive in
                 </h1>
@@ -267,7 +267,7 @@ export default function ManagerView() {
               </motion.div>
             </div>
           ) : (
-            <div className="max-w-[600px] mx-auto px-6 py-6 space-y-4">
+            <div className="max-w-[680px] mx-auto px-6 py-6 space-y-4">
               <AnimatePresence>
                 {messages.map((msg) => (
                   <motion.div
@@ -344,8 +344,8 @@ export default function ManagerView() {
         </div>
 
         {/* Input area — sticky at bottom */}
-        <div className="shrink-0 px-6 pb-4 pt-2 border-t border-border bg-background">
-          <div className="max-w-[540px] mx-auto">
+        <div className="shrink-0 px-6 pb-6 pt-3 bg-background">
+          <div className="max-w-[680px] mx-auto">
             {showHome && (
               <p className="text-xs font-medium text-primary mb-2">Or ask a question about</p>
             )}
@@ -396,7 +396,7 @@ export default function ManagerView() {
                   if (e.key === "Escape") setShowMentionPopup(false);
                 }}
                 placeholder={showHome ? "Diversity across departments" : "Reply..."}
-                className="pr-20 h-11 rounded-xl border-border"
+                className="pr-20 h-12 rounded-2xl border-border shadow-sm focus-within:shadow-md transition-shadow text-sm"
                 disabled={isThinking}
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">

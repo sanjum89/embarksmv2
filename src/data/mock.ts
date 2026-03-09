@@ -48,7 +48,7 @@ export const rajPatel: User = {
   title: "Apple L1 Customer Support Executive",
 };
 
-export const availableUsers: User[] = [currentUser, mayaThompson, marcusWellington, rajPatel];
+export const availableUsers: User[] = [currentUser, marcusWellington, mayaThompson, rajPatel];
 
 /* ─── New Hires ─── */
 export interface NewHire {

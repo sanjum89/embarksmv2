@@ -53,7 +53,7 @@ const navItems: NavItem[] = [
       { label: "Chat", path: "/manager", icon: MessageSquare },
       { label: "Role Play", path: "/manager/role-play", icon: Mic },
       { label: "Programs", path: "/manager/programs", icon: Layers },
-      { label: "People Graph", path: "/people-graph", icon: BarChart3 },
+      { label: "Team Insights", path: "/team-insights", icon: BarChart3 },
     ],
   },
   {

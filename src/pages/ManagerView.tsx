@@ -101,13 +101,13 @@ function generateResponse(prompt: string, skillTargets: any[]): Omit<ChatMessage
     };
   }
 
-  if (lower.includes("assign") && (lower.includes("maya") || lower.includes("training") || lower.includes("apple l1"))) {
+  if (lower.includes("assign") && (lower.includes("apple l1") || lower.includes("training"))) {
     return {
       role: "assistant",
-      topicLabel: "Training Assignment",
-      content: `I've prepared the **Apple L1 Customer Support Readiness** training for assignment.\n\nYou can review the chapters, adjust the pass percentage, and add or remove modules before assigning. The panel on the right shows the full configuration.\n\nThe assessment has adaptive skipping: scores **>80%** skip Module 2, and scores **≥90%** skip both Modules 2 & 3.`,
-      panel: "assign_training",
-      suggestions: ["Show me Maya's progress", "Show me my new hires"],
+      topicLabel: "Training Assigned",
+      content: `✅ **Apple L1 Customer Support Readiness** has been assigned to **${mockNewHires.length} new hires**:\n\n${mockNewHires.map((h) => `- **${h.user.name}** — ${h.title}, ${h.location}`).join("\n")}\n\nThe training includes ${mockProgramContexts[0].assignedLearners.length} chapters with adaptive skipping enabled. Assessment pass threshold is set to **${mockProgramContexts[0].assessmentPassPercentage}%**.\n\nYou can view the full assignment details in the panel on the right.`,
+      panel: "assigned",
+      suggestions: ["Show me Maya's progress", "Show me program context", "Show me my new hires"],
     };
   }
 

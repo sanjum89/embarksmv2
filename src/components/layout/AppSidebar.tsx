@@ -357,7 +357,7 @@ export function AppSidebar() {
                 {availableUsers.map((u) => (
                   <button
                     key={u.id}
-                    onClick={() => { switchUser(u.id); navigate("/"); }}
+                    onClick={() => { switchUser(u.id); navigate(u.role === "manager" ? "/manager" : "/"); }}
                     className={cn(
                       "flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm transition-colors text-left",
                       u.id === user.id ? "bg-primary/10 text-foreground font-medium" : "text-foreground hover:bg-secondary"

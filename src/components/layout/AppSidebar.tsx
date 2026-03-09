@@ -457,7 +457,7 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
       )}
     >
       {/* Brand + toggle */}
-      <div className={cn("flex items-center border-b border-sidebar-border w-full py-4", expanded ? "justify-between px-4" : "justify-center")}>
+      <div className={cn("flex items-center border-b border-sidebar-border w-full min-h-[72px] py-5", expanded ? "justify-between px-4" : "justify-center")}>
         {expanded ? (
           <>
             <div className="flex items-center gap-2">

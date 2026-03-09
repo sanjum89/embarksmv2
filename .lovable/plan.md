@@ -1,24 +1,28 @@
 
 
-## Plan: Add Light Mode option to New UI theme picker
+## Problem
 
-Currently the New UI only shows "Super Light" and "Dark Mode" toggles. The original light mode (dark navy sidebar) should also be available.
+The `railPalette` function currently colors each segment based on the entry *below* it. This means:
+- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
+- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
+- The segment from **Jan → 2025** gets 2025's color (Green) — correct
 
-### Changes
+The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
 
-**File:** `src/components/layout/AppSidebar.tsx` (lines 522-533)
+## Fix
 
-Replace the single "Super Light" toggle with three distinct mode buttons for New UI:
-- **Light** — the original dark navy sidebar (superLight off, theme light)
-- **Super Light** — white sidebar (superLight on, theme light)  
-- **Dark** — dark mode
+Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
 
-This means replacing the current Super Light toggle + Dark Mode button (when in New UI) with three explicit options showing which is active.
+```typescript
+const railPalette = (i: number) => {
+  return palette(careerEntries[i]);
+};
+```
 
-**Implementation:**
-- When "Light" is clicked: `setSuperLight(false)`, ensure theme is `light`
-- When "Super Light" is clicked: `setSuperLight(true)`, ensure theme is `light`
-- When "Dark" is clicked: set theme to `dark`
-- Show checkmark on the active option
-- Keep the existing Dark/Light toggle for Traditional UI unchanged
+This gives:
+- **Mar segment** (Mar → Feb): Orange
+- **Feb segment** (Feb → Jan): Yellow  
+- **Jan segment and below**: Green
+
+Single line change in `src/components/my360/CareerTimeline.tsx`.
 

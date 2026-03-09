@@ -75,7 +75,7 @@ interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   topicLabel?: string;
-  panel?: "new_hires" | "assign_training" | "progress";
+  panel?: "new_hires" | "assign_training" | "assigned" | "progress";
   suggestions?: string[];
 }
 

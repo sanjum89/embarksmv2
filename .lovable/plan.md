@@ -1,27 +1,28 @@
 
 
-# Plan: Persona-Based Profile Switching
+## Problem
 
-## Core Concept
-Manager and learner logins are distinct persona types. All managers share the same manager experience; all learners share the same learner experience. Me/Team toggle switches the **same user's** role — not their identity.
+The `railPalette` function currently colors each segment based on the entry *below* it. This means:
+- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
+- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
+- The segment from **Jan → 2025** gets 2025's color (Green) — correct
 
-## Changes
+The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
 
-### 1. Profile Switcher Logic (`src/components/layout/AppSidebar.tsx`)
+## Fix
 
-**Current behavior (broken):** Switching user always forces `setRole("learner")` and navigates to `/`.
+Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
 
-**New behavior:**
-- When switching to a `canManage` user: preserve current `viewMode` (if in "team" mode, stay in manager mode and navigate to `/manager`; if in "me" mode, stay in learner mode at `/`)
-- When switching to a non-`canManage` user: always set to learner mode, navigate to `/`, and reset `viewMode` to `"me"`
-- This applies to **both** Traditional and New UI profile popovers (lines ~390 and ~681)
+```typescript
+const railPalette = (i: number) => {
+  return palette(careerEntries[i]);
+};
+```
 
-### 2. Me/Team Toggle Clarification
-Already correct — toggles the **current user's** role between learner/manager. No identity change. No modifications needed.
+This gives:
+- **Mar segment** (Mar → Feb): Orange
+- **Feb segment** (Feb → Jan): Yellow  
+- **Jan segment and below**: Green
 
-### 3. No data/mock changes needed
-User personas and `canManage` flags are already correct.
-
-## Files Modified
-- `src/components/layout/AppSidebar.tsx` — update `onClick` handlers in both profile switcher popovers (2 locations)
+Single line change in `src/components/my360/CareerTimeline.tsx`.
 

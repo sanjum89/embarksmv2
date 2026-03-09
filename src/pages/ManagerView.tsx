@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, ThumbsUp, ThumbsDown, Link2, X, Maximize2, Download } from "lucide-react";
+import { Send, MessageSquare, ThumbsUp, ThumbsDown, Link2, X, Maximize2, Download, Layers } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import NewHiresPanel from "@/components/manager/NewHiresPanel";
 import TrainingAssignPanel from "@/components/manager/TrainingAssignPanel";
+import AssignedPanel from "@/components/manager/AssignedPanel";
 import ProgressPanel from "@/components/manager/ProgressPanel";
 
 /* ─── Card illustration SVGs ─── */

@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import cornerstoneLogo from "@/assets/cornerstone-logo.png";
+import cornerstoneLogo from "@/assets/cornerstone-logo.svg";
 
 interface NavItem {
   label: string;

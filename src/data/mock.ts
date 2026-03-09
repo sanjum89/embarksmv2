@@ -283,6 +283,12 @@ export const mockSkillTargets: SkillTarget[] = [
     assignedTo: ["u1", "u4"],
     progress: 0,
     dueDate: "2026-03-22",
+    skills: [
+      { name: "Product Knowledge", current: "Beginner", target: "Expert" },
+      { name: "Competitive Positioning", current: "Beginner", target: "Advanced" },
+      { name: "Consultative Selling", current: "Intermediate", target: "Expert" },
+      { name: "Demo Skills", current: "Beginner", target: "Advanced" },
+    ],
     steps: [
       { id: "s6", type: "assessment", title: "Pre-Assessment: Product Basics", description: "Baseline product knowledge check.", order: 1, skippable: false, status: "available", duration: "10 min", referenceId: "a3" },
       { id: "s7", type: "module", title: "Enterprise Suite Overview", description: "Core features and value propositions.", order: 2, skippable: true, status: "locked", duration: "30 min", referenceId: "m3" },

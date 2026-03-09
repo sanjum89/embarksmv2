@@ -343,8 +343,8 @@ export default function ManagerView() {
           )}
         </div>
 
-        {/* Input area */}
-        <div className="px-6 pb-4 pt-2">
+        {/* Input area — sticky at bottom */}
+        <div className="shrink-0 px-6 pb-4 pt-2 border-t border-border bg-background">
           <div className="max-w-[540px] mx-auto">
             {showHome && (
               <p className="text-xs font-medium text-primary mb-2">Or ask a question about</p>

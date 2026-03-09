@@ -95,7 +95,7 @@ function ProgramDetail({ program, onBack }: { program: ProgramContext; onBack: (
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6">
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         {/* Breadcrumb */}
         <button onClick={onBack} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4">

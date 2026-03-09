@@ -59,8 +59,8 @@ export default function LearningModulePage() {
   };
 
   const contentArea = (
-    <div className={cn("flex-1 overflow-y-auto p-6", isNewUI && "pr-0")}>
-      <div className={cn("mx-auto", isNewUI ? "max-w-none pr-6" : "max-w-3xl")}>
+    <div className="flex-1 overflow-y-auto p-6">
+      <div>
         <Link
           to={`/skill-target/${skillTargetId}`}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"

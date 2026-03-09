@@ -61,7 +61,7 @@ const navItems: NavItem[] = [
 export function AppSidebar() {
   const { user, switchUser, availableUsers } = useUser();
   const { expanded, toggle } = useSidebarState();
-  const { theme, toggleTheme, styleTheme, setStyleTheme } = useTheme();
+  const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const filteredItems = navItems.filter((item) => item.roles.includes(user.role));

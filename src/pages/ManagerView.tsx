@@ -170,17 +170,57 @@ export default function ManagerView() {
   const [input, setInput] = useState("");
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [isThinking, setIsThinking] = useState(false);
+  const [showMentionPopup, setShowMentionPopup] = useState(false);
+  const [mentionFilter, setMentionFilter] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Programs available for mention
+  const mentionablePrograms = mockProgramContexts.map((pc) => ({
+    id: pc.id,
+    name: pc.name,
+    category: pc.category,
+    skillTargetId: pc.skillTargetId,
+  }));
+
+  const filteredPrograms = useMemo(() => {
+    if (!mentionFilter) return mentionablePrograms;
+    const lower = mentionFilter.toLowerCase();
+    return mentionablePrograms.filter((p) => p.name.toLowerCase().includes(lower));
+  }, [mentionFilter, mentionablePrograms]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking]);
+
+  // Detect typing to trigger mention popup
+  const handleInputChange = (value: string) => {
+    setInput(value);
+    // Check if user is typing something that looks like a program name
+    const words = value.toLowerCase();
+    if (words.includes("apple") || words.includes("l1") || words.includes("program")) {
+      setMentionFilter(value.split(/\s+/).pop() || "");
+      setShowMentionPopup(true);
+    } else {
+      setShowMentionPopup(false);
+    }
+  };
+
+  const insertMention = (programName: string) => {
+    // Replace the trigger text with the program mention
+    const beforeText = input.replace(/\b(apple|l1|program)\S*/gi, "").trim();
+    const newInput = beforeText ? `${beforeText} [${programName}]` : `Assign [${programName}] to new hires`;
+    setInput(newInput);
+    setShowMentionPopup(false);
+    inputRef.current?.focus();
+  };
 
   const handleSend = useCallback((prompt: string) => {
     if (!prompt.trim() || isThinking) return;
     const userMsg: ChatMessage = { id: Date.now().toString(), role: "user", content: prompt };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    setShowMentionPopup(false);
     setIsThinking(true);
 
     setTimeout(() => {
@@ -194,7 +234,6 @@ export default function ManagerView() {
 
   const firstName = user.name.split(" ")[0];
   const showHome = messages.length === 0;
-  const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
 
   return (
     <div className="flex flex-1 h-full min-h-0">

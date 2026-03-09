@@ -9,7 +9,14 @@ interface UserContextType {
   availableUsers: User[];
 }
 
-const UserContext = createContext<UserContextType | undefined>(undefined);
+const fallbackUserContext: UserContextType = {
+  user: currentUser,
+  setRole: () => undefined,
+  switchUser: () => undefined,
+  availableUsers,
+};
+
+const UserContext = createContext<UserContextType>(fallbackUserContext);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User>(currentUser);
@@ -31,7 +38,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
 }
 
 export function useUser() {
-  const ctx = useContext(UserContext);
-  if (!ctx) throw new Error("useUser must be used within UserProvider");
-  return ctx;
+  return useContext(UserContext);
 }
+

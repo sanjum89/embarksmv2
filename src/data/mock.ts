@@ -73,7 +73,7 @@ export const mockNewHires: NewHire[] = [
     program: "Apple Support Program",
   },
   {
-    user: { id: "u8", name: "Raj Patel", email: "raj@wfai.com", role: "learner" },
+    user: rajPatel,
     title: "Apple L1 Customer Support Executive",
     startDate: "2026-02-20",
     location: "Bangalore, India",

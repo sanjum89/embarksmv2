@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Trash2, UserPlus, Search, Bot, Mic, X, Check } from "lucide-react";
-import { mockRolePlayBank, mockNewHires } from "@/data/mock";
+import { Plus, Trash2, UserPlus, Search, Bot, Mic, X, Check, Pencil } from "lucide-react";
+import { mockNewHires } from "@/data/mock";
+import { useRolePlays } from "@/contexts/RolePlayContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,8 @@ interface RolePlayItem {
   difficulty: string;
   tags: string[];
   assignedTo: string[];
+  persona: string;
+  context: string;
 }
 
 const difficultyColors: Record<string, string> = {
@@ -31,22 +34,34 @@ const difficultyColors: Record<string, string> = {
 
 export default function ManagerRolePlay() {
   const { toast } = useToast();
+  const { rolePlays: globalRolePlays, updateRolePlay } = useRolePlays();
+  
   const [rolePlays, setRolePlays] = useState<RolePlayItem[]>(
-    mockRolePlayBank.map((rp) => ({
+    globalRolePlays.map((rp) => ({
       id: rp.id,
       title: rp.title,
       scenario: rp.scenario,
       difficulty: rp.difficulty,
       tags: rp.tags,
       assignedTo: [],
+      persona: rp.aiCloneConfig.persona,
+      context: rp.aiCloneConfig.context,
     }))
   );
   const [search, setSearch] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newScenario, setNewScenario] = useState("");
   const [newDifficulty, setNewDifficulty] = useState("intermediate");
+
+  // Edit state
+  const [editTitle, setEditTitle] = useState("");
+  const [editScenario, setEditScenario] = useState("");
+  const [editDifficulty, setEditDifficulty] = useState("intermediate");
+  const [editPersona, setEditPersona] = useState("");
+  const [editContext, setEditContext] = useState("");
 
   const filtered = useMemo(() => {
     if (!search) return rolePlays;
@@ -65,6 +80,8 @@ export default function ManagerRolePlay() {
       difficulty: newDifficulty,
       tags: ["custom"],
       assignedTo: [],
+      persona: "Custom persona",
+      context: "Custom context",
     };
     setRolePlays((prev) => [newRP, ...prev]);
     setNewTitle("");
@@ -99,6 +116,35 @@ export default function ManagerRolePlay() {
     });
   };
 
+  const openEdit = (rp: RolePlayItem) => {
+    setEditTitle(rp.title);
+    setEditScenario(rp.scenario);
+    setEditDifficulty(rp.difficulty);
+    setEditPersona(rp.persona);
+    setEditContext(rp.context);
+    setEditOpen(rp.id);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editOpen || !editTitle.trim()) return;
+    setRolePlays((prev) =>
+      prev.map((rp) =>
+        rp.id === editOpen
+          ? { ...rp, title: editTitle, scenario: editScenario, difficulty: editDifficulty, persona: editPersona, context: editContext }
+          : rp
+      )
+    );
+    // Also update the global context so changes propagate everywhere
+    updateRolePlay(editOpen, {
+      title: editTitle,
+      scenario: editScenario,
+      difficulty: editDifficulty as "beginner" | "intermediate" | "advanced",
+      aiCloneConfig: { persona: editPersona, context: editContext },
+    });
+    toast({ title: "Role Play Updated", description: `"${editTitle}" has been saved.` });
+    setEditOpen(null);
+  };
+
   return (
     <div className="flex-1 flex flex-col min-h-0">
       <div className="p-6 max-w-4xl mx-auto w-full flex-1">
@@ -107,7 +153,7 @@ export default function ManagerRolePlay() {
             <div>
               <h3 className="font-display text-2xl font-bold text-foreground">Manage Role Plays</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Create, delete, and assign role play scenarios to your team members.
+                Create, edit, delete, and assign role play scenarios to your team members.
               </p>
             </div>
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
@@ -200,6 +246,10 @@ export default function ManagerRolePlay() {
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-1 ml-6">{rp.scenario}</p>
+                    <div className="flex items-center gap-2 mt-1.5 ml-6">
+                      <Bot className="h-3 w-3 text-muted-foreground shrink-0" />
+                      <span className="text-[10px] text-muted-foreground truncate">{rp.persona}</span>
+                    </div>
                     {rp.assignedTo.length > 0 && (
                       <div className="flex items-center gap-1.5 mt-2 ml-6">
                         <span className="text-[10px] text-muted-foreground">Assigned to:</span>
@@ -224,6 +274,14 @@ export default function ManagerRolePlay() {
                     )}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
+                    {/* Edit button */}
+                    <button
+                      onClick={() => openEdit(rp)}
+                      className="p-1.5 rounded-md text-muted-foreground hover:text-accent hover:bg-accent/10 transition-colors"
+                      title="Edit role play"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
                     {/* Assign button */}
                     <Dialog open={assignOpen === rp.id} onOpenChange={(open) => setAssignOpen(open ? rp.id : null)}>
                       <DialogTrigger asChild>
@@ -285,6 +343,64 @@ export default function ManagerRolePlay() {
           </div>
         )}
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={!!editOpen} onOpenChange={(open) => !open && setEditOpen(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Role Play</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Title</label>
+              <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Scenario</label>
+              <textarea
+                value={editScenario}
+                onChange={(e) => setEditScenario(e.target.value)}
+                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[80px] resize-none"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Difficulty</label>
+              <div className="flex gap-2">
+                {["beginner", "intermediate", "advanced"].map((d) => (
+                  <button
+                    key={d}
+                    onClick={() => setEditDifficulty(d)}
+                    className={cn(
+                      "rounded-full px-3 py-1.5 text-xs font-medium capitalize transition-all border",
+                      editDifficulty === d
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground hover:border-primary/30"
+                    )}
+                  >
+                    {d}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">AI Persona</label>
+              <Input value={editPersona} onChange={(e) => setEditPersona(e.target.value)} placeholder="e.g. Frustrated customer" />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Context</label>
+              <textarea
+                value={editContext}
+                onChange={(e) => setEditContext(e.target.value)}
+                placeholder="Additional context for the AI persona..."
+                className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary min-h-[60px] resize-none"
+              />
+            </div>
+            <Button onClick={handleSaveEdit} disabled={!editTitle.trim()} className="w-full">
+              Save Changes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

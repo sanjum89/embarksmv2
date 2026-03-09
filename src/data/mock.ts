@@ -48,7 +48,7 @@ export const rajPatel: User = {
   title: "Apple L1 Customer Support Executive",
 };
 
-export const availableUsers: User[] = [currentUser, mayaThompson, marcusWellington, rajPatel];
+export const availableUsers: User[] = [currentUser, marcusWellington, mayaThompson, rajPatel];
 
 /* ─── New Hires ─── */
 export interface NewHire {
@@ -262,6 +262,11 @@ export const mockSkillTargets: SkillTarget[] = [
     assignedTo: ["u1", "u2", "u3"],
     progress: 35,
     dueDate: "2026-03-15",
+    skills: [
+      { name: "Objection Handling", current: "Beginner", target: "Advanced" },
+      { name: "Reframing", current: "Beginner", target: "Intermediate" },
+      { name: "Active Listening", current: "Intermediate", target: "Advanced" },
+    ],
     steps: [
       { id: "s1", type: "assessment", title: "Pre-Assessment: Objection Basics", description: "Test your current knowledge of objection handling.", order: 1, skippable: false, status: "completed", duration: "15 min", referenceId: "a1" },
       { id: "s2", type: "module", title: "Objection Handling Framework", description: "Learn the LAER framework for handling objections.", order: 2, skippable: true, skipCondition: "Pre-assessment score > 80%", status: "in_progress", duration: "25 min", referenceId: "m1" },
@@ -278,6 +283,12 @@ export const mockSkillTargets: SkillTarget[] = [
     assignedTo: ["u1", "u4"],
     progress: 0,
     dueDate: "2026-03-22",
+    skills: [
+      { name: "Product Knowledge", current: "Beginner", target: "Expert" },
+      { name: "Competitive Positioning", current: "Beginner", target: "Advanced" },
+      { name: "Consultative Selling", current: "Intermediate", target: "Expert" },
+      { name: "Demo Skills", current: "Beginner", target: "Advanced" },
+    ],
     steps: [
       { id: "s6", type: "assessment", title: "Pre-Assessment: Product Basics", description: "Baseline product knowledge check.", order: 1, skippable: false, status: "available", duration: "10 min", referenceId: "a3" },
       { id: "s7", type: "module", title: "Enterprise Suite Overview", description: "Core features and value propositions.", order: 2, skippable: true, status: "locked", duration: "30 min", referenceId: "m3" },
@@ -294,6 +305,10 @@ export const mockSkillTargets: SkillTarget[] = [
     assignedTo: ["u1", "u2", "u3", "u4"],
     progress: 80,
     dueDate: "2026-03-10",
+    skills: [
+      { name: "Empathetic Communication", current: "Intermediate", target: "Expert" },
+      { name: "Active Listening", current: "Intermediate", target: "Advanced" },
+    ],
     steps: [
       { id: "s11", type: "assessment", title: "Pre-Assessment: Empathy Baseline", description: "Assess current empathetic communication level.", order: 1, skippable: false, status: "completed", duration: "10 min", referenceId: "a5" },
       { id: "s12", type: "module", title: "Active Listening Techniques", description: "Master active listening for customer conversations.", order: 2, skippable: false, status: "completed", duration: "20 min", referenceId: "m5" },
@@ -309,6 +324,13 @@ export const mockSkillTargets: SkillTarget[] = [
     assignedTo: ["u6"],
     progress: 0,
     dueDate: "2026-04-15",
+    skills: [
+      { name: "Apple Product Knowledge", current: "Beginner", target: "Advanced" },
+      { name: "Troubleshooting", current: "Beginner", target: "Advanced" },
+      { name: "Customer Verification", current: "Beginner", target: "Intermediate" },
+      { name: "Billing Support", current: "Beginner", target: "Intermediate" },
+      { name: "Escalation Handling", current: "Beginner", target: "Intermediate" },
+    ],
     steps: [
       { id: "s15", type: "assessment", title: "Pre-Assessment: Apple Support Fundamentals", description: "Baseline assessment covering Apple ID, iCloud, billing, and device basics.", order: 1, skippable: false, status: "available", duration: "15 min", referenceId: "a7" },
       { id: "s16", type: "module", title: "Apple Product Ecosystem Overview", description: "Overview of the Apple hardware and software ecosystem.", order: 2, skippable: true, skipCondition: "Pre-assessment score > 80%", status: "locked", duration: "25 min", referenceId: "m6" },
@@ -336,6 +358,13 @@ export const mockSkillTargets: SkillTarget[] = [
     assignedTo: ["u8"],
     progress: 13,
     dueDate: "2026-04-20",
+    skills: [
+      { name: "Apple Product Knowledge", current: "Beginner", target: "Advanced" },
+      { name: "Troubleshooting", current: "Beginner", target: "Advanced" },
+      { name: "Customer Verification", current: "Beginner", target: "Intermediate" },
+      { name: "Billing Support", current: "Beginner", target: "Intermediate" },
+      { name: "Escalation Handling", current: "Beginner", target: "Intermediate" },
+    ],
     steps: [
       { id: "s31", type: "module", title: "Apple Product Ecosystem Overview", description: "Overview of the Apple hardware and software ecosystem.", order: 1, skippable: false, status: "completed", duration: "25 min", referenceId: "m6" },
       { id: "s32", type: "module", title: "Apple ID and iCloud Fundamentals", description: "Deep dive into Apple ID management and iCloud services.", order: 2, skippable: false, status: "completed", duration: "30 min", referenceId: "m7" },

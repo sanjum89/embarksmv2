@@ -130,54 +130,59 @@ export function AppSidebar() {
           expanded ? "w-56 items-stretch" : "w-[58px] items-center"
         )}>
           {/* Me / Team toggle */}
-          {expanded ? (
-            <div className="px-4 pt-4 pb-2">
-              <div className="flex bg-muted rounded-full p-0.5">
-                <button
-                  onClick={() => setViewMode("me")}
-                  className={cn(
-                    "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
-                    viewMode === "me"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <UserRound className="h-3.5 w-3.5" />
-                  Me
-                </button>
-                <button
-                  onClick={() => setViewMode("team")}
-                  className={cn(
-                    "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
-                    viewMode === "team"
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  <UsersRound className="h-3.5 w-3.5" />
-                  Team
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="pt-4 pb-2 flex flex-col items-center gap-1">
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
+          {user.canManage && (
+            expanded ? (
+              <div className="px-4 pt-4 pb-2">
+                <div className="flex bg-muted rounded-full p-0.5">
                   <button
-                    onClick={() => setViewMode(viewMode === "me" ? "team" : "me")}
+                    onClick={() => { setViewMode("me"); setRole("learner"); navigate("/"); }}
                     className={cn(
-                      "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
-                      viewMode === "team"
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-white/60 text-muted-foreground hover:text-foreground"
+                      "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
+                      viewMode === "me"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
                     )}
                   >
-                    {viewMode === "team" ? <UsersRound className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
+                    <UserRound className="h-3.5 w-3.5" />
+                    Me
                   </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>{viewMode === "me" ? "Switch to Team" : "Switch to Me"}</TooltipContent>
-              </Tooltip>
-            </div>
+                  <button
+                    onClick={() => { setViewMode("team"); setRole("manager"); navigate("/manager"); }}
+                    className={cn(
+                      "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
+                      viewMode === "team"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <UsersRound className="h-3.5 w-3.5" />
+                    Team
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="pt-4 pb-2 flex flex-col items-center gap-1">
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => {
+                        if (viewMode === "me") { setViewMode("team"); setRole("manager"); navigate("/manager"); }
+                        else { setViewMode("me"); setRole("learner"); navigate("/"); }
+                      }}
+                      className={cn(
+                        "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+                        viewMode === "team"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-white/60 text-muted-foreground hover:text-foreground"
+                      )}
+                    >
+                      {viewMode === "team" ? <UsersRound className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={8}>{viewMode === "me" ? "Switch to Team" : "Switch to Me"}</TooltipContent>
+                </Tooltip>
+              </div>
+            )
           )}
 
           {/* Navigation */}
@@ -379,45 +384,6 @@ export function AppSidebar() {
                 <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Switch profile</p>
                 {availableUsers.map((u) => {
                   const isActive = u.id === user.id;
-                  if (u.canManage) {
-                    return (
-                      <div key={u.id} className="mb-1">
-                        <div className="flex items-center gap-2.5 px-2 py-1.5">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
-                            {u.name.split(" ").map((n) => n[0]).join("")}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">{u.name}</p>
-                            <p className="text-xs text-muted-foreground truncate">{u.title}</p>
-                          </div>
-                        </div>
-                        <div className="ml-9 space-y-0.5">
-                          <button
-                            onClick={() => { switchUser(u.id); setRole("learner"); navigate("/"); }}
-                            className={cn(
-                              "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors",
-                              isActive && user.role === "learner" ? "bg-primary/10 font-medium" : "hover:bg-secondary"
-                            )}
-                          >
-                            <UserRound className="h-3.5 w-3.5" />
-                            <span className="flex-1 text-left">As Learner</span>
-                            {isActive && user.role === "learner" && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                          </button>
-                          <button
-                            onClick={() => { switchUser(u.id); setRole("manager"); navigate("/manager"); }}
-                            className={cn(
-                              "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors",
-                              isActive && user.role === "manager" ? "bg-primary/10 font-medium" : "hover:bg-secondary"
-                            )}
-                          >
-                            <UsersRound className="h-3.5 w-3.5" />
-                            <span className="flex-1 text-left">As Manager</span>
-                            {isActive && user.role === "manager" && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  }
                   return (
                     <button
                       key={u.id}
@@ -431,7 +397,10 @@ export function AppSidebar() {
                         {u.name.split(" ").map((n) => n[0]).join("")}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm truncate">{u.name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm truncate">{u.name}</p>
+                          {u.canManage && <Shield className="h-3 w-3 text-primary shrink-0" />}
+                        </div>
                         <p className="text-xs text-muted-foreground truncate">{u.title}</p>
                       </div>
                       {isActive && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
@@ -518,6 +487,60 @@ export function AppSidebar() {
           </div>
         )}
       </div>
+
+      {/* Me / Team toggle for New UI */}
+      {user.canManage && (
+        <div className={cn("w-full", expanded ? "px-3 pb-2" : "flex justify-center pb-2")}>
+          {expanded ? (
+            <div className="flex bg-sidebar-accent/50 rounded-full p-0.5">
+              <button
+                onClick={() => { setViewMode("me"); setRole("learner"); navigate("/"); }}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
+                  viewMode === "me"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                    : "text-sidebar-foreground/60 hover:text-sidebar-foreground"
+                )}
+              >
+                <UserRound className="h-3.5 w-3.5" />
+                Me
+              </button>
+              <button
+                onClick={() => { setViewMode("team"); setRole("manager"); navigate("/manager"); }}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
+                  viewMode === "team"
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                    : "text-sidebar-foreground/60 hover:text-sidebar-foreground"
+                )}
+              >
+                <UsersRound className="h-3.5 w-3.5" />
+                Team
+              </button>
+            </div>
+          ) : (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => {
+                    if (viewMode === "me") { setViewMode("team"); setRole("manager"); navigate("/manager"); }
+                    else { setViewMode("me"); setRole("learner"); navigate("/"); }
+                  }}
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                    viewMode === "team"
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                      : "bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-foreground"
+                  )}
+                >
+                  {viewMode === "team" ? <UsersRound className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>{viewMode === "me" ? "Switch to Team" : "Switch to Me"}</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className={cn("flex-1 flex flex-col gap-0.5 py-4 w-full", expanded ? "px-3" : "px-2 items-center")}>
@@ -648,49 +671,10 @@ export function AppSidebar() {
               )}
             </button>
           </PopoverTrigger>
-          <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-64 p-2">
+           <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-64 p-2">
             <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Switch profile</p>
             {availableUsers.map((u) => {
               const isActive = u.id === user.id;
-              if (u.canManage) {
-                return (
-                  <div key={u.id} className="mb-1">
-                    <div className="flex items-center gap-2.5 px-2 py-1.5">
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-sidebar-accent text-[10px] font-bold text-sidebar-accent-foreground shrink-0">
-                        {u.name.split(" ").map((n) => n[0]).join("")}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium truncate">{u.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{u.title}</p>
-                      </div>
-                    </div>
-                    <div className="ml-9 space-y-0.5">
-                      <button
-                        onClick={() => { switchUser(u.id); setRole("learner"); navigate("/"); }}
-                        className={cn(
-                          "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors",
-                          isActive && user.role === "learner" ? "bg-accent/10 font-medium" : "hover:bg-secondary"
-                        )}
-                      >
-                        <UserRound className="h-3.5 w-3.5" />
-                        <span className="flex-1 text-left">As Learner</span>
-                        {isActive && user.role === "learner" && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
-                      </button>
-                      <button
-                        onClick={() => { switchUser(u.id); setRole("manager"); navigate("/manager"); }}
-                        className={cn(
-                          "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors",
-                          isActive && user.role === "manager" ? "bg-accent/10 font-medium" : "hover:bg-secondary"
-                        )}
-                      >
-                        <UsersRound className="h-3.5 w-3.5" />
-                        <span className="flex-1 text-left">As Manager</span>
-                        {isActive && user.role === "manager" && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
-                      </button>
-                    </div>
-                  </div>
-                );
-              }
               return (
                 <button
                   key={u.id}
@@ -704,7 +688,10 @@ export function AppSidebar() {
                     {u.name.split(" ").map((n) => n[0]).join("")}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm truncate">{u.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm truncate">{u.name}</p>
+                      {u.canManage && <Shield className="h-3 w-3 text-accent shrink-0" />}
+                    </div>
                     <p className="text-xs text-muted-foreground truncate">{u.title}</p>
                   </div>
                   {isActive && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}

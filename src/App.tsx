@@ -31,7 +31,7 @@ const App = () => (
     <ThemeProvider>
     <UserProvider>
       <SkillTargetsProvider>
-      <SidebarProvider>
+      <RolePlayProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />

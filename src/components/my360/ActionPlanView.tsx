@@ -42,7 +42,7 @@ export function ActionPlanView() {
       steps: group.recommendations.flatMap((rec, ri) =>
         rec.modules.map((mod, mi) => ({
           id: `step-${Date.now()}-${ri}-${mi}`,
-          type: mod.type === "assessment" ? ("assessment" as const) : ("module" as const),
+          type: "module" as const,
           title: mod.title,
           description: `Part of ${rec.skill} learning path.`,
           order: ri * 10 + mi + 1,

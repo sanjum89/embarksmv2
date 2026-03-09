@@ -34,7 +34,7 @@ interface StepListItemProps {
 
 export function StepListItem({ step, index, skillTargetId, isLast, showAccentLine }: StepListItemProps) {
   const TypeIcon = stepTypeIcons[step.type];
-  const isClickable = step.status === "available" || step.status === "in_progress";
+  const isClickable = step.status === "available" || step.status === "in_progress" || step.status === "completed" || step.status === "skipped";
   const routeSegment = stepTypeRoutes[step.type];
   const href = `/skill-target/${skillTargetId}/${routeSegment}/${step.referenceId}`;
 
@@ -61,8 +61,8 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
         );
       case "skipped":
         return (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground ring-2 ring-border">
-            <SkipForward className="h-4 w-4" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success/15 text-success ring-2 ring-success/30">
+            <Check className="h-4 w-4" />
           </div>
         );
       case "locked":
@@ -82,7 +82,7 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
         step.status === "completed" && "border-success/20 bg-success/5",
         step.status === "in_progress" && "border-info/30 bg-info/5 shadow-sm",
         step.status === "available" && "border-accent/20 bg-card hover:border-accent/40 hover:shadow-md cursor-pointer",
-        step.status === "skipped" && "border-border bg-muted/30",
+        step.status === "skipped" && "border-success/20 bg-success/5",
         step.status === "locked" && "border-border bg-muted/20 opacity-60"
       )}
     >
@@ -100,7 +100,7 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
           <h4
             className={cn(
               "text-sm font-semibold",
-              step.status === "skipped" && "line-through text-muted-foreground",
+              step.status === "skipped" && "text-foreground",
               step.status === "locked" && "text-muted-foreground",
               step.status === "completed" && "text-foreground",
               step.status === "in_progress" && "text-foreground",
@@ -132,7 +132,13 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
             <TypeIcon className="h-3 w-3" />
             {step.type.replace("_", " ")}
           </span>
-          {step.skippable && step.skipCondition && (
+          {step.status === "skipped" && (
+            <span className="inline-flex items-center gap-1 rounded-md bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
+              <Check className="h-3 w-3" />
+              Passed via assessment
+            </span>
+          )}
+          {step.skippable && step.skipCondition && step.status !== "skipped" && (
             <span className="inline-flex items-center gap-1 rounded-md bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
               <SkipForward className="h-3 w-3" />
               {step.skipCondition}

@@ -61,7 +61,7 @@ const navItems: NavItem[] = [
 export function AppSidebar() {
   const { user, switchUser, availableUsers } = useUser();
   const { expanded, toggle } = useSidebarState();
-  const { theme, toggleTheme, styleTheme, setStyleTheme } = useTheme();
+  const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const filteredItems = navItems.filter((item) => item.roles.includes(user.role));
@@ -87,7 +87,7 @@ export function AppSidebar() {
             <div className="flex items-center gap-2 w-full justify-between">
               <div className="flex items-center gap-2">
                 <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
-                <span className="font-display font-bold text-sm text-foreground">Cornerstone</span>
+                <span className="font-display font-bold text-sm text-foreground">cornerstone</span>
               </div>
               <button onClick={toggle} className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors">
                 <PanelLeftClose className="h-4 w-4" />
@@ -113,7 +113,7 @@ export function AppSidebar() {
 
         {/* Nav bar strip */}
         <aside className={cn(
-          "flex-1 flex flex-col bg-card border-r border-border/30 rounded-tr-3xl transition-all duration-200",
+          "flex-1 flex flex-col bg-card border-r border-border shadow-sm rounded-tr-3xl transition-all duration-200",
           expanded ? "w-56 items-stretch" : "w-16 items-center"
         )}>
           {/* Me / Team toggle */}
@@ -424,7 +424,7 @@ export function AppSidebar() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0">
                 <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
               </div>
-              <span className="font-display font-bold text-sm text-sidebar-foreground">Cornerstone</span>
+              <span className="font-display font-bold text-sm text-sidebar-foreground">cornerstone</span>
             </div>
             <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
               <PanelLeftClose className="h-4 w-4" />
@@ -518,6 +518,18 @@ export function AppSidebar() {
               <span className="flex-1 text-left">Traditional UI</span>
               {isTraditional && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
             </button>
+            {!isTraditional && (
+              <>
+                <Separator className="my-1.5" />
+                <button
+                  onClick={() => setSuperLight(!superLight)}
+                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", superLight ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
+                >
+                  <span className="flex-1 text-left">Super Light</span>
+                  {superLight && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
+                </button>
+              </>
+            )}
             <Separator className="my-1.5" />
             <button
               onClick={toggleTheme}

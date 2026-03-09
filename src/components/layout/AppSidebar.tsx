@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
-import cornerstoneLogo from "@/assets/cornerstone-logo.png";
+import cornerstoneLogo from "@/assets/cornerstone-logo.svg";
 
 interface NavItem {
   label: string;
@@ -421,7 +421,7 @@ export function AppSidebar() {
         {expanded ? (
           <>
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent shrink-0">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0">
                 <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
               </div>
               <span className="font-display font-bold text-sm text-sidebar-foreground">Cornerstone</span>
@@ -442,7 +442,7 @@ export function AppSidebar() {
                 <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
               </div>
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg">
                 <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
               </div>
             )}

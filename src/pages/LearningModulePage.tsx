@@ -199,7 +199,7 @@ export default function LearningModulePage() {
     return (
       <div className="flex flex-1 min-h-0">
         {contentArea}
-        <div className="w-[320px] shrink-0 border-l border-border h-full">
+        <div className="w-[400px] shrink-0 border-l border-border h-full">
           <AIChatPanel
             contextLabel={`Module: ${module.title}`}
             suggestedActions={[

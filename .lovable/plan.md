@@ -1,16 +1,28 @@
 
 
-# Plan: Increase AgentOne Chat Panel Width by 25%
+## Problem
 
-Current width: `320px` → New width: `400px` (320 × 1.25)
+The `railPalette` function currently colors each segment based on the entry *below* it. This means:
+- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
+- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
+- The segment from **Jan → 2025** gets 2025's color (Green) — correct
 
-## Changes
+The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
 
-### 1. `src/components/chat/AIChatWrapper.tsx` (line 59)
-Change `w-[320px]` to `w-[400px]`
+## Fix
 
-### 2. `src/pages/LearningModulePage.tsx` (line 202)
-Change `w-[320px]` to `w-[400px]`
+Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
 
-Two files, two line changes.
+```typescript
+const railPalette = (i: number) => {
+  return palette(careerEntries[i]);
+};
+```
+
+This gives:
+- **Mar segment** (Mar → Feb): Orange
+- **Feb segment** (Feb → Jan): Yellow  
+- **Jan segment and below**: Green
+
+Single line change in `src/components/my360/CareerTimeline.tsx`.
 

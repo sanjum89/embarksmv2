@@ -488,6 +488,60 @@ export function AppSidebar() {
         )}
       </div>
 
+      {/* Me / Team toggle for New UI */}
+      {user.canManage && (
+        <div className={cn("w-full", expanded ? "px-3 pb-2" : "flex justify-center pb-2")}>
+          {expanded ? (
+            <div className="flex bg-sidebar-accent/50 rounded-full p-0.5">
+              <button
+                onClick={() => { setViewMode("me"); setRole("learner"); navigate("/"); }}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
+                  viewMode === "me"
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                    : "text-sidebar-foreground/60 hover:text-sidebar-foreground"
+                )}
+              >
+                <UserRound className="h-3.5 w-3.5" />
+                Me
+              </button>
+              <button
+                onClick={() => { setViewMode("team"); setRole("manager"); navigate("/manager"); }}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
+                  viewMode === "team"
+                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-sm"
+                    : "text-sidebar-foreground/60 hover:text-sidebar-foreground"
+                )}
+              >
+                <UsersRound className="h-3.5 w-3.5" />
+                Team
+              </button>
+            </div>
+          ) : (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => {
+                    if (viewMode === "me") { setViewMode("team"); setRole("manager"); navigate("/manager"); }
+                    else { setViewMode("me"); setRole("learner"); navigate("/"); }
+                  }}
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+                    viewMode === "team"
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground"
+                      : "bg-sidebar-accent/50 text-sidebar-foreground/60 hover:text-sidebar-foreground"
+                  )}
+                >
+                  {viewMode === "team" ? <UsersRound className="h-4 w-4" /> : <UserRound className="h-4 w-4" />}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>{viewMode === "me" ? "Switch to Team" : "Switch to Me"}</TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      )}
+
       {/* Navigation */}
       <nav className={cn("flex-1 flex flex-col gap-0.5 py-4 w-full", expanded ? "px-3" : "px-2 items-center")}>
         {filteredItems.map((item) => {

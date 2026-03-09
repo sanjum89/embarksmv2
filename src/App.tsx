@@ -57,6 +57,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
       </SidebarProvider>
+      </RolePlayProvider>
       </SkillTargetsProvider>
     </UserProvider>
     </ThemeProvider>

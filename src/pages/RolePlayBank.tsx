@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MessageSquare, Search, Bot, Plus } from "lucide-react";
 
-import { mockRolePlayBank, mockSkillTargets } from "@/data/mock";
+import { mockSkillTargets } from "@/data/mock";
+import { useRolePlays } from "@/contexts/RolePlayContext";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
@@ -21,21 +22,22 @@ export default function RolePlayBank() {
   const [difficulty, setDifficulty] = useState<DifficultyFilter>("all");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const { toast } = useToast();
+  const { rolePlays } = useRolePlays();
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
-    mockRolePlayBank.forEach((rp) => rp.tags.forEach((t) => tags.add(t)));
+    rolePlays.forEach((rp) => rp.tags.forEach((t) => tags.add(t)));
     return Array.from(tags).sort();
-  }, []);
+  }, [rolePlays]);
 
   const filtered = useMemo(() => {
-    return mockRolePlayBank.filter((rp) => {
+    return rolePlays.filter((rp) => {
       if (difficulty !== "all" && rp.difficulty !== difficulty) return false;
       if (selectedTag && !rp.tags.includes(selectedTag)) return false;
       if (search && !rp.title.toLowerCase().includes(search.toLowerCase()) && !rp.scenario.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [search, difficulty, selectedTag]);
+  }, [search, difficulty, selectedTag, rolePlays]);
 
   const handleAddToSkillTarget = (rpTitle: string, stTitle: string) => {
     toast({

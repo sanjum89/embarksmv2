@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Eye, EyeOff, Bot, User, Mic, MicOff, Volume2, VolumeX, MessageSquare, Phone } from "lucide-react";
+import { ArrowLeft, Send, Eye, EyeOff, Bot, User, Mic, MicOff, Volume2, VolumeX, MessageSquare, Phone, Loader2 } from "lucide-react";
 
-import { mockRolePlayBank } from "@/data/mock";
+import { useRolePlays } from "@/contexts/RolePlayContext";
+import { streamRolePlayChat } from "@/lib/streamChat";
 import { cn } from "@/lib/utils";
 
 interface ChatMessage {
@@ -19,29 +20,17 @@ const difficultyColors = {
   advanced: "bg-destructive/10 text-destructive",
 };
 
-const aiResponses = [
-  `"That's an interesting point. But I'm still not entirely convinced. Can you tell me more about the specific value we'd get from this?"`,
-  `"I appreciate you saying that. However, my concern is really about the long-term commitment. What if our needs change in 6 months?"`,
-  `"Look, I hear you, but we've been burned before by vendors who overpromise. What makes your solution different?"`,
-  `"Hmm, that's fair. But I need to justify this to my leadership team. Can you help me build a business case?"`,
-];
-
-const mockUserTranscripts = [
-  "I understand your concern. Let me walk you through some specific outcomes our clients have seen.",
-  "That's a great question. We actually offer flexible terms precisely for that reason.",
-  "I appreciate your transparency. Let me share a few case studies that address exactly that.",
-  "Absolutely. I can help put together a clear ROI breakdown for your team.",
-];
-
 export default function RolePlaySession() {
   const { rid, id: skillTargetId } = useParams();
-  const rolePlay = mockRolePlayBank.find((rp) => rp.id === rid);
+  const { getRolePlay } = useRolePlays();
+  const rolePlay = getRolePlay(rid || "");
 
   const [isPrivate, setIsPrivate] = useState(false);
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [started, setStarted] = useState(false);
   const [mode, setMode] = useState<SessionMode>("chat");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Voice mode state
   const [isRecording, setIsRecording] = useState(false);
@@ -64,38 +53,95 @@ export default function RolePlaySession() {
     );
   }
 
+  const rolePlayContext = {
+    persona: rolePlay.aiCloneConfig.persona,
+    scenario: rolePlay.scenario,
+    context: rolePlay.aiCloneConfig.context,
+  };
+
   const handleStart = () => {
     setStarted(true);
-    const firstMsg: ChatMessage = {
-      role: "ai",
-      content: `*${rolePlay.aiCloneConfig.persona}*\n\n"Hi there. ${rolePlay.scenario.split(".")[0]}. I'd like to discuss this further with you."`,
-    };
-    setMessages([firstMsg]);
-    if (mode === "voice") {
-      setAiSpeaking(true);
-      setActiveSubtitle({ role: "ai", text: firstMsg.content });
-      setTimeout(() => {
-        setAiSpeaking(false);
-        setActiveSubtitle(null);
-      }, 3000);
-    }
+    // Send an initial greeting via LLM
+    setIsLoading(true);
+    const introPrompt = `The role play session is starting. You are "${rolePlay.aiCloneConfig.persona}". Greet the user and set the scene based on the scenario. Keep it to 2-3 sentences.`;
+    
+    let aiContent = "";
+    streamRolePlayChat({
+      messages: [{ role: "user", content: introPrompt }],
+      rolePlayContext,
+      onDelta: (chunk) => {
+        aiContent += chunk;
+        setMessages([{ role: "ai", content: aiContent }]);
+      },
+      onDone: () => {
+        setIsLoading(false);
+        if (mode === "voice" && aiContent) {
+          setAiSpeaking(true);
+          setActiveSubtitle({ role: "ai", text: aiContent });
+          setTimeout(() => {
+            setAiSpeaking(false);
+            setActiveSubtitle(null);
+          }, 3000);
+        }
+      },
+      onError: (error) => {
+        setMessages([{ role: "ai", content: `*${rolePlay.aiCloneConfig.persona}*\n\nSorry, I couldn't connect. ${error}` }]);
+        setIsLoading(false);
+      },
+    });
+  };
+
+  const sendToAI = (userText: string) => {
+    const userMsg: ChatMessage = { role: "user", content: userText };
+    setMessages((prev) => [...prev, userMsg]);
+    setIsLoading(true);
+
+    // Build message history for the AI (convert to assistant/user format)
+    const history = [...messages, userMsg].map((m) => ({
+      role: m.role === "ai" ? "assistant" as const : "user" as const,
+      content: m.content,
+    }));
+
+    let aiContent = "";
+    streamRolePlayChat({
+      messages: history,
+      rolePlayContext,
+      onDelta: (chunk) => {
+        aiContent += chunk;
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "ai" && last.content === aiContent.slice(0, -chunk.length)) {
+            return [...prev.slice(0, -1), { role: "ai", content: aiContent }];
+          }
+          if (last?.role === "user") {
+            return [...prev, { role: "ai", content: aiContent }];
+          }
+          return [...prev.slice(0, -1), { role: "ai", content: aiContent }];
+        });
+      },
+      onDone: () => {
+        setIsLoading(false);
+        if (mode === "voice" && aiContent) {
+          setAiSpeaking(true);
+          setActiveSubtitle({ role: "ai", text: aiContent });
+          setTimeout(() => {
+            setAiSpeaking(false);
+            setActiveSubtitle(null);
+          }, 3000);
+        }
+      },
+      onError: (error) => {
+        setMessages((prev) => [...prev, { role: "ai", content: `Error: ${error}` }]);
+        setIsLoading(false);
+      },
+    });
   };
 
   const handleSend = () => {
-    if (!chatInput.trim()) return;
-    const userMsg = chatInput.trim();
-    setMessages((prev) => [...prev, { role: "user", content: userMsg }]);
+    if (!chatInput.trim() || isLoading) return;
+    const userText = chatInput.trim();
     setChatInput("");
-
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "ai",
-          content: `*${rolePlay.aiCloneConfig.persona}*\n\n${aiResponses[prev.length % aiResponses.length]}`,
-        },
-      ]);
-    }, 1000);
+    sendToAI(userText);
   };
 
   const handleMicToggle = () => {
@@ -106,27 +152,15 @@ export default function RolePlaySession() {
 
     setIsRecording(true);
 
-    // Simulate recording for ~2s then produce transcript
+    // Simulate recording for ~2s then use a placeholder transcript and send to AI
     setTimeout(() => {
       setIsRecording(false);
-      const userText = mockUserTranscripts[messages.length % mockUserTranscripts.length];
-      const userMsg: ChatMessage = { role: "user", content: userText };
-      setMessages((prev) => [...prev, userMsg]);
+      const userText = "I'd like to discuss this further and understand your concerns better.";
       setActiveSubtitle({ role: "user", text: userText });
-
-      // After a brief pause, AI responds
+      
       setTimeout(() => {
         setActiveSubtitle(null);
-        setAiSpeaking(true);
-        const aiText = `*${rolePlay.aiCloneConfig.persona}*\n\n${aiResponses[(messages.length + 1) % aiResponses.length]}`;
-        const aiMsg: ChatMessage = { role: "ai", content: aiText };
-        setMessages((prev) => [...prev, aiMsg]);
-        setActiveSubtitle({ role: "ai", text: aiText });
-
-        setTimeout(() => {
-          setAiSpeaking(false);
-          setActiveSubtitle(null);
-        }, 3000);
+        sendToAI(userText);
       }, 800);
     }, 2000);
   };
@@ -270,6 +304,16 @@ export default function RolePlaySession() {
                   </div>
                 </motion.div>
               ))}
+              {isLoading && messages.length > 0 && messages[messages.length - 1]?.role === "user" && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full gradient-accent">
+                    <Bot className="h-4 w-4 text-accent-foreground" />
+                  </div>
+                  <div className="rounded-xl px-4 py-3 bg-card border border-border">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                </motion.div>
+              )}
               <div ref={chatEndRef} />
 
               {/* Subtitle overlay for voice mode */}
@@ -310,12 +354,14 @@ export default function RolePlaySession() {
                     onKeyDown={(e) => e.key === "Enter" && handleSend()}
                     placeholder="Type your response..."
                     className="flex-1 rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                    disabled={isLoading}
                   />
                   <button
                     onClick={handleSend}
-                    className="flex h-10 w-10 items-center justify-center rounded-lg gradient-accent text-accent-foreground hover:opacity-90 transition-opacity"
+                    disabled={isLoading}
+                    className="flex h-10 w-10 items-center justify-center rounded-lg gradient-accent text-accent-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
                   >
-                    <Send className="h-4 w-4" />
+                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </button>
                 </div>
               ) : (
@@ -338,12 +384,12 @@ export default function RolePlaySession() {
                   {/* Mic button */}
                   <button
                     onClick={handleMicToggle}
-                    disabled={aiSpeaking}
+                    disabled={aiSpeaking || isLoading}
                     className={cn(
                       "relative flex h-16 w-16 items-center justify-center rounded-full transition-all",
                       isRecording
                         ? "gradient-accent text-accent-foreground scale-110"
-                        : aiSpeaking
+                        : aiSpeaking || isLoading
                         ? "bg-secondary text-muted-foreground opacity-50 cursor-not-allowed"
                         : "bg-secondary text-foreground hover:bg-accent/20 hover:text-accent"
                     )}
@@ -357,7 +403,7 @@ export default function RolePlaySession() {
                   {/* Status label */}
                   <div className="w-10 text-center">
                     <span className="text-[10px] font-medium text-muted-foreground">
-                      {isRecording ? "Listening…" : aiSpeaking ? "Speaking…" : "Ready"}
+                      {isRecording ? "Listening…" : aiSpeaking ? "Speaking…" : isLoading ? "Thinking…" : "Ready"}
                     </span>
                   </div>
                 </div>

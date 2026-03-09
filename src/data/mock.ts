@@ -34,7 +34,15 @@ export const marcusWellington: User = {
   avatarUrl: "",
 };
 
-export const availableUsers: User[] = [currentUser, mayaThompson, marcusWellington];
+export const rajPatel: User = {
+  id: "u8",
+  name: "Raj Patel",
+  email: "raj@wfai.com",
+  role: "learner",
+  avatarUrl: "",
+};
+
+export const availableUsers: User[] = [currentUser, mayaThompson, marcusWellington, rajPatel];
 
 /* ─── New Hires ─── */
 export interface NewHire {

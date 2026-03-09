@@ -53,7 +53,7 @@ const navItems: NavItem[] = [
       { label: "Chat", path: "/manager", icon: MessageSquare },
       { label: "Role Play", path: "/manager/role-play", icon: Mic },
       { label: "Programs", path: "/manager/programs", icon: Layers },
-      { label: "People Graph", path: "/people-graph", icon: BarChart3 },
+      { label: "Team Insights", path: "/team-insights", icon: BarChart3 },
     ],
   },
   {
@@ -66,7 +66,7 @@ const navItems: NavItem[] = [
       { label: "Role Play", path: "/role-play-bank", icon: Mic },
     ],
   },
-  { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "manager", "admin"] },
+  { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "admin"] },
   { label: "Admin", path: "/admin", icon: Shield, roles: ["admin"] },
 ];
 
@@ -76,7 +76,12 @@ export function AppSidebar() {
   const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const filteredItems = navItems.filter((item) => item.roles.includes(user.role));
+  const filteredItems = navItems.filter((item) => {
+    if (!item.roles.includes(user.role)) return false;
+    // Hide Learning Spaces in team/manager mode
+    if (item.label === "Learning Spaces" && viewMode === "team") return false;
+    return true;
+  });
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
   const [managerOpen, setManagerOpen] = useState(true);
   const [brandHovered, setBrandHovered] = useState(false);

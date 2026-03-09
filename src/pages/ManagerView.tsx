@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, MessageSquare, ThumbsUp, ThumbsDown, Link2, X, Maximize2, Download } from "lucide-react";
+import { Send, MessageSquare, ThumbsUp, ThumbsDown, Link2, X, Maximize2, Download, Layers } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import NewHiresPanel from "@/components/manager/NewHiresPanel";
 import TrainingAssignPanel from "@/components/manager/TrainingAssignPanel";
+import AssignedPanel from "@/components/manager/AssignedPanel";
 import ProgressPanel from "@/components/manager/ProgressPanel";
 
 /* ─── Card illustration SVGs ─── */
@@ -74,7 +75,7 @@ interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   topicLabel?: string;
-  panel?: "new_hires" | "assign_training" | "progress";
+  panel?: "new_hires" | "assign_training" | "assigned" | "progress";
   suggestions?: string[];
 }
 
@@ -100,13 +101,13 @@ function generateResponse(prompt: string, skillTargets: any[]): Omit<ChatMessage
     };
   }
 
-  if (lower.includes("assign") && (lower.includes("maya") || lower.includes("training") || lower.includes("apple l1"))) {
+  if (lower.includes("assign") && (lower.includes("apple l1") || lower.includes("training"))) {
     return {
       role: "assistant",
-      topicLabel: "Training Assignment",
-      content: `I've prepared the **Apple L1 Customer Support Readiness** training for assignment.\n\nYou can review the chapters, adjust the pass percentage, and add or remove modules before assigning. The panel on the right shows the full configuration.\n\nThe assessment has adaptive skipping: scores **>80%** skip Module 2, and scores **≥90%** skip both Modules 2 & 3.`,
-      panel: "assign_training",
-      suggestions: ["Show me Maya's progress", "Show me my new hires"],
+      topicLabel: "Training Assigned",
+      content: `✅ **Apple L1 Customer Support Readiness** has been assigned to **${mockNewHires.length} new hires**:\n\n${mockNewHires.map((h) => `- **${h.user.name}** — ${h.title}, ${h.location}`).join("\n")}\n\nThe training includes ${mockProgramContexts[0].assignedLearners.length} chapters with adaptive skipping enabled. Assessment pass threshold is set to **${mockProgramContexts[0].assessmentPassPercentage}%**.\n\nYou can view the full assignment details in the panel on the right.`,
+      panel: "assigned",
+      suggestions: ["Show me Maya's progress", "Show me program context", "Show me my new hires"],
     };
   }
 
@@ -169,17 +170,57 @@ export default function ManagerView() {
   const [input, setInput] = useState("");
   const [activePanel, setActivePanel] = useState<string | null>(null);
   const [isThinking, setIsThinking] = useState(false);
+  const [showMentionPopup, setShowMentionPopup] = useState(false);
+  const [mentionFilter, setMentionFilter] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Programs available for mention
+  const mentionablePrograms = mockProgramContexts.map((pc) => ({
+    id: pc.id,
+    name: pc.name,
+    category: pc.category,
+    skillTargetId: pc.skillTargetId,
+  }));
+
+  const filteredPrograms = useMemo(() => {
+    if (!mentionFilter) return mentionablePrograms;
+    const lower = mentionFilter.toLowerCase();
+    return mentionablePrograms.filter((p) => p.name.toLowerCase().includes(lower));
+  }, [mentionFilter, mentionablePrograms]);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking]);
+
+  // Detect typing to trigger mention popup
+  const handleInputChange = (value: string) => {
+    setInput(value);
+    // Check if user is typing something that looks like a program name
+    const words = value.toLowerCase();
+    if (words.includes("apple") || words.includes("l1") || words.includes("program")) {
+      setMentionFilter(value.split(/\s+/).pop() || "");
+      setShowMentionPopup(true);
+    } else {
+      setShowMentionPopup(false);
+    }
+  };
+
+  const insertMention = (programName: string) => {
+    // Replace the trigger text with the program mention
+    const beforeText = input.replace(/\b(apple|l1|program)\S*/gi, "").trim();
+    const newInput = beforeText ? `${beforeText} [${programName}]` : `Assign [${programName}] to new hires`;
+    setInput(newInput);
+    setShowMentionPopup(false);
+    inputRef.current?.focus();
+  };
 
   const handleSend = useCallback((prompt: string) => {
     if (!prompt.trim() || isThinking) return;
     const userMsg: ChatMessage = { id: Date.now().toString(), role: "user", content: prompt };
     setMessages((prev) => [...prev, userMsg]);
     setInput("");
+    setShowMentionPopup(false);
     setIsThinking(true);
 
     setTimeout(() => {
@@ -193,7 +234,6 @@ export default function ManagerView() {
 
   const firstName = user.name.split(" ")[0];
   const showHome = messages.length === 0;
-  const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
 
   return (
     <div className="flex flex-1 h-full min-h-0">
@@ -310,10 +350,51 @@ export default function ManagerView() {
               <p className="text-xs font-medium text-primary mb-2">Or ask a question about</p>
             )}
             <div className="relative">
+              {/* Mention autocomplete popup */}
+              <AnimatePresence>
+                {showMentionPopup && filteredPrograms.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    className="absolute bottom-full mb-2 left-0 right-0 z-20 rounded-xl border border-border bg-card shadow-lg overflow-hidden"
+                  >
+                    <div className="px-3 py-2 border-b border-border">
+                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Programs</p>
+                    </div>
+                    {filteredPrograms.map((program) => (
+                      <button
+                        key={program.id}
+                        onClick={() => insertMention(program.name)}
+                        className="flex items-center gap-3 w-full px-3 py-2.5 text-left hover:bg-secondary/70 transition-colors"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+                          <Layers className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground">{program.name}</p>
+                          <p className="text-[10px] text-muted-foreground">{program.category}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
               <Input
+                ref={inputRef}
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend(input)}
+                onChange={(e) => handleInputChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    if (showMentionPopup && filteredPrograms.length > 0) {
+                      insertMention(filteredPrograms[0].name);
+                    } else {
+                      handleSend(input);
+                    }
+                  }
+                  if (e.key === "Escape") setShowMentionPopup(false);
+                }}
                 placeholder={showHome ? "Diversity across departments" : "Reply..."}
                 className="pr-20 h-11 rounded-xl border-border"
                 disabled={isThinking}
@@ -363,6 +444,7 @@ export default function ManagerView() {
             </div>
 
             {activePanel === "new_hires" && <NewHiresPanel />}
+            {activePanel === "assigned" && <AssignedPanel />}
             {activePanel === "assign_training" && (
               <TrainingAssignPanel
                 onAssigned={() => {
@@ -373,6 +455,7 @@ export default function ManagerView() {
                     suggestions: ["Show me Maya's progress", "Show me my new hires"],
                   };
                   setMessages((prev) => [...prev, msg]);
+                  setActivePanel("assigned");
                 }}
               />
             )}

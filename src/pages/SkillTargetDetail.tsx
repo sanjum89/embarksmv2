@@ -198,6 +198,33 @@ export default function SkillTargetDetail() {
             </div>
           </motion.div>
 
+          {/* Skills Being Developed */}
+          {target.skills && target.skills.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.35 }}
+              className="rounded-xl bg-card border border-border p-5 shadow-card mb-6"
+            >
+              <h3 className="font-display text-sm font-semibold text-foreground mb-3">
+                Skills Being Developed
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {target.skills.map((skill) => (
+                  <div
+                    key={skill.name}
+                    className="flex items-center gap-2 rounded-lg bg-secondary/50 border border-border/50 px-3 py-2"
+                  >
+                    <span className="text-sm font-medium text-foreground">{skill.name}</span>
+                    <span className="text-xs font-medium text-primary">
+                      {proficiencyShort[skill.current]} → {proficiencyShort[skill.target]}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
           {/* Step timeline */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}

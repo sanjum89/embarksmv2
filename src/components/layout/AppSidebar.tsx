@@ -307,8 +307,8 @@ export function AppSidebar() {
                 <TooltipTrigger asChild>
                   <PopoverTrigger asChild>
                     <button className={cn(
-                      "flex items-center rounded-lg transition-all duration-200 text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-                      expanded ? "h-9 gap-3 w-full px-3" : "h-10 w-10 justify-center"
+                      "flex items-center rounded-lg transition-all duration-200 text-muted-foreground hover:bg-white/50 hover:text-foreground",
+                      expanded ? "h-9 gap-3 w-full px-3" : "h-9 w-9 justify-center rounded-full"
                     )}>
                       <Palette className="h-4 w-4 shrink-0" />
                       {expanded && <span className="text-sm font-medium">Theme</span>}

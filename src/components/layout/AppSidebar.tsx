@@ -523,20 +523,20 @@ export function AppSidebar() {
             {!isTraditional ? (
               <>
                 <button
-                  onClick={() => { if (theme === "dark") toggleTheme(); setSuperLight(false); }}
-                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", theme !== "dark" && !superLight ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
-                >
-                  <Sun className="h-3.5 w-3.5" />
-                  <span className="flex-1 text-left">Light</span>
-                  {theme !== "dark" && !superLight && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
-                </button>
-                <button
                   onClick={() => { if (theme === "dark") toggleTheme(); setSuperLight(true); }}
                   className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", theme !== "dark" && superLight ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
                 >
                   <Sun className="h-3.5 w-3.5" />
                   <span className="flex-1 text-left">Super Light</span>
                   {theme !== "dark" && superLight && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
+                </button>
+                <button
+                  onClick={() => { if (theme === "dark") toggleTheme(); setSuperLight(false); }}
+                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", theme !== "dark" && !superLight ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
+                >
+                  <Sun className="h-3.5 w-3.5" />
+                  <span className="flex-1 text-left">Light</span>
+                  {theme !== "dark" && !superLight && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
                 </button>
                 <button
                   onClick={() => { if (theme !== "dark") toggleTheme(); }}

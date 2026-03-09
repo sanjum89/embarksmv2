@@ -387,7 +387,7 @@ export function AppSidebar() {
                   return (
                     <button
                       key={u.id}
-                      onClick={() => { switchUser(u.id); setRole("learner"); navigate("/"); }}
+onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { setRole("manager"); navigate("/manager"); } else { setRole("learner"); setViewMode("me"); navigate("/"); } }}
                       className={cn(
                         "flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm transition-colors text-left",
                         isActive ? "bg-primary/10 text-foreground font-medium" : "text-foreground hover:bg-secondary"

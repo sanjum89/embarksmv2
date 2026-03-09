@@ -668,10 +668,9 @@ export default function My360() {
               <p className="text-sm text-muted-foreground">Growth Path content coming soon.</p>
             </div>
           )}
-        </div>
-
-        <AIChatWrapper ref={chatRef} contextLabel="My 360 → Profile" />
       </div>
+
+      <AIChatWrapper ref={chatRef} contextLabel="My 360 → Profile" />
     </div>
   );
 }

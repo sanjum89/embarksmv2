@@ -1,17 +1,20 @@
 import { useState } from "react";
-import { Maximize2, X, ThumbsUp, ThumbsDown, RotateCcw } from "lucide-react";
+import { Maximize2, X, ThumbsUp, ThumbsDown, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { mockAssessments } from "@/data/mock";
 import { cn } from "@/lib/utils";
-import type { StepItem } from "@/types/learning";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import type { StepItem, Assessment } from "@/types/learning";
 
 interface TraditionalContentViewerProps {
   step: StepItem;
   onClose: () => void;
-  skillTargetId?: string;
+  skillTargetId: string;
+  allSteps: StepItem[];
+  onNavigateToStep: (step: StepItem) => void;
 }
 
-export function TraditionalContentViewer({ step, onClose, skillTargetId }: TraditionalContentViewerProps) {
+export function TraditionalContentViewer({ step, onClose, skillTargetId, allSteps, onNavigateToStep }: TraditionalContentViewerProps) {
   const isAssessment = step.type === "assessment";
   const assessment = isAssessment ? mockAssessments.find((a) => a.id === step.referenceId) : null;
 
@@ -35,9 +38,20 @@ export function TraditionalContentViewer({ step, onClose, skillTargetId }: Tradi
       {/* Content */}
       <div className="flex-1 overflow-y-auto">
         {isAssessment && assessment ? (
-          <AssessmentViewer assessment={assessment} step={step} />
+          <AssessmentViewer
+            assessment={assessment}
+            step={step}
+            skillTargetId={skillTargetId}
+            allSteps={allSteps}
+            onNavigateToStep={onNavigateToStep}
+          />
         ) : (
-          <DefaultContentViewer step={step} />
+          <DefaultContentViewer
+            step={step}
+            skillTargetId={skillTargetId}
+            allSteps={allSteps}
+            onNavigateToStep={onNavigateToStep}
+          />
         )}
       </div>
     </div>
@@ -45,12 +59,23 @@ export function TraditionalContentViewer({ step, onClose, skillTargetId }: Tradi
 }
 
 // ── Assessment viewer (inline quiz) ──
-import type { Assessment } from "@/types/learning";
-
-function AssessmentViewer({ assessment, step }: { assessment: Assessment; step: StepItem }) {
+function AssessmentViewer({
+  assessment,
+  step,
+  skillTargetId,
+  allSteps,
+  onNavigateToStep,
+}: {
+  assessment: Assessment;
+  step: StepItem;
+  skillTargetId: string;
+  allSteps: StepItem[];
+  onNavigateToStep: (step: StepItem) => void;
+}) {
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showResults, setShowResults] = useState(false);
+  const { updateSkillTarget } = useSkillTargets();
 
   const question = assessment.questions[currentQ];
   const totalQuestions = assessment.questions.length;
@@ -75,12 +100,79 @@ function AssessmentViewer({ assessment, step }: { assessment: Assessment; step: 
     if (currentQ > 0) setCurrentQ((p) => p - 1);
   };
 
-  const handleSubmit = () => setShowResults(true);
+  const handleSubmit = () => {
+    setShowResults(true);
+
+    const finalScore = Math.round(
+      (assessment.questions.filter((q) => answers[q.id] === q.correctIndex).length / totalQuestions) * 100
+    );
+
+    updateSkillTarget(skillTargetId, (target) => {
+      const updatedSteps = target.steps.map((s) => {
+        if (s.referenceId === assessment.id && s.type === "assessment") {
+          return { ...s, status: "completed" as const };
+        }
+        return s;
+      });
+
+      const stepsByOrder = [...updatedSteps].sort((a, b) => a.order - b.order);
+      const assessmentOrder = stepsByOrder.find(
+        (s) => s.referenceId === assessment.id && s.type === "assessment"
+      )?.order ?? 0;
+
+      const finalSteps = updatedSteps.map((s) => {
+        if (s.order === assessmentOrder + 1) {
+          if (finalScore > 80 && s.skippable) {
+            return { ...s, status: "skipped" as const };
+          }
+          return { ...s, status: "available" as const };
+        }
+        if (s.order === assessmentOrder + 2) {
+          if (finalScore >= 90 && s.skippable) {
+            return { ...s, status: "skipped" as const };
+          }
+          if (finalScore > 80) {
+            return { ...s, status: "available" as const };
+          }
+        }
+        if (s.order === assessmentOrder + 3 && finalScore >= 90) {
+          return { ...s, status: "available" as const };
+        }
+        return s;
+      });
+
+      const completedCount = finalSteps.filter(
+        (s) => s.status === "completed" || s.status === "skipped"
+      ).length;
+      const progress = Math.round((completedCount / finalSteps.length) * 100);
+
+      return { ...target, steps: finalSteps, progress };
+    });
+  };
 
   const handleRetry = () => {
     setAnswers({});
     setCurrentQ(0);
     setShowResults(false);
+  };
+
+  const getNextAvailableStep = () => {
+    // Re-read from context after update — use allSteps as fallback for ordering
+    const sortedSteps = [...allSteps].sort((a, b) => a.order - b.order);
+    const currentOrder = step.order;
+    return sortedSteps.find((s) => s.order > currentOrder && s.status !== "locked");
+  };
+
+  const handleContinue = () => {
+    // We need fresh steps from context, so find next non-locked step after current
+    const sortedSteps = [...allSteps].sort((a, b) => a.order - b.order);
+    const currentOrder = step.order;
+    const nextStep = sortedSteps.find(
+      (s) => s.order > currentOrder && (s.status === "available" || s.status === "completed" || s.status === "skipped")
+    );
+    if (nextStep) {
+      onNavigateToStep(nextStep);
+    }
   };
 
   if (showResults) {
@@ -103,6 +195,7 @@ function AssessmentViewer({ assessment, step }: { assessment: Assessment; step: 
           <p className="text-xs text-muted-foreground mb-6">
             You got {assessment.questions.filter((q) => answers[q.id] === q.correctIndex).length} of{" "}
             {totalQuestions} correct.
+            {passed && assessment.type === "pre" ? " Some modules may be skippable based on your score." : ""}
           </p>
 
           {/* Per-question review */}
@@ -130,12 +223,20 @@ function AssessmentViewer({ assessment, step }: { assessment: Assessment; step: 
             })}
           </div>
 
-          <button
-            onClick={handleRetry}
-            className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors"
-          >
-            <RotateCcw className="h-4 w-4" /> Retry
-          </button>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={handleRetry}
+              className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors"
+            >
+              <RotateCcw className="h-4 w-4" /> Retry
+            </button>
+            <button
+              onClick={handleContinue}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              Continue <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -243,7 +344,79 @@ function AssessmentViewer({ assessment, step }: { assessment: Assessment; step: 
 }
 
 // ── Default content viewer for modules/role plays ──
-function DefaultContentViewer({ step }: { step: StepItem }) {
+function DefaultContentViewer({
+  step,
+  skillTargetId,
+  allSteps,
+  onNavigateToStep,
+}: {
+  step: StepItem;
+  skillTargetId: string;
+  allSteps: StepItem[];
+  onNavigateToStep: (step: StepItem) => void;
+}) {
+  const [completed, setCompleted] = useState(step.status === "completed");
+  const { updateSkillTarget } = useSkillTargets();
+
+  const handleMarkComplete = () => {
+    setCompleted(true);
+    updateSkillTarget(skillTargetId, (target) => {
+      const updatedSteps = target.steps.map((s) => {
+        if (s.id === step.id) {
+          return { ...s, status: "completed" as const };
+        }
+        return s;
+      });
+
+      // Unlock the next locked step
+      const sortedSteps = [...updatedSteps].sort((a, b) => a.order - b.order);
+      const currentOrder = step.order;
+      const nextLocked = sortedSteps.find((s) => s.order > currentOrder && s.status === "locked");
+
+      const finalSteps = nextLocked
+        ? updatedSteps.map((s) =>
+            s.id === nextLocked.id ? { ...s, status: "available" as const } : s
+          )
+        : updatedSteps;
+
+      const completedCount = finalSteps.filter(
+        (s) => s.status === "completed" || s.status === "skipped"
+      ).length;
+      const progress = Math.round((completedCount / finalSteps.length) * 100);
+
+      return { ...target, steps: finalSteps, progress };
+    });
+  };
+
+  const handleContinue = () => {
+    const sortedSteps = [...allSteps].sort((a, b) => a.order - b.order);
+    const currentOrder = step.order;
+    const nextStep = sortedSteps.find(
+      (s) => s.order > currentOrder && (s.status === "available" || s.status === "completed" || s.status === "skipped")
+    );
+    if (nextStep) {
+      onNavigateToStep(nextStep);
+    }
+  };
+
+  if (completed) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center">
+        <div className="h-16 w-16 rounded-full bg-success/15 flex items-center justify-center mb-4">
+          <CheckCircle2 className="h-8 w-8 text-success" />
+        </div>
+        <h3 className="text-lg font-semibold text-foreground mb-1">Module Complete!</h3>
+        <p className="text-sm text-muted-foreground mb-6">Great work. Keep going!</p>
+        <button
+          onClick={handleContinue}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+        >
+          Continue <ArrowRight className="h-4 w-4" />
+        </button>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="aspect-video bg-muted/30 flex items-center justify-center">
@@ -256,7 +429,15 @@ function DefaultContentViewer({ step }: { step: StepItem }) {
         </div>
       </div>
       <div className="px-5 py-4">
-        <p className="text-xs text-muted-foreground mb-2">cornerstone</p>
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs text-muted-foreground">cornerstone</p>
+          <button
+            onClick={handleMarkComplete}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" /> Mark as Complete
+          </button>
+        </div>
         <div className="flex items-center gap-3">
           <button className="text-muted-foreground hover:text-foreground transition-colors">
             <ThumbsUp className="h-4 w-4" />

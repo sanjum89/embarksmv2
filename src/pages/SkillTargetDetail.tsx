@@ -126,6 +126,9 @@ export default function SkillTargetDetail() {
             <TraditionalContentViewer
               step={activeStep}
               onClose={() => { setActiveStep(null); setActiveTab("conversation"); }}
+              skillTargetId={id!}
+              allSteps={target.steps}
+              onNavigateToStep={(step) => { setActiveStep(step); setActiveTab("chapters"); }}
             />
           ) : (
             <TraditionalActivitiesPanel

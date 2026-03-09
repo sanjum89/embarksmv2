@@ -63,7 +63,7 @@ const navItems: NavItem[] = [
     roles: ["learner", "manager", "admin"],
     children: [
       { label: "Skill Targets", path: "/", icon: Target },
-      { label: "Role Play", path: "/role-play-bank", icon: Mic },
+      { label: "Role Play", path: "/role-play-bank", icon: Drama },
     ],
   },
   { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "admin"] },

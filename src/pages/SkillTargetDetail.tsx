@@ -235,17 +235,16 @@ export default function SkillTargetDetail() {
             </h3>
             <StepTimeline steps={target.steps} skillTargetId={target.id} />
           </motion.div>
-        </div>
-
-        <AIChatWrapper
-          contextLabel={`Skill Target → ${target.title}`}
-          suggestedActions={[
-            { label: "Explain this skill" },
-            { label: "What should I focus on?" },
-            { label: "Show my progress" },
-          ]}
-        />
       </div>
+
+      <AIChatWrapper
+        contextLabel={`Skill Target → ${target.title}`}
+        suggestedActions={[
+          { label: "Explain this skill" },
+          { label: "What should I focus on?" },
+          { label: "Show my progress" },
+        ]}
+      />
     </div>
   );
 }

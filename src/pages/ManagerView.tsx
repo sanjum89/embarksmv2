@@ -396,7 +396,7 @@ export default function ManagerView() {
                   if (e.key === "Escape") setShowMentionPopup(false);
                 }}
                 placeholder={showHome ? "Diversity across departments" : "Reply..."}
-                className="pr-20 h-11 rounded-xl border-border"
+                className="pr-20 h-12 rounded-2xl border-border shadow-sm focus-within:shadow-md transition-shadow text-sm"
                 disabled={isThinking}
               />
               <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">

@@ -198,6 +198,19 @@ export default function SkillTargetDetail() {
                     {completedSteps}/{target.steps.length} steps · {target.progress}%
                   </span>
                 </div>
+
+                {/* Module breakdown stats */}
+                <div className="flex flex-wrap gap-x-4 gap-y-1 mt-4 text-xs text-muted-foreground">
+                  {target.steps.filter(s => s.type === "module").length > 0 && (
+                    <span>📘 {target.steps.filter(s => s.type === "module").length} Modules</span>
+                  )}
+                  {target.steps.filter(s => s.type === "assessment").length > 0 && (
+                    <span>📝 {target.steps.filter(s => s.type === "assessment").length} Assessments</span>
+                  )}
+                  {target.steps.filter(s => s.type === "role_play").length > 0 && (
+                    <span>🎭 {target.steps.filter(s => s.type === "role_play").length} Role Plays</span>
+                  )}
+                </div>
               </div>
 
               {/* Right column — Skills Being Developed */}

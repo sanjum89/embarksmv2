@@ -444,6 +444,7 @@ export default function ManagerView() {
             </div>
 
             {activePanel === "new_hires" && <NewHiresPanel />}
+            {activePanel === "assigned" && <AssignedPanel />}
             {activePanel === "assign_training" && (
               <TrainingAssignPanel
                 onAssigned={() => {
@@ -454,6 +455,7 @@ export default function ManagerView() {
                     suggestions: ["Show me Maya's progress", "Show me my new hires"],
                   };
                   setMessages((prev) => [...prev, msg]);
+                  setActivePanel("assigned");
                 }}
               />
             )}

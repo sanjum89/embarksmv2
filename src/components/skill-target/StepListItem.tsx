@@ -61,8 +61,8 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
         );
       case "skipped":
         return (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-muted-foreground ring-2 ring-border">
-            <SkipForward className="h-4 w-4" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-success/15 text-success ring-2 ring-success/30">
+            <Check className="h-4 w-4" />
           </div>
         );
       case "locked":

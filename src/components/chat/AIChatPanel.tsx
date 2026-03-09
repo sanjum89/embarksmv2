@@ -8,9 +8,11 @@ import {
   Mic,
   Send,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
+import { streamChat } from "@/lib/streamChat";
 
 interface SuggestedAction {
   label: string;
@@ -43,10 +45,12 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
   function AIChatPanel({ contextLabel, suggestedActions = defaultSuggestions }, ref) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
 
     useImperativeHandle(ref, () => ({
       sendMessage: (prompt: string, mockResponse: string, actions?: SuggestedAction[]) => {
+        // This path is used by My360 Explore buttons — uses mock responses
         const userMsg: ChatMessage = {
           id: Date.now().toString(),
           role: "user",
@@ -73,25 +77,73 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     }, [messages]);
 
-    const handleSend = () => {
-      if (!input.trim()) return;
+    const handleSend = async () => {
+      if (!input.trim() || isLoading) return;
+      const userContent = input.trim();
       const userMsg: ChatMessage = {
         id: Date.now().toString(),
         role: "user",
-        content: input.trim(),
+        content: userContent,
       };
       setMessages((prev) => [...prev, userMsg]);
       setInput("");
+      setIsLoading(true);
 
-      setTimeout(() => {
-        const reply: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content:
-            "I'm your AI companion. This is a placeholder response — connect me to a backend to enable real conversations.",
-        };
-        setMessages((prev) => [...prev, reply]);
-      }, 800);
+      // Build conversation history for the AI
+      const history = [...messages, userMsg].map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      let assistantSoFar = "";
+
+      try {
+        await streamChat({
+          messages: history,
+          onDelta: (chunk) => {
+            assistantSoFar += chunk;
+            setMessages((prev) => {
+              const last = prev[prev.length - 1];
+              if (last?.role === "assistant" && last.id === "streaming") {
+                return prev.map((m, i) =>
+                  i === prev.length - 1 ? { ...m, content: assistantSoFar } : m
+                );
+              }
+              return [...prev, { id: "streaming", role: "assistant", content: assistantSoFar }];
+            });
+          },
+          onDone: () => {
+            // Finalize the streaming message with a real ID
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === "streaming" ? { ...m, id: Date.now().toString() } : m
+              )
+            );
+            setIsLoading(false);
+          },
+          onError: (error) => {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: Date.now().toString(),
+                role: "assistant",
+                content: `Sorry, I encountered an error: ${error}`,
+              },
+            ]);
+            setIsLoading(false);
+          },
+        });
+      } catch {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now().toString(),
+            role: "assistant",
+            content: "Sorry, I couldn't connect to the AI service. Please try again.",
+          },
+        ]);
+        setIsLoading(false);
+      }
     };
 
     const handleClear = () => {
@@ -189,6 +241,14 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
             </div>
           ))}
 
+          {/* Loading indicator */}
+          {isLoading && messages[messages.length - 1]?.role === "user" && (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="text-xs">Thinking...</span>
+            </div>
+          )}
+
           {/* Default suggested actions when no messages */}
           {messages.length === 0 && (
             <div className="flex flex-wrap gap-2 pt-1 justify-center">
@@ -216,6 +276,7 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               placeholder="Ask anything"
               className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+              disabled={isLoading}
             />
             <div className="flex items-center gap-1.5 text-muted-foreground">
               <button className="hover:text-foreground transition-colors">
@@ -226,9 +287,10 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
               </button>
               <button
                 onClick={handleSend}
+                disabled={isLoading}
                 className="hover:text-foreground transition-colors"
               >
-                <Send className="h-4 w-4" />
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               </button>
             </div>
           </div>

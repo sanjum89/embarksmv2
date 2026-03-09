@@ -318,6 +318,13 @@ export const mockSkillTargets: SkillTarget[] = [
     assignedTo: ["u6"],
     progress: 0,
     dueDate: "2026-04-15",
+    skills: [
+      { name: "Apple Product Knowledge", current: "Beginner", target: "Advanced" },
+      { name: "Troubleshooting", current: "Beginner", target: "Advanced" },
+      { name: "Customer Verification", current: "Beginner", target: "Intermediate" },
+      { name: "Billing Support", current: "Beginner", target: "Intermediate" },
+      { name: "Escalation Handling", current: "Beginner", target: "Intermediate" },
+    ],
     steps: [
       { id: "s15", type: "assessment", title: "Pre-Assessment: Apple Support Fundamentals", description: "Baseline assessment covering Apple ID, iCloud, billing, and device basics.", order: 1, skippable: false, status: "available", duration: "15 min", referenceId: "a7" },
       { id: "s16", type: "module", title: "Apple Product Ecosystem Overview", description: "Overview of the Apple hardware and software ecosystem.", order: 2, skippable: true, skipCondition: "Pre-assessment score > 80%", status: "locked", duration: "25 min", referenceId: "m6" },

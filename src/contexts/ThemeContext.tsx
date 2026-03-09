@@ -33,9 +33,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const [styleTheme, setStyleThemeRaw] = useState<StyleTheme>(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("styleTheme") as StyleTheme) || "new";
+      return (localStorage.getItem("styleTheme") as StyleTheme) || "traditional";
     }
-    return "new";
+    return "traditional";
   });
 
   const [superLight, setSuperLightRaw] = useState<boolean>(() => {

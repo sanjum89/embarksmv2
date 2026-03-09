@@ -478,18 +478,22 @@ export function AppSidebar() {
       <nav className={cn("flex-1 flex flex-col gap-0.5 py-4 w-full", expanded ? "px-3" : "px-2 items-center")}>
         {filteredItems.map((item) => {
           if (item.children) {
+            const isLearningSpaces = item.label === "Learning Spaces";
+            const groupOpen = isLearningSpaces ? learningSpacesOpen : managerOpen;
+            const toggleGroup = () => isLearningSpaces ? setLearningSpacesOpen(!learningSpacesOpen) : setManagerOpen(!managerOpen);
+
             if (expanded) {
               return (
                 <div key={item.label} className="mb-1">
                   <button
-                    onClick={() => setLearningSpacesOpen(!learningSpacesOpen)}
+                    onClick={toggleGroup}
                     className="flex items-center gap-3 w-full px-3 h-9 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 rounded-lg transition-colors"
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
                     <span className="text-sm font-medium truncate flex-1 text-left">{item.label}</span>
-                    {learningSpacesOpen ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
+                    {groupOpen ? <ChevronDown className="h-3.5 w-3.5 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 shrink-0" />}
                   </button>
-                  {learningSpacesOpen && (
+                  {groupOpen && (
                     <div className="mt-0.5 space-y-0.5">
                       {item.children.map((child) => (
                         <div key={child.path}>{renderLink(child.path, child.icon, child.label, true)}</div>

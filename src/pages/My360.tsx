@@ -152,10 +152,8 @@ export default function My360() {
   };
 
   return (
-    <div>
-      
-      <div className="flex">
-        <div className="flex-1 p-4 lg:p-5 max-w-5xl mx-auto">
+    <div className="flex flex-1 min-h-0">
+      <div className="flex-1 overflow-y-auto p-6">
           {/* Page title */}
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
             <div className="flex items-center justify-between">
@@ -670,10 +668,9 @@ export default function My360() {
               <p className="text-sm text-muted-foreground">Growth Path content coming soon.</p>
             </div>
           )}
-        </div>
-
-        <AIChatWrapper ref={chatRef} contextLabel="My 360 → Profile" />
       </div>
+
+      <AIChatWrapper ref={chatRef} contextLabel="My 360 → Profile" />
     </div>
   );
 }

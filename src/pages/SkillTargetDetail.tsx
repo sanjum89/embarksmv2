@@ -150,9 +150,8 @@ export default function SkillTargetDetail() {
 
   // ── New UI layout (unchanged) ──
   return (
-    <div>
-      <div className="flex">
-        <div className="flex-1 mx-auto max-w-2xl p-6">
+    <div className="flex flex-1 min-h-0">
+      <div className="flex-1 overflow-y-auto p-6">
           <Link
             to="/"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"
@@ -236,17 +235,16 @@ export default function SkillTargetDetail() {
             </h3>
             <StepTimeline steps={target.steps} skillTargetId={target.id} />
           </motion.div>
-        </div>
-
-        <AIChatWrapper
-          contextLabel={`Skill Target → ${target.title}`}
-          suggestedActions={[
-            { label: "Explain this skill" },
-            { label: "What should I focus on?" },
-            { label: "Show my progress" },
-          ]}
-        />
       </div>
+
+      <AIChatWrapper
+        contextLabel={`Skill Target → ${target.title}`}
+        suggestedActions={[
+          { label: "Explain this skill" },
+          { label: "What should I focus on?" },
+          { label: "Show my progress" },
+        ]}
+      />
     </div>
   );
 }

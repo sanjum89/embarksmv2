@@ -59,8 +59,8 @@ export default function LearningModulePage() {
   };
 
   const contentArea = (
-    <div className={cn("flex-1 overflow-y-auto p-6", isNewUI && "pr-0")}>
-      <div className={cn("mx-auto", isNewUI ? "max-w-none pr-6" : "max-w-3xl")}>
+    <div className="flex-1 overflow-y-auto p-6">
+      <div>
         <Link
           to={`/skill-target/${skillTargetId}`}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"
@@ -197,9 +197,9 @@ export default function LearningModulePage() {
   // New UI: two-column with AgentOne on the right
   if (isNewUI) {
     return (
-      <div className="flex h-screen">
+      <div className="flex flex-1 min-h-0">
         {contentArea}
-        <div className="w-[320px] shrink-0 border-l border-border h-screen sticky top-0">
+        <div className="w-[320px] shrink-0 border-l border-border h-full">
           <AIChatPanel
             contextLabel={`Module: ${module.title}`}
             suggestedActions={[
@@ -215,10 +215,8 @@ export default function LearningModulePage() {
 
   // Traditional UI: just content (global FAB chat handles the rest)
   return (
-    <div>
-      <div className="flex h-screen">
-        {contentArea}
-      </div>
+    <div className="flex flex-1 min-h-0">
+      {contentArea}
     </div>
   );
 }

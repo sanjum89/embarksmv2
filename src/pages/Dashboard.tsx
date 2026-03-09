@@ -134,9 +134,9 @@ export default function Dashboard() {
 
   /* ── New UI layout ── */
   return (
-    <div>
-      <div className="flex">
-        <div className="flex-1 p-6 max-w-5xl mx-auto">
+    <>
+      <div className="flex flex-1 min-h-0">
+        <div className="flex-1 overflow-y-auto p-6">
           {/* Welcome */}
           <motion.div
             initial={{ opacity: 0, y: 8 }}
@@ -284,6 +284,6 @@ export default function Dashboard() {
       </div>
 
       <CreateSkillTargetDialog open={createOpen} onOpenChange={setCreateOpen} />
-    </div>
+    </>
   );
 }

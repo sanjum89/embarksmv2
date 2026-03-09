@@ -239,7 +239,7 @@ export default function ManagerView() {
     <div className="flex flex-1 h-full min-h-0">
       {/* Left: Chat */}
       <div className={cn("flex flex-col min-h-0 flex-1 transition-all duration-300", activePanel ? "w-[55%]" : "w-full")}>
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto min-h-0">
           {showHome ? (
             <div className="flex flex-col items-center justify-center min-h-full px-6">
               <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[540px] pt-16 pb-8">
@@ -343,8 +343,8 @@ export default function ManagerView() {
           )}
         </div>
 
-        {/* Input area */}
-        <div className="px-6 pb-4 pt-2">
+        {/* Input area — sticky at bottom */}
+        <div className="shrink-0 px-6 pb-4 pt-2 border-t border-border bg-background">
           <div className="max-w-[540px] mx-auto">
             {showHome && (
               <p className="text-xs font-medium text-primary mb-2">Or ask a question about</p>

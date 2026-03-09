@@ -267,7 +267,7 @@ export default function ManagerView() {
               </motion.div>
             </div>
           ) : (
-            <div className="max-w-[600px] mx-auto px-6 py-6 space-y-4">
+            <div className="max-w-[680px] mx-auto px-6 py-6 space-y-4">
               <AnimatePresence>
                 {messages.map((msg) => (
                   <motion.div

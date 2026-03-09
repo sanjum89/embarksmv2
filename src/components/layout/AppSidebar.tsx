@@ -79,11 +79,11 @@ export function AppSidebar() {
   /* ── Traditional theme sidebar ── */
   if (isTraditional) {
     return (
-      <div className="fixed left-0 top-0 z-40 h-screen flex flex-col">
+      <div className="fixed left-0 top-0 z-40 h-screen flex flex-col pl-3 pt-3 pb-3">
         {/* Logo — outside the nav bar */}
         <div className={cn(
-          "flex items-center gap-2 px-4 py-4 bg-background",
-          expanded ? "w-56" : "w-16 justify-center"
+          "flex items-center gap-2 px-3 py-3",
+          expanded ? "w-56" : "w-[58px] justify-center"
         )}>
           {expanded ? (
             <div className="flex items-center gap-2 w-full justify-between">
@@ -113,10 +113,10 @@ export function AppSidebar() {
           )}
         </div>
 
-        {/* Nav bar strip */}
+        {/* Nav bar strip — floating with border */}
         <aside className={cn(
-          "flex-1 flex flex-col bg-card border-r border-border shadow-sm rounded-tr-3xl transition-all duration-200",
-          expanded ? "w-56 items-stretch" : "w-16 items-center"
+          "flex-1 flex flex-col bg-[hsl(260_30%_97%)] border border-border/60 shadow-sm rounded-2xl transition-all duration-200 overflow-hidden",
+          expanded ? "w-56 items-stretch" : "w-[58px] items-center"
         )}>
           {/* Me / Team toggle */}
           {expanded ? (

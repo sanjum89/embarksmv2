@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Target, CalendarDays } from "lucide-react";
+import { proficiencyShort } from "@/types/learning";
 
 import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
 import { StepTimeline } from "@/components/skill-target/StepTimeline";

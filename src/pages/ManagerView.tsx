@@ -196,9 +196,9 @@ export default function ManagerView() {
   const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
 
   return (
-    <div className="flex h-full">
+    <div className="flex flex-1 h-full min-h-0">
       {/* Left: Chat */}
-      <div className={cn("flex flex-col h-full transition-all duration-300", activePanel ? "w-[55%]" : "w-full")}>
+      <div className={cn("flex flex-col min-h-0 flex-1 transition-all duration-300", activePanel ? "w-[55%]" : "w-full")}>
         <div className="flex-1 overflow-y-auto">
           {showHome ? (
             <div className="flex flex-col items-center justify-center min-h-full px-6">
@@ -344,7 +344,7 @@ export default function ManagerView() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 20 }}
-            className="w-[45%] border-l border-border bg-card h-full overflow-y-auto relative"
+            className="w-[45%] border-l border-border bg-card min-h-0 flex-1 overflow-y-auto relative flex flex-col"
           >
             {/* Panel toolbar */}
             <div className="sticky top-0 z-10 flex items-center justify-end gap-1 p-3 bg-card/80 backdrop-blur-sm border-b border-border">

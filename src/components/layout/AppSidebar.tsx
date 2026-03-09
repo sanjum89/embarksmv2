@@ -379,45 +379,6 @@ export function AppSidebar() {
                 <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Switch profile</p>
                 {availableUsers.map((u) => {
                   const isActive = u.id === user.id;
-                  if (u.canManage) {
-                    return (
-                      <div key={u.id} className="mb-1">
-                        <div className="flex items-center gap-2.5 px-2 py-1.5">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
-                            {u.name.split(" ").map((n) => n[0]).join("")}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium truncate">{u.name}</p>
-                            <p className="text-xs text-muted-foreground truncate">{u.title}</p>
-                          </div>
-                        </div>
-                        <div className="ml-9 space-y-0.5">
-                          <button
-                            onClick={() => { switchUser(u.id); setRole("learner"); navigate("/"); }}
-                            className={cn(
-                              "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors",
-                              isActive && user.role === "learner" ? "bg-primary/10 font-medium" : "hover:bg-secondary"
-                            )}
-                          >
-                            <UserRound className="h-3.5 w-3.5" />
-                            <span className="flex-1 text-left">As Learner</span>
-                            {isActive && user.role === "learner" && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                          </button>
-                          <button
-                            onClick={() => { switchUser(u.id); setRole("manager"); navigate("/manager"); }}
-                            className={cn(
-                              "flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors",
-                              isActive && user.role === "manager" ? "bg-primary/10 font-medium" : "hover:bg-secondary"
-                            )}
-                          >
-                            <UsersRound className="h-3.5 w-3.5" />
-                            <span className="flex-1 text-left">As Manager</span>
-                            {isActive && user.role === "manager" && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  }
                   return (
                     <button
                       key={u.id}
@@ -431,7 +392,10 @@ export function AppSidebar() {
                         {u.name.split(" ").map((n) => n[0]).join("")}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm truncate">{u.name}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm truncate">{u.name}</p>
+                          {u.canManage && <Shield className="h-3 w-3 text-primary shrink-0" />}
+                        </div>
                         <p className="text-xs text-muted-foreground truncate">{u.title}</p>
                       </div>
                       {isActive && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}

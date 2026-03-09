@@ -26,6 +26,12 @@ export interface StepItem {
   referenceId: string; // links to Assessment, RolePlay, or LearningModule
 }
 
+export interface SkillProficiencyTarget {
+  name: string;
+  current: Proficiency;
+  target: Proficiency;
+}
+
 export interface SkillTarget {
   id: string;
   title: string;
@@ -35,6 +41,7 @@ export interface SkillTarget {
   steps: StepItem[];
   progress: number; // 0–100
   dueDate?: string;
+  skills?: SkillProficiencyTarget[];
 }
 
 export type AssessmentType = "pre" | "post";

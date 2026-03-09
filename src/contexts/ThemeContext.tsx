@@ -8,6 +8,8 @@ interface ThemeContextType {
   toggleTheme: () => void;
   styleTheme: StyleTheme;
   setStyleTheme: (t: StyleTheme) => void;
+  superLight: boolean;
+  setSuperLight: (v: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
@@ -15,6 +17,8 @@ const ThemeContext = createContext<ThemeContextType>({
   toggleTheme: () => {},
   styleTheme: "new",
   setStyleTheme: () => {},
+  superLight: true,
+  setSuperLight: () => {},
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -27,12 +31,30 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return "light";
   });
 
-  const [styleTheme, setStyleTheme] = useState<StyleTheme>(() => {
+  const [styleTheme, setStyleThemeRaw] = useState<StyleTheme>(() => {
     if (typeof window !== "undefined") {
       return (localStorage.getItem("styleTheme") as StyleTheme) || "new";
     }
     return "new";
   });
+
+  const [superLight, setSuperLightRaw] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("superLight");
+      if (stored !== null) return stored === "true";
+      return true; // default true for new UI
+    }
+    return true;
+  });
+
+  const setStyleTheme = (t: StyleTheme) => {
+    setStyleThemeRaw(t);
+    if (t === "new") {
+      setSuperLightRaw(true);
+    }
+  };
+
+  const setSuperLight = (v: boolean) => setSuperLightRaw(v);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -46,10 +68,16 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("styleTheme", styleTheme);
   }, [styleTheme]);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.toggle("super-light", superLight && styleTheme === "new");
+    localStorage.setItem("superLight", String(superLight));
+  }, [superLight, styleTheme]);
+
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, styleTheme, setStyleTheme }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight }}>
       {children}
     </ThemeContext.Provider>
   );

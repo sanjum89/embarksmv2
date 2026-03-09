@@ -518,6 +518,18 @@ export function AppSidebar() {
               <span className="flex-1 text-left">Traditional UI</span>
               {isTraditional && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
             </button>
+            {!isTraditional && (
+              <>
+                <Separator className="my-1.5" />
+                <button
+                  onClick={() => setSuperLight(!superLight)}
+                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", superLight ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
+                >
+                  <span className="flex-1 text-left">Super Light</span>
+                  {superLight && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
+                </button>
+              </>
+            )}
             <Separator className="my-1.5" />
             <button
               onClick={toggleTheme}

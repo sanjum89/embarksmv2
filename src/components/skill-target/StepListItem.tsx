@@ -132,7 +132,13 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
             <TypeIcon className="h-3 w-3" />
             {step.type.replace("_", " ")}
           </span>
-          {step.skippable && step.skipCondition && (
+          {step.status === "skipped" && (
+            <span className="inline-flex items-center gap-1 rounded-md bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
+              <Check className="h-3 w-3" />
+              Passed via assessment
+            </span>
+          )}
+          {step.skippable && step.skipCondition && step.status !== "skipped" && (
             <span className="inline-flex items-center gap-1 rounded-md bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
               <SkipForward className="h-3 w-3" />
               {step.skipCondition}

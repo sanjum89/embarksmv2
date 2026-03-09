@@ -256,7 +256,7 @@ function DefaultContentViewer({ step }: { step: StepItem }) {
         </div>
       </div>
       <div className="px-5 py-4">
-        <p className="text-xs text-muted-foreground mb-2">Cornerstone</p>
+        <p className="text-xs text-muted-foreground mb-2">cornerstone</p>
         <div className="flex items-center gap-3">
           <button className="text-muted-foreground hover:text-foreground transition-colors">
             <ThumbsUp className="h-4 w-4" />

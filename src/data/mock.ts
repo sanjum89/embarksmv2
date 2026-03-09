@@ -26,7 +26,101 @@ export const mayaThompson: User = {
   avatarUrl: "",
 };
 
-export const availableUsers: User[] = [currentUser, mayaThompson];
+export const danielBrooks: User = {
+  id: "u7",
+  name: "Daniel Brooks",
+  email: "daniel@wfai.com",
+  role: "manager",
+  avatarUrl: "",
+};
+
+export const availableUsers: User[] = [currentUser, mayaThompson, danielBrooks];
+
+/* ─── New Hires ─── */
+export interface NewHire {
+  user: User;
+  title: string;
+  startDate: string;
+  location: string;
+  yearsExperience: number;
+  skills: { name: string; level: string }[];
+  trainingStatus: "not_started" | "in_progress" | "completed";
+  program?: string;
+}
+
+export const mockNewHires: NewHire[] = [
+  {
+    user: mayaThompson,
+    title: "Apple L1 Customer Support Executive",
+    startDate: "2026-02-15",
+    location: "Austin, TX",
+    yearsExperience: 3,
+    skills: [
+      { name: "Customer Communication", level: "Advanced" },
+      { name: "Empathy and De-escalation", level: "Advanced" },
+      { name: "Apple Product Basics", level: "Beginner" },
+      { name: "Apple ID and iCloud Support", level: "Beginner" },
+    ],
+    trainingStatus: "not_started",
+    program: "Apple Support Program",
+  },
+  {
+    user: { id: "u8", name: "Raj Patel", email: "raj@wfai.com", role: "learner" },
+    title: "Apple L1 Customer Support Executive",
+    startDate: "2026-02-20",
+    location: "Bangalore, India",
+    yearsExperience: 2,
+    skills: [
+      { name: "Customer Communication", level: "Intermediate" },
+      { name: "Guided Troubleshooting", level: "Intermediate" },
+      { name: "Apple Product Basics", level: "Beginner" },
+    ],
+    trainingStatus: "not_started",
+    program: "Apple Support Program",
+  },
+  {
+    user: { id: "u9", name: "Lena Okafor", email: "lena@wfai.com", role: "learner" },
+    title: "Apple L1 Customer Support Executive",
+    startDate: "2026-03-01",
+    location: "London, UK",
+    yearsExperience: 4,
+    skills: [
+      { name: "Customer Communication", level: "Advanced" },
+      { name: "Case Documentation", level: "Advanced" },
+      { name: "Escalation Handling", level: "Intermediate" },
+      { name: "Apple Product Basics", level: "Beginner" },
+    ],
+    trainingStatus: "not_started",
+    program: "Apple Support Program",
+  },
+];
+
+/* ─── Program Contexts ─── */
+export interface ProgramContext {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  skillTargetId: string;
+  assessmentPassPercentage: number;
+  adaptiveSkipThresholds: { skipOne: number; skipTwo: number };
+  finalRolePlayId: string;
+  assignedLearners: string[];
+}
+
+export const mockProgramContexts: ProgramContext[] = [
+  {
+    id: "pc1",
+    name: "Apple L1 Customer Support",
+    description: "Complete onboarding program for new hires joining the Apple L1 Customer Support team. Covers product ecosystem, troubleshooting workflows, billing, warranty, and live call readiness.",
+    category: "Apple Support Program",
+    skillTargetId: "st4",
+    assessmentPassPercentage: 70,
+    adaptiveSkipThresholds: { skipOne: 80, skipTwo: 90 },
+    finalRolePlayId: "rp13",
+    assignedLearners: ["u6", "u8", "u9"],
+  },
+];
 
 export const mockTeamMembers: User[] = [
   currentUser,

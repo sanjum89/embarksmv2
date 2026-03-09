@@ -15,7 +15,7 @@ import AssessmentPage from "./pages/AssessmentPage";
 import RolePlaySession from "./pages/RolePlaySession";
 import LearningModulePage from "./pages/LearningModulePage";
 import RolePlayBank from "./pages/RolePlayBank";
-import PeopleGraph from "./pages/PeopleGraph";
+import TeamInsights from "./pages/TeamInsights";
 import My360 from "./pages/My360";
 import ManagerView from "./pages/ManagerView";
 

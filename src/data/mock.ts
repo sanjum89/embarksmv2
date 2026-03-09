@@ -16,6 +16,8 @@ export const currentUser: User = {
   email: "alex@wfai.com",
   role: "learner",
   avatarUrl: "",
+  title: "Product Manager",
+  canManage: true,
 };
 
 export const mayaThompson: User = {
@@ -24,6 +26,7 @@ export const mayaThompson: User = {
   email: "maya@wfai.com",
   role: "learner",
   avatarUrl: "",
+  title: "Apple L1 Customer Support Executive",
 };
 
 export const marcusWellington: User = {
@@ -32,6 +35,8 @@ export const marcusWellington: User = {
   email: "marcus.w@wfai.com",
   role: "manager",
   avatarUrl: "",
+  title: "Regional Training Manager",
+  canManage: true,
 };
 
 export const rajPatel: User = {
@@ -40,6 +45,7 @@ export const rajPatel: User = {
   email: "raj@wfai.com",
   role: "learner",
   avatarUrl: "",
+  title: "Apple L1 Customer Support Executive",
 };
 
 export const availableUsers: User[] = [currentUser, mayaThompson, marcusWellington, rajPatel];

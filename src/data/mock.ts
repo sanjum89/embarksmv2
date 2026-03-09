@@ -299,6 +299,10 @@ export const mockSkillTargets: SkillTarget[] = [
     assignedTo: ["u1", "u2", "u3", "u4"],
     progress: 80,
     dueDate: "2026-03-10",
+    skills: [
+      { name: "Empathetic Communication", current: "Intermediate", target: "Expert" },
+      { name: "Active Listening", current: "Intermediate", target: "Advanced" },
+    ],
     steps: [
       { id: "s11", type: "assessment", title: "Pre-Assessment: Empathy Baseline", description: "Assess current empathetic communication level.", order: 1, skippable: false, status: "completed", duration: "10 min", referenceId: "a5" },
       { id: "s12", type: "module", title: "Active Listening Techniques", description: "Master active listening for customer conversations.", order: 2, skippable: false, status: "completed", duration: "20 min", referenceId: "m5" },

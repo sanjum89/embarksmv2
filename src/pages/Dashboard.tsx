@@ -251,7 +251,7 @@ export default function Dashboard() {
                 Your manager will assign skill targets to you, or you can create your own to get started.
               </p>
               <button
-                onClick={() => setCreateOpen(true)}
+                onClick={() => navigate('/create-skill-target')}
                 className="inline-flex items-center gap-1.5 rounded-lg gradient-accent text-accent-foreground px-4 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 <Plus className="h-4 w-4" />

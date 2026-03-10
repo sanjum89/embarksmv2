@@ -189,8 +189,7 @@ export default function Dashboard() {
             ))}
           </motion.div>
 
-          {/* Recommended for You */}
-          <RecommendedTargets />
+          {/* Recommended for You - rendered after content below */}
 
           {/* Filters + View Toggle + Create + Browse */}
           <div className="flex items-center justify-between mb-6">

@@ -51,8 +51,8 @@ export const rajPatel: User = {
 
 export const priyaMenon: User = {
   id: "u10",
-  name: "Priya Menon",
-  email: "priya.menon@wfai.com",
+  name: "Emily Watson",
+  email: "emily.watson@wfai.com",
   role: "learner",
   avatarUrl: "",
   title: "Apple L1 Customer Support Executive (Fresher)",

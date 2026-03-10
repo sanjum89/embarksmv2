@@ -197,7 +197,7 @@ export default function LearnerChat() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const userProfile = (mockUserProfiles as any)[user.id];
+  const userProfile = (profileDataByUser as any)[user.id];
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });

@@ -236,7 +236,7 @@ export default function ManagerView() {
   const showHome = messages.length === 0;
 
   return (
-    <div className="flex flex-1 h-full min-h-0">
+    <div className="flex flex-1 h-full min-h-0 overflow-hidden">
       {/* Left: Chat */}
       <div className={cn("flex flex-col min-h-0 flex-1 transition-all duration-300", activePanel ? "w-[55%]" : "w-full")}>
         <div className="flex-1 overflow-y-auto min-h-0">

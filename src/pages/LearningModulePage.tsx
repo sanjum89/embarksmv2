@@ -212,7 +212,7 @@ export default function LearningModulePage() {
   // New UI: two-column with AgentOne on the right
   if (isNewUI) {
     return (
-      <div className="flex flex-1 min-h-0">
+      <div className="flex flex-1 min-h-0 h-full overflow-hidden">
         {contentArea}
         <div className="w-[400px] shrink-0 border-l border-border h-full">
           <AIChatPanel

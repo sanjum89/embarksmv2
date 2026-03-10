@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -17,7 +17,9 @@ import {
   ChevronUp,
   Sparkles,
   Check,
+  Loader2,
 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -30,13 +32,14 @@ import { mockLearningModules, mockAssessments, mockRolePlayBank } from "@/data/m
 import { AssessmentCreator } from "@/components/skill-target/AssessmentCreator";
 import type { StepItem, LearningModule, Assessment, RolePlay } from "@/types/learning";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 type ContentItem =
   | { kind: "module"; data: LearningModule }
   | { kind: "assessment"; data: Assessment }
   | { kind: "roleplay"; data: RolePlay };
 
-type ChatMsg = { role: "assistant" | "user"; text: string; results?: ContentItem[] };
+type ChatMsg = { role: "assistant" | "user"; text: string; results?: ContentItem[]; isThinking?: boolean };
 type LeftView = "chat" | "detail";
 type ContentFilter = "all" | "modules" | "assessments" | "roleplays";
 
@@ -57,50 +60,32 @@ const SUGGESTION_PILLS = [
   "Customer Retention",
 ];
 
-const PILL_CONTENT_MAP: Record<string, string[]> = {
-  "customer onboarding": ["m6", "m7", "m8", "m15", "m19", "m20", "m23", "m30", "m33", "m68"],
-  "de-escalation techniques": ["m1", "m5", "m16", "m40", "m61", "m70", "m71"],
-  "apple l1 support": ["m6", "m7", "m8", "m9", "m10", "m11", "m12", "m13", "m14", "m15", "m16", "m17", "m18", "m19"],
-  "empathy & active listening": ["m5", "m1", "m2", "m21", "m33", "m45", "m52"],
-  "billing & subscriptions": ["m11", "m12", "m31", "m42", "m47", "m48"],
-  "product knowledge": ["m3", "m4", "m6", "m18", "m38", "m55", "m89"],
-  "troubleshooting workflows": ["m13", "m9", "m8", "m43", "m60", "m69", "m72"],
-  "escalation handling": ["m16", "m17", "m14", "m50", "m76"],
-  "crm & tools": ["m25", "m28", "m53", "m67", "m44"],
-  "quality assurance": ["m75", "m82", "m56", "m34", "m79"],
-  "customer retention": ["m48", "m73", "m86", "m90", "m105", "m110"],
-};
+/* ─── Build a compact content catalog string for the LLM ─── */
+function buildContentCatalog(): string {
+  const modules = mockLearningModules.map(
+    (m) => `[${m.id}] MODULE: "${m.title}" (${m.contentType}, ${m.duration || "?"})`
+  );
+  const assessments = mockAssessments.map(
+    (a) => `[${a.id}] ASSESSMENT: "${a.title}" (${a.type}, pass: ${a.passingScore}%)`
+  );
+  const roleplays = mockRolePlayBank.map(
+    (r) => `[${r.id}] ROLEPLAY: "${r.title}" (${r.difficulty}, tags: ${r.tags.join(", ")})`
+  );
+  return [...modules, ...assessments, ...roleplays].join("\n");
+}
 
-function searchContent(query: string): ContentItem[] {
-  const q = query.toLowerCase();
-
-  // Check pill mapping first
-  const mappedIds = PILL_CONTENT_MAP[q];
-  if (mappedIds) {
-    const idSet = new Set(mappedIds);
-    return mockLearningModules
-      .filter((m) => idSet.has(m.id))
-      .map((m) => ({ kind: "module" as const, data: m }));
-  }
-
-  // Broadened keyword search — split query into words, match any
-  const words = q.split(/\s+/).filter(Boolean);
+function resolveIds(ids: string[]): ContentItem[] {
   const items: ContentItem[] = [];
+  const idSet = new Set(ids);
 
   mockLearningModules.forEach((m) => {
-    const hay = `${m.title} ${m.transcript ?? ""}`.toLowerCase();
-    if (words.some((w) => hay.includes(w)))
-      items.push({ kind: "module", data: m });
+    if (idSet.has(m.id)) items.push({ kind: "module", data: m });
   });
   mockAssessments.forEach((a) => {
-    const hay = `${a.title} ${a.questions.map((aq) => aq.question).join(" ")}`.toLowerCase();
-    if (words.some((w) => hay.includes(w)))
-      items.push({ kind: "assessment", data: a });
+    if (idSet.has(a.id)) items.push({ kind: "assessment", data: a });
   });
   mockRolePlayBank.forEach((r) => {
-    const hay = `${r.title} ${r.scenario} ${r.tags.join(" ")}`.toLowerCase();
-    if (words.some((w) => hay.includes(w)))
-      items.push({ kind: "roleplay", data: r });
+    if (idSet.has(r.id)) items.push({ kind: "roleplay", data: r });
   });
   return items;
 }
@@ -134,6 +119,8 @@ export default function SkillTargetBuilder() {
   const [showAssessmentCreator, setShowAssessmentCreator] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [pillsUsed, setPillsUsed] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Right panel
   const [title, setTitle] = useState("");
@@ -142,18 +129,80 @@ export default function SkillTargetBuilder() {
 
   const addedIds = useMemo(() => new Set(steps.map((s) => s.referenceId)), [steps]);
 
-  const handleSend = useCallback((query?: string) => {
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    }
+  }, [messages]);
+
+  const handleSend = useCallback(async (query?: string) => {
     const q = (query ?? input).trim();
-    if (!q) return;
+    if (!q || isSearching) return;
     if (!query) setInput("");
+
     const userMsg: ChatMsg = { role: "user", text: q };
-    const results = searchContent(q);
-    const assistantMsg: ChatMsg = results.length
-      ? { role: "assistant", text: `I found ${results.length} result${results.length > 1 ? "s" : ""} matching "${q}":`, results }
-      : { role: "assistant", text: `No results found for "${q}". Try different keywords or use the upload button to add your own content.` };
-    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    const thinkingMsg: ChatMsg = { role: "assistant", text: "", isThinking: true };
+    setMessages((prev) => [...prev, userMsg, thinkingMsg]);
     setPillsUsed(true);
-  }, [input]);
+    setIsSearching(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("content-search", {
+        body: { query: q, contentCatalog: buildContentCatalog() },
+      });
+
+      if (error) throw error;
+
+      const matchedIds: string[] = data?.matchedIds || [];
+      const explanation: string = data?.explanation || "Here are the results I found:";
+      const results = resolveIds(matchedIds);
+
+      const assistantMsg: ChatMsg = results.length
+        ? { role: "assistant", text: explanation, results }
+        : { role: "assistant", text: data?.explanation || `No results found for "${q}". Try different keywords or use the upload button to add your own content.` };
+
+      // Replace thinking message with actual response
+      setMessages((prev) => {
+        const withoutThinking = prev.filter((m) => !m.isThinking);
+        return [...withoutThinking, assistantMsg];
+      });
+    } catch (err) {
+      console.error("Content search error:", err);
+      // Fallback to local search
+      const results = localSearchContent(q);
+      const assistantMsg: ChatMsg = results.length
+        ? { role: "assistant", text: `I found ${results.length} result${results.length > 1 ? "s" : ""} matching "${q}":`, results }
+        : { role: "assistant", text: `No results found for "${q}". Try different keywords or use the upload button to add your own content.` };
+
+      setMessages((prev) => {
+        const withoutThinking = prev.filter((m) => !m.isThinking);
+        return [...withoutThinking, assistantMsg];
+      });
+    } finally {
+      setIsSearching(false);
+    }
+  }, [input, isSearching]);
+
+  /* Fallback local search */
+  function localSearchContent(query: string): ContentItem[] {
+    const q = query.toLowerCase();
+    const words = q.split(/\s+/).filter(Boolean);
+    const items: ContentItem[] = [];
+    mockLearningModules.forEach((m) => {
+      const hay = `${m.title} ${m.transcript ?? ""}`.toLowerCase();
+      if (words.some((w) => hay.includes(w))) items.push({ kind: "module", data: m });
+    });
+    mockAssessments.forEach((a) => {
+      const hay = `${a.title} ${a.questions.map((aq) => aq.question).join(" ")}`.toLowerCase();
+      if (words.some((w) => hay.includes(w))) items.push({ kind: "assessment", data: a });
+    });
+    mockRolePlayBank.forEach((r) => {
+      const hay = `${r.title} ${r.scenario} ${r.tags.join(" ")}`.toLowerCase();
+      if (words.some((w) => hay.includes(w))) items.push({ kind: "roleplay", data: r });
+    });
+    return items;
+  }
 
   const addStep = useCallback(
     (item: ContentItem) => {
@@ -228,17 +277,13 @@ export default function SkillTargetBuilder() {
     };
     if (assessment.linkedModuleIds.length > 0 && assessment.skipThreshold > 0) {
       setSteps((prev) => {
-        // Mark linked modules as skippable
         const updated = prev.map((s) =>
           assessment.linkedModuleIds.includes(s.referenceId)
             ? { ...s, skippable: true, skipCondition: `Assessment score > ${assessment.skipThreshold}%` }
             : s
         );
-        // Insert assessment above the first linked module
         const firstLinkedIdx = updated.findIndex((s) => assessment.linkedModuleIds.includes(s.referenceId));
         const insertIdx = firstLinkedIdx !== -1 ? firstLinkedIdx : updated.length;
-
-        // Pull linked modules out, then reinsert them right after the assessment
         const linked = updated.filter((s) => assessment.linkedModuleIds.includes(s.referenceId));
         const rest = updated.filter((s) => !assessment.linkedModuleIds.includes(s.referenceId));
         const before = rest.slice(0, insertIdx > rest.length ? rest.length : insertIdx);
@@ -278,6 +323,7 @@ export default function SkillTargetBuilder() {
     <div className="flex flex-1 min-h-0">
       {/* Left: Chat */}
       <div className="flex-1 flex flex-col min-w-0 border-r border-border">
+        {/* Header */}
         <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-card">
           <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-5 w-5" />
@@ -285,74 +331,137 @@ export default function SkillTargetBuilder() {
           <h2 className="text-sm font-semibold text-foreground">Content Discovery</h2>
         </div>
 
-        {/* Messages */}
-        <ScrollArea className="flex-1">
+        {/* Input bar — PINNED AT TOP */}
+        <div className="border-b border-border bg-card px-5 py-3">
+          <div className="flex items-center gap-2 max-w-2xl mx-auto">
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="flex-shrink-0 h-9 w-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              title="Upload content"
+            >
+              <Upload className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setShowAssessmentCreator(true)}
+              className="flex-shrink-0 h-9 px-3 rounded-lg bg-secondary flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+              title="Create assessment"
+            >
+              <ClipboardCheck className="h-3.5 w-3.5" />
+              Assessment
+            </button>
+            <div className="flex-1 relative">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder="Search for modules, assessments, role plays..."
+                className="pr-10 h-9 text-sm"
+                disabled={isSearching}
+              />
+              <button
+                onClick={() => handleSend()}
+                disabled={isSearching}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Scrollable results area */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto">
           <div className="p-5 space-y-4 max-w-2xl mx-auto">
             {messages.map((msg, i) => (
               <div key={i}>
-                <div className={cn("flex gap-3", msg.role === "user" ? "justify-end" : "justify-start")}>
-                  {msg.role === "assistant" && (
+                {/* Thinking indicator */}
+                {msg.isThinking ? (
+                  <div className="flex gap-3 justify-start">
                     <div className="flex-shrink-0 h-7 w-7 rounded-full bg-primary flex items-center justify-center">
                       <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
                     </div>
-                  )}
-                  <div className={cn("rounded-xl px-4 py-2.5 text-sm max-w-[80%]", msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground")}>
-                    {msg.text}
-                  </div>
-                </div>
-                {/* Results list */}
-                {msg.results && msg.results.length > 0 && (
-                  <div className="mt-3 ml-10">
-                    <div className="flex gap-1.5 mb-3 flex-wrap">
-                      {(["all", "modules", "assessments", "roleplays"] as ContentFilter[]).map((f) => (
-                        <button
-                          key={f}
-                          onClick={() => setContentFilter(f)}
-                          className={cn("rounded-full px-3 py-1 text-xs font-medium transition-colors", contentFilter === f ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground")}
-                        >
-                          {f === "all" ? "All" : f === "modules" ? "Modules" : f === "assessments" ? "Assessments" : "Role Plays"}
-                        </button>
-                      ))}
+                    <div className="rounded-xl px-4 py-2.5 text-sm bg-secondary text-foreground flex items-center gap-2">
+                      <motion.div
+                        className="flex items-center gap-1.5"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                      >
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                        <span className="text-muted-foreground">Searching content library...</span>
+                      </motion.div>
                     </div>
-                    <div className="space-y-2">
-                      {filterResults(msg.results).map((item, j) => {
-                        const id = item.data.id;
-                        const added = addedIds.has(id);
-                        return (
-                          <motion.div
-                            key={j}
-                            initial={{ opacity: 0, y: 4 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: j * 0.03 }}
-                            className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 hover:bg-secondary/50 transition-colors cursor-pointer group"
-                            onClick={() => { setSelectedItem(item); setLeftView("detail"); }}
-                          >
-                            <div className="flex-shrink-0 h-8 w-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
-                              {contentIcon(item.kind)}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">{item.data.title}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {contentLabel(item.kind)}
-                                {item.kind === "module" && (item.data as LearningModule).duration && ` · ${(item.data as LearningModule).duration}`}
-                                {item.kind === "module" && ` · ${(item.data as LearningModule).contentType === "video" ? "Video" : "Document"}`}
-                                {item.kind === "roleplay" && ` · ${(item.data as RolePlay).difficulty}`}
-                              </p>
-                            </div>
-                            <Button
-                              size="sm"
-                              variant={added ? "secondary" : "default"}
-                              className="h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={(e) => { e.stopPropagation(); addStep(item); }}
-                              disabled={added}
+                  </div>
+                ) : (
+                  <>
+                    <div className={cn("flex gap-3", msg.role === "user" ? "justify-end" : "justify-start")}>
+                      {msg.role === "assistant" && (
+                        <div className="flex-shrink-0 h-7 w-7 rounded-full bg-primary flex items-center justify-center">
+                          <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
+                        </div>
+                      )}
+                      <div className={cn("rounded-xl px-4 py-2.5 text-sm max-w-[80%]", msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground")}>
+                        {msg.role === "assistant" ? (
+                          <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-0.5 prose-ul:my-1 prose-li:my-0">
+                            <ReactMarkdown>{msg.text}</ReactMarkdown>
+                          </div>
+                        ) : msg.text}
+                      </div>
+                    </div>
+                    {/* Results list */}
+                    {msg.results && msg.results.length > 0 && (
+                      <div className="mt-3 ml-10">
+                        <div className="flex gap-1.5 mb-3 flex-wrap">
+                          {(["all", "modules", "assessments", "roleplays"] as ContentFilter[]).map((f) => (
+                            <button
+                              key={f}
+                              onClick={() => setContentFilter(f)}
+                              className={cn("rounded-full px-3 py-1 text-xs font-medium transition-colors", contentFilter === f ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground")}
                             >
-                              {added ? "Added" : "Add"}
-                            </Button>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  </div>
+                              {f === "all" ? "All" : f === "modules" ? "Modules" : f === "assessments" ? "Assessments" : "Role Plays"}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="space-y-2">
+                          {filterResults(msg.results).map((item, j) => {
+                            const id = item.data.id;
+                            const added = addedIds.has(id);
+                            return (
+                              <motion.div
+                                key={j}
+                                initial={{ opacity: 0, y: 4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: j * 0.03 }}
+                                className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 hover:bg-secondary/50 transition-colors cursor-pointer group"
+                                onClick={() => { setSelectedItem(item); setLeftView("detail"); }}
+                              >
+                                <div className="flex-shrink-0 h-8 w-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
+                                  {contentIcon(item.kind)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-foreground truncate">{item.data.title}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {contentLabel(item.kind)}
+                                    {item.kind === "module" && (item.data as LearningModule).duration && ` · ${(item.data as LearningModule).duration}`}
+                                    {item.kind === "module" && ` · ${(item.data as LearningModule).contentType === "video" ? "Video" : "Document"}`}
+                                    {item.kind === "roleplay" && ` · ${(item.data as RolePlay).difficulty}`}
+                                  </p>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant={added ? "secondary" : "default"}
+                                  className="h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={(e) => { e.stopPropagation(); addStep(item); }}
+                                  disabled={added}
+                                >
+                                  {added ? "Added" : "Add"}
+                                </Button>
+                              </motion.div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}
@@ -385,39 +494,6 @@ export default function SkillTargetBuilder() {
                 />
               </div>
             )}
-          </div>
-        </ScrollArea>
-
-        {/* Input bar */}
-        <div className="border-t border-border bg-card px-5 py-3">
-          <div className="flex items-center gap-2 max-w-2xl mx-auto">
-            <button
-              onClick={() => setShowUploadModal(true)}
-              className="flex-shrink-0 h-9 w-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              title="Upload content"
-            >
-              <Upload className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setShowAssessmentCreator(true)}
-              className="flex-shrink-0 h-9 px-3 rounded-lg bg-secondary flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-              title="Create assessment"
-            >
-              <ClipboardCheck className="h-3.5 w-3.5" />
-              Assessment
-            </button>
-            <div className="flex-1 relative">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Search for modules, assessments, role plays..."
-                className="pr-10 h-9 text-sm"
-              />
-              <button onClick={() => handleSend()} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
-                <Send className="h-4 w-4" />
-              </button>
-            </div>
           </div>
         </div>
       </div>

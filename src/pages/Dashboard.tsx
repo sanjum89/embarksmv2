@@ -82,7 +82,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setCreateOpen(true)}
+                  onClick={() => navigate('/create-skill-target')}
                   className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
                 >
                   <Plus className="h-4 w-4" />

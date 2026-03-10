@@ -116,7 +116,7 @@ export default function Dashboard() {
                   <Info className="h-6 w-6 text-info" />
                 </div>
                 <h4 className="font-display text-lg font-semibold text-foreground mb-1">
-                  No Learning Spaces
+                  No Skill Targets
                 </h4>
                 <p className="text-sm text-muted-foreground mb-6 max-w-sm">
                   Create a learning space to get started.

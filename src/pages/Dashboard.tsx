@@ -1,11 +1,11 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Plus, Info, LayoutGrid, List, ChevronDown } from "lucide-react";
 
 import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
 import { SkillTargetListItem } from "@/components/skill-target/SkillTargetListItem";
-import { CreateSkillTargetDialog } from "@/components/skill-target/CreateSkillTargetDialog";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -25,9 +25,9 @@ export default function Dashboard() {
   const { user } = useUser();
   const { skillTargets: mockSkillTargets } = useSkillTargets();
   const { styleTheme } = useTheme();
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("cards");
-  const [createOpen, setCreateOpen] = useState(false);
 
   const isTraditional = styleTheme === "traditional";
 
@@ -82,7 +82,7 @@ export default function Dashboard() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setCreateOpen(true)}
+                  onClick={() => navigate('/create-skill-target')}
                   className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
                 >
                   <Plus className="h-4 w-4" />
@@ -110,7 +110,7 @@ export default function Dashboard() {
                   Create a learning space to get started.
                 </p>
                 <button
-                  onClick={() => setCreateOpen(true)}
+                  onClick={() => navigate('/create-skill-target')}
                   className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
                 >
                   <Plus className="h-4 w-4" />
@@ -127,7 +127,6 @@ export default function Dashboard() {
           <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />
         </div>
 
-        <CreateSkillTargetDialog open={createOpen} onOpenChange={setCreateOpen} />
       </div>
     );
   }
@@ -226,7 +225,7 @@ export default function Dashboard() {
             </div>
 
             <button
-              onClick={() => setCreateOpen(true)}
+              onClick={() => navigate('/create-skill-target')}
               className="inline-flex items-center gap-1.5 rounded-lg gradient-accent text-accent-foreground px-3.5 py-2 text-xs font-medium hover:opacity-90 transition-opacity"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -252,7 +251,7 @@ export default function Dashboard() {
                 Your manager will assign skill targets to you, or you can create your own to get started.
               </p>
               <button
-                onClick={() => setCreateOpen(true)}
+                onClick={() => navigate('/create-skill-target')}
                 className="inline-flex items-center gap-1.5 rounded-lg gradient-accent text-accent-foreground px-4 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
               >
                 <Plus className="h-4 w-4" />
@@ -283,7 +282,7 @@ export default function Dashboard() {
         <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />
       </div>
 
-      <CreateSkillTargetDialog open={createOpen} onOpenChange={setCreateOpen} />
+      
     </>
   );
 }

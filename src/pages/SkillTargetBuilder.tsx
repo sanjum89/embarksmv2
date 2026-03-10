@@ -1,0 +1,543 @@
+import { useState, useCallback, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowLeft,
+  Send,
+  Upload,
+  BookOpen,
+  ClipboardCheck,
+  Drama,
+  GripVertical,
+  X,
+  Plus,
+  Play,
+  FileText,
+  ChevronDown,
+  ChevronUp,
+  Sparkles,
+} from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { mockLearningModules, mockAssessments, mockRolePlayBank } from "@/data/mock";
+import { AssessmentCreator } from "@/components/skill-target/AssessmentCreator";
+import type { StepItem, LearningModule, Assessment, RolePlay } from "@/types/learning";
+import { cn } from "@/lib/utils";
+
+type ContentItem =
+  | { kind: "module"; data: LearningModule }
+  | { kind: "assessment"; data: Assessment }
+  | { kind: "roleplay"; data: RolePlay };
+
+type ChatMsg = { role: "assistant" | "user"; text: string; results?: ContentItem[] };
+type LeftView = "chat" | "detail";
+type ContentFilter = "all" | "modules" | "assessments" | "roleplays";
+
+const WELCOME_MSG =
+  "Describe the skill target you want to create and I'll find the right courses for you from our repo. You can also add your own content by clicking the upload button below.";
+
+function searchContent(query: string): ContentItem[] {
+  const q = query.toLowerCase();
+  const items: ContentItem[] = [];
+  mockLearningModules.forEach((m) => {
+    if (m.title.toLowerCase().includes(q) || (m.transcript ?? "").toLowerCase().includes(q))
+      items.push({ kind: "module", data: m });
+  });
+  mockAssessments.forEach((a) => {
+    if (a.title.toLowerCase().includes(q))
+      items.push({ kind: "assessment", data: a });
+  });
+  mockRolePlayBank.forEach((r) => {
+    if (
+      r.title.toLowerCase().includes(q) ||
+      r.scenario.toLowerCase().includes(q) ||
+      r.tags.some((t) => t.toLowerCase().includes(q))
+    )
+      items.push({ kind: "roleplay", data: r });
+  });
+  return items;
+}
+
+function contentIcon(kind: ContentItem["kind"]) {
+  switch (kind) {
+    case "module": return <BookOpen className="h-4 w-4" />;
+    case "assessment": return <ClipboardCheck className="h-4 w-4" />;
+    case "roleplay": return <Drama className="h-4 w-4" />;
+  }
+}
+
+function contentLabel(kind: ContentItem["kind"]) {
+  switch (kind) {
+    case "module": return "Module";
+    case "assessment": return "Assessment";
+    case "roleplay": return "Role Play";
+  }
+}
+
+export default function SkillTargetBuilder() {
+  const navigate = useNavigate();
+  const { addSkillTargets } = useSkillTargets();
+
+  // Left panel
+  const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", text: WELCOME_MSG }]);
+  const [input, setInput] = useState("");
+  const [leftView, setLeftView] = useState<LeftView>("chat");
+  const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
+  const [contentFilter, setContentFilter] = useState<ContentFilter>("all");
+  const [showAssessmentCreator, setShowAssessmentCreator] = useState(false);
+
+  // Right panel
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [steps, setSteps] = useState<StepItem[]>([]);
+
+  const addedIds = useMemo(() => new Set(steps.map((s) => s.referenceId)), [steps]);
+
+  const handleSend = useCallback(() => {
+    const q = input.trim();
+    if (!q) return;
+    setInput("");
+    const userMsg: ChatMsg = { role: "user", text: q };
+    const results = searchContent(q);
+    const assistantMsg: ChatMsg = results.length
+      ? { role: "assistant", text: `I found ${results.length} result${results.length > 1 ? "s" : ""} matching "${q}":`, results }
+      : { role: "assistant", text: `No results found for "${q}". Try different keywords or use the upload button to add your own content.` };
+    setMessages((prev) => [...prev, userMsg, assistantMsg]);
+  }, [input]);
+
+  const addStep = useCallback(
+    (item: ContentItem) => {
+      const refId = item.kind === "module" ? item.data.id : item.kind === "assessment" ? item.data.id : item.data.id;
+      if (addedIds.has(refId)) return;
+      const step: StepItem = {
+        id: `builder-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        type: item.kind === "module" ? "module" : item.kind === "assessment" ? "assessment" : "role_play",
+        title: item.kind === "module" ? item.data.title : item.kind === "assessment" ? item.data.title : item.data.title,
+        description: item.kind === "roleplay" ? item.data.scenario : item.kind === "module" ? `Learning module: ${item.data.title}` : `Assessment: ${item.data.title}`,
+        order: steps.length + 1,
+        skippable: false,
+        status: "available",
+        duration: item.kind === "module" ? item.data.duration ?? "" : item.kind === "roleplay" ? "15 min" : "15 min",
+        referenceId: refId,
+      };
+      setSteps((prev) => [...prev, step]);
+    },
+    [addedIds, steps.length]
+  );
+
+  const removeStep = (idx: number) => setSteps((prev) => prev.filter((_, i) => i !== idx).map((s, i) => ({ ...s, order: i + 1 })));
+  const moveStep = (from: number, to: number) => {
+    if (to < 0 || to >= steps.length) return;
+    setSteps((prev) => {
+      const arr = [...prev];
+      const [moved] = arr.splice(from, 1);
+      arr.splice(to, 0, moved);
+      return arr.map((s, i) => ({ ...s, order: i + 1 }));
+    });
+  };
+
+  const handleCreate = () => {
+    if (!title.trim() || steps.length === 0) return;
+    const id = `st-${Date.now()}`;
+    addSkillTargets([
+      {
+        id,
+        title: title.trim(),
+        description: description.trim(),
+        category: "Custom",
+        assignedTo: [],
+        steps: steps.map((s, i) => ({ ...s, order: i + 1, status: i === 0 ? "available" : "locked" })),
+        progress: 0,
+      },
+    ]);
+    navigate(`/skill-target/${id}`);
+  };
+
+  // Filter results in chat messages
+  const filterResults = (items: ContentItem[]) => {
+    if (contentFilter === "all") return items;
+    return items.filter((i) => {
+      if (contentFilter === "modules") return i.kind === "module";
+      if (contentFilter === "assessments") return i.kind === "assessment";
+      return i.kind === "roleplay";
+    });
+  };
+
+  const addAssessmentStep = (assessment: { title: string; questions: { id: string; question: string; options: string[]; correctIndex: number }[]; passingScore: number; linkedModuleIds: string[]; skipThreshold: number }) => {
+    const id = `custom-a-${Date.now()}`;
+    const step: StepItem = {
+      id: `builder-${Date.now()}`,
+      type: "assessment",
+      title: assessment.title,
+      description: `Custom assessment — ${assessment.questions.length} questions, passing score ${assessment.passingScore}%`,
+      order: steps.length + 1,
+      skippable: false,
+      status: "available",
+      duration: `${Math.max(5, assessment.questions.length * 3)} min`,
+      referenceId: id,
+    };
+    // Mark linked modules as skippable
+    if (assessment.linkedModuleIds.length > 0 && assessment.skipThreshold > 0) {
+      setSteps((prev) => {
+        const updated = prev.map((s) =>
+          assessment.linkedModuleIds.includes(s.referenceId)
+            ? { ...s, skippable: true, skipCondition: `Assessment score > ${assessment.skipThreshold}%` }
+            : s
+        );
+        return [...updated, step].map((s, i) => ({ ...s, order: i + 1 }));
+      });
+    } else {
+      setSteps((prev) => [...prev, step].map((s, i) => ({ ...s, order: i + 1 })));
+    }
+    setShowAssessmentCreator(false);
+  };
+
+  /* ─── Detail view (full left panel) ─── */
+  if (leftView === "detail" && selectedItem) {
+    return (
+      <div className="flex flex-1 min-h-0">
+        {/* Left: Detail */}
+        <div className="flex-1 flex flex-col min-w-0 border-r border-border">
+          <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-card">
+            <button onClick={() => { setLeftView("chat"); setSelectedItem(null); }} className="text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <span className="text-sm font-medium text-foreground truncate">{selectedItem.kind === "module" ? selectedItem.data.title : selectedItem.kind === "assessment" ? selectedItem.data.title : selectedItem.data.title}</span>
+          </div>
+          <ScrollArea className="flex-1">
+            <div className="p-6 max-w-2xl mx-auto">
+              <ContentDetailView item={selectedItem} onAdd={() => { addStep(selectedItem); setLeftView("chat"); setSelectedItem(null); }} isAdded={addedIds.has(selectedItem.kind === "module" ? selectedItem.data.id : selectedItem.kind === "assessment" ? selectedItem.data.id : selectedItem.data.id)} />
+            </div>
+          </ScrollArea>
+        </div>
+        {/* Right: Builder */}
+        <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} />
+      </div>
+    );
+  }
+
+  /* ─── Chat view ─── */
+  return (
+    <div className="flex flex-1 min-h-0">
+      {/* Left: Chat */}
+      <div className="flex-1 flex flex-col min-w-0 border-r border-border">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-card">
+          <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <h2 className="text-sm font-semibold text-foreground">Content Discovery</h2>
+        </div>
+
+        {/* Messages */}
+        <ScrollArea className="flex-1">
+          <div className="p-5 space-y-4 max-w-2xl mx-auto">
+            {messages.map((msg, i) => (
+              <div key={i}>
+                <div className={cn("flex gap-3", msg.role === "user" ? "justify-end" : "justify-start")}>
+                  {msg.role === "assistant" && (
+                    <div className="flex-shrink-0 h-7 w-7 rounded-full bg-primary flex items-center justify-center">
+                      <Sparkles className="h-3.5 w-3.5 text-primary-foreground" />
+                    </div>
+                  )}
+                  <div className={cn("rounded-xl px-4 py-2.5 text-sm max-w-[80%]", msg.role === "user" ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground")}>
+                    {msg.text}
+                  </div>
+                </div>
+                {/* Results list */}
+                {msg.results && msg.results.length > 0 && (
+                  <div className="mt-3 ml-10">
+                    {/* Filter chips */}
+                    <div className="flex gap-1.5 mb-3 flex-wrap">
+                      {(["all", "modules", "assessments", "roleplays"] as ContentFilter[]).map((f) => (
+                        <button
+                          key={f}
+                          onClick={() => setContentFilter(f)}
+                          className={cn("rounded-full px-3 py-1 text-xs font-medium transition-colors", contentFilter === f ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground")}
+                        >
+                          {f === "all" ? "All" : f === "modules" ? "Modules" : f === "assessments" ? "Assessments" : "Role Plays"}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="space-y-2">
+                      {filterResults(msg.results).map((item, j) => {
+                        const id = item.data.id;
+                        const added = addedIds.has(id);
+                        return (
+                          <motion.div
+                            key={j}
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: j * 0.03 }}
+                            className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 hover:bg-secondary/50 transition-colors cursor-pointer group"
+                            onClick={() => { setSelectedItem(item); setLeftView("detail"); }}
+                          >
+                            <div className="flex-shrink-0 h-8 w-8 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
+                              {contentIcon(item.kind)}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-foreground truncate">
+                                {item.data.title}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {contentLabel(item.kind)}
+                                {item.kind === "module" && item.data.duration && ` · ${item.data.duration}`}
+                                {item.kind === "module" && ` · ${item.data.contentType === "video" ? "Video" : "Document"}`}
+                                {item.kind === "roleplay" && ` · ${item.data.difficulty}`}
+                              </p>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant={added ? "secondary" : "default"}
+                              className="h-7 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => { e.stopPropagation(); addStep(item); }}
+                              disabled={added}
+                            >
+                              {added ? "Added" : "Add"}
+                            </Button>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {/* Assessment Creator */}
+            {showAssessmentCreator && (
+              <div className="ml-10">
+                <AssessmentCreator
+                  existingModules={steps.filter((s) => s.type === "module")}
+                  onAdd={addAssessmentStep}
+                  onCancel={() => setShowAssessmentCreator(false)}
+                />
+              </div>
+            )}
+          </div>
+        </ScrollArea>
+
+        {/* Input bar */}
+        <div className="border-t border-border bg-card px-5 py-3">
+          <div className="flex items-center gap-2 max-w-2xl mx-auto">
+            <button className="flex-shrink-0 h-9 w-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="Upload content">
+              <Upload className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setShowAssessmentCreator(true)}
+              className="flex-shrink-0 h-9 px-3 rounded-lg bg-secondary flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+              title="Create assessment"
+            >
+              <ClipboardCheck className="h-3.5 w-3.5" />
+              Assessment
+            </button>
+            <div className="flex-1 relative">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder="Search for modules, assessments, role plays..."
+                className="pr-10 h-9 text-sm"
+              />
+              <button onClick={handleSend} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+                <Send className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right: Builder */}
+      <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} />
+    </div>
+  );
+}
+
+/* ── Right panel component ── */
+function BuilderPanel({
+  title, setTitle, description, setDescription, steps, removeStep, moveStep, onCreate,
+}: {
+  title: string; setTitle: (v: string) => void;
+  description: string; setDescription: (v: string) => void;
+  steps: StepItem[]; removeStep: (i: number) => void;
+  moveStep: (from: number, to: number) => void;
+  onCreate: () => void;
+}) {
+  return (
+    <div className="w-[400px] flex-shrink-0 flex flex-col bg-background">
+      <div className="px-5 py-3 border-b border-border bg-card">
+        <h2 className="text-sm font-semibold text-foreground">Skill Target Builder</h2>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="p-5 space-y-5">
+          {/* Title */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Name</label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Apple L1 Customer Support" className="h-9 text-sm" />
+          </div>
+          {/* Description */}
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Description</label>
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe what this skill target covers..." className="text-sm min-h-[60px]" />
+          </div>
+          {/* Steps */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-medium text-muted-foreground">Steps ({steps.length})</label>
+            </div>
+            {steps.length === 0 ? (
+              <div className="rounded-lg border-2 border-dashed border-border p-6 text-center">
+                <p className="text-sm text-muted-foreground">No steps added yet. Use the chat to search and add content.</p>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <AnimatePresence>
+                  {steps.map((step, i) => (
+                    <motion.div
+                      key={step.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="flex items-center gap-2 rounded-lg border border-border bg-card p-2.5 group"
+                    >
+                      <div className="flex flex-col gap-0.5 flex-shrink-0">
+                        <button onClick={() => moveStep(i, i - 1)} disabled={i === 0} className="text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors">
+                          <ChevronUp className="h-3 w-3" />
+                        </button>
+                        <button onClick={() => moveStep(i, i + 1)} disabled={i === steps.length - 1} className="text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors">
+                          <ChevronDown className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <GripVertical className="h-4 w-4 text-muted-foreground/50 flex-shrink-0" />
+                      <div className="flex-shrink-0 h-7 w-7 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
+                        {step.type === "module" ? <BookOpen className="h-3.5 w-3.5" /> : step.type === "assessment" ? <ClipboardCheck className="h-3.5 w-3.5" /> : <Drama className="h-3.5 w-3.5" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-foreground truncate">{step.title}</p>
+                        <p className="text-[10px] text-muted-foreground">
+                          {step.type === "module" ? "Module" : step.type === "assessment" ? "Assessment" : "Role Play"}
+                          {step.duration && ` · ${step.duration}`}
+                          {step.skippable && step.skipCondition && (
+                            <span className="text-warning ml-1">· Skip: {step.skipCondition}</span>
+                          )}
+                        </p>
+                      </div>
+                      <button onClick={() => removeStep(i)} className="flex-shrink-0 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+        </div>
+      </ScrollArea>
+      {/* Create button */}
+      <div className="border-t border-border bg-card px-5 py-3">
+        <Button onClick={onCreate} disabled={!title.trim() || steps.length === 0} className="w-full h-9 text-sm">
+          Create Skill Target
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/* ── Content detail view ── */
+function ContentDetailView({ item, onAdd, isAdded }: { item: ContentItem; onAdd: () => void; isAdded: boolean }) {
+  if (item.kind === "module") {
+    const m = item.data;
+    return (
+      <div className="space-y-5">
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="text-xs">{m.contentType === "video" ? "Video" : "Document"}</Badge>
+          {m.duration && <span className="text-xs text-muted-foreground">{m.duration}</span>}
+        </div>
+        <h3 className="text-lg font-semibold text-foreground">{m.title}</h3>
+        {/* Video / PDF preview */}
+        {m.contentType === "video" ? (
+          <div className="relative rounded-xl overflow-hidden aspect-video bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+            <div className="h-16 w-16 rounded-full bg-primary/80 flex items-center justify-center">
+              <Play className="h-7 w-7 text-primary-foreground ml-1" />
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border bg-card p-6 space-y-2">
+            <FileText className="h-10 w-10 text-muted-foreground mb-3" />
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-2.5 rounded-full bg-muted" style={{ width: `${60 + Math.random() * 40}%` }} />
+            ))}
+          </div>
+        )}
+        {m.transcript && (
+          <div>
+            <h4 className="text-sm font-medium text-foreground mb-2">Transcript</h4>
+            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{m.transcript}</p>
+          </div>
+        )}
+        <Button onClick={onAdd} disabled={isAdded} className="w-full">
+          {isAdded ? "Already Added" : "Add to Skill Target"}
+        </Button>
+      </div>
+    );
+  }
+
+  if (item.kind === "assessment") {
+    const a = item.data;
+    return (
+      <div className="space-y-5">
+        <Badge variant="secondary" className="text-xs">{a.type === "pre" ? "Pre-Assessment" : "Post-Assessment"}</Badge>
+        <h3 className="text-lg font-semibold text-foreground">{a.title}</h3>
+        <div className="text-sm text-muted-foreground">Passing score: {a.passingScore}%</div>
+        <div className="space-y-3">
+          <h4 className="text-sm font-medium text-foreground">Questions ({a.questions.length})</h4>
+          {a.questions.map((q, i) => (
+            <div key={q.id} className="rounded-lg border border-border bg-card p-3">
+              <p className="text-sm font-medium text-foreground mb-2">{i + 1}. {q.question}</p>
+              <div className="space-y-1">
+                {q.options.map((opt, oi) => (
+                  <div key={oi} className={cn("text-xs px-2 py-1 rounded", oi === q.correctIndex ? "bg-success/10 text-success font-medium" : "text-muted-foreground")}>
+                    {opt}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+        <Button onClick={onAdd} disabled={isAdded} className="w-full">
+          {isAdded ? "Already Added" : "Add to Skill Target"}
+        </Button>
+      </div>
+    );
+  }
+
+  // Role play
+  const r = item.data;
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center gap-2">
+        <Badge variant="secondary" className="text-xs">{r.difficulty}</Badge>
+        {r.tags.map((t) => (
+          <Badge key={t} variant="outline" className="text-xs">{t}</Badge>
+        ))}
+      </div>
+      <h3 className="text-lg font-semibold text-foreground">{r.title}</h3>
+      <div>
+        <h4 className="text-sm font-medium text-foreground mb-2">Scenario</h4>
+        <p className="text-sm text-muted-foreground leading-relaxed">{r.scenario}</p>
+      </div>
+      <div className="rounded-lg border border-border bg-card p-4 space-y-2">
+        <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">AI Configuration</h4>
+        <p className="text-sm text-foreground"><span className="font-medium">Persona:</span> {r.aiCloneConfig.persona}</p>
+        <p className="text-sm text-foreground"><span className="font-medium">Context:</span> {r.aiCloneConfig.context}</p>
+      </div>
+      <Button onClick={onAdd} disabled={isAdded} className="w-full">
+        {isAdded ? "Already Added" : "Add to Skill Target"}
+      </Button>
+    </div>
+  );
+}

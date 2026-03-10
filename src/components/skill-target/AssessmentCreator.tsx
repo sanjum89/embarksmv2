@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { StepItem } from "@/types/learning";
 import { cn } from "@/lib/utils";
 
@@ -97,7 +98,7 @@ export function AssessmentCreator({ existingModules, onAdd, onCancel }: Props) {
                     onClick={() => updateQuestion(qi, { correctIndex: oi })}
                     className={cn(
                       "h-4 w-4 rounded-full border-2 flex-shrink-0 transition-colors",
-                      q.correctIndex === oi ? "border-success bg-success" : "border-muted-foreground"
+                      q.correctIndex === oi ? "border-green-500 bg-green-500" : "border-muted-foreground"
                     )}
                   />
                   <Input
@@ -125,13 +126,13 @@ export function AssessmentCreator({ existingModules, onAdd, onCancel }: Props) {
         <Slider value={[passingScore]} onValueChange={([v]) => setPassingScore(v)} min={10} max={100} step={5} />
       </div>
 
-      {/* Link to modules */}
-      {existingModules.length > 0 && (
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-            Skip modules if score &gt; {skipThreshold}%
-          </label>
-          <Slider value={[skipThreshold]} onValueChange={([v]) => setSkipThreshold(v)} min={50} max={100} step={5} className="mb-2" />
+      {/* Link to modules for skipping */}
+      <div>
+        <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+          Connect to modules (skip if score &gt; {skipThreshold}%)
+        </label>
+        <Slider value={[skipThreshold]} onValueChange={([v]) => setSkipThreshold(v)} min={50} max={100} step={5} className="mb-2" />
+        {existingModules.length > 0 ? (
           <div className="space-y-1">
             {existingModules.map((m) => (
               <label key={m.id} className="flex items-center gap-2 cursor-pointer text-xs text-foreground">
@@ -143,8 +144,12 @@ export function AssessmentCreator({ existingModules, onAdd, onCancel }: Props) {
               </label>
             ))}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="rounded-lg border border-dashed border-border p-3 text-center">
+            <p className="text-xs text-muted-foreground">No modules added yet. Add modules first to link them for skipping.</p>
+          </div>
+        )}
+      </div>
 
       <Button onClick={() => valid && onAdd({ title, questions, passingScore, linkedModuleIds, skipThreshold })} disabled={!valid} size="sm" className="w-full">
         Add Assessment to Skill Target

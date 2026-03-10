@@ -222,12 +222,22 @@ export default function SkillTargetBuilder() {
     };
     if (assessment.linkedModuleIds.length > 0 && assessment.skipThreshold > 0) {
       setSteps((prev) => {
+        // Mark linked modules as skippable
         const updated = prev.map((s) =>
           assessment.linkedModuleIds.includes(s.referenceId)
             ? { ...s, skippable: true, skipCondition: `Assessment score > ${assessment.skipThreshold}%` }
             : s
         );
-        return [...updated, step].map((s, i) => ({ ...s, order: i + 1 }));
+        // Insert assessment above the first linked module
+        const firstLinkedIdx = updated.findIndex((s) => assessment.linkedModuleIds.includes(s.referenceId));
+        const insertIdx = firstLinkedIdx !== -1 ? firstLinkedIdx : updated.length;
+
+        // Pull linked modules out, then reinsert them right after the assessment
+        const linked = updated.filter((s) => assessment.linkedModuleIds.includes(s.referenceId));
+        const rest = updated.filter((s) => !assessment.linkedModuleIds.includes(s.referenceId));
+        const before = rest.slice(0, insertIdx > rest.length ? rest.length : insertIdx);
+        const after = rest.slice(insertIdx > rest.length ? rest.length : insertIdx);
+        return [...before, step, ...linked, ...after].map((s, i) => ({ ...s, order: i + 1 }));
       });
     } else {
       setSteps((prev) => [...prev, step].map((s, i) => ({ ...s, order: i + 1 })));

@@ -305,6 +305,11 @@ export default function Dashboard() {
               No skill targets match this filter.
             </div>
           )}
+
+          {/* Recommended for You */}
+          <div className="mt-8">
+            <RecommendedTargets />
+          </div>
         </div>
 
         <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />

@@ -7,6 +7,7 @@ import {
   Drama,
   Shield,
   BarChart3,
+  Bot,
   CircleUser,
   PanelLeftClose,
   PanelLeftOpen,
@@ -48,6 +49,12 @@ const navItems: NavItem[] = [
     label: "New Chat",
     path: "/chat",
     icon: MessageSquare,
+    roles: ["learner"],
+  },
+  {
+    label: "AI Manager",
+    path: "/ai-manager",
+    icon: Bot,
     roles: ["learner"],
   },
   {
@@ -94,6 +101,7 @@ export function AppSidebar() {
     if (item.label === "Learning Spaces" && viewMode === "team") return false;
     // Hide learner New Chat in team mode (it has no children and path=/chat)
     if (item.path === "/chat" && viewMode === "team") return false;
+    if (item.path === "/ai-manager" && viewMode === "team") return false;
     // Hide manager New Chat in me mode
     if (item.path === "/manager" && viewMode === "me") return false;
     return true;

@@ -16,12 +16,15 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
+  Check,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { mockLearningModules, mockAssessments, mockRolePlayBank } from "@/data/mock";
 import { AssessmentCreator } from "@/components/skill-target/AssessmentCreator";
@@ -40,6 +43,17 @@ type ContentFilter = "all" | "modules" | "assessments" | "roleplays";
 const WELCOME_MSG =
   "Describe the skill target you want to create and I'll find the right courses for you from our repo. You can also add your own content by clicking the upload button below.";
 
+const SUGGESTION_PILLS = [
+  "Customer Onboarding",
+  "De-escalation Techniques",
+  "Apple L1 Support",
+  "Empathy & Active Listening",
+  "Billing & Subscriptions",
+  "Product Knowledge",
+  "Troubleshooting Workflows",
+  "Escalation Handling",
+];
+
 function searchContent(query: string): ContentItem[] {
   const q = query.toLowerCase();
   const items: ContentItem[] = [];
@@ -48,7 +62,7 @@ function searchContent(query: string): ContentItem[] {
       items.push({ kind: "module", data: m });
   });
   mockAssessments.forEach((a) => {
-    if (a.title.toLowerCase().includes(q))
+    if (a.title.toLowerCase().includes(q) || a.questions.some((aq) => aq.question.toLowerCase().includes(q)))
       items.push({ kind: "assessment", data: a });
   });
   mockRolePlayBank.forEach((r) => {
@@ -89,6 +103,8 @@ export default function SkillTargetBuilder() {
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
   const [contentFilter, setContentFilter] = useState<ContentFilter>("all");
   const [showAssessmentCreator, setShowAssessmentCreator] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [pillsUsed, setPillsUsed] = useState(false);
 
   // Right panel
   const [title, setTitle] = useState("");
@@ -97,31 +113,32 @@ export default function SkillTargetBuilder() {
 
   const addedIds = useMemo(() => new Set(steps.map((s) => s.referenceId)), [steps]);
 
-  const handleSend = useCallback(() => {
-    const q = input.trim();
+  const handleSend = useCallback((query?: string) => {
+    const q = (query ?? input).trim();
     if (!q) return;
-    setInput("");
+    if (!query) setInput("");
     const userMsg: ChatMsg = { role: "user", text: q };
     const results = searchContent(q);
     const assistantMsg: ChatMsg = results.length
       ? { role: "assistant", text: `I found ${results.length} result${results.length > 1 ? "s" : ""} matching "${q}":`, results }
       : { role: "assistant", text: `No results found for "${q}". Try different keywords or use the upload button to add your own content.` };
     setMessages((prev) => [...prev, userMsg, assistantMsg]);
+    setPillsUsed(true);
   }, [input]);
 
   const addStep = useCallback(
     (item: ContentItem) => {
-      const refId = item.kind === "module" ? item.data.id : item.kind === "assessment" ? item.data.id : item.data.id;
+      const refId = item.data.id;
       if (addedIds.has(refId)) return;
       const step: StepItem = {
         id: `builder-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         type: item.kind === "module" ? "module" : item.kind === "assessment" ? "assessment" : "role_play",
-        title: item.kind === "module" ? item.data.title : item.kind === "assessment" ? item.data.title : item.data.title,
-        description: item.kind === "roleplay" ? item.data.scenario : item.kind === "module" ? `Learning module: ${item.data.title}` : `Assessment: ${item.data.title}`,
+        title: item.data.title,
+        description: item.kind === "roleplay" ? (item.data as RolePlay).scenario : item.kind === "module" ? `Learning module: ${item.data.title}` : `Assessment: ${item.data.title}`,
         order: steps.length + 1,
         skippable: false,
         status: "available",
-        duration: item.kind === "module" ? item.data.duration ?? "" : item.kind === "roleplay" ? "15 min" : "15 min",
+        duration: item.kind === "module" ? (item.data as LearningModule).duration ?? "" : "15 min",
         referenceId: refId,
       };
       setSteps((prev) => [...prev, step]);
@@ -180,7 +197,6 @@ export default function SkillTargetBuilder() {
       duration: `${Math.max(5, assessment.questions.length * 3)} min`,
       referenceId: id,
     };
-    // Mark linked modules as skippable
     if (assessment.linkedModuleIds.length > 0 && assessment.skipThreshold > 0) {
       setSteps((prev) => {
         const updated = prev.map((s) =>
@@ -200,21 +216,19 @@ export default function SkillTargetBuilder() {
   if (leftView === "detail" && selectedItem) {
     return (
       <div className="flex flex-1 min-h-0">
-        {/* Left: Detail */}
         <div className="flex-1 flex flex-col min-w-0 border-r border-border">
           <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-card">
             <button onClick={() => { setLeftView("chat"); setSelectedItem(null); }} className="text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="h-5 w-5" />
             </button>
-            <span className="text-sm font-medium text-foreground truncate">{selectedItem.kind === "module" ? selectedItem.data.title : selectedItem.kind === "assessment" ? selectedItem.data.title : selectedItem.data.title}</span>
+            <span className="text-sm font-medium text-foreground truncate">{selectedItem.data.title}</span>
           </div>
           <ScrollArea className="flex-1">
             <div className="p-6 max-w-2xl mx-auto">
-              <ContentDetailView item={selectedItem} onAdd={() => { addStep(selectedItem); setLeftView("chat"); setSelectedItem(null); }} isAdded={addedIds.has(selectedItem.kind === "module" ? selectedItem.data.id : selectedItem.kind === "assessment" ? selectedItem.data.id : selectedItem.data.id)} />
+              <ContentDetailView item={selectedItem} onAdd={() => { addStep(selectedItem); setLeftView("chat"); setSelectedItem(null); }} isAdded={addedIds.has(selectedItem.data.id)} />
             </div>
           </ScrollArea>
         </div>
-        {/* Right: Builder */}
         <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} />
       </div>
     );
@@ -250,7 +264,6 @@ export default function SkillTargetBuilder() {
                 {/* Results list */}
                 {msg.results && msg.results.length > 0 && (
                   <div className="mt-3 ml-10">
-                    {/* Filter chips */}
                     <div className="flex gap-1.5 mb-3 flex-wrap">
                       {(["all", "modules", "assessments", "roleplays"] as ContentFilter[]).map((f) => (
                         <button
@@ -279,14 +292,12 @@ export default function SkillTargetBuilder() {
                               {contentIcon(item.kind)}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">
-                                {item.data.title}
-                              </p>
+                              <p className="text-sm font-medium text-foreground truncate">{item.data.title}</p>
                               <p className="text-xs text-muted-foreground">
                                 {contentLabel(item.kind)}
-                                {item.kind === "module" && item.data.duration && ` · ${item.data.duration}`}
-                                {item.kind === "module" && ` · ${item.data.contentType === "video" ? "Video" : "Document"}`}
-                                {item.kind === "roleplay" && ` · ${item.data.difficulty}`}
+                                {item.kind === "module" && (item.data as LearningModule).duration && ` · ${(item.data as LearningModule).duration}`}
+                                {item.kind === "module" && ` · ${(item.data as LearningModule).contentType === "video" ? "Video" : "Document"}`}
+                                {item.kind === "roleplay" && ` · ${(item.data as RolePlay).difficulty}`}
                               </p>
                             </div>
                             <Button
@@ -307,6 +318,24 @@ export default function SkillTargetBuilder() {
               </div>
             ))}
 
+            {/* Suggestion pills — show after welcome, before user searches */}
+            {!pillsUsed && messages.length === 1 && (
+              <div className="ml-10">
+                <p className="text-xs text-muted-foreground mb-2">Popular topics:</p>
+                <div className="flex flex-wrap gap-2">
+                  {SUGGESTION_PILLS.map((pill) => (
+                    <button
+                      key={pill}
+                      onClick={() => handleSend(pill)}
+                      className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
+                    >
+                      {pill}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Assessment Creator */}
             {showAssessmentCreator && (
               <div className="ml-10">
@@ -323,7 +352,11 @@ export default function SkillTargetBuilder() {
         {/* Input bar */}
         <div className="border-t border-border bg-card px-5 py-3">
           <div className="flex items-center gap-2 max-w-2xl mx-auto">
-            <button className="flex-shrink-0 h-9 w-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" title="Upload content">
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="flex-shrink-0 h-9 w-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              title="Upload content"
+            >
               <Upload className="h-4 w-4" />
             </button>
             <button
@@ -342,7 +375,7 @@ export default function SkillTargetBuilder() {
                 placeholder="Search for modules, assessments, role plays..."
                 className="pr-10 h-9 text-sm"
               />
-              <button onClick={handleSend} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={() => handleSend()} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors">
                 <Send className="h-4 w-4" />
               </button>
             </div>
@@ -352,7 +385,105 @@ export default function SkillTargetBuilder() {
 
       {/* Right: Builder */}
       <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} />
+
+      {/* Upload Modal */}
+      <UploadModal open={showUploadModal} onClose={() => setShowUploadModal(false)} addedIds={addedIds} onAdd={(items) => items.forEach((item) => addStep(item))} />
     </div>
+  );
+}
+
+/* ── Upload Modal ── */
+function UploadModal({ open, onClose, addedIds, onAdd }: { open: boolean; onClose: () => void; addedIds: Set<string>; onAdd: (items: ContentItem[]) => void }) {
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState("");
+
+  const allModules: ContentItem[] = mockLearningModules.map((m) => ({ kind: "module" as const, data: m }));
+  const allRolePlays: ContentItem[] = mockRolePlayBank.map((r) => ({ kind: "roleplay" as const, data: r }));
+  const allItems = [...allModules, ...allRolePlays];
+
+  const filtered = search.trim()
+    ? allItems.filter((item) => item.data.title.toLowerCase().includes(search.toLowerCase()))
+    : allItems;
+
+  const toggle = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const handleAdd = () => {
+    const toAdd = filtered.filter((item) => selected.has(item.data.id) && !addedIds.has(item.data.id));
+    onAdd(toAdd);
+    setSelected(new Set());
+    setSearch("");
+    onClose();
+  };
+
+  const selectableCount = filtered.filter((item) => !addedIds.has(item.data.id)).length;
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) { onClose(); setSelected(new Set()); setSearch(""); } }}>
+      <DialogContent className="max-w-lg max-h-[80vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="text-base">Add Content from Library</DialogTitle>
+        </DialogHeader>
+        <Input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search modules and role plays..."
+          className="h-9 text-sm"
+        />
+        <ScrollArea className="flex-1 -mx-6 px-6" style={{ maxHeight: "400px" }}>
+          <div className="space-y-1">
+            {filtered.map((item) => {
+              const added = addedIds.has(item.data.id);
+              const checked = selected.has(item.data.id);
+              return (
+                <label
+                  key={item.data.id}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg p-2.5 cursor-pointer transition-colors",
+                    added ? "opacity-50 cursor-not-allowed" : "hover:bg-secondary/50",
+                    checked && !added && "bg-primary/5 border border-primary/20 rounded-lg"
+                  )}
+                >
+                  <Checkbox
+                    checked={checked || added}
+                    disabled={added}
+                    onCheckedChange={() => !added && toggle(item.data.id)}
+                  />
+                  <div className="flex-shrink-0 h-7 w-7 rounded-md bg-muted flex items-center justify-center text-muted-foreground">
+                    {contentIcon(item.kind)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{item.data.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {contentLabel(item.kind)}
+                      {item.kind === "module" && (item.data as LearningModule).duration && ` · ${(item.data as LearningModule).duration}`}
+                    </p>
+                  </div>
+                  {added && <Badge variant="secondary" className="text-[10px]">Added</Badge>}
+                </label>
+              );
+            })}
+            {filtered.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">No content found</p>
+            )}
+          </div>
+        </ScrollArea>
+        <div className="flex items-center justify-between pt-2 border-t border-border">
+          <span className="text-xs text-muted-foreground">{selected.size} selected</span>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={onClose}>Cancel</Button>
+            <Button size="sm" onClick={handleAdd} disabled={selected.size === 0}>
+              Add {selected.size > 0 ? `(${selected.size})` : ""}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -373,17 +504,14 @@ function BuilderPanel({
       </div>
       <ScrollArea className="flex-1">
         <div className="p-5 space-y-5">
-          {/* Title */}
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Name</label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Apple L1 Customer Support" className="h-9 text-sm" />
           </div>
-          {/* Description */}
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Description</label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe what this skill target covers..." className="text-sm min-h-[60px]" />
           </div>
-          {/* Steps */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <label className="text-xs font-medium text-muted-foreground">Steps ({steps.length})</label>
@@ -422,7 +550,7 @@ function BuilderPanel({
                           {step.type === "module" ? "Module" : step.type === "assessment" ? "Assessment" : "Role Play"}
                           {step.duration && ` · ${step.duration}`}
                           {step.skippable && step.skipCondition && (
-                            <span className="text-warning ml-1">· Skip: {step.skipCondition}</span>
+                            <span className="text-orange-500 ml-1">· Skip: {step.skipCondition}</span>
                           )}
                         </p>
                       </div>
@@ -437,7 +565,6 @@ function BuilderPanel({
           </div>
         </div>
       </ScrollArea>
-      {/* Create button */}
       <div className="border-t border-border bg-card px-5 py-3">
         <Button onClick={onCreate} disabled={!title.trim() || steps.length === 0} className="w-full h-9 text-sm">
           Create Skill Target
@@ -450,7 +577,7 @@ function BuilderPanel({
 /* ── Content detail view ── */
 function ContentDetailView({ item, onAdd, isAdded }: { item: ContentItem; onAdd: () => void; isAdded: boolean }) {
   if (item.kind === "module") {
-    const m = item.data;
+    const m = item.data as LearningModule;
     return (
       <div className="space-y-5">
         <div className="flex items-center gap-2">
@@ -458,7 +585,6 @@ function ContentDetailView({ item, onAdd, isAdded }: { item: ContentItem; onAdd:
           {m.duration && <span className="text-xs text-muted-foreground">{m.duration}</span>}
         </div>
         <h3 className="text-lg font-semibold text-foreground">{m.title}</h3>
-        {/* Video / PDF preview */}
         {m.contentType === "video" ? (
           <div className="relative rounded-xl overflow-hidden aspect-video bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
             <div className="h-16 w-16 rounded-full bg-primary/80 flex items-center justify-center">
@@ -487,7 +613,7 @@ function ContentDetailView({ item, onAdd, isAdded }: { item: ContentItem; onAdd:
   }
 
   if (item.kind === "assessment") {
-    const a = item.data;
+    const a = item.data as Assessment;
     return (
       <div className="space-y-5">
         <Badge variant="secondary" className="text-xs">{a.type === "pre" ? "Pre-Assessment" : "Post-Assessment"}</Badge>
@@ -500,7 +626,7 @@ function ContentDetailView({ item, onAdd, isAdded }: { item: ContentItem; onAdd:
               <p className="text-sm font-medium text-foreground mb-2">{i + 1}. {q.question}</p>
               <div className="space-y-1">
                 {q.options.map((opt, oi) => (
-                  <div key={oi} className={cn("text-xs px-2 py-1 rounded", oi === q.correctIndex ? "bg-success/10 text-success font-medium" : "text-muted-foreground")}>
+                  <div key={oi} className={cn("text-xs px-2 py-1 rounded", oi === q.correctIndex ? "bg-green-500/10 text-green-600 font-medium" : "text-muted-foreground")}>
                     {opt}
                   </div>
                 ))}
@@ -515,8 +641,7 @@ function ContentDetailView({ item, onAdd, isAdded }: { item: ContentItem; onAdd:
     );
   }
 
-  // Role play
-  const r = item.data;
+  const r = item.data as RolePlay;
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-2">

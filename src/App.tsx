@@ -10,6 +10,7 @@ import { SkillTargetsProvider } from "@/contexts/SkillTargetsContext";
 import { RolePlayProvider } from "@/contexts/RolePlayContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
+import SkillTargetBuilder from "./pages/SkillTargetBuilder";
 import SkillTargetDetail from "./pages/SkillTargetDetail";
 import AssessmentPage from "./pages/AssessmentPage";
 import RolePlaySession from "./pages/RolePlaySession";

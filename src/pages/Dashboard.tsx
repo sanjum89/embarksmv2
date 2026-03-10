@@ -126,7 +126,7 @@ export default function Dashboard() {
                   className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
                 >
                   <Plus className="h-4 w-4" />
-                  Create learning space
+                  Create Skill Target
                 </button>
               </div>
             ) : (

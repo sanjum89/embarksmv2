@@ -85,7 +85,7 @@ export function TraditionalActivitiesPanel({
           onClick={() => setSummaryOpen(!summaryOpen)}
           className="flex items-center justify-between w-full px-5 py-4 text-sm font-semibold text-foreground hover:bg-muted/30 transition-colors"
         >
-          <span>Learning space summary</span>
+          <span>Skill target summary</span>
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-muted-foreground" />
             {summaryOpen ? (

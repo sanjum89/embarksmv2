@@ -231,7 +231,7 @@ export function AppSidebar() {
                         <div className="mt-0.5 space-y-0.5">
                           {item.children.map((child) => {
                             const active = isPathActive(child.path);
-                            const childLabel = child.label === "Skill Targets" ? "Spaces" : child.label;
+                            const childLabel = child.label;
                             return (
                               <NavLink
                                 key={child.path}

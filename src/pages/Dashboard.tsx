@@ -131,7 +131,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
-                No learning spaces match this filter.
+                No skill targets match this filter.
               </div>
             )}
 

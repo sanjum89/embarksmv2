@@ -41,6 +41,7 @@ const App = () => (
           <Routes>
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/create-skill-target" element={<SkillTargetBuilder />} />
               <Route path="/skill-target/:id" element={<SkillTargetDetail />} />
               <Route path="/skill-target/:id/assessment/:aid" element={<AssessmentPage />} />
               <Route path="/skill-target/:id/role-play/:rid" element={<RolePlaySession />} />

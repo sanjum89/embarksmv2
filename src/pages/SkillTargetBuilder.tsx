@@ -54,23 +54,46 @@ const SUGGESTION_PILLS = [
   "Escalation Handling",
 ];
 
+const PILL_CONTENT_MAP: Record<string, string[]> = {
+  "customer onboarding": ["m6", "m7", "m8", "m15", "m19"],
+  "de-escalation techniques": ["m1", "m5", "m16"],
+  "apple l1 support": ["m6", "m7", "m8", "m9", "m10", "m11", "m12", "m13", "m14", "m15", "m16", "m17", "m18", "m19"],
+  "empathy & active listening": ["m5", "m1", "m2"],
+  "billing & subscriptions": ["m11", "m12"],
+  "product knowledge": ["m3", "m4", "m6", "m18"],
+  "troubleshooting workflows": ["m13", "m9", "m8"],
+  "escalation handling": ["m16", "m17", "m14"],
+};
+
 function searchContent(query: string): ContentItem[] {
   const q = query.toLowerCase();
+
+  // Check pill mapping first
+  const mappedIds = PILL_CONTENT_MAP[q];
+  if (mappedIds) {
+    const idSet = new Set(mappedIds);
+    return mockLearningModules
+      .filter((m) => idSet.has(m.id))
+      .map((m) => ({ kind: "module" as const, data: m }));
+  }
+
+  // Broadened keyword search — split query into words, match any
+  const words = q.split(/\s+/).filter(Boolean);
   const items: ContentItem[] = [];
+
   mockLearningModules.forEach((m) => {
-    if (m.title.toLowerCase().includes(q) || (m.transcript ?? "").toLowerCase().includes(q))
+    const hay = `${m.title} ${m.transcript ?? ""}`.toLowerCase();
+    if (words.some((w) => hay.includes(w)))
       items.push({ kind: "module", data: m });
   });
   mockAssessments.forEach((a) => {
-    if (a.title.toLowerCase().includes(q) || a.questions.some((aq) => aq.question.toLowerCase().includes(q)))
+    const hay = `${a.title} ${a.questions.map((aq) => aq.question).join(" ")}`.toLowerCase();
+    if (words.some((w) => hay.includes(w)))
       items.push({ kind: "assessment", data: a });
   });
   mockRolePlayBank.forEach((r) => {
-    if (
-      r.title.toLowerCase().includes(q) ||
-      r.scenario.toLowerCase().includes(q) ||
-      r.tags.some((t) => t.toLowerCase().includes(q))
-    )
+    const hay = `${r.title} ${r.scenario} ${r.tags.join(" ")}`.toLowerCase();
+    if (words.some((w) => hay.includes(w)))
       items.push({ kind: "roleplay", data: r });
   });
   return items;
@@ -199,12 +222,22 @@ export default function SkillTargetBuilder() {
     };
     if (assessment.linkedModuleIds.length > 0 && assessment.skipThreshold > 0) {
       setSteps((prev) => {
+        // Mark linked modules as skippable
         const updated = prev.map((s) =>
           assessment.linkedModuleIds.includes(s.referenceId)
             ? { ...s, skippable: true, skipCondition: `Assessment score > ${assessment.skipThreshold}%` }
             : s
         );
-        return [...updated, step].map((s, i) => ({ ...s, order: i + 1 }));
+        // Insert assessment above the first linked module
+        const firstLinkedIdx = updated.findIndex((s) => assessment.linkedModuleIds.includes(s.referenceId));
+        const insertIdx = firstLinkedIdx !== -1 ? firstLinkedIdx : updated.length;
+
+        // Pull linked modules out, then reinsert them right after the assessment
+        const linked = updated.filter((s) => assessment.linkedModuleIds.includes(s.referenceId));
+        const rest = updated.filter((s) => !assessment.linkedModuleIds.includes(s.referenceId));
+        const before = rest.slice(0, insertIdx > rest.length ? rest.length : insertIdx);
+        const after = rest.slice(insertIdx > rest.length ? rest.length : insertIdx);
+        return [...before, step, ...linked, ...after].map((s, i) => ({ ...s, order: i + 1 }));
       });
     } else {
       setSteps((prev) => [...prev, step].map((s, i) => ({ ...s, order: i + 1 })));

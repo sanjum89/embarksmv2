@@ -1,11 +1,13 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Info, LayoutGrid, List, ChevronDown } from "lucide-react";
+import { Plus, Info, LayoutGrid, List, ChevronDown, Search } from "lucide-react";
 
 import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
 import { SkillTargetListItem } from "@/components/skill-target/SkillTargetListItem";
+import { RecommendedTargets } from "@/components/dashboard/RecommendedTargets";
+import { BrowseSkillTargetsDialog } from "@/components/dashboard/BrowseSkillTargetsDialog";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useTheme } from "@/contexts/ThemeContext";

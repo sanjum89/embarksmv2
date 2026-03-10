@@ -438,7 +438,8 @@ export const mockSkillTargets: SkillTarget[] = [
       { id: "s57", type: "module", title: "Case Documentation Best Practices", description: "Writing clear, complete case notes for handoffs and audits.", order: 12, skippable: false, status: "locked", duration: "20 min", referenceId: "m17" },
       { id: "s58", type: "module", title: "Apple Ecosystem Navigation Deep Dive", description: "Advanced navigation across Apple tools, portals, and knowledge bases.", order: 13, skippable: false, status: "locked", duration: "25 min", referenceId: "m18" },
       { id: "s59", type: "module", title: "Live Readiness Review", description: "Final review session before live customer handling.", order: 14, skippable: false, status: "locked", duration: "20 min", referenceId: "m19" },
-      { id: "s60", type: "role_play", title: "Live Customer Call Simulation", description: "End-to-end simulated customer call covering Apple L1 support scenarios.", order: 15, skippable: false, status: "locked", duration: "25 min", referenceId: "rp13" },
+      { id: "s60a", type: "assessment", title: "Apple L1 Readiness Assessment", description: "Comprehensive assessment covering Apple product knowledge, troubleshooting workflows, billing, escalation procedures, and customer verification.", order: 15, skippable: false, status: "locked", duration: "30 min", referenceId: "a10" },
+      { id: "s60", type: "role_play", title: "Live Customer Call Simulation", description: "End-to-end simulated customer call covering Apple L1 support scenarios.", order: 16, skippable: false, status: "locked", duration: "25 min", referenceId: "rp13" },
     ],
   },
 ];

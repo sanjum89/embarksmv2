@@ -101,8 +101,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Recommended */}
-            <RecommendedTargets traditional />
+            {/* Recommended - rendered after list below */}
 
             {/* List view */}
             {hasAnyTargets && targets.length > 0 ? (
@@ -135,6 +134,11 @@ export default function Dashboard() {
                 No learning spaces match this filter.
               </div>
             )}
+
+            {/* Recommended */}
+            <div className="mt-8">
+              <RecommendedTargets traditional />
+            </div>
           </div>
 
           <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />
@@ -190,8 +194,7 @@ export default function Dashboard() {
             ))}
           </motion.div>
 
-          {/* Recommended for You */}
-          <RecommendedTargets />
+          {/* Recommended for You - rendered after content below */}
 
           {/* Filters + View Toggle + Create + Browse */}
           <div className="flex items-center justify-between mb-6">
@@ -302,6 +305,11 @@ export default function Dashboard() {
               No skill targets match this filter.
             </div>
           )}
+
+          {/* Recommended for You */}
+          <div className="mt-8">
+            <RecommendedTargets />
+          </div>
         </div>
 
         <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />

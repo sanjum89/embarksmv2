@@ -25,9 +25,9 @@ export default function Dashboard() {
   const { user } = useUser();
   const { skillTargets: mockSkillTargets } = useSkillTargets();
   const { styleTheme } = useTheme();
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("cards");
-  const [createOpen, setCreateOpen] = useState(false);
 
   const isTraditional = styleTheme === "traditional";
 

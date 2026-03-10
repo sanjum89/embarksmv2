@@ -65,7 +65,7 @@ export default function Dashboard() {
             {/* Header bar */}
             <div className="flex items-center justify-between mb-8">
               <h1 className="font-display text-2xl font-bold text-foreground">
-                Your learning spaces
+                Your Skill Targets
               </h1>
               <div className="flex items-center gap-3">
                 {/* Status dropdown */}
@@ -89,7 +89,7 @@ export default function Dashboard() {
                   className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:opacity-90 transition-opacity"
                 >
                   <Plus className="h-4 w-4" />
-                  Create learning space
+                  Create Skill Target
                 </button>
                 <button
                   onClick={() => setBrowseOpen(true)}
@@ -116,22 +116,22 @@ export default function Dashboard() {
                   <Info className="h-6 w-6 text-info" />
                 </div>
                 <h4 className="font-display text-lg font-semibold text-foreground mb-1">
-                  No Learning Spaces
+                  No Skill Targets
                 </h4>
                 <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                  Create a learning space to get started.
+                  Create a skill target to get started.
                 </p>
                 <button
                   onClick={() => navigate('/create-skill-target')}
                   className="inline-flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-2.5 text-sm font-medium hover:opacity-90 transition-opacity"
                 >
                   <Plus className="h-4 w-4" />
-                  Create learning space
+                  Create Skill Target
                 </button>
               </div>
             ) : (
               <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
-                No learning spaces match this filter.
+                No skill targets match this filter.
               </div>
             )}
 

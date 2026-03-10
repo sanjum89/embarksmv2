@@ -8,6 +8,7 @@ import type {
   SkillEntry,
   SkillRequirement,
 } from "@/types/learning";
+import { expandedModules } from "@/data/contentModules";
 
 /* ─── Users ─── */
 export const currentUser: User = {

@@ -623,8 +623,14 @@ export const profileDataByUser: Record<string, ProfileData> = {
     ],
     otherSkills: [
       { skill_name: "Freshdesk", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "Remote Technical Troubleshooting", proficiency: "Intermediate", assessment_year: 2025 },
-      { skill_name: "Consumer Device Setup Support", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "remote troubleshooting", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "device setup support", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "phone support", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "ticket triage", proficiency: "Beginner", assessment_year: 2025 },
+      { skill_name: "customer onboarding", proficiency: "Beginner", assessment_year: 2025 },
+      { skill_name: "email communication", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "troubleshooting", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "CRM software", proficiency: "Intermediate", assessment_year: 2025 },
     ],
   },
   u7: {

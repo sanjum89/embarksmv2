@@ -52,17 +52,23 @@ const SUGGESTION_PILLS = [
   "Product Knowledge",
   "Troubleshooting Workflows",
   "Escalation Handling",
+  "CRM & Tools",
+  "Quality Assurance",
+  "Customer Retention",
 ];
 
 const PILL_CONTENT_MAP: Record<string, string[]> = {
-  "customer onboarding": ["m6", "m7", "m8", "m15", "m19"],
-  "de-escalation techniques": ["m1", "m5", "m16"],
+  "customer onboarding": ["m6", "m7", "m8", "m15", "m19", "m20", "m23", "m30", "m33", "m68"],
+  "de-escalation techniques": ["m1", "m5", "m16", "m40", "m61", "m70", "m71"],
   "apple l1 support": ["m6", "m7", "m8", "m9", "m10", "m11", "m12", "m13", "m14", "m15", "m16", "m17", "m18", "m19"],
-  "empathy & active listening": ["m5", "m1", "m2"],
-  "billing & subscriptions": ["m11", "m12"],
-  "product knowledge": ["m3", "m4", "m6", "m18"],
-  "troubleshooting workflows": ["m13", "m9", "m8"],
-  "escalation handling": ["m16", "m17", "m14"],
+  "empathy & active listening": ["m5", "m1", "m2", "m21", "m33", "m45", "m52"],
+  "billing & subscriptions": ["m11", "m12", "m31", "m42", "m47", "m48"],
+  "product knowledge": ["m3", "m4", "m6", "m18", "m38", "m55", "m89"],
+  "troubleshooting workflows": ["m13", "m9", "m8", "m43", "m60", "m69", "m72"],
+  "escalation handling": ["m16", "m17", "m14", "m50", "m76"],
+  "crm & tools": ["m25", "m28", "m53", "m67", "m44"],
+  "quality assurance": ["m75", "m82", "m56", "m34", "m79"],
+  "customer retention": ["m48", "m73", "m86", "m90", "m105", "m110"],
 };
 
 function searchContent(query: string): ContentItem[] {

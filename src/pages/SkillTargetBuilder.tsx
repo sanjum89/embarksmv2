@@ -322,55 +322,17 @@ export default function SkillTargetBuilder() {
   return (
     <div className="flex flex-1 min-h-0">
       {/* Left: Chat */}
-      <div className="flex-1 flex flex-col min-w-0 border-r border-border">
+      <div className="flex-1 flex flex-col min-w-0 border-r border-border relative">
         {/* Header */}
-        <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-card">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-border bg-card shrink-0">
           <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h2 className="text-sm font-semibold text-foreground">Content Discovery</h2>
         </div>
 
-        {/* Input bar — PINNED AT TOP */}
-        <div className="border-b border-border bg-card px-5 py-3">
-          <div className="flex items-center gap-2 max-w-2xl mx-auto">
-            <button
-              onClick={() => setShowUploadModal(true)}
-              className="flex-shrink-0 h-9 w-9 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              title="Upload content"
-            >
-              <Upload className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setShowAssessmentCreator(true)}
-              className="flex-shrink-0 h-9 px-3 rounded-lg bg-secondary flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-              title="Create assessment"
-            >
-              <ClipboardCheck className="h-3.5 w-3.5" />
-              Assessment
-            </button>
-            <div className="flex-1 relative">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Search for modules, assessments, role plays..."
-                className="pr-10 h-9 text-sm"
-                disabled={isSearching}
-              />
-              <button
-                onClick={() => handleSend()}
-                disabled={isSearching}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Scrollable results area */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        {/* Scrollable results area — with bottom padding for floating input */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto pb-28">
           <div className="p-5 space-y-4 max-w-2xl mx-auto">
             {messages.map((msg, i) => (
               <div key={i}>
@@ -494,6 +456,44 @@ export default function SkillTargetBuilder() {
                 />
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Floating input bar — PINNED AT BOTTOM */}
+        <div className="absolute bottom-0 left-0 right-0 px-5 pb-5 pt-3 bg-gradient-to-t from-background via-background to-transparent">
+          <div className="flex items-center gap-2 max-w-2xl mx-auto rounded-2xl border border-border bg-card px-3 py-2.5 shadow-lg">
+            <button
+              onClick={() => setShowUploadModal(true)}
+              className="flex-shrink-0 h-8 w-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              title="Upload content"
+            >
+              <Upload className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setShowAssessmentCreator(true)}
+              className="flex-shrink-0 h-8 px-3 rounded-lg bg-secondary flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+              title="Create assessment"
+            >
+              <ClipboardCheck className="h-3.5 w-3.5" />
+              Assessment
+            </button>
+            <div className="flex-1 relative">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                placeholder="Search for modules, assessments, role plays..."
+                className="pr-10 h-8 text-sm border-0 shadow-none focus-visible:ring-0"
+                disabled={isSearching}
+              />
+              <button
+                onClick={() => handleSend()}
+                disabled={isSearching}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </button>
+            </div>
           </div>
         </div>
       </div>

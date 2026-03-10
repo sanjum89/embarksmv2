@@ -30,6 +30,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("cards");
+  const [browseOpen, setBrowseOpen] = useState(false);
 
   const isTraditional = styleTheme === "traditional";
 

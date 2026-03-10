@@ -50,7 +50,6 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
 
     useImperativeHandle(ref, () => ({
       sendMessage: (prompt: string, mockResponse: string, actions?: SuggestedAction[]) => {
-        // This path is used by My360 Explore buttons — uses mock responses
         const userMsg: ChatMessage = {
           id: Date.now().toString(),
           role: "user",
@@ -89,7 +88,6 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
       setInput("");
       setIsLoading(true);
 
-      // Build conversation history for the AI
       const history = [...messages, userMsg].map((m) => ({
         role: m.role,
         content: m.content,
@@ -113,7 +111,6 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
             });
           },
           onDone: () => {
-            // Finalize the streaming message with a real ID
             setMessages((prev) =>
               prev.map((m) =>
                 m.id === "streaming" ? { ...m, id: Date.now().toString() } : m
@@ -182,7 +179,52 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
           </div>
         </div>
 
-        {/* Messages area */}
+        {/* Input — PINNED AT TOP */}
+        <div className="border-b border-border px-3 py-3">
+          <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
+            <Sparkles className="h-4 w-4 text-muted-foreground shrink-0" />
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Ask anything"
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
+              disabled={isLoading}
+            />
+            <div className="flex items-center gap-1.5 text-muted-foreground">
+              <button className="hover:text-foreground transition-colors">
+                <Paperclip className="h-4 w-4" />
+              </button>
+              <button className="hover:text-foreground transition-colors">
+                <Mic className="h-4 w-4" />
+              </button>
+              <button
+                onClick={handleSend}
+                disabled={isLoading}
+                className="hover:text-foreground transition-colors"
+              >
+                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          {/* Default suggested actions when no messages */}
+          {messages.length === 0 && (
+            <div className="flex flex-wrap gap-2 pt-2 justify-center">
+              {suggestedActions.map((action) => (
+                <button
+                  key={action.label}
+                  onClick={() => setInput(action.label)}
+                  className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Messages area — scrolls */}
         <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
           {contextLabel && messages.length === 0 && (
             <div className="flex justify-end">
@@ -224,7 +266,6 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
                   msg.content
                 )}
               </div>
-              {/* Action buttons after assistant message */}
               {msg.role === "assistant" && msg.actions && msg.actions.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-2">
                   {msg.actions.map((action) => (
@@ -241,59 +282,13 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
             </div>
           ))}
 
-          {/* Loading indicator */}
+          {/* Thinking indicator */}
           {isLoading && messages[messages.length - 1]?.role === "user" && (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-xs">Thinking...</span>
             </div>
           )}
-
-          {/* Default suggested actions when no messages */}
-          {messages.length === 0 && (
-            <div className="flex flex-wrap gap-2 pt-1 justify-center">
-              {suggestedActions.map((action) => (
-                <button
-                  key={action.label}
-                  onClick={() => setInput(action.label)}
-                  className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-colors"
-                >
-                  {action.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Input */}
-        <div className="border-t border-border px-3 py-3">
-          <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-3 py-2">
-            <Sparkles className="h-4 w-4 text-muted-foreground shrink-0" />
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="Ask anything"
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-              disabled={isLoading}
-            />
-            <div className="flex items-center gap-1.5 text-muted-foreground">
-              <button className="hover:text-foreground transition-colors">
-                <Paperclip className="h-4 w-4" />
-              </button>
-              <button className="hover:text-foreground transition-colors">
-                <Mic className="h-4 w-4" />
-              </button>
-              <button
-                onClick={handleSend}
-                disabled={isLoading}
-                className="hover:text-foreground transition-colors"
-              >
-                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
         </div>
       </motion.div>
     );

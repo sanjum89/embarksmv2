@@ -65,7 +65,7 @@ export default function Dashboard() {
             {/* Header bar */}
             <div className="flex items-center justify-between mb-8">
               <h1 className="font-display text-2xl font-bold text-foreground">
-                Your learning spaces
+                Your Skill Targets
               </h1>
               <div className="flex items-center gap-3">
                 {/* Status dropdown */}

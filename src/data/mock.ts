@@ -251,6 +251,20 @@ export const mockAssessments: Assessment[] = [
       { id: "q24", question: "AppleCare+ provides:", options: ["Free unlimited repairs", "Extended warranty with accidental damage coverage", "Free device upgrades", "Priority store access"], correctIndex: 1 },
     ],
   },
+  {
+    id: "a10",
+    title: "Apple L1 Readiness Assessment",
+    type: "post",
+    passingScore: 75,
+    questions: [
+      { id: "q30", question: "What should you do first when a customer reports a billing discrepancy?", options: ["Issue a refund immediately", "Verify the customer's identity and review the charge details", "Transfer to the billing department", "Ask the customer to call back later"], correctIndex: 1 },
+      { id: "q31", question: "A customer's iPhone won't turn on after charging overnight. What is the first troubleshooting step?", options: ["Schedule a repair appointment", "Perform a force restart", "Ask them to buy a new charger", "Escalate to L2 immediately"], correctIndex: 1 },
+      { id: "q32", question: "When should you escalate a call to L2 support?", options: ["Whenever the customer asks", "When the issue exceeds L1 troubleshooting scope or requires specialist tools", "After exactly 10 minutes on the call", "Only if the customer threatens cancellation"], correctIndex: 1 },
+      { id: "q33", question: "Which of the following is covered under standard Apple warranty (no AppleCare+)?", options: ["Accidental screen damage", "Water damage", "Manufacturing defects", "Lost device replacement"], correctIndex: 2 },
+      { id: "q34", question: "What is the correct way to document a case handoff?", options: ["Write a brief one-line summary", "Include issue description, steps taken, customer sentiment, and next actions", "Just mark it as escalated", "Let the next agent figure it out"], correctIndex: 1 },
+      { id: "q35", question: "A customer wants to cancel Apple One but keep Apple Music. What should you advise?", options: ["Cancel everything and re-subscribe", "Explain they can downgrade to an individual Apple Music subscription", "Tell them it's not possible", "Offer a discount on Apple One"], correctIndex: 1 },
+    ],
+  },
 ];
 
 /* ─── Learning Modules ─── */

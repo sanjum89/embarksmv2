@@ -139,7 +139,7 @@ export default function Dashboard() {
 
           <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />
         </div>
-
+        <BrowseSkillTargetsDialog open={browseOpen} onOpenChange={setBrowseOpen} />
       </div>
     );
   }

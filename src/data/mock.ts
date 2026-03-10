@@ -156,7 +156,7 @@ export const mockProgramContexts: ProgramContext[] = [
     assessmentPassPercentage: 70,
     adaptiveSkipThresholds: { skipOne: 80, skipTwo: 90 },
     finalRolePlayId: "rp13",
-    assignedLearners: ["u6", "u8", "u9"],
+    assignedLearners: ["u6", "u8", "u9", "u10"],
   },
 ];
 

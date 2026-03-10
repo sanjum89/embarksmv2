@@ -411,9 +411,9 @@ export const mockSkillTargets: SkillTarget[] = [
   {
     id: "st6",
     title: "Apple L1 Customer Support Readiness",
-    description: "Complete onboarding path for fresher candidates joining as Apple L1 Customer Support Executive. No assessments — all modules must be completed sequentially.",
+    description: "Complete onboarding path for fresher candidates joining as Apple L1 Customer Support Executive.",
     category: "Apple Support Program",
-    assignedTo: ["u10"],
+    assignedTo: ["u6", "u8", "u10"],
     progress: 0,
     dueDate: "2026-05-01",
     skills: [

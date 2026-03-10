@@ -19,6 +19,7 @@ import RolePlayBank from "./pages/RolePlayBank";
 import TeamInsights from "./pages/TeamInsights";
 import My360 from "./pages/My360";
 import ManagerView from "./pages/ManagerView";
+import LearnerChat from "./pages/LearnerChat";
 import ManagerSkillTargets from "./pages/ManagerSkillTargets";
 import ManagerSkillTargetDetail from "./pages/ManagerSkillTargetDetail";
 

@@ -493,6 +493,11 @@ export const profileDataByUser: Record<string, ProfileData> = {
       { skill_name: "Python", proficiency: "Intermediate", assessment_year: 2024 },
       { skill_name: "SQL", proficiency: "Intermediate", assessment_year: 2025 },
       { skill_name: "OpenKnime - Analytics", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "A/B testing", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "data visualization", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "stakeholder communication", proficiency: "Expert", assessment_year: 2026 },
+      { skill_name: "customer journey mapping", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "change management", proficiency: "Advanced", assessment_year: 2024 },
     ],
   },
   u6: {

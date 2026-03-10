@@ -9,7 +9,7 @@ export function AppLayout() {
   const { styleTheme } = useTheme();
   const isTraditional = styleTheme === "traditional";
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-screen overflow-hidden bg-background flex flex-col">
       <AppSidebar />
       <main className={cn("flex-1 flex flex-col transition-all duration-200", expanded ? (isTraditional ? "ml-[248px]" : "ml-56") : (isTraditional ? "ml-[82px]" : "ml-16"), isTraditional && "pt-14")}>
         <div className={cn("flex-1 flex flex-col", isTraditional ? "h-[calc(100vh-3.5rem)]" : "h-screen")}>

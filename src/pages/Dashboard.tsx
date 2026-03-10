@@ -1,11 +1,13 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Info, LayoutGrid, List, ChevronDown } from "lucide-react";
+import { Plus, Info, LayoutGrid, List, ChevronDown, Search } from "lucide-react";
 
 import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
 import { SkillTargetListItem } from "@/components/skill-target/SkillTargetListItem";
+import { RecommendedTargets } from "@/components/dashboard/RecommendedTargets";
+import { BrowseSkillTargetsDialog } from "@/components/dashboard/BrowseSkillTargetsDialog";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -28,6 +30,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("cards");
+  const [browseOpen, setBrowseOpen] = useState(false);
 
   const isTraditional = styleTheme === "traditional";
 
@@ -88,8 +91,18 @@ export default function Dashboard() {
                   <Plus className="h-4 w-4" />
                   Create learning space
                 </button>
+                <button
+                  onClick={() => setBrowseOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card text-foreground px-4 py-2 text-sm font-medium hover:bg-accent/10 transition-colors"
+                >
+                  <Search className="h-4 w-4" />
+                  Browse
+                </button>
               </div>
             </div>
+
+            {/* Recommended */}
+            <RecommendedTargets traditional />
 
             {/* List view */}
             {hasAnyTargets && targets.length > 0 ? (
@@ -126,7 +139,7 @@ export default function Dashboard() {
 
           <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />
         </div>
-
+        <BrowseSkillTargetsDialog open={browseOpen} onOpenChange={setBrowseOpen} />
       </div>
     );
   }
@@ -177,7 +190,10 @@ export default function Dashboard() {
             ))}
           </motion.div>
 
-          {/* Filters + View Toggle + Create Button */}
+          {/* Recommended for You */}
+          <RecommendedTargets />
+
+          {/* Filters + View Toggle + Create + Browse */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-1 rounded-lg bg-secondary p-1 w-fit">
@@ -224,13 +240,22 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <button
-              onClick={() => navigate('/create-skill-target')}
-              className="inline-flex items-center gap-1.5 rounded-lg gradient-accent text-accent-foreground px-3.5 py-2 text-xs font-medium hover:opacity-90 transition-opacity"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              Create Skill Target
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setBrowseOpen(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card text-foreground px-3.5 py-2 text-xs font-medium hover:bg-accent/10 transition-colors"
+              >
+                <Search className="h-3.5 w-3.5" />
+                Browse
+              </button>
+              <button
+                onClick={() => navigate('/create-skill-target')}
+                className="inline-flex items-center gap-1.5 rounded-lg gradient-accent text-accent-foreground px-3.5 py-2 text-xs font-medium hover:opacity-90 transition-opacity"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Create Skill Target
+              </button>
+            </div>
           </div>
 
           {/* Content */}
@@ -282,7 +307,7 @@ export default function Dashboard() {
         <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />
       </div>
 
-      
+      <BrowseSkillTargetsDialog open={browseOpen} onOpenChange={setBrowseOpen} />
     </>
   );
 }

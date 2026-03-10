@@ -1,24 +1,28 @@
 
 
-# Fix Broken Scrolling on All Pages
-
 ## Problem
-The recent `overflow-hidden` fix on `AppLayout` broke scrolling everywhere. The inner content wrapper uses `h-screen` instead of `h-full`, making it taller than its parent container. Combined with `overflow-hidden`, content gets clipped at the bottom with no way to scroll.
 
-## Change
+The `railPalette` function currently colors each segment based on the entry *below* it. This means:
+- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
+- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
+- The segment from **Jan → 2025** gets 2025's color (Green) — correct
 
-### `src/components/layout/AppLayout.tsx`
-Change the inner div from `h-screen` / `h-[calc(100vh-3.5rem)]` to `h-full` with `overflow-auto`. This lets it fill the available space correctly and enables scrolling within it.
+The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
 
-```tsx
-// Before
-<div className={cn("flex-1 flex flex-col", isTraditional ? "h-[calc(100vh-3.5rem)]" : "h-screen")}>
+## Fix
 
-// After  
-<div className="flex-1 flex flex-col min-h-0 overflow-auto">
+Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
+
+```typescript
+const railPalette = (i: number) => {
+  return palette(careerEntries[i]);
+};
 ```
 
-The `min-h-0` is critical — it allows the flex child to shrink below its content size, enabling overflow to work. The `overflow-auto` lets pages that don't manage their own scroll (like Dashboard) scroll naturally, while pages that do (like SkillTargetDetail with `overflow-hidden`) will override it.
+This gives:
+- **Mar segment** (Mar → Feb): Orange
+- **Feb segment** (Feb → Jan): Yellow  
+- **Jan segment and below**: Green
 
-**1 file changed.**
+Single line change in `src/components/my360/CareerTimeline.tsx`.
 

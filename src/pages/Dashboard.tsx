@@ -101,8 +101,7 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Recommended */}
-            <RecommendedTargets traditional />
+            {/* Recommended - rendered after list below */}
 
             {/* List view */}
             {hasAnyTargets && targets.length > 0 ? (

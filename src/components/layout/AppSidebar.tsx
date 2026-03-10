@@ -46,6 +46,12 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     label: "New Chat",
+    path: "/chat",
+    icon: MessageSquare,
+    roles: ["learner"],
+  },
+  {
+    label: "New Chat",
     path: "/manager",
     icon: Building2,
     roles: ["manager", "admin"],

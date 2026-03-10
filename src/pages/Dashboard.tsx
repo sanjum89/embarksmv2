@@ -296,6 +296,11 @@ export default function Dashboard() {
                 ))}
               </div>
             )
+
+            {/* Recommended */}
+            <div className="mt-8">
+              <RecommendedTargets traditional />
+            </div>
           ) : (
             <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
               No skill targets match this filter.

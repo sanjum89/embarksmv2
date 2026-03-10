@@ -151,7 +151,7 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="relative flex h-full flex-col bg-card"
+        className="relative flex h-full flex-col bg-card min-h-0 overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-border px-4 py-3 shrink-0">

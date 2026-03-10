@@ -91,8 +91,18 @@ export default function Dashboard() {
                   <Plus className="h-4 w-4" />
                   Create learning space
                 </button>
+                <button
+                  onClick={() => setBrowseOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card text-foreground px-4 py-2 text-sm font-medium hover:bg-accent/10 transition-colors"
+                >
+                  <Search className="h-4 w-4" />
+                  Browse
+                </button>
               </div>
             </div>
+
+            {/* Recommended */}
+            <RecommendedTargets traditional />
 
             {/* List view */}
             {hasAnyTargets && targets.length > 0 ? (

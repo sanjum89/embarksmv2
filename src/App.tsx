@@ -46,6 +46,7 @@ const App = () => (
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/chat" element={<LearnerChat />} />
+              <Route path="/ai-manager" element={<AIManager />} />
               <Route path="/create-skill-target" element={<SkillTargetBuilder />} />
               <Route path="/skill-target/:id" element={<SkillTargetDetail />} />
               <Route path="/skill-target/:id/assessment/:aid" element={<AssessmentPage />} />

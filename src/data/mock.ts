@@ -117,6 +117,20 @@ export const mockNewHires: NewHire[] = [
     trainingStatus: "not_started",
     program: "Apple Support Program",
   },
+  {
+    user: priyaMenon,
+    title: "Apple L1 Customer Support Executive (Fresher)",
+    startDate: "2026-03-05",
+    location: "Chennai, India",
+    yearsExperience: 0,
+    skills: [
+      { name: "Customer Communication", level: "Beginner" },
+      { name: "Apple Product Basics", level: "Beginner" },
+      { name: "Troubleshooting", level: "Beginner" },
+    ],
+    trainingStatus: "not_started",
+    program: "Apple Support Program",
+  },
 ];
 
 /* ─── Program Contexts ─── */

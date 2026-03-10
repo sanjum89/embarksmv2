@@ -134,6 +134,11 @@ export default function Dashboard() {
                 No learning spaces match this filter.
               </div>
             )}
+
+            {/* Recommended */}
+            <div className="mt-8">
+              <RecommendedTargets traditional />
+            </div>
           </div>
 
           <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />

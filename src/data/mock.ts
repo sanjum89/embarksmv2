@@ -251,6 +251,7 @@ export const mockLearningModules: LearningModule[] = [
   { id: "m17", title: "Case Documentation Best Practices", contentType: "document", contentUrl: "https://example.com/case-docs.pdf", duration: "20 min", transcript: "Proper case documentation ensures continuity and quality. This module covers how to write clear case notes, tag issues correctly, record troubleshooting steps taken, and close cases with appropriate resolution codes." },
   { id: "m18", title: "Apple Ecosystem Navigation Deep Dive", contentType: "video", contentUrl: "https://example.com/ecosystem-deep-dive", duration: "25 min", transcript: "Building on the ecosystem overview, this deep dive explores cross-device features like Handoff, AirDrop, Universal Clipboard, and Continuity Camera. You'll learn how to troubleshoot connectivity between Apple devices." },
   { id: "m19", title: "Live Readiness Review", contentType: "video", contentUrl: "https://example.com/readiness-review", duration: "20 min", transcript: "This final review session assesses your readiness to handle live customer interactions. We'll walk through sample scenarios, review key policies, and ensure you're confident with all tools and procedures." },
+  ...expandedModules,
 ];
 
 /* ─── Skill Targets ─── */

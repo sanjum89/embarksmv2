@@ -4,7 +4,7 @@ import { Send, MessageSquare, ThumbsUp, ThumbsDown, Link2, Info } from "lucide-r
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
-import { mockUserProfiles } from "@/data/mock";
+import { profileDataByUser } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

@@ -251,20 +251,6 @@ export const mockAssessments: Assessment[] = [
       { id: "q24", question: "AppleCare+ provides:", options: ["Free unlimited repairs", "Extended warranty with accidental damage coverage", "Free device upgrades", "Priority store access"], correctIndex: 1 },
     ],
   },
-  {
-    id: "a10",
-    title: "Apple L1 Readiness Assessment",
-    type: "post",
-    passingScore: 75,
-    questions: [
-      { id: "q30", question: "What should you do first when a customer reports a billing discrepancy?", options: ["Issue a refund immediately", "Verify the customer's identity and review the charge details", "Transfer to the billing department", "Ask the customer to call back later"], correctIndex: 1 },
-      { id: "q31", question: "A customer's iPhone won't turn on after charging overnight. What is the first troubleshooting step?", options: ["Schedule a repair appointment", "Perform a force restart", "Ask them to buy a new charger", "Escalate to L2 immediately"], correctIndex: 1 },
-      { id: "q32", question: "When should you escalate a call to L2 support?", options: ["Whenever the customer asks", "When the issue exceeds L1 troubleshooting scope or requires specialist tools", "After exactly 10 minutes on the call", "Only if the customer threatens cancellation"], correctIndex: 1 },
-      { id: "q33", question: "Which of the following is covered under standard Apple warranty (no AppleCare+)?", options: ["Accidental screen damage", "Water damage", "Manufacturing defects", "Lost device replacement"], correctIndex: 2 },
-      { id: "q34", question: "What is the correct way to document a case handoff?", options: ["Write a brief one-line summary", "Include issue description, steps taken, customer sentiment, and next actions", "Just mark it as escalated", "Let the next agent figure it out"], correctIndex: 1 },
-      { id: "q35", question: "A customer wants to cancel Apple One but keep Apple Music. What should you advise?", options: ["Cancel everything and re-subscribe", "Explain they can downgrade to an individual Apple Music subscription", "Tell them it's not possible", "Offer a discount on Apple One"], correctIndex: 1 },
-    ],
-  },
 ];
 
 /* ─── Learning Modules ─── */
@@ -425,9 +411,9 @@ export const mockSkillTargets: SkillTarget[] = [
   {
     id: "st6",
     title: "Apple L1 Customer Support Readiness",
-    description: "Complete onboarding path for fresher candidates joining as Apple L1 Customer Support Executive.",
+    description: "Complete onboarding path for fresher candidates joining as Apple L1 Customer Support Executive. No assessments — all modules must be completed sequentially.",
     category: "Apple Support Program",
-    assignedTo: ["u6", "u8", "u10"],
+    assignedTo: ["u10"],
     progress: 0,
     dueDate: "2026-05-01",
     skills: [
@@ -452,8 +438,7 @@ export const mockSkillTargets: SkillTarget[] = [
       { id: "s57", type: "module", title: "Case Documentation Best Practices", description: "Writing clear, complete case notes for handoffs and audits.", order: 12, skippable: false, status: "locked", duration: "20 min", referenceId: "m17" },
       { id: "s58", type: "module", title: "Apple Ecosystem Navigation Deep Dive", description: "Advanced navigation across Apple tools, portals, and knowledge bases.", order: 13, skippable: false, status: "locked", duration: "25 min", referenceId: "m18" },
       { id: "s59", type: "module", title: "Live Readiness Review", description: "Final review session before live customer handling.", order: 14, skippable: false, status: "locked", duration: "20 min", referenceId: "m19" },
-      { id: "s60a", type: "assessment", title: "Apple L1 Readiness Assessment", description: "Comprehensive assessment covering Apple product knowledge, troubleshooting workflows, billing, escalation procedures, and customer verification.", order: 15, skippable: false, status: "locked", duration: "30 min", referenceId: "a10" },
-      { id: "s60", type: "role_play", title: "Live Customer Call Simulation", description: "End-to-end simulated customer call covering Apple L1 support scenarios.", order: 16, skippable: false, status: "locked", duration: "25 min", referenceId: "rp13" },
+      { id: "s60", type: "role_play", title: "Live Customer Call Simulation", description: "End-to-end simulated customer call covering Apple L1 support scenarios.", order: 15, skippable: false, status: "locked", duration: "25 min", referenceId: "rp13" },
     ],
   },
 ];

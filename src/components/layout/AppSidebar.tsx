@@ -92,6 +92,10 @@ export function AppSidebar() {
     if (!item.roles.includes(user.role)) return false;
     // Hide Learning Spaces in team/manager mode
     if (item.label === "Learning Spaces" && viewMode === "team") return false;
+    // Hide learner New Chat in team mode (it has no children and path=/chat)
+    if (item.path === "/chat" && viewMode === "team") return false;
+    // Hide manager New Chat in me mode
+    if (item.path === "/manager" && viewMode === "me") return false;
     return true;
   });
 

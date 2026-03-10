@@ -46,6 +46,12 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     label: "New Chat",
+    path: "/chat",
+    icon: MessageSquare,
+    roles: ["learner"],
+  },
+  {
+    label: "New Chat",
     path: "/manager",
     icon: Building2,
     roles: ["manager", "admin"],
@@ -86,13 +92,17 @@ export function AppSidebar() {
     if (!item.roles.includes(user.role)) return false;
     // Hide Learning Spaces in team/manager mode
     if (item.label === "Learning Spaces" && viewMode === "team") return false;
+    // Hide learner New Chat in team mode (it has no children and path=/chat)
+    if (item.path === "/chat" && viewMode === "team") return false;
+    // Hide manager New Chat in me mode
+    if (item.path === "/manager" && viewMode === "me") return false;
     return true;
   });
 
   const isTraditional = styleTheme === "traditional";
 
   const isPathActive = (path: string) => {
-    if (path === "/" || path === "/manager") return location.pathname === path;
+    if (path === "/" || path === "/manager" || path === "/chat") return location.pathname === path;
     return location.pathname.startsWith(path);
   };
 

@@ -299,6 +299,7 @@ export default function Dashboard() {
                   <SkillTargetListItem key={target.id} target={target} index={i} />
                 ))}
               </div>
+            )
           ) : (
             <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
               No skill targets match this filter.

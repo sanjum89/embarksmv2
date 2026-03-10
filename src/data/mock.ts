@@ -8,6 +8,7 @@ import type {
   SkillEntry,
   SkillRequirement,
 } from "@/types/learning";
+import { expandedModules } from "@/data/contentModules";
 
 /* ─── Users ─── */
 export const currentUser: User = {
@@ -250,6 +251,7 @@ export const mockLearningModules: LearningModule[] = [
   { id: "m17", title: "Case Documentation Best Practices", contentType: "document", contentUrl: "https://example.com/case-docs.pdf", duration: "20 min", transcript: "Proper case documentation ensures continuity and quality. This module covers how to write clear case notes, tag issues correctly, record troubleshooting steps taken, and close cases with appropriate resolution codes." },
   { id: "m18", title: "Apple Ecosystem Navigation Deep Dive", contentType: "video", contentUrl: "https://example.com/ecosystem-deep-dive", duration: "25 min", transcript: "Building on the ecosystem overview, this deep dive explores cross-device features like Handoff, AirDrop, Universal Clipboard, and Continuity Camera. You'll learn how to troubleshoot connectivity between Apple devices." },
   { id: "m19", title: "Live Readiness Review", contentType: "video", contentUrl: "https://example.com/readiness-review", duration: "20 min", transcript: "This final review session assesses your readiness to handle live customer interactions. We'll walk through sample scenarios, review key policies, and ensure you're confident with all tools and procedures." },
+  ...expandedModules,
 ];
 
 /* ─── Skill Targets ─── */
@@ -491,6 +493,11 @@ export const profileDataByUser: Record<string, ProfileData> = {
       { skill_name: "Python", proficiency: "Intermediate", assessment_year: 2024 },
       { skill_name: "SQL", proficiency: "Intermediate", assessment_year: 2025 },
       { skill_name: "OpenKnime - Analytics", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "A/B testing", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "data visualization", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "stakeholder communication", proficiency: "Expert", assessment_year: 2026 },
+      { skill_name: "customer journey mapping", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "change management", proficiency: "Advanced", assessment_year: 2024 },
     ],
   },
   u6: {
@@ -550,13 +557,17 @@ export const profileDataByUser: Record<string, ProfileData> = {
       { skill_name: "Salesforce", proficiency: "Intermediate", assessment_year: 2025 },
       { skill_name: "Zendesk", proficiency: "Advanced", assessment_year: 2025 },
       { skill_name: "Apple GSX", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Remote Technical Troubleshooting", proficiency: "Intermediate", assessment_year: 2025 },
-      { skill_name: "SLA-Based Case Handling", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "Customer Satisfaction Handling", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "Subscription and Billing Query Handling", proficiency: "Intermediate", assessment_year: 2025 },
-      { skill_name: "Consumer Device Setup Support", proficiency: "Intermediate", assessment_year: 2025 },
-      { skill_name: "Knowledge Article Usage", proficiency: "Intermediate", assessment_year: 2025 },
-      { skill_name: "Cross-Channel Support Operations", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "remote troubleshooting", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "service level agreement management", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "customer satisfaction", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "subscription management", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "device setup support", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "knowledge base management", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "multichannel support", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "empathy", proficiency: "Advanced", assessment_year: 2026 },
+      { skill_name: "conflict resolution", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "first call resolution", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "chat support", proficiency: "Advanced", assessment_year: 2025 },
     ],
   },
   u8: {
@@ -612,8 +623,14 @@ export const profileDataByUser: Record<string, ProfileData> = {
     ],
     otherSkills: [
       { skill_name: "Freshdesk", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "Remote Technical Troubleshooting", proficiency: "Intermediate", assessment_year: 2025 },
-      { skill_name: "Consumer Device Setup Support", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "remote troubleshooting", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "device setup support", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "phone support", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "ticket triage", proficiency: "Beginner", assessment_year: 2025 },
+      { skill_name: "customer onboarding", proficiency: "Beginner", assessment_year: 2025 },
+      { skill_name: "email communication", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "troubleshooting", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "CRM software", proficiency: "Intermediate", assessment_year: 2025 },
     ],
   },
   u7: {
@@ -650,9 +667,18 @@ export const profileDataByUser: Record<string, ProfileData> = {
       { skill_name: "Program Impact Measurement", proficiency: "Advanced" },
     ],
     otherSkills: [
-      { skill_name: "Public Speaking", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "Facilitation", proficiency: "Expert", assessment_year: 2025 },
-      { skill_name: "Change Management", proficiency: "Intermediate", assessment_year: 2024 },
+      { skill_name: "public speaking", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "facilitation", proficiency: "Expert", assessment_year: 2025 },
+      { skill_name: "change management", proficiency: "Intermediate", assessment_year: 2024 },
+      { skill_name: "coaching", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "training delivery", proficiency: "Expert", assessment_year: 2025 },
+      { skill_name: "training design", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "workforce management", proficiency: "Intermediate", assessment_year: 2024 },
+      { skill_name: "performance analytics", proficiency: "Intermediate", assessment_year: 2025 },
+      { skill_name: "quality management", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "onboarding design", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "mentoring", proficiency: "Expert", assessment_year: 2025 },
+      { skill_name: "customer experience strategy", proficiency: "Intermediate", assessment_year: 2024 },
     ],
   },
 };

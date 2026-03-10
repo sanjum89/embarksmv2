@@ -6,7 +6,6 @@ import { Plus, Info, LayoutGrid, List, ChevronDown } from "lucide-react";
 import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
 import { SkillTargetCard } from "@/components/skill-target/SkillTargetCard";
 import { SkillTargetListItem } from "@/components/skill-target/SkillTargetListItem";
-import { CreateSkillTargetDialog } from "@/components/skill-target/CreateSkillTargetDialog";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useTheme } from "@/contexts/ThemeContext";

@@ -119,7 +119,7 @@ export default function Dashboard() {
                   No Skill Targets
                 </h4>
                 <p className="text-sm text-muted-foreground mb-6 max-w-sm">
-                  Create a learning space to get started.
+                  Create a skill target to get started.
                 </p>
                 <button
                   onClick={() => navigate('/create-skill-target')}

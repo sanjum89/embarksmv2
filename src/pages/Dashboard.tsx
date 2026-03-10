@@ -127,7 +127,6 @@ export default function Dashboard() {
           <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />
         </div>
 
-        <CreateSkillTargetDialog open={createOpen} onOpenChange={setCreateOpen} />
       </div>
     );
   }

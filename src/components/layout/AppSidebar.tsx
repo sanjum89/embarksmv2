@@ -52,6 +52,7 @@ const navItems: NavItem[] = [
     children: [
       { label: "Chat", path: "/manager", icon: MessageSquare },
       { label: "Role Play", path: "/manager/role-play", icon: Drama },
+      { label: "Learning Paths", path: "/manager/skill-targets", icon: Target },
       { label: "Programs", path: "/manager/programs", icon: Layers },
       { label: "Team Insights", path: "/team-insights", icon: BarChart3 },
     ],

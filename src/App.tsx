@@ -19,6 +19,8 @@ import RolePlayBank from "./pages/RolePlayBank";
 import TeamInsights from "./pages/TeamInsights";
 import My360 from "./pages/My360";
 import ManagerView from "./pages/ManagerView";
+import ManagerSkillTargets from "./pages/ManagerSkillTargets";
+import ManagerSkillTargetDetail from "./pages/ManagerSkillTargetDetail";
 
 import ProgramContextPage from "./pages/ProgramContextPage";
 import AdminView from "./pages/AdminView";
@@ -52,6 +54,8 @@ const App = () => (
               <Route path="/team-insights" element={<TeamInsights />} />
               <Route path="/manager" element={<ManagerView />} />
               <Route path="/manager/role-play" element={<RolePlayBank />} />
+              <Route path="/manager/skill-targets" element={<ManagerSkillTargets />} />
+              <Route path="/manager/skill-target/:id" element={<ManagerSkillTargetDetail />} />
               <Route path="/manager/programs" element={<ProgramContextPage />} />
               <Route path="/admin" element={<AdminView />} />
             </Route>

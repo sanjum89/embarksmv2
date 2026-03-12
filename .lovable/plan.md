@@ -1,28 +1,25 @@
 
 
-## Problem
+# Fix Skill Target Creation: Auto-assign to User & Remove Skills Picker
 
-The `railPalette` function currently colors each segment based on the entry *below* it. This means:
-- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
-- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
-- The segment from **Jan → 2025** gets 2025's color (Green) — correct
+## Changes
 
-The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
+### 1. `src/pages/SkillTargetBuilder.tsx` — Two edits
 
-## Fix
+**a) Auto-assign to current user on create (line ~238-253)**
+- Import `useUser` from `@/contexts/UserContext`
+- In `handleCreate`, set `assignedTo: [user.id]` instead of `[]`
 
-Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
+**b) Remove any skills picker UI if present** (currently none exists — the previous plan was never implemented, so no removal needed)
 
-```typescript
-const railPalette = (i: number) => {
-  return palette(careerEntries[i]);
-};
-```
+### 2. `src/pages/SkillTargetDetail.tsx` — Show fallback when no skills data (line ~230)
 
-This gives:
-- **Mar segment** (Mar → Feb): Orange
-- **Feb segment** (Feb → Jan): Yellow  
-- **Jan segment and below**: Green
+Replace the conditional `{target.skills && target.skills.length > 0 && (` block so that when `skills` is empty/undefined, it shows a muted message like "Skills data is not available for this course" instead of hiding the section entirely.
 
-Single line change in `src/components/my360/CareerTimeline.tsx`.
+### 3. `src/components/skill-target/SkillTargetCard.tsx` — No changes needed
+The card already conditionally renders skills only when present — this is fine.
+
+### Summary
+- 2 files changed: `SkillTargetBuilder.tsx` (add user assignment), `SkillTargetDetail.tsx` (add empty-skills fallback)
+- No skills picker to build or remove
 

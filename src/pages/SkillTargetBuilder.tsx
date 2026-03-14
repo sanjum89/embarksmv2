@@ -110,6 +110,7 @@ function contentLabel(kind: ContentItem["kind"]) {
 export default function SkillTargetBuilder() {
   const navigate = useNavigate();
   const { addSkillTargets } = useSkillTargets();
+  const { user } = useUser();
 
   // Left panel
   const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", text: WELCOME_MSG }]);

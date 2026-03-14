@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { useUser } from "@/contexts/UserContext";
 import { mockLearningModules, mockAssessments, mockRolePlayBank } from "@/data/mock";
 import { AssessmentCreator } from "@/components/skill-target/AssessmentCreator";
 import type { StepItem, LearningModule, Assessment, RolePlay } from "@/types/learning";

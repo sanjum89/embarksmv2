@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { useUser } from "@/contexts/UserContext";
 import { mockLearningModules, mockAssessments, mockRolePlayBank } from "@/data/mock";
 import { AssessmentCreator } from "@/components/skill-target/AssessmentCreator";
 import type { StepItem, LearningModule, Assessment, RolePlay } from "@/types/learning";
@@ -109,6 +110,7 @@ function contentLabel(kind: ContentItem["kind"]) {
 export default function SkillTargetBuilder() {
   const navigate = useNavigate();
   const { addSkillTargets } = useSkillTargets();
+  const { user } = useUser();
 
   // Left panel
   const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", text: WELCOME_MSG }]);
@@ -244,7 +246,7 @@ export default function SkillTargetBuilder() {
         title: title.trim(),
         description: description.trim(),
         category: "Custom",
-        assignedTo: [],
+        assignedTo: [user.id],
         steps: steps.map((s, i) => ({ ...s, order: i + 1, status: i === 0 ? "available" : "locked" })),
         progress: 0,
       },

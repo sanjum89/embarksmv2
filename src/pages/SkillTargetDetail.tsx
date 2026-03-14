@@ -227,11 +227,11 @@ export default function SkillTargetDetail() {
               </div>
 
               {/* Right column — Skills Being Developed */}
-              {target.skills && target.skills.length > 0 && (
-                <div className="border-t lg:border-t-0 lg:border-l border-border pt-4 lg:pt-0 lg:pl-6">
-                  <h3 className="font-display text-sm font-semibold text-foreground mb-3">
-                    Skills Being Developed
-                  </h3>
+              <div className="border-t lg:border-t-0 lg:border-l border-border pt-4 lg:pt-0 lg:pl-6">
+                <h3 className="font-display text-sm font-semibold text-foreground mb-3">
+                  Skills Being Developed
+                </h3>
+                {target.skills && target.skills.length > 0 ? (
                   <div className="space-y-3 max-h-[180px] overflow-y-auto pr-1">
                     {target.skills.map((skill) => (
                       <div key={skill.name}>
@@ -253,8 +253,12 @@ export default function SkillTargetDetail() {
                       </div>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p className="text-sm text-muted-foreground italic">
+                    Skills data is not available for this course.
+                  </p>
+                )}
+              </div>
             </div>
           </motion.div>
 

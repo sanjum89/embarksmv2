@@ -245,7 +245,7 @@ export default function SkillTargetBuilder() {
         title: title.trim(),
         description: description.trim(),
         category: "Custom",
-        assignedTo: [],
+        assignedTo: [user.id],
         steps: steps.map((s, i) => ({ ...s, order: i + 1, status: i === 0 ? "available" : "locked" })),
         progress: 0,
       },

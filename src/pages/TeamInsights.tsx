@@ -17,17 +17,31 @@ import {
   Legend,
 } from "recharts";
 
-import { profileDataByUser, mayaThompson, rajPatel } from "@/data/mock";
+import { useUser } from "@/contexts/UserContext";
+import { useAccount } from "@/contexts/AccountContext";
+import { getDirectReports } from "@/lib/accountHierarchy";
 import { deriveRadarSkills } from "@/lib/skillUtils";
 import { cn } from "@/lib/utils";
 
-const teamMembers = [mayaThompson, rajPatel];
-
 export default function TeamInsights() {
-  const [selectedUser, setSelectedUser] = useState(teamMembers[0].id);
+  const { user } = useUser();
+  const { activeAccount } = useAccount();
   const colors = useChartColors();
 
-  const profile = profileDataByUser[selectedUser];
+  const employees = activeAccount?.data?.employees ?? [];
+  const profileData = activeAccount?.data?.profileData ?? {};
+
+  const teamMembers = useMemo(
+    () => getDirectReports(user.id, employees),
+    [user.id, employees]
+  );
+
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const activeSelectedUser = selectedUser && teamMembers.some((m) => m.id === selectedUser)
+    ? selectedUser
+    : teamMembers[0]?.id ?? null;
+
+  const profile = activeSelectedUser ? profileData[activeSelectedUser] : null;
 
   // Radar data from My 360 profile: role skills current vs required
   const radarData = useMemo(() => {
@@ -43,10 +57,9 @@ export default function TeamInsights() {
 
   // Comparison bar chart: all team members' role skills avg proficiency
   const comparisonData = useMemo(() => {
-    // Collect all unique role skill names across team
     const allSkills = new Set<string>();
     teamMembers.forEach((m) => {
-      const p = profileDataByUser[m.id];
+      const p = profileData[m.id];
       if (p) p.roleSkillsRequired.forEach((s) => allSkills.add(s.skill_name));
     });
 
@@ -59,15 +72,28 @@ export default function TeamInsights() {
         skill: skill.length > 18 ? skill.slice(0, 16) + "…" : skill,
       };
       teamMembers.forEach((m) => {
-        const p = profileDataByUser[m.id];
+        const p = profileData[m.id];
         const entry = p?.roleSkillsCurrent.find((s) => s.skill_name === skill);
         row[m.name.split(" ")[0]] = entry ? profMap[entry.proficiency] || 0 : 0;
       });
       return row;
     });
-  }, []);
+  }, [teamMembers, profileData]);
 
   const chartColors = [colors.accent, colors.info, colors.success, colors.destructive];
+
+  if (teamMembers.length === 0) {
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6">
+          <h3 className="font-display text-2xl font-bold text-foreground">Team Insights</h3>
+          <p className="mt-4 text-sm text-muted-foreground">
+            No direct reports found for {user.name}.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -87,7 +113,7 @@ export default function TeamInsights() {
               onClick={() => setSelectedUser(member.id)}
               className={cn(
                 "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all",
-                selectedUser === member.id
+                activeSelectedUser === member.id
                   ? "bg-accent/10 text-accent ring-1 ring-accent/30"
                   : "bg-secondary text-muted-foreground hover:text-foreground"
               )}
@@ -110,11 +136,11 @@ export default function TeamInsights() {
             >
               <div className="flex items-center gap-3 mb-2">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
-                  {teamMembers.find((m) => m.id === selectedUser)?.name.split(" ").map((n) => n[0]).join("")}
+                  {teamMembers.find((m) => m.id === activeSelectedUser)?.name.split(" ").map((n) => n[0]).join("")}
                 </div>
                 <div>
                   <p className="font-display text-sm font-semibold text-foreground">
-                    {teamMembers.find((m) => m.id === selectedUser)?.name}
+                    {teamMembers.find((m) => m.id === activeSelectedUser)?.name}
                   </p>
                   <p className="text-xs text-muted-foreground">{profile.title} · {profile.location}</p>
                 </div>

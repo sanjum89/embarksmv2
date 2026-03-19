@@ -198,9 +198,20 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
               <p className="text-sm font-medium text-foreground mb-1">
                 Ask me anything
               </p>
-              <p className="text-xs text-muted-foreground max-w-[200px]">
-                I can help you explore your skills, projects, and growth path.
+              <p className="text-xs text-muted-foreground max-w-[240px]">
+                {emptyStateMessage || "I can help you explore your skills, projects, and growth path."}
               </p>
+              <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                {suggestedActions.map((action) => (
+                  <button
+                    key={action.label}
+                    onClick={() => setInput(action.label)}
+                    className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-colors bg-card"
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 

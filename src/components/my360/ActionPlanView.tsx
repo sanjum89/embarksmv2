@@ -26,7 +26,7 @@ export function ActionPlanView() {
   const [createdGroups, setCreatedGroups] = useState<Set<string>>(new Set());
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
 
-  const profile = (normalizedAccount ? (await import("@/lib/accountSelectors")).getProfileData(normalizedAccount, user.id) : null)
+  const profile = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)
     ?? activeAccount?.data?.profileData?.[user.id];
   const { groups, hasRoleGaps } = useMemo(() => getRecommendationsForUser(profile), [profile]);
 

@@ -429,6 +429,10 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
                           {u.canManage && <Shield className="h-3 w-3 text-primary shrink-0" />}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">{u.title}</p>
+                        <p className="text-[10px] text-emerald-500 flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+                          Signed in
+                        </p>
                       </div>
                       {isActive && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
                     </button>
@@ -746,6 +750,10 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
                       {u.canManage && <Shield className="h-3 w-3 text-accent shrink-0" />}
                     </div>
                     <p className="text-xs text-muted-foreground truncate">{u.title}</p>
+                    <p className="text-[10px] text-emerald-500 flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+                      Signed in
+                    </p>
                   </div>
                   {isActive && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
                 </button>

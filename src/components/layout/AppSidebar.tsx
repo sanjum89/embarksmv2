@@ -119,6 +119,7 @@ export function AppSidebar() {
   /* ── Traditional theme sidebar ── */
   if (isTraditional) {
     return (
+      <>
       <div className="fixed left-0 top-0 z-40 h-screen flex flex-col pl-3 pt-3 pb-3">
         {/* Logo — outside the nav bar */}
         <div className={cn(

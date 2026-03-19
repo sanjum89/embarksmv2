@@ -338,8 +338,8 @@ export function AppSidebar() {
                 onClick={toggleTheme}
                 className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors text-sm font-medium"
               >
-                {theme === "dark" ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
-                <span>Dark mode</span>
+                {theme === "light" ? <Sun className="h-4 w-4 shrink-0" /> : <Moon className="h-4 w-4 shrink-0" />}
+                <span>{theme === "light" ? "Light mode" : "Dark mode"}</span>
               </button>
             ) : (
               <Tooltip delayDuration={0}>
@@ -348,10 +348,10 @@ export function AppSidebar() {
                     onClick={toggleTheme}
                     className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors"
                   >
-                    {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    {theme === "light" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>Dark mode</TooltipContent>
+                <TooltipContent side="right" sideOffset={8}>{theme === "light" ? "Switch to dark mode" : "Switch to light mode"}</TooltipContent>
               </Tooltip>
             )}
 
@@ -613,44 +613,18 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
       {/* Mode toggle — Super Light / Light / Dark */}
       <div className={cn("w-full", expanded ? "px-3" : "flex flex-col items-center gap-1")}>
         {expanded ? (
-          <div className="flex bg-sidebar-accent/50 rounded-lg p-0.5 mb-1">
-            <button
-              onClick={() => { if (theme === "dark") toggleTheme(); setSuperLight(true); }}
-              className={cn(
-                "flex items-center justify-center gap-1 flex-1 rounded-md py-1.5 text-xs font-medium transition-all",
-                theme !== "dark" && superLight
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-                  : "text-sidebar-foreground/60 hover:text-sidebar-foreground"
-              )}
-            >
-              <Sun className="h-3 w-3" />
-              Super
-            </button>
-            <button
-              onClick={() => { if (theme === "dark") toggleTheme(); setSuperLight(false); }}
-              className={cn(
-                "flex items-center justify-center gap-1 flex-1 rounded-md py-1.5 text-xs font-medium transition-all",
-                theme !== "dark" && !superLight
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-                  : "text-sidebar-foreground/60 hover:text-sidebar-foreground"
-              )}
-            >
-              <Sun className="h-3 w-3" />
-              Light
-            </button>
-            <button
-              onClick={() => { if (theme !== "dark") toggleTheme(); }}
-              className={cn(
-                "flex items-center justify-center gap-1 flex-1 rounded-md py-1.5 text-xs font-medium transition-all",
-                theme === "dark"
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
-                  : "text-sidebar-foreground/60 hover:text-sidebar-foreground"
-              )}
-            >
-              <Moon className="h-3 w-3" />
-              Dark
-            </button>
-          </div>
+          <button
+            onClick={() => {
+              // Cycle: Super Light → Light → Dark → Super Light
+              if (theme !== "dark" && superLight) { setSuperLight(false); }
+              else if (theme !== "dark" && !superLight) { toggleTheme(); }
+              else { toggleTheme(); setSuperLight(true); }
+            }}
+            className="flex items-center gap-2 w-full px-3 h-9 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors text-sm font-medium mb-1"
+          >
+            {theme === "dark" ? <Moon className="h-4 w-4 shrink-0" /> : <Sun className="h-4 w-4 shrink-0" />}
+            <span>{theme === "dark" ? "Dark mode" : superLight ? "Super Light" : "Light mode"}</span>
+          </button>
         ) : (
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>

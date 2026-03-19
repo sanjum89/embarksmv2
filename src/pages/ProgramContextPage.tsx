@@ -12,6 +12,9 @@ import { cn } from "@/lib/utils";
 import type { ProgramContext } from "@/data/mock";
 
 export default function ProgramContextPage() {
+  const { normalizedAccount, activeAccount } = useAccount();
+  const programContexts = normalizedAccount?.programContexts ?? activeAccount?.data?.programContexts ?? defaultProgramContexts;
+  const newHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
   const [selectedProgram, setSelectedProgram] = useState<ProgramContext | null>(null);
 
   if (selectedProgram) {

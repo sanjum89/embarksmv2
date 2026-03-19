@@ -82,7 +82,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s6-2", type: "module", title: "Working with Angry Customers", description: "The HEAR method.", duration: "25 min", referenceId: "m40" },
     { id: "s6-3", type: "module", title: "Conflict Resolution in Customer Service", description: "Finding win-win solutions.", duration: "25 min", referenceId: "m61" },
   ]},
-  { id: "mst7", title: "Advanced De-escalation Mastery", description: "Handle the most challenging customer interactions.", category: "De-escalation", difficulty: "Advanced", skills: ["Advanced De-escalation", "Crisis Management", "Emotional Intelligence"], assignedTo: ["u2", "u3", "u4"], steps: [
+  { id: "mst7", title: "Advanced De-escalation Mastery", description: "Handle the most challenging customer interactions.", category: "De-escalation", difficulty: "Advanced", skills: ["Advanced De-escalation", "Crisis Management", "Emotional Intelligence"], assignedTo: ["u6", "u8"], steps: [
     { id: "s7-1", type: "module", title: "Working with Angry Customers", description: "HEAR method refresher.", duration: "25 min", referenceId: "m40" },
     { id: "s7-2", type: "module", title: "Advanced Active Listening", description: "Emotional labeling.", duration: "25 min", referenceId: "m45" },
     { id: "s7-3", type: "module", title: "Advanced De-escalation Strategies", description: "Psychological anchoring, strategic concessions.", duration: "30 min", referenceId: "m70" },

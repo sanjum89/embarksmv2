@@ -85,6 +85,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const users = getUsers();
 
+  const activeAccountIdRef = useRef(activeAccountId);
+  const usersRef = useRef(users);
+
+  useEffect(() => { activeAccountIdRef.current = activeAccountId; }, [activeAccountId]);
+  useEffect(() => { usersRef.current = users; }, [users]);
+
   // Signed-in user IDs, persisted per-account in localStorage
   const [signedInUserIds, setSignedInUserIds] = useState<string[]>(() => {
     const persisted = readPersistedIds(activeAccountId);

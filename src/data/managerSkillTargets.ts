@@ -259,7 +259,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s36-3", type: "module", title: "Understanding SLAs", description: "Service level agreements.", duration: "15 min", referenceId: "m29" },
     { id: "s36-4", type: "module", title: "Internal Communication", description: "Team coordination.", duration: "15 min", referenceId: "m62" },
   ]},
-  { id: "mst37", title: "Escalation & Handoff Mastery", description: "Perfect the art of escalation and transitions.", category: "Operations", difficulty: "Intermediate", skills: ["Escalation", "Handoff", "Cross-team"], assignedTo: ["u2", "u3", "u4"], steps: [
+  { id: "mst37", title: "Escalation & Handoff Mastery", description: "Perfect the art of escalation and transitions.", category: "Operations", difficulty: "Intermediate", skills: ["Escalation", "Handoff", "Cross-team"], assignedTo: ["u6", "u8"], steps: [
     { id: "s37-1", type: "module", title: "Escalation Procedures", description: "When and how to escalate.", duration: "15 min", referenceId: "m16" },
     { id: "s37-2", type: "module", title: "SLA Management and Escalation", description: "Breach risk management.", duration: "25 min", referenceId: "m50" },
     { id: "s37-3", type: "module", title: "Collaborative Problem Solving", description: "Cross-team resolution.", duration: "25 min", referenceId: "m57" },

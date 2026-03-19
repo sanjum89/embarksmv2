@@ -29,7 +29,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useUser } from "@/contexts/UserContext";
-import { mockLearningModules, mockAssessments, mockRolePlayBank } from "@/data/mock";
+import { mockLearningModules as defaultLearningModules, mockAssessments as defaultAssessments, mockRolePlayBank as defaultRolePlayBank } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 import { AssessmentCreator } from "@/components/skill-target/AssessmentCreator";
 import type { StepItem, LearningModule, Assessment, RolePlay } from "@/types/learning";
 import { cn } from "@/lib/utils";

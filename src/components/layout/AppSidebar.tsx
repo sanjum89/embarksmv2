@@ -24,7 +24,7 @@ import {
   Layers,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
-import { useSidebarState } from "@/contexts/SidebarContext";
+import { useAccount } from "@/contexts/AccountContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import {

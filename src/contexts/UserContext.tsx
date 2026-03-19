@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import type { User, UserRole } from "@/types/learning";
 import { currentUser, availableUsers as defaultAvailableUsers } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";

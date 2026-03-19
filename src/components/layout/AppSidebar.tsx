@@ -872,6 +872,13 @@ export function AppSidebar() {
         </div>
       </div>
     )}
+    <LoginDialog
+      open={loginDialogOpen}
+      onOpenChange={setLoginDialogOpen}
+      availableUsers={availableUsers}
+      signedInUserIds={signedInUserIds}
+      onLogin={handleLogin}
+    />
     </>
   );
 }

@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import type { RolePlay } from "@/types/learning";
 import { mockRolePlayBank } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 
 interface RolePlayContextType {
   rolePlays: RolePlay[];
@@ -15,7 +16,22 @@ const RolePlayContext = createContext<RolePlayContextType>({
 });
 
 export function RolePlayProvider({ children }: { children: ReactNode }) {
-  const [rolePlays, setRolePlays] = useState<RolePlay[]>(mockRolePlayBank);
+  const { activeAccount, loading } = useAccount();
+
+  const getInitialPlays = () => {
+    if (activeAccount?.data?.rolePlays?.length) {
+      return activeAccount.data.rolePlays;
+    }
+    return mockRolePlayBank;
+  };
+
+  const [rolePlays, setRolePlays] = useState<RolePlay[]>(getInitialPlays);
+
+  useEffect(() => {
+    if (!loading) {
+      setRolePlays(getInitialPlays());
+    }
+  }, [activeAccount?.id, loading]);
 
   const updateRolePlay = (id: string, updates: Partial<RolePlay>) => {
     setRolePlays((prev) =>

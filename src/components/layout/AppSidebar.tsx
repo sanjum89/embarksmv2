@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { AccountSwitcher } from "@/components/account/AccountSwitcher";
 import cornerstoneLogo from "@/assets/cornerstone-logo.svg";
 import learningSpacesIcon from "@/assets/learning-spaces.svg";
 
@@ -121,37 +122,40 @@ export function AppSidebar() {
     return (
       <>
       <div className="fixed left-0 top-0 z-40 h-screen flex flex-col pl-3 pt-3 pb-3">
-        {/* Logo — outside the nav bar */}
+        {/* Logo + Account Switcher — outside the nav bar */}
         <div className={cn(
-          "flex items-center gap-2 px-3 py-3",
-          expanded ? "w-56" : "w-[58px] justify-center"
+          "flex flex-col gap-1 px-3 py-3",
+          expanded ? "w-56" : "w-[58px]"
         )}>
-          {expanded ? (
-            <div className="flex items-center gap-2 w-full justify-between">
-              <div className="flex items-center gap-2">
-                <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
-                <span className="font-display font-bold text-sm text-foreground">cornerstone</span>
-              </div>
-              <button onClick={toggle} className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors">
-                <PanelLeftClose className="h-4 w-4" />
-              </button>
-            </div>
-          ) : (
-            <div
-              className="relative flex h-9 w-9 items-center justify-center cursor-pointer"
-              onMouseEnter={() => setBrandHovered(true)}
-              onMouseLeave={() => setBrandHovered(false)}
-              onClick={toggle}
-            >
-              {brandHovered ? (
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted transition-colors">
-                  <PanelLeftOpen className="h-4.5 w-4.5 text-foreground" />
+          <div className={cn("flex items-center", expanded ? "gap-2" : "justify-center")}>
+            {expanded ? (
+              <div className="flex items-center gap-2 w-full justify-between">
+                <div className="flex items-center gap-2">
+                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
+                  <span className="font-display font-bold text-sm text-foreground">cornerstone</span>
                 </div>
-              ) : (
-                <img src={cornerstoneLogo} alt="Cornerstone" className="h-7 w-7 object-contain" />
-              )}
-            </div>
-          )}
+                <button onClick={toggle} className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors">
+                  <PanelLeftClose className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div
+                className="relative flex h-9 w-9 items-center justify-center cursor-pointer"
+                onMouseEnter={() => setBrandHovered(true)}
+                onMouseLeave={() => setBrandHovered(false)}
+                onClick={toggle}
+              >
+                {brandHovered ? (
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted transition-colors">
+                    <PanelLeftOpen className="h-4.5 w-4.5 text-foreground" />
+                  </div>
+                ) : (
+                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-7 w-7 object-contain" />
+                )}
+              </div>
+            )}
+          </div>
+          <AccountSwitcher expanded={expanded} />
         </div>
 
         {/* Nav bar strip — floating with border */}
@@ -499,37 +503,42 @@ onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(t
       )}
     >
       {/* Brand + toggle */}
-      <div className={cn("flex items-center border-b border-sidebar-border w-full min-h-[72px] py-5", expanded ? "justify-between px-4" : "justify-center")}>
-        {expanded ? (
-          <>
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0">
-                <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
+      <div className={cn("flex flex-col border-b border-sidebar-border w-full", expanded ? "px-4 py-4" : "items-center py-4")}>
+        <div className={cn("flex items-center w-full", expanded ? "justify-between" : "justify-center")}>
+          {expanded ? (
+            <>
+              <div className="flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0">
+                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
+                </div>
+                <span className="font-display font-bold text-sm text-sidebar-foreground">cornerstone</span>
               </div>
-              <span className="font-display font-bold text-sm text-sidebar-foreground">cornerstone</span>
+              <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
+                <PanelLeftClose className="h-4 w-4" />
+              </button>
+            </>
+          ) : (
+            <div
+              className="relative flex h-9 w-9 items-center justify-center cursor-pointer"
+              onMouseEnter={() => setBrandHovered(true)}
+              onMouseLeave={() => setBrandHovered(false)}
+              onClick={toggle}
+            >
+              {brandHovered ? (
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent transition-colors">
+                  <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
+                </div>
+              ) : (
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg">
+                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
+                </div>
+              )}
             </div>
-            <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
-              <PanelLeftClose className="h-4 w-4" />
-            </button>
-          </>
-        ) : (
-          <div
-            className="relative flex h-9 w-9 items-center justify-center cursor-pointer"
-            onMouseEnter={() => setBrandHovered(true)}
-            onMouseLeave={() => setBrandHovered(false)}
-            onClick={toggle}
-          >
-            {brandHovered ? (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent transition-colors">
-                <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
-              </div>
-            ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg">
-                <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
+        <div className={cn("mt-2", expanded ? "" : "px-1")}>
+          <AccountSwitcher expanded={expanded} />
+        </div>
       </div>
 
       {/* Me / Team toggle for New UI */}

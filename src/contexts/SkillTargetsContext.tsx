@@ -1,6 +1,7 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import type { SkillTarget } from "@/types/learning";
 import { mockSkillTargets } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 
 interface SkillTargetsContextType {
   skillTargets: SkillTarget[];
@@ -15,7 +16,22 @@ const SkillTargetsContext = createContext<SkillTargetsContextType>({
 });
 
 export function SkillTargetsProvider({ children }: { children: ReactNode }) {
-  const [skillTargets, setSkillTargets] = useState<SkillTarget[]>(mockSkillTargets);
+  const { activeAccount, loading } = useAccount();
+
+  const getInitialTargets = () => {
+    if (activeAccount?.data?.skillTargets?.length) {
+      return activeAccount.data.skillTargets;
+    }
+    return mockSkillTargets;
+  };
+
+  const [skillTargets, setSkillTargets] = useState<SkillTarget[]>(getInitialTargets);
+
+  useEffect(() => {
+    if (!loading) {
+      setSkillTargets(getInitialTargets());
+    }
+  }, [activeAccount?.id, loading]);
 
   const addSkillTargets = (targets: SkillTarget[]) => {
     setSkillTargets((prev) => [...prev, ...targets]);

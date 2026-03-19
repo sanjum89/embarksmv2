@@ -21,6 +21,7 @@ interface SuggestedAction {
 interface AIChatPanelProps {
   contextLabel?: string;
   suggestedActions?: SuggestedAction[];
+  emptyStateMessage?: string;
 }
 
 export interface AIChatPanelHandle {

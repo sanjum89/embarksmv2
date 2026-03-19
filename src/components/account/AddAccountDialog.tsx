@@ -55,6 +55,7 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
 
   const handleFile = useCallback(async (file: File) => {
     setError(null);
+    setParseWarnings([]);
     setFileName(file.name);
     setLoading(true);
 
@@ -62,9 +63,23 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
       const text = await file.text();
       const json = JSON.parse(text);
 
-      if (!json.name || typeof json.name !== "string") {
-        throw new Error("JSON must include a 'name' field (string).");
+      // Validate with v2 parser for feedback
+      const name = json.account?.name || json.name;
+      if (!name || typeof name !== "string") {
+        throw new Error("JSON must include a 'name' field (string) at top level or under 'account'.");
       }
+
+      // Run parser validation for warnings
+      const { errors, warnings } = parseAccountJSON(json, "preview");
+      if (errors.length > 0) {
+        throw new Error(errors.join(" "));
+      }
+      setParseWarnings(warnings);
+
+      // Count employees/users for preview
+      const empCount = (json.employees?.length || 0) + (json.users?.length || 0) ||
+        (json.data?.employees?.length || 0);
+      setEmployeeCount(empCount);
 
       setPendingJson(json);
     } catch (e: any) {

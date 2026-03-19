@@ -1,56 +1,27 @@
 
 
-## Problem Analysis
+## Combine Logo/Name and Account Switcher into One Element
 
-The sign-out feature works on the default Cornerstone account but fails on uploaded accounts (like Rathbone). The likely root cause is a **stale closure** in `logoutUser` — specifically, the `activeAccountId` and/or `users` captured in the `useCallback` may not reflect the current Rathbone account state at the time logout is invoked.
+The sidebar header currently has two separate elements stacked vertically:
+1. **Logo + Account Name** (static display)
+2. **Account Switcher** (interactive dropdown)
 
-When `persistIds` is called with a stale/null `activeAccountId`, the updated signed-in list is either saved to the wrong localStorage key or not saved at all. On re-render, the component reads stale data, causing all users to appear logged out.
+This is redundant — the account switcher already shows the account logo and name. The plan is to remove the static logo/name row and make the AccountSwitcher the sole header element in both themes.
 
-## Plan
+### Changes
 
-### 1. Use refs for stable values in `logoutUser` (UserContext.tsx)
+**1. `src/components/layout/AppSidebar.tsx`** — Both Traditional and New UI themes:
+- Remove the static logo + account name display row (lines 157-183 for Traditional, lines 572-603 for New UI)
+- Remove the separate `<AccountSwitcher>` wrapper div
+- Place `<AccountSwitcher>` directly as the only header element
+- Keep the collapse/expand toggle button integrated (move it into AccountSwitcher's row or keep it alongside)
 
-Add `useRef` for `activeAccountId` and `users` so the logout callback always reads the latest values instead of relying on closure captures:
+**2. `src/components/account/AccountSwitcher.tsx`**:
+- Add the sidebar collapse toggle button (PanelLeftClose / PanelLeftOpen) to the right side of the switcher when expanded
+- Accept `onToggle` prop and `brandHovered`/`setBrandHovered` state (or handle internally)
+- In collapsed state: show just the account logo (with hover-to-expand behavior for the toggle)
+- In expanded state: show logo + account name + chevron + toggle button in one row
 
-- Add `activeAccountIdRef` and `usersRef` refs, kept in sync via `useEffect`
-- In `logoutUser`, read from refs instead of closure variables
-- This eliminates any stale closure issues regardless of React render timing
-
-### 2. Simplify logout state update logic
-
-Refactor `logoutUser` to avoid the nested `setTimeout` + `setSignedInUserIds` pattern which is fragile:
-
-- Compute the updated list and next active user in a single synchronous flow
-- Use functional update for `setSignedInUserIds` and call `setUser` directly after
-- Persist using the ref-based `activeAccountId`
-
-### Technical Details
-
-**File: `src/contexts/UserContext.tsx`**
-
-```typescript
-// Add refs
-const activeAccountIdRef = useRef(activeAccountId);
-const usersRef = useRef(users);
-
-useEffect(() => { activeAccountIdRef.current = activeAccountId; }, [activeAccountId]);
-useEffect(() => { usersRef.current = users; }, [users]);
-
-const logoutUser = useCallback((userId: string) => {
-  const currentAccountId = activeAccountIdRef.current;
-  const currentUsers = usersRef.current;
-  
-  setSignedInUserIds((prev) => {
-    const updated = prev.filter((id) => id !== userId);
-    persistIds(currentAccountId, updated);
-    
-    // If logging out the active user, switch to next available
-    if (user.id === userId && updated.length > 0) {
-      const next = currentUsers.find((u) => u.id === updated[0]);
-      if (next) setUser(next);
-    }
-    return updated;
-  });
-}, [user.id]); // minimal deps since we use refs
-```
+### Result
+One unified interactive element in the sidebar header that shows the account branding and opens the account switcher dropdown on click, with the collapse toggle integrated alongside.
 

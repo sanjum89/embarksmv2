@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { Loader2 } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -94,6 +95,7 @@ export function AppSidebar() {
   const [managerOpen, setManagerOpen] = useState(true);
   const [brandHovered, setBrandHovered] = useState(false);
   const [viewMode, setViewMode] = useState<"me" | "team">("me");
+  const [switchingProfile, setSwitchingProfile] = useState(false);
 
   const filteredItems = navItems.filter((item) => {
     if (!item.roles.includes(user.role)) return false;
@@ -117,6 +119,7 @@ export function AppSidebar() {
   /* ── Traditional theme sidebar ── */
   if (isTraditional) {
     return (
+      <>
       <div className="fixed left-0 top-0 z-40 h-screen flex flex-col pl-3 pt-3 pb-3">
         {/* Logo — outside the nav bar */}
         <div className={cn(
@@ -414,7 +417,7 @@ export function AppSidebar() {
                   return (
                     <button
                       key={u.id}
-onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { setRole("manager"); navigate("/manager"); } else { setRole("learner"); setViewMode("me"); navigate("/"); } }}
+onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(true); setTimeout(() => { switchUser(u.id); if (u.canManage && viewMode === "team") { setRole("manager"); navigate("/manager"); } else { setRole("learner"); setViewMode("me"); navigate("/"); } setSwitchingProfile(false); }, 1000); }}
                       className={cn(
                         "flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm transition-colors text-left",
                         isActive ? "bg-primary/10 text-foreground font-medium" : "text-foreground hover:bg-secondary"
@@ -443,6 +446,15 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
           </div>
         </aside>
       </div>
+      {switchingProfile && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm transition-all">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm font-medium text-foreground">Switching profile…</p>
+          </div>
+        </div>
+      )}
+      </>
     );
   }
 
@@ -478,6 +490,7 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
   };
 
   return (
+    <>
     <aside
       className={cn(
         "fixed left-0 top-0 z-40 flex h-screen flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-200",
@@ -709,7 +722,7 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
               return (
                 <button
                   key={u.id}
-                  onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { setRole("manager"); navigate("/manager"); } else { setRole("learner"); setViewMode("me"); navigate("/"); } }}
+                  onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(true); setTimeout(() => { switchUser(u.id); if (u.canManage && viewMode === "team") { setRole("manager"); navigate("/manager"); } else { setRole("learner"); setViewMode("me"); navigate("/"); } setSwitchingProfile(false); }, 1000); }}
                   className={cn(
                     "flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm transition-colors text-left",
                     isActive ? "bg-accent/10 text-foreground font-medium" : "text-foreground hover:bg-secondary"
@@ -737,5 +750,14 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
         </Popover>
       </div>
     </aside>
+    {switchingProfile && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm transition-all">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm font-medium text-foreground">Switching profile…</p>
+        </div>
+      </div>
+    )}
+    </>
   );
 }

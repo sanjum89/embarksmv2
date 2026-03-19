@@ -1,20 +1,28 @@
 
 
-# Add Loading Delay on Profile Switch
+## Problem
 
-## Change
+The `railPalette` function currently colors each segment based on the entry *below* it. This means:
+- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
+- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
+- The segment from **Jan → 2025** gets 2025's color (Green) — correct
 
-Add a brief ~1 second loading state when switching profiles to give the impression of an active switch happening.
+The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
 
-### `src/components/layout/AppSidebar.tsx`
+## Fix
 
-1. Add a `switching` state (`useState<boolean>(false)`)
-2. Wrap the `switchUser` click handlers (lines 417 and 712) to:
-   - Set `switching = true`
-   - Close the popover
-   - After ~1 second timeout, execute the actual `switchUser`, `setRole`, `navigate` logic and set `switching = false`
-3. Show a simple loading overlay or spinner on the sidebar (or a full-screen semi-transparent overlay) while `switching` is true — a subtle fade with a small spinner and "Switching profile..." text
+Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
 
-### Files Modified
-- `src/components/layout/AppSidebar.tsx`
+```typescript
+const railPalette = (i: number) => {
+  return palette(careerEntries[i]);
+};
+```
+
+This gives:
+- **Mar segment** (Mar → Feb): Orange
+- **Feb segment** (Feb → Jan): Yellow  
+- **Jan segment and below**: Green
+
+Single line change in `src/components/my360/CareerTimeline.tsx`.
 

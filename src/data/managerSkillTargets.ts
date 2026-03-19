@@ -299,7 +299,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s43-2", type: "module", title: "Support Team Leadership", description: "Team leadership context.", duration: "25 min", referenceId: "m74" },
     { id: "s43-3", type: "module", title: "Strategic CX Consulting", description: "CX strategy skills.", duration: "30 min", referenceId: "m89" },
   ]},
-  { id: "mst44", title: "Quality Calibration Expert", description: "Master quality calibration and scoring.", category: "Leadership", difficulty: "Advanced", skills: ["Quality Calibration", "Scoring", "Standards"], assignedTo: ["u3", "u4"], steps: [
+  { id: "mst44", title: "Quality Calibration Expert", description: "Master quality calibration and scoring.", category: "Leadership", difficulty: "Advanced", skills: ["Quality Calibration", "Scoring", "Standards"], assignedTo: ["u6", "u8"], steps: [
     { id: "s44-1", type: "module", title: "Quality Assurance and Calibration", description: "Calibration sessions.", duration: "25 min", referenceId: "m76" },
     { id: "s44-2", type: "module", title: "Performance Metrics Deep Dive", description: "Quality metrics.", duration: "20 min", referenceId: "m56" },
     { id: "s44-3", type: "module", title: "Advanced Reporting and Dashboards", description: "Visualize quality data.", duration: "25 min", referenceId: "m79" },

@@ -62,35 +62,46 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     // Seed default account if none exists
     if (accts.length === 0) {
       const defaultAcct = buildDefaultAccount();
-      const { data: inserted, error: insertError } = await supabase
+      // Use upsert-like approach: check again to avoid race condition
+      const { data: existing } = await supabase
         .from("accounts")
-        .insert({
-          name: defaultAcct.name,
-          logo: defaultAcct.logo,
-          accent_color: defaultAcct.accent_color,
-          use_case_context: defaultAcct.use_case_context,
-          is_default: defaultAcct.is_default,
-          data: defaultAcct.data as any,
-        })
-        .select()
-        .single();
+        .select("*")
+        .eq("is_default", true)
+        .limit(1);
 
-      if (insertError) {
-        console.error("Failed to seed default account:", insertError);
-        setLoading(false);
-        return;
+      if (existing && existing.length > 0) {
+        accts = (existing as any[]).map((row) => ({
+          id: row.id, name: row.name, logo: row.logo,
+          accent_color: row.accent_color, use_case_context: row.use_case_context,
+          is_default: row.is_default, data: row.data as AccountData, created_at: row.created_at,
+        }));
+      } else {
+        const { data: inserted, error: insertError } = await supabase
+          .from("accounts")
+          .insert({
+            name: defaultAcct.name,
+            logo: defaultAcct.logo,
+            accent_color: defaultAcct.accent_color,
+            use_case_context: defaultAcct.use_case_context,
+            is_default: defaultAcct.is_default,
+            data: defaultAcct.data as any,
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          console.error("Failed to seed default account:", insertError);
+          setLoading(false);
+          return;
+        }
+
+        accts = [{
+          id: (inserted as any).id, name: (inserted as any).name, logo: (inserted as any).logo,
+          accent_color: (inserted as any).accent_color, use_case_context: (inserted as any).use_case_context,
+          is_default: (inserted as any).is_default, data: (inserted as any).data as AccountData,
+          created_at: (inserted as any).created_at,
+        }];
       }
-
-      accts = [{
-        id: (inserted as any).id,
-        name: (inserted as any).name,
-        logo: (inserted as any).logo,
-        accent_color: (inserted as any).accent_color,
-        use_case_context: (inserted as any).use_case_context,
-        is_default: (inserted as any).is_default,
-        data: (inserted as any).data as AccountData,
-        created_at: (inserted as any).created_at,
-      }];
     }
 
     setAccounts(accts);

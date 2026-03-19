@@ -468,11 +468,6 @@ export const mockPeopleGraphSignals: PeopleGraphSignal[] = [
   { id: "sig2", userId: "u1", skillTargetId: "st3", stepId: "s11", signalType: "assessment_score", value: 65, timestamp: "2026-02-18T09:15:00Z", excludeFromGraph: false },
   { id: "sig3", userId: "u1", skillTargetId: "st3", stepId: "s12", signalType: "module_completion", value: 100, timestamp: "2026-02-19T14:00:00Z", excludeFromGraph: false },
   { id: "sig4", userId: "u1", skillTargetId: "st3", stepId: "s13", signalType: "role_play_rating", value: 85, timestamp: "2026-02-21T11:45:00Z", excludeFromGraph: false },
-  { id: "sig5", userId: "u2", skillTargetId: "st1", stepId: "s1", signalType: "assessment_score", value: 88, timestamp: "2026-02-19T08:30:00Z", excludeFromGraph: false },
-  { id: "sig6", userId: "u2", skillTargetId: "st3", stepId: "s11", signalType: "assessment_score", value: 78, timestamp: "2026-02-17T10:00:00Z", excludeFromGraph: false },
-  { id: "sig7", userId: "u3", skillTargetId: "st1", stepId: "s1", signalType: "assessment_score", value: 55, timestamp: "2026-02-20T14:00:00Z", excludeFromGraph: false },
-  { id: "sig8", userId: "u3", skillTargetId: "st3", stepId: "s11", signalType: "assessment_score", value: 92, timestamp: "2026-02-18T16:30:00Z", excludeFromGraph: false },
-  { id: "sig9", userId: "u4", skillTargetId: "st2", stepId: "s6", signalType: "assessment_score", value: 60, timestamp: "2026-02-22T09:00:00Z", excludeFromGraph: false },
   { id: "sig10", userId: "u1", skillTargetId: "st3", stepId: "s13", signalType: "role_play_rating", value: 90, timestamp: "2026-02-22T15:00:00Z", excludeFromGraph: true },
 ];
 

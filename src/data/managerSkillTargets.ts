@@ -184,7 +184,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s23-2", type: "module", title: "SLA Management and Escalation", description: "Breach risk and proactive escalation.", duration: "25 min", referenceId: "m50" },
     { id: "s23-3", type: "module", title: "Escalation Procedures", description: "When and how to escalate.", duration: "15 min", referenceId: "m16" },
   ]},
-  { id: "mst24", title: "Privacy & Compliance", description: "Data protection and privacy for support teams.", category: "Quality Assurance", difficulty: "Intermediate", skills: ["Privacy", "GDPR", "Data Protection"], assignedTo: ["u2", "u6", "u8", "u9"], steps: [
+  { id: "mst24", title: "Privacy & Compliance", description: "Data protection and privacy for support teams.", category: "Quality Assurance", difficulty: "Intermediate", skills: ["Privacy", "GDPR", "Data Protection"], assignedTo: ["u6", "u8", "u9"], steps: [
     { id: "s24-1", type: "module", title: "Privacy and Data Protection", description: "GDPR and data handling.", duration: "20 min", referenceId: "m35" },
     { id: "s24-2", type: "module", title: "Customer Verification Basics", description: "Identity verification.", duration: "15 min", referenceId: "m27" },
     { id: "s24-3", type: "module", title: "Customer Verification and Privacy", description: "Apple privacy protocols.", duration: "20 min", referenceId: "m15" },

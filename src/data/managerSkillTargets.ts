@@ -62,7 +62,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s3-4", type: "module", title: "Internal Communication", description: "Shift handoffs and team chat.", duration: "15 min", referenceId: "m62" },
     { id: "s3-5", type: "assessment", title: "Written Communication Assessment", description: "Test your writing proficiency.", referenceId: "a1" },
   ]},
-  { id: "mst4", title: "Multichannel Support Readiness", description: "Provide consistent service across all channels.", category: "Communication", difficulty: "Intermediate", skills: ["Multichannel", "Cross-Channel", "Consistency"], assignedTo: ["u2", "u6", "u8"], steps: [
+  { id: "mst4", title: "Multichannel Support Readiness", description: "Provide consistent service across all channels.", category: "Communication", difficulty: "Intermediate", skills: ["Multichannel", "Cross-Channel", "Consistency"], assignedTo: ["u6", "u8"], steps: [
     { id: "s4-1", type: "module", title: "Multichannel Support Overview", description: "Phone, email, chat, social.", duration: "20 min", referenceId: "m36" },
     { id: "s4-2", type: "module", title: "Cross-Channel Support Operations", description: "Seamless cross-channel support.", duration: "30 min", referenceId: "m46" },
     { id: "s4-3", type: "module", title: "Live Chat Support Basics", description: "Chat-specific dynamics.", duration: "20 min", referenceId: "m24" },

@@ -10,10 +10,22 @@ interface AccountSwitcherProps {
 }
 
 export function AccountSwitcher({ expanded }: AccountSwitcherProps) {
-  const { accounts, activeAccount, switchAccount, deleteAccount } = useAccount();
+  const { accounts, activeAccount, switchAccount, deleteAccount, loading } = useAccount();
   const [addOpen, setAddOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const currentAccount = activeAccount ?? accounts[0] ?? null;
+
+  // While loading, show a static placeholder
+  if (loading && !currentAccount) {
+    return (
+      <div className={cn("flex items-center gap-2 rounded-lg w-full", expanded ? "px-3 py-2" : "justify-center p-2")}>
+        <div className="flex h-6 w-6 items-center justify-center rounded bg-primary/10 shrink-0">
+          <Building2 className="h-3.5 w-3.5 text-primary" />
+        </div>
+        {expanded && <span className="text-sm text-muted-foreground truncate flex-1 text-left">Loading…</span>}
+      </div>
+    );
+  }
 
   return (
     <>

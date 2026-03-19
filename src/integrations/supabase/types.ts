@@ -14,7 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      accounts: {
+        Row: {
+          accent_color: string | null
+          created_at: string | null
+          data: Json
+          id: string
+          is_default: boolean | null
+          logo: string | null
+          name: string
+          use_case_context: string | null
+        }
+        Insert: {
+          accent_color?: string | null
+          created_at?: string | null
+          data?: Json
+          id?: string
+          is_default?: boolean | null
+          logo?: string | null
+          name: string
+          use_case_context?: string | null
+        }
+        Update: {
+          accent_color?: string | null
+          created_at?: string | null
+          data?: Json
+          id?: string
+          is_default?: boolean | null
+          logo?: string | null
+          name?: string
+          use_case_context?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

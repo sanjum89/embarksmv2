@@ -135,8 +135,8 @@ export function AppSidebar() {
             {expanded ? (
               <div className="flex items-center gap-2 w-full justify-between">
                 <div className="flex items-center gap-2">
-                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
-                  <span className="font-display font-bold text-sm text-foreground">cornerstone</span>
+                  <img src={accountLogo} alt={accountName} className="h-6 w-6 object-contain" style={{ background: 'transparent' }} />
+                  <span className="font-display font-bold text-sm text-foreground">{accountName}</span>
                 </div>
                 <button onClick={toggle} className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors">
                   <PanelLeftClose className="h-4 w-4" />

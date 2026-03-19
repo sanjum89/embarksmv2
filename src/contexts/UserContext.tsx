@@ -153,16 +153,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [signedInUserIds, users, activeAccountId]);
 
   const logoutUser = useCallback((userId: string) => {
-    const updated = signedInUserIds.filter((id) => id !== userId);
-    setSignedInUserIds(updated);
-    persistIds(activeAccountId, updated);
-    if (user.id === userId) {
-      if (updated.length > 0) {
+    setSignedInUserIds((prev) => {
+      const updated = prev.filter((id) => id !== userId);
+      persistIds(activeAccountId, updated);
+      // If we're logging out the active user, switch to the next signed-in user
+      if (user.id === userId && updated.length > 0) {
         const next = users.find((u) => u.id === updated[0]);
         if (next) setUser(next);
       }
-    }
-  }, [signedInUserIds, user.id, users, activeAccountId]);
+      return updated;
+    });
+  }, [user.id, users, activeAccountId]);
 
   const setInitialSignedInUsers = useCallback((accountId: string, userIds: string[]) => {
     persistIds(accountId, userIds);

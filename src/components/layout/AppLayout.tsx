@@ -1,13 +1,22 @@
 import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
+import { LoginPage } from "./LoginPage";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useUser } from "@/contexts/UserContext";
 import { cn } from "@/lib/utils";
 
 export function AppLayout() {
   const { expanded } = useSidebarState();
   const { styleTheme } = useTheme();
+  const { signedInUserIds } = useUser();
   const isTraditional = styleTheme === "traditional";
+
+  // When no users are signed in, show login page
+  if (signedInUserIds.length === 0) {
+    return <LoginPage />;
+  }
+
   return (
     <div className="h-screen overflow-hidden bg-background flex flex-col">
       <AppSidebar />

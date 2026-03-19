@@ -19,22 +19,26 @@ import {
 
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
-import { getDirectReports } from "@/lib/accountHierarchy";
+import { getDirectReports as getDirectReportsV2 } from "@/lib/accountSelectors";
+import { getDirectReports as getDirectReportsLegacy } from "@/lib/accountHierarchy";
 import { deriveRadarSkills } from "@/lib/skillUtils";
 import { cn } from "@/lib/utils";
 
 export default function TeamInsights() {
   const { user } = useUser();
-  const { activeAccount } = useAccount();
+  const { activeAccount, normalizedAccount } = useAccount();
   const colors = useChartColors();
 
-  const employees = activeAccount?.data?.employees ?? [];
-  const profileData = activeAccount?.data?.profileData ?? {};
+  // Use normalized selectors when available, fallback to legacy
+  const profileData = normalizedAccount?.profileData ?? activeAccount?.data?.profileData ?? {};
 
-  const teamMembers = useMemo(
-    () => getDirectReports(user.id, employees),
-    [user.id, employees]
-  );
+  const teamMembers = useMemo(() => {
+    if (normalizedAccount) {
+      return getDirectReportsV2(normalizedAccount, user.id);
+    }
+    const employees = activeAccount?.data?.employees ?? [];
+    return getDirectReportsLegacy(user.id, employees);
+  }, [user.id, normalizedAccount, activeAccount]);
 
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const activeSelectedUser = selectedUser && teamMembers.some((m) => m.id === selectedUser)

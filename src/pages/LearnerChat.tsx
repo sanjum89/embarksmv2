@@ -4,7 +4,9 @@ import { Send, MessageSquare, ThumbsUp, ThumbsDown, Link2, Info } from "lucide-r
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
-import { profileDataByUser } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
+import { profileDataByUser as defaultProfileData } from "@/data/mock";
+import { getProfileData } from "@/lib/accountSelectors";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -191,13 +193,16 @@ function ThinkingIndicator() {
 export default function LearnerChat() {
   const { user } = useUser();
   const { skillTargets } = useSkillTargets();
+  const { normalizedAccount, activeAccount } = useAccount();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const userProfile = (profileDataByUser as any)[user.id];
+  const userProfile = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)
+    ?? activeAccount?.data?.profileData?.[user.id]
+    ?? (defaultProfileData as any)[user.id];
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });

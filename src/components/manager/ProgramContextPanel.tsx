@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Settings, Users, Target, BookOpen, CheckCircle2 } from "lucide-react";
-import { mockProgramContexts, mockNewHires } from "@/data/mock";
+import { mockProgramContexts as defaultProgramContexts, mockNewHires as defaultNewHires } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -10,14 +11,19 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export default function ProgramContextPanel() {
+  const { normalizedAccount, activeAccount } = useAccount();
   const { skillTargets } = useSkillTargets();
-  const program = mockProgramContexts[0];
-  const st4 = skillTargets.find((st) => st.id === program.skillTargetId);
+  const programContexts = normalizedAccount?.programContexts ?? activeAccount?.data?.programContexts ?? defaultProgramContexts;
+  const newHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
+  const program = programContexts[0];
+  const st4 = program ? skillTargets.find((st) => st.id === program.skillTargetId) : undefined;
   const steps = st4?.steps ?? [];
 
-  const [passPercent, setPassPercent] = useState(program.assessmentPassPercentage);
+  const [passPercent, setPassPercent] = useState(program?.assessmentPassPercentage ?? 70);
   const [enabledSteps, setEnabledSteps] = useState<Set<string>>(new Set(steps.map((s) => s.id)));
   const [saved, setSaved] = useState(false);
+
+  if (!program) return <div className="p-6 text-sm text-muted-foreground">No program context available.</div>;
 
   const toggleStep = (id: string) => {
     setEnabledSteps((prev) => {
@@ -118,7 +124,7 @@ export default function ProgramContextPanel() {
           <p className="text-sm font-medium text-foreground">Assigned Learners</p>
         </div>
         <div className="space-y-2">
-          {mockNewHires.filter((h) => program.assignedLearners.includes(h.user.id)).map((hire) => (
+          {newHires.filter((h) => program.assignedLearners.includes(h.user.id)).map((hire) => (
             <div key={hire.user.id} className="flex items-center gap-2.5">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
                 {hire.user.name.split(" ").map((n) => n[0]).join("")}

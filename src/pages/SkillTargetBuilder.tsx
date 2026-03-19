@@ -29,7 +29,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Checkbox } from "@/components/ui/checkbox";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useUser } from "@/contexts/UserContext";
-import { mockLearningModules, mockAssessments, mockRolePlayBank } from "@/data/mock";
+import { mockLearningModules as defaultLearningModules, mockAssessments as defaultAssessments, mockRolePlayBank as defaultRolePlayBank } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 import { AssessmentCreator } from "@/components/skill-target/AssessmentCreator";
 import type { StepItem, LearningModule, Assessment, RolePlay } from "@/types/learning";
 import { cn } from "@/lib/utils";
@@ -62,30 +63,30 @@ const SUGGESTION_PILLS = [
 ];
 
 /* ─── Build a compact content catalog string for the LLM ─── */
-function buildContentCatalog(): string {
-  const modules = mockLearningModules.map(
-    (m) => `[${m.id}] MODULE: "${m.title}" (${m.contentType}, ${m.duration || "?"})`
+function buildContentCatalog(modules: any[], assessments: any[], roleplays: any[]): string {
+  const m = modules.map(
+    (m: any) => `[${m.id}] MODULE: "${m.title}" (${m.contentType}, ${m.duration || "?"})`
   );
-  const assessments = mockAssessments.map(
-    (a) => `[${a.id}] ASSESSMENT: "${a.title}" (${a.type}, pass: ${a.passingScore}%)`
+  const a = assessments.map(
+    (a: any) => `[${a.id}] ASSESSMENT: "${a.title}" (${a.type}, pass: ${a.passingScore}%)`
   );
-  const roleplays = mockRolePlayBank.map(
-    (r) => `[${r.id}] ROLEPLAY: "${r.title}" (${r.difficulty}, tags: ${r.tags.join(", ")})`
+  const r = roleplays.map(
+    (r: any) => `[${r.id}] ROLEPLAY: "${r.title}" (${r.difficulty}, tags: ${r.tags.join(", ")})`
   );
-  return [...modules, ...assessments, ...roleplays].join("\n");
+  return [...m, ...a, ...r].join("\n");
 }
 
-function resolveIds(ids: string[]): ContentItem[] {
+function resolveIds(ids: string[], modules: any[], assessments: any[], roleplays: any[]): ContentItem[] {
   const items: ContentItem[] = [];
   const idSet = new Set(ids);
 
-  mockLearningModules.forEach((m) => {
+  modules.forEach((m: any) => {
     if (idSet.has(m.id)) items.push({ kind: "module", data: m });
   });
-  mockAssessments.forEach((a) => {
+  assessments.forEach((a: any) => {
     if (idSet.has(a.id)) items.push({ kind: "assessment", data: a });
   });
-  mockRolePlayBank.forEach((r) => {
+  roleplays.forEach((r: any) => {
     if (idSet.has(r.id)) items.push({ kind: "roleplay", data: r });
   });
   return items;
@@ -111,6 +112,12 @@ export default function SkillTargetBuilder() {
   const navigate = useNavigate();
   const { addSkillTargets } = useSkillTargets();
   const { user } = useUser();
+  const { normalizedAccount, activeAccount } = useAccount();
+
+  // Account-aware content sources with fallback
+  const mockLearningModules = normalizedAccount?.learningModules?.length ? normalizedAccount.learningModules : activeAccount?.data?.learningModules ?? defaultLearningModules;
+  const mockAssessments = normalizedAccount?.assessments?.length ? normalizedAccount.assessments : activeAccount?.data?.assessments ?? defaultAssessments;
+  const mockRolePlayBank = normalizedAccount?.rolePlays?.length ? normalizedAccount.rolePlays : activeAccount?.data?.rolePlays ?? defaultRolePlayBank;
 
   // Left panel
   const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", text: WELCOME_MSG }]);
@@ -151,14 +158,14 @@ export default function SkillTargetBuilder() {
 
     try {
       const { data, error } = await supabase.functions.invoke("content-search", {
-        body: { query: q, contentCatalog: buildContentCatalog() },
+        body: { query: q, contentCatalog: buildContentCatalog(mockLearningModules, mockAssessments, mockRolePlayBank) },
       });
 
       if (error) throw error;
 
       const matchedIds: string[] = data?.matchedIds || [];
       const explanation: string = data?.explanation || "Here are the results I found:";
-      const results = resolveIds(matchedIds);
+      const results = resolveIds(matchedIds, mockLearningModules, mockAssessments, mockRolePlayBank);
 
       const assistantMsg: ChatMsg = results.length
         ? { role: "assistant", text: explanation, results }
@@ -514,8 +521,8 @@ function UploadModal({ open, onClose, addedIds, onAdd }: { open: boolean; onClos
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
 
-  const allModules: ContentItem[] = mockLearningModules.map((m) => ({ kind: "module" as const, data: m }));
-  const allRolePlays: ContentItem[] = mockRolePlayBank.map((r) => ({ kind: "roleplay" as const, data: r }));
+  const allModules: ContentItem[] = defaultLearningModules.map((m) => ({ kind: "module" as const, data: m }));
+  const allRolePlays: ContentItem[] = defaultRolePlayBank.map((r) => ({ kind: "roleplay" as const, data: r }));
   const allItems = [...allModules, ...allRolePlays];
 
   const filtered = search.trim()

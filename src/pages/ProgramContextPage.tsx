@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, Layers, ChevronRight, Settings, Users, Target, BookOpen, CheckCircle2 } from "lucide-react";
-import { mockProgramContexts, mockNewHires } from "@/data/mock";
+import { mockProgramContexts as defaultProgramContexts, mockNewHires as defaultNewHires } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -11,6 +12,9 @@ import { cn } from "@/lib/utils";
 import type { ProgramContext } from "@/data/mock";
 
 export default function ProgramContextPage() {
+  const { normalizedAccount, activeAccount } = useAccount();
+  const programContexts = normalizedAccount?.programContexts ?? activeAccount?.data?.programContexts ?? defaultProgramContexts;
+  const newHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
   const [selectedProgram, setSelectedProgram] = useState<ProgramContext | null>(null);
 
   if (selectedProgram) {
@@ -32,7 +36,7 @@ export default function ProgramContextPage() {
         </div>
 
         <div className="space-y-3">
-          {mockProgramContexts.map((pc, i) => (
+          {programContexts.map((pc, i) => (
             <motion.button
               key={pc.id}
               initial={{ opacity: 0, y: 8 }}
@@ -58,7 +62,7 @@ export default function ProgramContextPage() {
           ))}
 
           {/* Placeholder for empty state */}
-          {mockProgramContexts.length === 0 && (
+          {programContexts.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Layers className="h-10 w-10 text-muted-foreground mb-3" />
               <p className="text-sm text-muted-foreground">No programs configured yet.</p>
@@ -76,6 +80,8 @@ export default function ProgramContextPage() {
 
 /* ─── Program Detail View ─── */
 function ProgramDetail({ program, onBack }: { program: ProgramContext; onBack: () => void }) {
+  const { normalizedAccount, activeAccount } = useAccount();
+  const newHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
   const { skillTargets } = useSkillTargets();
   const st4 = skillTargets.find((st) => st.id === program.skillTargetId);
   const steps = st4?.steps ?? [];
@@ -194,7 +200,7 @@ function ProgramDetail({ program, onBack }: { program: ProgramContext; onBack: (
                 <p className="text-sm font-semibold text-foreground">Assigned Learners</p>
               </div>
               <div className="space-y-2.5">
-                {mockNewHires.filter((h) => program.assignedLearners.includes(h.user.id)).map((hire) => (
+                {newHires.filter((h) => program.assignedLearners.includes(h.user.id)).map((hire) => (
                   <div key={hire.user.id} className="flex items-center gap-2.5">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
                       {hire.user.name.split(" ").map((n) => n[0]).join("")}

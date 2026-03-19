@@ -2,12 +2,13 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Target, Users, Search, Filter } from "lucide-react";
-import { managerSkillTargets, getAssigneeProgress } from "@/data/managerSkillTargets";
+import { managerSkillTargets as defaultManagerSkillTargets, getAssigneeProgress } from "@/data/managerSkillTargets";
+import { useAccount } from "@/contexts/AccountContext";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-const categories = [...new Set(managerSkillTargets.map((t) => t.category))];
+const defaultCategories = [...new Set(defaultManagerSkillTargets.map((t) => t.category))];
 
 const difficultyColor: Record<string, string> = {
   Beginner: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
@@ -18,10 +19,19 @@ const difficultyColor: Record<string, string> = {
 
 export default function ManagerSkillTargets() {
   const navigate = useNavigate();
+  const { normalizedAccount } = useAccount();
+  // Use account skill targets if available, otherwise fall back to default
+  const managerSkillTargets = (normalizedAccount?.skillTargets?.length ? normalizedAccount.skillTargets.map(st => ({
+    ...st,
+    difficulty: "Intermediate" as string,
+    skills: [] as string[],
+    steps: st.steps || [],
+  })) : null) ?? defaultManagerSkillTargets;
+
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const categories = useMemo(() => [...new Set(managerSkillTargets.map((t: any) => t.category as string))], [managerSkillTargets]);
   const progress = useMemo(() => getAssigneeProgress(), []);
-
   const filtered = useMemo(() => {
     return managerSkillTargets.filter((t) => {
       if (selectedCategory && t.category !== selectedCategory) return false;

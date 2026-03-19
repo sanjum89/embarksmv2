@@ -2,7 +2,8 @@ import { useState, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, BookOpen, ClipboardCheck, Drama, Clock, SkipForward, Users, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
-import { managerSkillTargets, getAssigneeProgress, type AssigneeProgress } from "@/data/managerSkillTargets";
+import { managerSkillTargets as defaultManagerSkillTargets, getAssigneeProgress, type AssigneeProgress } from "@/data/managerSkillTargets";
+import { useAccount } from "@/contexts/AccountContext";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,14 @@ export default function ManagerSkillTargetDetail() {
   const navigate = useNavigate();
   const chatRef = useRef<AIChatPanelHandle>(null);
   const [showAssignees, setShowAssignees] = useState(false);
+  const { normalizedAccount } = useAccount();
+
+  const managerSkillTargets = (normalizedAccount?.skillTargets?.length ? normalizedAccount.skillTargets.map(st => ({
+    ...st,
+    difficulty: "Intermediate" as string,
+    skills: [] as string[],
+    steps: st.steps || [],
+  })) : null) ?? defaultManagerSkillTargets;
 
   const target = managerSkillTargets.find((t) => t.id === id);
   const allProgress = useMemo(() => getAssigneeProgress(), []);

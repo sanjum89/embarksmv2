@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Search, Bot, Plus, Trash2, UserPlus, Pencil, Check, Mic, X } from "lucide-react";
 
-import { mockSkillTargets, mockNewHires } from "@/data/mock";
+import { mockSkillTargets as defaultSkillTargets, mockNewHires as defaultNewHires } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 import { useRolePlays } from "@/contexts/RolePlayContext";
 import { useUser } from "@/contexts/UserContext";
 import { cn } from "@/lib/utils";
@@ -34,7 +35,11 @@ export default function RolePlayBank() {
   const { toast } = useToast();
   const { rolePlays, updateRolePlay } = useRolePlays();
   const { user } = useUser();
+  const { normalizedAccount, activeAccount } = useAccount();
   const isManager = user.role === "manager";
+
+  const mockNewHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
+  const mockSkillTargets = normalizedAccount?.skillTargets ?? activeAccount?.data?.skillTargets ?? defaultSkillTargets;
 
   // Manager-specific state
   const [createOpen, setCreateOpen] = useState(false);

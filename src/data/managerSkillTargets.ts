@@ -100,7 +100,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s9-2", type: "module", title: "Building Rapport with Customers", description: "Trust-building foundations.", duration: "20 min", referenceId: "m33" },
     { id: "s9-3", type: "module", title: "Proactive Customer Outreach", description: "Don't wait for issues.", duration: "20 min", referenceId: "m65" },
   ]},
-  { id: "mst10", title: "Crisis Communication", description: "Handle major incidents and crisis situations.", category: "De-escalation", difficulty: "Expert", skills: ["Crisis Communication", "Incident Management", "Stakeholder Communication"], assignedTo: ["u3", "u4"], steps: [
+  { id: "mst10", title: "Crisis Communication", description: "Handle major incidents and crisis situations.", category: "De-escalation", difficulty: "Expert", skills: ["Crisis Communication", "Incident Management", "Stakeholder Communication"], assignedTo: ["u6", "u8"], steps: [
     { id: "s10-1", type: "module", title: "Crisis Communication for Support", description: "Major incident management.", duration: "25 min", referenceId: "m71" },
     { id: "s10-2", type: "module", title: "Advanced De-escalation Strategies", description: "Psychological techniques.", duration: "30 min", referenceId: "m70" },
     { id: "s10-3", type: "module", title: "Handling Product Recalls", description: "Front-line during recalls.", duration: "20 min", referenceId: "m54" },

@@ -606,7 +606,70 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
         })}
       </nav>
 
-      {/* Theme selector */}
+      {/* Mode toggle — Super Light / Light / Dark */}
+      <div className={cn("w-full", expanded ? "px-3" : "flex flex-col items-center gap-1")}>
+        {expanded ? (
+          <div className="flex bg-sidebar-accent/50 rounded-lg p-0.5 mb-1">
+            <button
+              onClick={() => { if (theme === "dark") toggleTheme(); setSuperLight(true); }}
+              className={cn(
+                "flex items-center justify-center gap-1 flex-1 rounded-md py-1.5 text-xs font-medium transition-all",
+                theme !== "dark" && superLight
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                  : "text-sidebar-foreground/60 hover:text-sidebar-foreground"
+              )}
+            >
+              <Sun className="h-3 w-3" />
+              Super
+            </button>
+            <button
+              onClick={() => { if (theme === "dark") toggleTheme(); setSuperLight(false); }}
+              className={cn(
+                "flex items-center justify-center gap-1 flex-1 rounded-md py-1.5 text-xs font-medium transition-all",
+                theme !== "dark" && !superLight
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                  : "text-sidebar-foreground/60 hover:text-sidebar-foreground"
+              )}
+            >
+              <Sun className="h-3 w-3" />
+              Light
+            </button>
+            <button
+              onClick={() => { if (theme !== "dark") toggleTheme(); }}
+              className={cn(
+                "flex items-center justify-center gap-1 flex-1 rounded-md py-1.5 text-xs font-medium transition-all",
+                theme === "dark"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm"
+                  : "text-sidebar-foreground/60 hover:text-sidebar-foreground"
+              )}
+            >
+              <Moon className="h-3 w-3" />
+              Dark
+            </button>
+          </div>
+        ) : (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => {
+                  // Cycle: Super Light → Light → Dark → Super Light
+                  if (theme !== "dark" && superLight) { setSuperLight(false); }
+                  else if (theme !== "dark" && !superLight) { toggleTheme(); }
+                  else { toggleTheme(); setSuperLight(true); }
+                }}
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors"
+              >
+                {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>
+              {theme === "dark" ? "Dark mode" : superLight ? "Super Light mode" : "Light mode"}
+            </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+
+      {/* Theme style switcher (UI only) */}
       <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
         <Popover>
           <Tooltip delayDuration={0}>
@@ -641,43 +704,6 @@ onClick={() => { switchUser(u.id); if (u.canManage && viewMode === "team") { set
               <span className="flex-1 text-left">Traditional UI</span>
               {isTraditional && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
             </button>
-            <Separator className="my-1.5" />
-            {!isTraditional ? (
-              <>
-                <button
-                  onClick={() => { if (theme === "dark") toggleTheme(); setSuperLight(true); }}
-                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", theme !== "dark" && superLight ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
-                >
-                  <Sun className="h-3.5 w-3.5" />
-                  <span className="flex-1 text-left">Super Light</span>
-                  {theme !== "dark" && superLight && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
-                </button>
-                <button
-                  onClick={() => { if (theme === "dark") toggleTheme(); setSuperLight(false); }}
-                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", theme !== "dark" && !superLight ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
-                >
-                  <Sun className="h-3.5 w-3.5" />
-                  <span className="flex-1 text-left">Light</span>
-                  {theme !== "dark" && !superLight && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
-                </button>
-                <button
-                  onClick={() => { if (theme !== "dark") toggleTheme(); }}
-                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", theme === "dark" ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
-                >
-                  <Moon className="h-3.5 w-3.5" />
-                  <span className="flex-1 text-left">Dark</span>
-                  {theme === "dark" && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
-                </button>
-              </>
-            ) : (
-              <button
-                onClick={toggleTheme}
-                className="flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm hover:bg-secondary transition-colors"
-              >
-                {theme === "dark" ? <Sun className="h-3.5 w-3.5" /> : <Moon className="h-3.5 w-3.5" />}
-                <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
-              </button>
-            )}
           </PopoverContent>
         </Popover>
       </div>

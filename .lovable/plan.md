@@ -1,27 +1,32 @@
 
 
-# Fix: Make Account Switcher Clearly Visible
+# Fix: Account Switcher Shows "Accounts" Instead of Active Account Name
 
-## Problem
+## Problems
 
-The sidebar header shows logo + account name + collapse button, and directly below it the `AccountSwitcher` shows the same logo + account name again with a subtle dropdown chevron. This creates confusion — the user doesn't realize the second row is a clickable account switcher.
+1. **"Accounts" shown instead of real name**: `AccountContext` initializes `accounts` as `[]` and loads them async from the database. During loading (and potentially after if there's a timing issue), `activeAccount` is `null` and `accounts[0]` is `undefined`, so `currentAccount` resolves to `null` and the text falls back to "Accounts".
 
-## Solution
+2. **Crash risk on line 48**: `acct.id === activeAccount.id` in the popover will throw if `activeAccount` is null when the dropdown is opened.
 
-Remove the duplicate logo + account name from the header area in both themes. Keep only the collapse/expand toggle button in the header, and let the `AccountSwitcher` be the sole place showing the account name + logo (with its dropdown chevron for switching/adding accounts).
+3. **Signed-in users not persisting across refresh**: The `UserContext` persistence fixes from the earlier approved plan were implemented, but the `getUsers()` fallback to employees (for accounts like Rathbones that have no explicit `users` section) was not. This means Alex (from default mock data) shows instead of the uploaded account's employees.
 
 ## Changes
 
-### `src/components/layout/AppSidebar.tsx`
+### 1. `src/components/account/AccountSwitcher.tsx`
+- Show a loading skeleton (or the Building2 icon with no text) while `accounts.length === 0` (loading state)
+- Use `activeAccount?.id` instead of `activeAccount.id` on line 48 to prevent crash
 
-**Traditional theme header (lines 157-184)**: Replace the logo+name+toggle layout with just the toggle button. The `AccountSwitcher` on line 185 stays and becomes the primary branding element.
+### 2. `src/contexts/UserContext.tsx` — Employee fallback in `getUsers()`
+- When `normalizedAccount.usersById` is empty but `normalizedAccount.employeesById` has entries, map those employees into User objects with inferred roles (check `hierarchyMap` to determine managers vs learners)
+- This ensures Rathbones and other uploaded accounts show their full employee list in the profile switcher
 
-- Expanded: Show `AccountSwitcher` (logo + name + chevron) on the left, collapse toggle on the right
-- Collapsed: Show collapse/expand toggle on hover over the `AccountSwitcher` logo area
+### 3. `src/contexts/AccountContext.tsx` — No changes needed
+The loading/activeAccount logic is correct; the issue is downstream in AccountSwitcher not handling the loading state.
 
-**New theme header (lines 577-607)**: Same treatment — remove the separate logo+name, keep only the toggle button alongside `AccountSwitcher`.
+## Files Modified
 
-### No other file changes needed
-
-The `AccountSwitcher` component already has the full UI: logo, name, dropdown chevron, popover with account list, add account button, and delete account buttons.
+| File | Change |
+|------|--------|
+| `src/components/account/AccountSwitcher.tsx` | Handle loading state; fix null safety on activeAccount |
+| `src/contexts/UserContext.tsx` | Add employee-to-user fallback in `getUsers()` |
 

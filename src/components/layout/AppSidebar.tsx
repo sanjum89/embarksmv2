@@ -490,6 +490,7 @@ onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(t
   };
 
   return (
+    <>
     <aside
       className={cn(
         "fixed left-0 top-0 z-40 flex h-screen flex-col bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-200",

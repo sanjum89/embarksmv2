@@ -35,9 +35,6 @@ export interface AssigneeProgress {
 }
 
 const team = {
-  u2: { name: "Jordan Chen", title: "CX Specialist" },
-  u3: { name: "Priya Sharma", title: "Support Lead" },
-  u4: { name: "Marcus Williams", title: "Sr. Support Agent" },
   u6: { name: "Maya Thompson", title: "L1 Support Executive" },
   u8: { name: "Raj Patel", title: "L1 Support Executive" },
   u9: { name: "Lena Okafor", title: "L1 Support Executive" },

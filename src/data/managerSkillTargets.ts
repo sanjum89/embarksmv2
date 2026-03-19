@@ -55,7 +55,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s2-3", type: "module", title: "Building and Using Macros", description: "Templates that save time.", duration: "15 min", referenceId: "m67" },
     { id: "s2-4", type: "module", title: "Social Media Customer Support", description: "Public-facing support best practices.", duration: "20 min", referenceId: "m59" },
   ]},
-  { id: "mst3", title: "Written Communication Excellence", description: "Master professional writing for all support channels.", category: "Communication", difficulty: "Intermediate", skills: ["Writing", "Documentation", "Knowledge Base"], assignedTo: ["u3", "u4", "u9"], steps: [
+  { id: "mst3", title: "Written Communication Excellence", description: "Master professional writing for all support channels.", category: "Communication", difficulty: "Intermediate", skills: ["Writing", "Documentation", "Knowledge Base"], assignedTo: ["u9"], steps: [
     { id: "s3-1", type: "module", title: "Email Etiquette for Customer Support", description: "Professional email writing.", duration: "15 min", referenceId: "m22" },
     { id: "s3-2", type: "module", title: "Case Documentation Best Practices", description: "Writing clear case notes.", duration: "20 min", referenceId: "m17" },
     { id: "s3-3", type: "module", title: "Knowledge Base Content Creation", description: "Writing effective KB articles.", duration: "20 min", referenceId: "m51" },

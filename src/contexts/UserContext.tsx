@@ -4,7 +4,9 @@ import { currentUser, availableUsers as defaultAvailableUsers } from "@/data/moc
 import { useAccount } from "@/contexts/AccountContext";
 import type { AccountUser } from "@/types/account-v2";
 
-const STORAGE_KEY = "signedInUsers";
+function storageKey(accountId: string) {
+  return `signedInUsers_${accountId}`;
+}
 
 interface UserContextType {
   user: User;
@@ -14,6 +16,7 @@ interface UserContextType {
   signedInUserIds: string[];
   loginUser: (userId: string) => boolean;
   logoutUser: (userId: string) => void;
+  setInitialSignedInUsers: (accountId: string, userIds: string[]) => void;
 }
 
 function accountUserToUser(au: AccountUser): User {
@@ -28,9 +31,10 @@ function accountUserToUser(au: AccountUser): User {
   };
 }
 
-function readPersistedIds(): string[] {
+function readPersistedIds(accountId: string | null): string[] {
+  if (!accountId) return [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(storageKey(accountId));
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) return parsed;
@@ -39,8 +43,9 @@ function readPersistedIds(): string[] {
   return [];
 }
 
-function persistIds(ids: string[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+function persistIds(accountId: string | null, ids: string[]) {
+  if (!accountId) return;
+  localStorage.setItem(storageKey(accountId), JSON.stringify(ids));
 }
 
 const fallbackUserContext: UserContextType = {
@@ -51,12 +56,14 @@ const fallbackUserContext: UserContextType = {
   signedInUserIds: [currentUser.id],
   loginUser: () => false,
   logoutUser: () => undefined,
+  setInitialSignedInUsers: () => undefined,
 };
 
 const UserContext = createContext<UserContextType>(fallbackUserContext);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const { normalizedAccount, activeAccount, loading } = useAccount();
+  const activeAccountId = activeAccount?.id ?? null;
 
   const getUsers = (): User[] => {
     if (normalizedAccount && Object.keys(normalizedAccount.usersById).length > 0) {
@@ -78,21 +85,19 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const users = getUsers();
 
-  // Signed-in user IDs, persisted in localStorage
+  // Signed-in user IDs, persisted per-account in localStorage
   const [signedInUserIds, setSignedInUserIds] = useState<string[]>(() => {
-    const persisted = readPersistedIds();
-    // Ensure at least the first user is signed in on first visit
+    const persisted = readPersistedIds(activeAccountId);
     if (persisted.length === 0 && users.length > 0) {
       const initial = [users[0].id];
-      persistIds(initial);
+      persistIds(activeAccountId, initial);
       return initial;
     }
     return persisted;
   });
 
   const [user, setUser] = useState<User>(() => {
-    // Try to restore active user from signed-in set
-    const signedIn = readPersistedIds();
+    const signedIn = readPersistedIds(activeAccountId);
     if (signedIn.length > 0) {
       const found = users.find((u) => u.id === signedIn[0]);
       if (found) return found;
@@ -102,23 +107,36 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Reset user when account switches
   useEffect(() => {
-    if (!loading) {
+    if (!loading && activeAccountId) {
       const newUsers = getUsers();
+      const persisted = readPersistedIds(activeAccountId);
+
+      if (persisted.length > 0) {
+        // Use persisted signed-in set for this account
+        const validIds = persisted.filter((id) => newUsers.some((u) => u.id === id));
+        if (validIds.length > 0) {
+          setSignedInUserIds(validIds);
+          persistIds(activeAccountId, validIds);
+          const activeUser = newUsers.find((u) => u.id === validIds[0]);
+          if (activeUser) setUser(activeUser);
+          return;
+        }
+      }
+
+      // Fallback: sign in the first user
       const newFirst = newUsers[0] || currentUser;
       setUser(newFirst);
-      // Reset signed-in to first user of new account
-      const newIds = [newFirst.id];
+      const newIds = newUsers.length > 0 ? [newFirst.id] : [];
       setSignedInUserIds(newIds);
-      persistIds(newIds);
+      persistIds(activeAccountId, newIds);
     }
-  }, [activeAccount?.id, normalizedAccount?.id, loading]);
+  }, [activeAccountId, loading]);
 
   const setRole = (role: UserRole) => {
     setUser((prev) => ({ ...prev, role }));
   };
 
   const switchUser = useCallback((userId: string) => {
-    // Only allow switching to signed-in users
     if (!signedInUserIds.includes(userId)) return;
     const found = users.find((u) => u.id === userId);
     if (found) setUser(found);
@@ -129,27 +147,37 @@ export function UserProvider({ children }: { children: ReactNode }) {
     if (!found) return false;
     const updated = [...new Set([...signedInUserIds, userId])];
     setSignedInUserIds(updated);
-    persistIds(updated);
+    persistIds(activeAccountId, updated);
     setUser(found);
     return true;
-  }, [signedInUserIds, users]);
+  }, [signedInUserIds, users, activeAccountId]);
 
   const logoutUser = useCallback((userId: string) => {
     const updated = signedInUserIds.filter((id) => id !== userId);
     setSignedInUserIds(updated);
-    persistIds(updated);
-    // If the logged-out user is the active user, switch to first remaining
+    persistIds(activeAccountId, updated);
     if (user.id === userId) {
       if (updated.length > 0) {
         const next = users.find((u) => u.id === updated[0]);
         if (next) setUser(next);
       }
-      // If none left, user stays but will need to log in again
     }
-  }, [signedInUserIds, user.id, users]);
+  }, [signedInUserIds, user.id, users, activeAccountId]);
+
+  const setInitialSignedInUsers = useCallback((accountId: string, userIds: string[]) => {
+    persistIds(accountId, userIds);
+    // If this is the current account, update state immediately
+    if (accountId === activeAccountId) {
+      setSignedInUserIds(userIds);
+      if (userIds.length > 0) {
+        const found = users.find((u) => u.id === userIds[0]);
+        if (found) setUser(found);
+      }
+    }
+  }, [activeAccountId, users]);
 
   return (
-    <UserContext.Provider value={{ user, setRole, switchUser, availableUsers: users, signedInUserIds, loginUser, logoutUser }}>
+    <UserContext.Provider value={{ user, setRole, switchUser, availableUsers: users, signedInUserIds, loginUser, logoutUser, setInitialSignedInUsers }}>
       {children}
     </UserContext.Provider>
   );

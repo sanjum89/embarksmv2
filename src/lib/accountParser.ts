@@ -95,21 +95,8 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     }
   }
 
-  // If no users but has employees, create users from employees
-  if (Object.keys(usersById).length === 0) {
-    for (const e of Object.values(employeesById)) {
-      usersById[e.id] = {
-        id: e.id,
-        name: e.name,
-        email: e.email,
-        role: e.reportsTo === null || e.reportsTo === undefined ? "manager" : "learner",
-        avatarUrl: e.avatarUrl,
-        title: e.title,
-        canManage: e.reportsTo === null || e.reportsTo === undefined,
-        linkedEmployeeId: e.id,
-      };
-    }
-  }
+  // If no users but has employees, keep usersById empty.
+  // The upload dialog will let the user explicitly choose sign-in personas.
 
   // If no employees but has users, create employees from users
   if (Object.keys(employeesById).length === 0) {

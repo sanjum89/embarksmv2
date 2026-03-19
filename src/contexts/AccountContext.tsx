@@ -225,10 +225,25 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   const addAccount = useCallback(async (
     name: string,
-    rawData: Partial<AccountData> & { logo?: string; accent_color?: string; use_case_context?: string }
-  ) => {
+    rawData: Partial<AccountData> & { logo?: string; accent_color?: string; use_case_context?: string },
+    selectedUsers?: import("@/types/account-v2").AccountUser[]
+  ): Promise<string> => {
     const { logo, accent_color, use_case_context, ...partialData } = rawData;
     const fullData = generateFallbackData(partialData);
+
+    // If selectedUsers provided, embed them in the data blob so parser picks them up
+    if (selectedUsers && selectedUsers.length > 0) {
+      (fullData as any).users = selectedUsers.map((u) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        avatarUrl: u.avatarUrl,
+        title: u.title,
+        canManage: u.canManage,
+        linkedEmployeeId: u.linkedEmployeeId || u.id,
+      }));
+    }
 
     const { data: inserted, error } = await supabase
       .from("accounts")
@@ -260,6 +275,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     setNormalizedCache((prev) => ({ ...prev, [newAcct.id]: normalized }));
     setAccounts((prev) => [...prev, newAcct]);
     switchAccount(newAcct.id);
+    return newAcct.id;
   }, [switchAccount]);
 
   const deleteAccount = useCallback(async (id: string) => {

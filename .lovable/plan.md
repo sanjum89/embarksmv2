@@ -1,37 +1,28 @@
 
 
-# Move Suggestion Pills Below Empty State & Add Per-Page Customization
-
 ## Problem
-1. Suggestion pills currently render at the bottom of the panel (above the input bar), far from the empty state text
-2. The empty state message ("I can help you explore your skills...") and pills are generic — not contextual to the page
 
-## Changes
+The `railPalette` function currently colors each segment based on the entry *below* it. This means:
+- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
+- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
+- The segment from **Jan → 2025** gets 2025's color (Green) — correct
 
-### 1. `AIChatPanel.tsx` — Restructure empty state
+The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
 
-**Add new props**: `emptyStateMessage?: string` (defaults to current text)
+## Fix
 
-**Move pills into empty state block** (lines 192-203): When `messages.length === 0`, render the pills directly below the subtitle text inside the centered empty state — not in the floating input area.
+Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
 
-**Remove pills from floating input area** (lines 249-264): Delete the `{messages.length === 0 && (` block that renders suggested actions above the input bar.
+```typescript
+const railPalette = (i: number) => {
+  return palette(careerEntries[i]);
+};
+```
 
-### 2. `AIChatWrapper.tsx` — Pass through `emptyStateMessage`
+This gives:
+- **Mar segment** (Mar → Feb): Orange
+- **Feb segment** (Feb → Jan): Yellow  
+- **Jan segment and below**: Green
 
-Add `emptyStateMessage?: string` to props and forward it to `AIChatPanel`.
-
-### 3. Per-page customization — Update each usage
-
-| Page | `emptyStateMessage` | `suggestedActions` |
-|------|--------------------|--------------------|
-| **Dashboard** | "I can help you find courses, track progress, and plan your learning." | "Find a course", "My progress", "What's due soon" |
-| **My360** | "I can analyze your skills profile, identify gaps, and suggest growth paths." | "Analyze my skills", "Career next steps", "Skill gaps" |
-| **SkillTargetDetail** | (already has custom suggestions — add message) "I can help you understand this skill target and track your progress." | (keep existing) |
-
-### Files Modified
-- `src/components/chat/AIChatPanel.tsx` — move pills into empty state, add `emptyStateMessage` prop
-- `src/components/chat/AIChatWrapper.tsx` — pass through new prop
-- `src/pages/Dashboard.tsx` — add contextual message + suggestions
-- `src/pages/My360.tsx` — add contextual message + suggestions
-- `src/pages/SkillTargetDetail.tsx` — add contextual message
+Single line change in `src/components/my360/CareerTimeline.tsx`.
 

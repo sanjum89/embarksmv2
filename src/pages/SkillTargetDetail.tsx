@@ -277,6 +277,7 @@ export default function SkillTargetDetail() {
 
       <AIChatWrapper
         contextLabel={`Skill Target → ${target.title}`}
+        emptyStateMessage="I can help you understand this skill target and track your progress."
         suggestedActions={[
           { label: "Explain this skill" },
           { label: "What should I focus on?" },

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 interface AIChatWrapperProps {
   contextLabel?: string;
   suggestedActions?: { label: string }[];
+  emptyStateMessage?: string;
 }
 
 export interface AIChatWrapperHandle {
@@ -15,7 +16,7 @@ export interface AIChatWrapperHandle {
 }
 
 export const AIChatWrapper = forwardRef<AIChatWrapperHandle, AIChatWrapperProps>(
-  function AIChatWrapper({ contextLabel, suggestedActions }, ref) {
+  function AIChatWrapper({ contextLabel, suggestedActions, emptyStateMessage }, ref) {
     const { styleTheme } = useTheme();
     const [open, setOpen] = useState(false);
     const chatRef = useRef<AIChatPanelHandle>(null);
@@ -47,7 +48,7 @@ export const AIChatWrapper = forwardRef<AIChatWrapperHandle, AIChatWrapperProps>
           {/* Floating chat panel */}
           {open && (
             <div className="fixed bottom-20 right-6 z-50 w-[360px] h-[520px] rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
-              <AIChatPanel ref={chatRef} contextLabel={contextLabel} suggestedActions={suggestedActions} />
+              <AIChatPanel ref={chatRef} contextLabel={contextLabel} suggestedActions={suggestedActions} emptyStateMessage={emptyStateMessage} />
             </div>
           )}
         </>
@@ -57,7 +58,7 @@ export const AIChatWrapper = forwardRef<AIChatWrapperHandle, AIChatWrapperProps>
     // New UI: full sidebar panel
     return (
       <div className="w-[400px] shrink-0 border-l border-border h-full overflow-hidden">
-        <AIChatPanel ref={chatRef} contextLabel={contextLabel} suggestedActions={suggestedActions} />
+        <AIChatPanel ref={chatRef} contextLabel={contextLabel} suggestedActions={suggestedActions} emptyStateMessage={emptyStateMessage} />
       </div>
     );
   }

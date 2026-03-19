@@ -141,7 +141,15 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />
+          <AIChatWrapper
+            contextLabel="Learning Spaces → Dashboard"
+            emptyStateMessage="I can help you find courses, track progress, and plan your learning."
+            suggestedActions={[
+              { label: "Find a course" },
+              { label: "My progress" },
+              { label: "What's due soon" },
+            ]}
+          />
         </div>
         <BrowseSkillTargetsDialog open={browseOpen} onOpenChange={setBrowseOpen} />
       </div>
@@ -312,7 +320,15 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <AIChatWrapper contextLabel="Learning Spaces → Dashboard" />
+        <AIChatWrapper
+          contextLabel="Learning Spaces → Dashboard"
+          emptyStateMessage="I can help you find courses, track progress, and plan your learning."
+          suggestedActions={[
+            { label: "Find a course" },
+            { label: "My progress" },
+            { label: "What's due soon" },
+          ]}
+        />
       </div>
 
       <BrowseSkillTargetsDialog open={browseOpen} onOpenChange={setBrowseOpen} />

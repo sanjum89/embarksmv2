@@ -21,6 +21,7 @@ interface SuggestedAction {
 interface AIChatPanelProps {
   contextLabel?: string;
   suggestedActions?: SuggestedAction[];
+  emptyStateMessage?: string;
 }
 
 export interface AIChatPanelHandle {
@@ -42,7 +43,7 @@ const defaultSuggestions: SuggestedAction[] = [
 ];
 
 export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
-  function AIChatPanel({ contextLabel, suggestedActions = defaultSuggestions }, ref) {
+  function AIChatPanel({ contextLabel, suggestedActions = defaultSuggestions, emptyStateMessage }, ref) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -197,9 +198,20 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
               <p className="text-sm font-medium text-foreground mb-1">
                 Ask me anything
               </p>
-              <p className="text-xs text-muted-foreground max-w-[200px]">
-                I can help you explore your skills, projects, and growth path.
+              <p className="text-xs text-muted-foreground max-w-[240px]">
+                {emptyStateMessage || "I can help you explore your skills, projects, and growth path."}
               </p>
+              <div className="flex flex-wrap gap-2 mt-4 justify-center">
+                {suggestedActions.map((action) => (
+                  <button
+                    key={action.label}
+                    onClick={() => setInput(action.label)}
+                    className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-colors bg-card"
+                  >
+                    {action.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -248,20 +260,6 @@ export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
 
         {/* Floating input — PINNED AT BOTTOM */}
         <div className="absolute bottom-0 left-0 right-0 px-3 pb-4 pt-2 bg-gradient-to-t from-card via-card to-transparent">
-          {/* Suggested actions above input when no messages */}
-          {messages.length === 0 && (
-            <div className="flex flex-wrap gap-2 pb-2 justify-center">
-              {suggestedActions.map((action) => (
-                <button
-                  key={action.label}
-                  onClick={() => setInput(action.label)}
-                  className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-secondary transition-colors bg-card"
-                >
-                  {action.label}
-                </button>
-              ))}
-            </div>
-          )}
           <div className="flex items-center gap-2 rounded-2xl border border-border bg-background px-3 py-2.5 shadow-lg">
             <Sparkles className="h-4 w-4 text-muted-foreground shrink-0" />
             <input

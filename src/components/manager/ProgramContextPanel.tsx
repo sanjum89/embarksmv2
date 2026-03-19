@@ -11,8 +11,12 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export default function ProgramContextPanel() {
+  const { normalizedAccount, activeAccount } = useAccount();
   const { skillTargets } = useSkillTargets();
-  const program = mockProgramContexts[0];
+  const programContexts = normalizedAccount?.programContexts ?? activeAccount?.data?.programContexts ?? defaultProgramContexts;
+  const newHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
+  const program = programContexts[0];
+  if (!program) return <div className="p-6 text-sm text-muted-foreground">No program context available.</div>;
   const st4 = skillTargets.find((st) => st.id === program.skillTargetId);
   const steps = st4?.steps ?? [];
 

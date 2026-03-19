@@ -19,10 +19,10 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
   const { normalizedAccount, activeAccount, loading } = useAccount();
 
   const getInitialTargets = () => {
-    if (normalizedAccount?.skillTargets?.length) {
+    if (Array.isArray(normalizedAccount?.skillTargets) && normalizedAccount.skillTargets.length) {
       return normalizedAccount.skillTargets;
     }
-    if (activeAccount?.data?.skillTargets?.length) {
+    if (Array.isArray(activeAccount?.data?.skillTargets) && activeAccount.data.skillTargets.length) {
       return activeAccount.data.skillTargets;
     }
     return mockSkillTargets;

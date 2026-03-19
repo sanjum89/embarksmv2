@@ -38,8 +38,12 @@ export default function RolePlayBank() {
   const { normalizedAccount, activeAccount } = useAccount();
   const isManager = user.role === "manager";
 
-  const mockNewHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
-  const mockSkillTargets = normalizedAccount?.skillTargets ?? activeAccount?.data?.skillTargets ?? defaultSkillTargets;
+  const mockNewHires = Array.isArray(normalizedAccount?.newHires) ? normalizedAccount.newHires
+    : Array.isArray(activeAccount?.data?.newHires) ? activeAccount.data.newHires
+    : defaultNewHires;
+  const mockSkillTargets = Array.isArray(normalizedAccount?.skillTargets) ? normalizedAccount.skillTargets
+    : Array.isArray(activeAccount?.data?.skillTargets) ? activeAccount.data.skillTargets
+    : defaultSkillTargets;
 
   // Manager-specific state
   const [createOpen, setCreateOpen] = useState(false);

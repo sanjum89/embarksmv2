@@ -1,28 +1,24 @@
 
 
-## Problem
+# Add "Signed in" Badge to Profile Switcher
 
-The `railPalette` function currently colors each segment based on the entry *below* it. This means:
-- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
-- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
-- The segment from **Jan → 2025** gets 2025's color (Green) — correct
+## Change
 
-The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
+In both the Traditional and New UI profile switcher popovers, add a small green "Signed in" indicator next to each user to communicate that these are active signed-in profiles.
 
-## Fix
+### `src/components/layout/AppSidebar.tsx`
 
-Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
+**Traditional sidebar (lines 426-432)** and **New UI sidebar (lines 743-749)** — Add a green dot + "Signed in" text below the user's job title in each profile row:
 
-```typescript
-const railPalette = (i: number) => {
-  return palette(careerEntries[i]);
-};
+```
+<p className="text-[10px] text-emerald-500 flex items-center gap-1">
+  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+  Signed in
+</p>
 ```
 
-This gives:
-- **Mar segment** (Mar → Feb): Orange
-- **Feb segment** (Feb → Jan): Yellow  
-- **Jan segment and below**: Green
+This goes inside the `<div className="min-w-0 flex-1">` block, after the existing `<p>` showing `u.title`.
 
-Single line change in `src/components/my360/CareerTimeline.tsx`.
+### Files Modified
+- `src/components/layout/AppSidebar.tsx` — add "Signed in" indicator to both popover instances
 

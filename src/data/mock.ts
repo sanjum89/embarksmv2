@@ -162,11 +162,10 @@ export const mockProgramContexts: ProgramContext[] = [
 
 export const mockTeamMembers: User[] = [
   currentUser,
-  { id: "u2", name: "Jordan Chen", email: "jordan@wfai.com", role: "learner" },
-  { id: "u3", name: "Priya Sharma", email: "priya@wfai.com", role: "learner" },
-  { id: "u4", name: "Marcus Williams", email: "marcus@wfai.com", role: "learner" },
-  { id: "u5", name: "Sofia Martinez", email: "sofia@wfai.com", role: "learner" },
   mayaThompson,
+  rajPatel,
+  priyaMenon,
+  marcusWellington,
 ];
 
 /* ─── Assessments ─── */

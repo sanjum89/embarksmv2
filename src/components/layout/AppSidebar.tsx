@@ -24,6 +24,7 @@ import {
   Layers,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { useAccount } from "@/contexts/AccountContext";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
@@ -88,8 +89,11 @@ const navItems: NavItem[] = [
 
 export function AppSidebar() {
   const { user, switchUser, setRole, availableUsers } = useUser();
+  const { activeAccount } = useAccount();
   const { expanded, toggle } = useSidebarState();
   const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight } = useTheme();
+  const accountLogo = activeAccount?.logo || cornerstoneLogo;
+  const accountName = activeAccount?.name || "cornerstone";
   const navigate = useNavigate();
   const location = useLocation();
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
@@ -131,8 +135,8 @@ export function AppSidebar() {
             {expanded ? (
               <div className="flex items-center gap-2 w-full justify-between">
                 <div className="flex items-center gap-2">
-                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
-                  <span className="font-display font-bold text-sm text-foreground">cornerstone</span>
+                  <img src={accountLogo} alt={accountName} className="h-6 w-6 object-contain" style={{ background: 'transparent' }} />
+                  <span className="font-display font-bold text-sm text-foreground">{accountName}</span>
                 </div>
                 <button onClick={toggle} className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors">
                   <PanelLeftClose className="h-4 w-4" />
@@ -150,7 +154,7 @@ export function AppSidebar() {
                     <PanelLeftOpen className="h-4.5 w-4.5 text-foreground" />
                   </div>
                 ) : (
-                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-7 w-7 object-contain" />
+                  <img src={accountLogo} alt={accountName} className="h-7 w-7 object-contain" style={{ background: 'transparent' }} />
                 )}
               </div>
             )}
@@ -509,9 +513,9 @@ onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(t
             <>
               <div className="flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0">
-                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
+                  <img src={accountLogo} alt={accountName} className="h-6 w-6 object-contain" style={{ background: 'transparent' }} />
                 </div>
-                <span className="font-display font-bold text-sm text-sidebar-foreground">cornerstone</span>
+                <span className="font-display font-bold text-sm text-sidebar-foreground">{accountName}</span>
               </div>
               <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
                 <PanelLeftClose className="h-4 w-4" />
@@ -530,7 +534,7 @@ onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(t
                 </div>
               ) : (
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg">
-                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
+                  <img src={accountLogo} alt={accountName} className="h-6 w-6 object-contain" style={{ background: 'transparent' }} />
                 </div>
               )}
             </div>

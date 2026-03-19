@@ -43,7 +43,7 @@ const defaultSuggestions: SuggestedAction[] = [
 ];
 
 export const AIChatPanel = forwardRef<AIChatPanelHandle, AIChatPanelProps>(
-  function AIChatPanel({ contextLabel, suggestedActions = defaultSuggestions }, ref) {
+  function AIChatPanel({ contextLabel, suggestedActions = defaultSuggestions, emptyStateMessage }, ref) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);

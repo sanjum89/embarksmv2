@@ -108,6 +108,8 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
       setLogoDataUrl(null);
       setLogoFileName(null);
       setPendingJson(null);
+      setParseWarnings([]);
+      setEmployeeCount(0);
     } catch (e: any) {
       setError(e.message || "Failed to create account.");
     } finally {

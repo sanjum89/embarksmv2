@@ -231,7 +231,7 @@ export default function ManagerView() {
     setIsThinking(true);
 
     setTimeout(() => {
-      const responseData = generateResponse(prompt, skillTargets);
+      const responseData = generateResponse(prompt, skillTargets, mockNewHires, mockProgramContexts);
       const response: ChatMessage = { id: (Date.now() + 1).toString(), ...responseData };
       setMessages((prev) => [...prev, response]);
       setActivePanel(response.panel || null);

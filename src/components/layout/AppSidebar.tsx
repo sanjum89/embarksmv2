@@ -89,8 +89,11 @@ const navItems: NavItem[] = [
 
 export function AppSidebar() {
   const { user, switchUser, setRole, availableUsers } = useUser();
+  const { activeAccount } = useAccount();
   const { expanded, toggle } = useSidebarState();
   const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight } = useTheme();
+  const accountLogo = activeAccount?.logo || cornerstoneLogo;
+  const accountName = activeAccount?.name || "cornerstone";
   const navigate = useNavigate();
   const location = useLocation();
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);

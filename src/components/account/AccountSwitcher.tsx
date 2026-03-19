@@ -10,10 +10,22 @@ interface AccountSwitcherProps {
 }
 
 export function AccountSwitcher({ expanded }: AccountSwitcherProps) {
-  const { accounts, activeAccount, switchAccount, deleteAccount } = useAccount();
+  const { accounts, activeAccount, switchAccount, deleteAccount, loading } = useAccount();
   const [addOpen, setAddOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const currentAccount = activeAccount ?? accounts[0] ?? null;
+
+  // While loading, show a static placeholder
+  if (loading && !currentAccount) {
+    return (
+      <div className={cn("flex items-center gap-2 rounded-lg w-full", expanded ? "px-3 py-2" : "justify-center p-2")}>
+        <div className="flex h-6 w-6 items-center justify-center rounded bg-primary/10 shrink-0">
+          <Building2 className="h-3.5 w-3.5 text-primary" />
+        </div>
+        {expanded && <span className="text-sm text-muted-foreground truncate flex-1 text-left">Loading…</span>}
+      </div>
+    );
+  }
 
   return (
     <>
@@ -45,7 +57,7 @@ export function AccountSwitcher({ expanded }: AccountSwitcherProps) {
         <PopoverContent side={expanded ? "bottom" : "right"} align="start" sideOffset={8} className="w-64 p-2">
           <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Accounts</p>
           {accounts.map((acct) => {
-            const isActive = acct.id === activeAccount.id;
+            const isActive = acct.id === activeAccount?.id;
             return (
               <div key={acct.id} className="flex items-center gap-1">
                 <button

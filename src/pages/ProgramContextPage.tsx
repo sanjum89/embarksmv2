@@ -62,7 +62,7 @@ export default function ProgramContextPage() {
           ))}
 
           {/* Placeholder for empty state */}
-          {mockProgramContexts.length === 0 && (
+          {programContexts.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Layers className="h-10 w-10 text-muted-foreground mb-3" />
               <p className="text-sm text-muted-foreground">No programs configured yet.</p>

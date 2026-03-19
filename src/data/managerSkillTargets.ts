@@ -129,7 +129,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s14-2", type: "module", title: "Advanced CRM Workflows", description: "Automation rules and triggers.", duration: "30 min", referenceId: "m53" },
     { id: "s14-3", type: "module", title: "Self-Service Portal Management", description: "Reduce ticket volume.", duration: "15 min", referenceId: "m44" },
   ]},
-  { id: "mst15", title: "Support Tools Integration", description: "Connect and optimize your support tool stack.", category: "CRM & Tools", difficulty: "Advanced", skills: ["Tool Integration", "API Basics", "System Configuration"], assignedTo: ["u4", "u3"], steps: [
+  { id: "mst15", title: "Support Tools Integration", description: "Connect and optimize your support tool stack.", category: "CRM & Tools", difficulty: "Advanced", skills: ["Tool Integration", "API Basics", "System Configuration"], assignedTo: ["u6", "u8"], steps: [
     { id: "s15-1", type: "module", title: "Advanced CRM Workflows", description: "Custom configurations.", duration: "30 min", referenceId: "m53" },
     { id: "s15-2", type: "module", title: "Remote Troubleshooting Techniques", description: "Diagnostic tools.", duration: "25 min", referenceId: "m60" },
     { id: "s15-3", type: "module", title: "CX Technology Stack Mastery", description: "Full tech stack.", duration: "30 min", referenceId: "m90" },

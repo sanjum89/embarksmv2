@@ -213,7 +213,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s28-3", type: "module", title: "Customer Onboarding Essentials", description: "First experience matters.", duration: "25 min", referenceId: "m30" },
     { id: "s28-4", type: "module", title: "Customer Experience Design Thinking", description: "Design-led CX.", duration: "30 min", referenceId: "m94" },
   ]},
-  { id: "mst29", title: "Feedback & Insights", description: "Turn customer feedback into actionable improvements.", category: "Customer Retention", difficulty: "Intermediate", skills: ["Feedback Analysis", "VOC", "Continuous Improvement"], assignedTo: ["u2", "u3", "u9"], steps: [
+  { id: "mst29", title: "Feedback & Insights", description: "Turn customer feedback into actionable improvements.", category: "Customer Retention", difficulty: "Intermediate", skills: ["Feedback Analysis", "VOC", "Continuous Improvement"], assignedTo: ["u9"], steps: [
     { id: "s29-1", type: "module", title: "Customer Feedback Loops", description: "Feedback collection and routing.", duration: "15 min", referenceId: "m41" },
     { id: "s29-2", type: "module", title: "Introduction to CSAT and NPS", description: "Measuring satisfaction.", duration: "15 min", referenceId: "m34" },
     { id: "s29-3", type: "module", title: "Voice of Customer Program Design", description: "Systematic VOC.", duration: "25 min", referenceId: "m93" },

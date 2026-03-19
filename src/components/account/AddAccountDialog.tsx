@@ -34,6 +34,8 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [logoFileName, setLogoFileName] = useState<string | null>(null);
   const [pendingJson, setPendingJson] = useState<any>(null);
+  const [parseWarnings, setParseWarnings] = useState<string[]>([]);
+  const [employeeCount, setEmployeeCount] = useState<number>(0);
 
   const handleLogoFile = useCallback(async (file: File) => {
     const validTypes = ["image/png", "image/svg+xml"];

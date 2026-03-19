@@ -48,7 +48,7 @@ export const AIChatWrapper = forwardRef<AIChatWrapperHandle, AIChatWrapperProps>
           {/* Floating chat panel */}
           {open && (
             <div className="fixed bottom-20 right-6 z-50 w-[360px] h-[520px] rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
-              <AIChatPanel ref={chatRef} contextLabel={contextLabel} suggestedActions={suggestedActions} />
+              <AIChatPanel ref={chatRef} contextLabel={contextLabel} suggestedActions={suggestedActions} emptyStateMessage={emptyStateMessage} />
             </div>
           )}
         </>

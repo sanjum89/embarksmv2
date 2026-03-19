@@ -311,7 +311,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
   ]},
 
   // ── Analytics & Strategy (46-50) ──
-  { id: "mst46", title: "CX Analytics Fundamentals", description: "Data-driven decision making in CX.", category: "Analytics", difficulty: "Intermediate", skills: ["Analytics", "Data Analysis", "Reporting"], assignedTo: ["u2", "u3", "u4"], steps: [
+  { id: "mst46", title: "CX Analytics Fundamentals", description: "Data-driven decision making in CX.", category: "Analytics", difficulty: "Intermediate", skills: ["Analytics", "Data Analysis", "Reporting"], assignedTo: ["u6", "u8"], steps: [
     { id: "s46-1", type: "module", title: "Introduction to CSAT and NPS", description: "Core metrics.", duration: "15 min", referenceId: "m34" },
     { id: "s46-2", type: "module", title: "Performance Metrics Deep Dive", description: "Full metric spectrum.", duration: "20 min", referenceId: "m56" },
     { id: "s46-3", type: "module", title: "Advanced Reporting and Dashboards", description: "Build dashboards.", duration: "25 min", referenceId: "m79" },

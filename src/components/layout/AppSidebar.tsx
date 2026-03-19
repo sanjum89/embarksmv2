@@ -488,7 +488,7 @@ export function AppSidebar() {
                         )}
                       </div>
                       {isActive && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                      {isSignedIn && !isActive && (
+                      {isSignedIn && (
                         <button
                           onClick={(e) => { e.stopPropagation(); handleLogout(u.id); }}
                           className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"

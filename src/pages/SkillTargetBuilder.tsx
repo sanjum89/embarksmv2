@@ -63,30 +63,30 @@ const SUGGESTION_PILLS = [
 ];
 
 /* ─── Build a compact content catalog string for the LLM ─── */
-function buildContentCatalog(): string {
-  const modules = mockLearningModules.map(
-    (m) => `[${m.id}] MODULE: "${m.title}" (${m.contentType}, ${m.duration || "?"})`
+function buildContentCatalog(modules: any[], assessments: any[], roleplays: any[]): string {
+  const m = modules.map(
+    (m: any) => `[${m.id}] MODULE: "${m.title}" (${m.contentType}, ${m.duration || "?"})`
   );
-  const assessments = mockAssessments.map(
-    (a) => `[${a.id}] ASSESSMENT: "${a.title}" (${a.type}, pass: ${a.passingScore}%)`
+  const a = assessments.map(
+    (a: any) => `[${a.id}] ASSESSMENT: "${a.title}" (${a.type}, pass: ${a.passingScore}%)`
   );
-  const roleplays = mockRolePlayBank.map(
-    (r) => `[${r.id}] ROLEPLAY: "${r.title}" (${r.difficulty}, tags: ${r.tags.join(", ")})`
+  const r = roleplays.map(
+    (r: any) => `[${r.id}] ROLEPLAY: "${r.title}" (${r.difficulty}, tags: ${r.tags.join(", ")})`
   );
-  return [...modules, ...assessments, ...roleplays].join("\n");
+  return [...m, ...a, ...r].join("\n");
 }
 
-function resolveIds(ids: string[]): ContentItem[] {
+function resolveIds(ids: string[], modules: any[], assessments: any[], roleplays: any[]): ContentItem[] {
   const items: ContentItem[] = [];
   const idSet = new Set(ids);
 
-  mockLearningModules.forEach((m) => {
+  modules.forEach((m: any) => {
     if (idSet.has(m.id)) items.push({ kind: "module", data: m });
   });
-  mockAssessments.forEach((a) => {
+  assessments.forEach((a: any) => {
     if (idSet.has(a.id)) items.push({ kind: "assessment", data: a });
   });
-  mockRolePlayBank.forEach((r) => {
+  roleplays.forEach((r: any) => {
     if (idSet.has(r.id)) items.push({ kind: "roleplay", data: r });
   });
   return items;

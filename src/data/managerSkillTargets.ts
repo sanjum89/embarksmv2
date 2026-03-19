@@ -161,7 +161,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s19-3", type: "module", title: "Product Return Process", description: "Returns and exchanges.", duration: "15 min", referenceId: "m38" },
     { id: "s19-4", type: "module", title: "Apple Service Options", description: "Service channels.", duration: "20 min", referenceId: "m14" },
   ]},
-  { id: "mst20", title: "Enterprise Product Deep Dive", description: "Master enterprise-grade product knowledge.", category: "Product Knowledge", difficulty: "Advanced", skills: ["Enterprise Suite", "Competitive Analysis", "Solution Selling"], assignedTo: ["u2", "u3"], steps: [
+  { id: "mst20", title: "Enterprise Product Deep Dive", description: "Master enterprise-grade product knowledge.", category: "Product Knowledge", difficulty: "Advanced", skills: ["Enterprise Suite", "Competitive Analysis", "Solution Selling"], assignedTo: ["u6", "u8"], steps: [
     { id: "s20-1", type: "module", title: "Enterprise Suite Overview", description: "Core platform capabilities.", duration: "30 min", referenceId: "m3" },
     { id: "s20-2", type: "module", title: "Competitive Positioning", description: "Against key competitors.", duration: "20 min", referenceId: "m4" },
     { id: "s20-3", type: "assessment", title: "Product Basics Assessment", description: "Test product knowledge.", referenceId: "a3" },

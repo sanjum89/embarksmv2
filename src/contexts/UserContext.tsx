@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import type { User, UserRole } from "@/types/learning";
 import { currentUser, availableUsers as defaultAvailableUsers } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";
@@ -85,6 +85,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const users = getUsers();
 
+  const activeAccountIdRef = useRef(activeAccountId);
+  const usersRef = useRef(users);
+
+  useEffect(() => { activeAccountIdRef.current = activeAccountId; }, [activeAccountId]);
+  useEffect(() => { usersRef.current = users; }, [users]);
+
   // Signed-in user IDs, persisted per-account in localStorage
   const [signedInUserIds, setSignedInUserIds] = useState<string[]>(() => {
     const persisted = readPersistedIds(activeAccountId);
@@ -153,25 +159,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
   }, [signedInUserIds, users, activeAccountId]);
 
   const logoutUser = useCallback((userId: string) => {
+    const currentAccountId = activeAccountIdRef.current;
+    const currentUsers = usersRef.current;
+
     setSignedInUserIds((prev) => {
       const updated = prev.filter((id) => id !== userId);
-      persistIds(activeAccountId, updated);
+      persistIds(currentAccountId, updated);
+
+      if (user.id === userId && updated.length > 0) {
+        const next = currentUsers.find((u) => u.id === updated[0]);
+        if (next) setUser(next);
+      }
       return updated;
     });
-    // If logging out the active user, switch to the next available
-    if (user.id === userId) {
-      // We need to read the updated list after filter - use a microtask
-      setTimeout(() => {
-        setSignedInUserIds((current) => {
-          if (current.length > 0) {
-            const next = users.find((u) => u.id === current[0]);
-            if (next) setUser(next);
-          }
-          return current;
-        });
-      }, 0);
-    }
-  }, [user.id, users, activeAccountId]);
+  }, [user.id]);
 
   const setInitialSignedInUsers = useCallback((accountId: string, userIds: string[]) => {
     persistIds(accountId, userIds);

@@ -174,7 +174,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s21-2", type: "module", title: "Introduction to CSAT and NPS", description: "Satisfaction metrics.", duration: "15 min", referenceId: "m34" },
     { id: "s21-3", type: "module", title: "Case Documentation Best Practices", description: "Clear case notes.", duration: "20 min", referenceId: "m17" },
   ]},
-  { id: "mst22", title: "Performance Metrics Mastery", description: "Understand and optimize all CX metrics.", category: "Quality Assurance", difficulty: "Intermediate", skills: ["Metrics", "Analytics", "Performance"], assignedTo: ["u2", "u3", "u4"], steps: [
+  { id: "mst22", title: "Performance Metrics Mastery", description: "Understand and optimize all CX metrics.", category: "Quality Assurance", difficulty: "Intermediate", skills: ["Metrics", "Analytics", "Performance"], assignedTo: ["u6", "u8"], steps: [
     { id: "s22-1", type: "module", title: "Introduction to CSAT and NPS", description: "Core metrics.", duration: "15 min", referenceId: "m34" },
     { id: "s22-2", type: "module", title: "Performance Metrics Deep Dive", description: "AHT, FCR, CSAT, NPS.", duration: "20 min", referenceId: "m56" },
     { id: "s22-3", type: "module", title: "Predictive CX Analytics", description: "Data-driven insights.", duration: "30 min", referenceId: "m92" },

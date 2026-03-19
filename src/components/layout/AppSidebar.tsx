@@ -154,7 +154,7 @@ export function AppSidebar() {
                     <PanelLeftOpen className="h-4.5 w-4.5 text-foreground" />
                   </div>
                 ) : (
-                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-7 w-7 object-contain" />
+                  <img src={accountLogo} alt={accountName} className="h-7 w-7 object-contain" style={{ background: 'transparent' }} />
                 )}
               </div>
             )}

@@ -57,7 +57,7 @@ export function AccountSwitcher({ expanded }: AccountSwitcherProps) {
         <PopoverContent side={expanded ? "bottom" : "right"} align="start" sideOffset={8} className="w-64 p-2">
           <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Accounts</p>
           {accounts.map((acct) => {
-            const isActive = acct.id === activeAccount.id;
+            const isActive = acct.id === activeAccount?.id;
             return (
               <div key={acct.id} className="flex items-center gap-1">
                 <button

@@ -68,7 +68,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s4-3", type: "module", title: "Live Chat Support Basics", description: "Chat-specific dynamics.", duration: "20 min", referenceId: "m24" },
     { id: "s4-4", type: "module", title: "Social Media Customer Support", description: "Public interactions.", duration: "20 min", referenceId: "m59" },
   ]},
-  { id: "mst5", title: "Active Listening & Rapport", description: "Develop deep listening skills and connection techniques.", category: "Communication", difficulty: "Advanced", skills: ["Active Listening", "Rapport Building", "Empathy"], assignedTo: ["u2", "u3", "u4"], steps: [
+  { id: "mst5", title: "Active Listening & Rapport", description: "Develop deep listening skills and connection techniques.", category: "Communication", difficulty: "Advanced", skills: ["Active Listening", "Rapport Building", "Empathy"], assignedTo: ["u6", "u8"], steps: [
     { id: "s5-1", type: "module", title: "Building Rapport with Customers", description: "Foundation of trust.", duration: "20 min", referenceId: "m33" },
     { id: "s5-2", type: "module", title: "Advanced Active Listening", description: "Emotional labeling and strategic silence.", duration: "25 min", referenceId: "m45" },
     { id: "s5-3", type: "assessment", title: "Empathy Baseline Assessment", description: "Test empathy skills.", referenceId: "a5" },

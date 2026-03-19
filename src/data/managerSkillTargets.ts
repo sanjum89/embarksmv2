@@ -321,7 +321,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s47-2", type: "module", title: "AI and Automation in CX", description: "AI tools.", duration: "30 min", referenceId: "m91" },
     { id: "s47-3", type: "module", title: "Data-Driven Case Prioritization", description: "Smart triage.", duration: "15 min", referenceId: "m66" },
   ]},
-  { id: "mst48", title: "CX Strategy & Design Thinking", description: "Strategic CX thinking and design approaches.", category: "Strategy", difficulty: "Expert", skills: ["CX Strategy", "Design Thinking", "Innovation"], assignedTo: ["u3"], steps: [
+  { id: "mst48", title: "CX Strategy & Design Thinking", description: "Strategic CX thinking and design approaches.", category: "Strategy", difficulty: "Expert", skills: ["CX Strategy", "Design Thinking", "Innovation"], assignedTo: ["u6"], steps: [
     { id: "s48-1", type: "module", title: "Customer Experience Design Thinking", description: "Design-led CX.", duration: "30 min", referenceId: "m94" },
     { id: "s48-2", type: "module", title: "Strategic CX Consulting", description: "CX consulting skills.", duration: "30 min", referenceId: "m89" },
     { id: "s48-3", type: "module", title: "Voice of Customer Program Design", description: "VOC programs.", duration: "25 min", referenceId: "m93" },

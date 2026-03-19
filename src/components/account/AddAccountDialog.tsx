@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
-import { Upload, FileJson, AlertCircle, ImageIcon, X } from "lucide-react";
+import { Upload, FileJson, AlertCircle, ImageIcon, X, AlertTriangle } from "lucide-react";
 import { useAccount } from "@/contexts/AccountContext";
+import { parseAccountJSON } from "@/lib/accountParser";
 import {
   Dialog,
   DialogContent,

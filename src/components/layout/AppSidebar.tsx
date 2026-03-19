@@ -155,21 +155,29 @@ export function AppSidebar() {
           expanded ? "w-56" : "w-[58px]"
         )}>
           <div className={cn("flex items-center", expanded ? "gap-2 justify-between" : "justify-center")}>
-            <div className="flex-1 min-w-0">
-              <AccountSwitcher expanded={expanded} />
-            </div>
             {expanded ? (
-              <button onClick={toggle} className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors shrink-0">
-                <PanelLeftClose className="h-4 w-4" />
-              </button>
+              <>
+                <div className="flex-1 min-w-0">
+                  <AccountSwitcher expanded={expanded} />
+                </div>
+                <button onClick={toggle} className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-muted transition-colors shrink-0">
+                  <PanelLeftClose className="h-4 w-4" />
+                </button>
+              </>
             ) : (
               <div
-                className="absolute inset-0 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity"
+                className="relative flex h-9 w-9 items-center justify-center cursor-pointer"
+                onMouseEnter={() => setBrandHovered(true)}
+                onMouseLeave={() => setBrandHovered(false)}
                 onClick={toggle}
               >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted transition-colors">
-                  <PanelLeftOpen className="h-4.5 w-4.5 text-foreground" />
-                </div>
+                {brandHovered ? (
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted transition-colors">
+                    <PanelLeftOpen className="h-4.5 w-4.5 text-foreground" />
+                  </div>
+                ) : (
+                  <AccountSwitcher expanded={expanded} />
+                )}
               </div>
             )}
           </div>
@@ -565,21 +573,29 @@ export function AppSidebar() {
       {/* Brand + toggle */}
       <div className={cn("flex flex-col border-b border-sidebar-border w-full", expanded ? "px-4 py-4" : "items-center py-4")}>
         <div className={cn("flex items-center w-full", expanded ? "justify-between" : "justify-center")}>
-          <div className="flex-1 min-w-0">
-            <AccountSwitcher expanded={expanded} />
-          </div>
           {expanded ? (
-            <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors shrink-0">
-              <PanelLeftClose className="h-4 w-4" />
-            </button>
+            <>
+              <div className="flex-1 min-w-0">
+                <AccountSwitcher expanded={expanded} />
+              </div>
+              <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors shrink-0">
+                <PanelLeftClose className="h-4 w-4" />
+              </button>
+            </>
           ) : (
             <div
-              className="absolute inset-0 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity"
+              className="relative flex h-9 w-9 items-center justify-center cursor-pointer"
+              onMouseEnter={() => setBrandHovered(true)}
+              onMouseLeave={() => setBrandHovered(false)}
               onClick={toggle}
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent transition-colors">
-                <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
-              </div>
+              {brandHovered ? (
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent transition-colors">
+                  <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
+                </div>
+              ) : (
+                <AccountSwitcher expanded={expanded} />
+              )}
             </div>
           )}
         </div>

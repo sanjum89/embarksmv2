@@ -4,7 +4,8 @@ import { Send, MessageSquare, ThumbsUp, ThumbsDown, Link2, X, Maximize2, Downloa
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
-import { mockNewHires, mockProgramContexts } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
+import { mockNewHires as defaultNewHires, mockProgramContexts as defaultProgramContexts } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -88,7 +89,7 @@ const suggestionCards = [
   { label: "Analyze the job roles in my org", prompt: "Analyze job roles in my organization", illustration: "roles" },
 ];
 
-function generateResponse(prompt: string, skillTargets: any[]): Omit<ChatMessage, "id"> {
+function generateResponse(prompt: string, skillTargets: any[], mockNewHires: any[], mockProgramContexts: any[]): Omit<ChatMessage, "id"> {
   const lower = prompt.toLowerCase();
 
   if (lower.includes("new hire")) {
@@ -166,6 +167,12 @@ function ThinkingIndicator() {
 export default function ManagerView() {
   const { user } = useUser();
   const { skillTargets } = useSkillTargets();
+  const { normalizedAccount, activeAccount } = useAccount();
+
+  // Use account-aware data with fallback to defaults
+  const mockNewHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
+  const mockProgramContexts = normalizedAccount?.programContexts ?? activeAccount?.data?.programContexts ?? defaultProgramContexts;
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [activePanel, setActivePanel] = useState<string | null>(null);
@@ -224,7 +231,7 @@ export default function ManagerView() {
     setIsThinking(true);
 
     setTimeout(() => {
-      const responseData = generateResponse(prompt, skillTargets);
+      const responseData = generateResponse(prompt, skillTargets, mockNewHires, mockProgramContexts);
       const response: ChatMessage = { id: (Date.now() + 1).toString(), ...responseData };
       setMessages((prev) => [...prev, response]);
       setActivePanel(response.panel || null);

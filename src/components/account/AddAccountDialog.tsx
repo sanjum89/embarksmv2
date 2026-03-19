@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
-import { Upload, FileJson, AlertCircle, ImageIcon, X } from "lucide-react";
+import { Upload, FileJson, AlertCircle, ImageIcon, X, AlertTriangle } from "lucide-react";
 import { useAccount } from "@/contexts/AccountContext";
+import { parseAccountJSON } from "@/lib/accountParser";
 import {
   Dialog,
   DialogContent,
@@ -33,6 +34,8 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
   const [logoDataUrl, setLogoDataUrl] = useState<string | null>(null);
   const [logoFileName, setLogoFileName] = useState<string | null>(null);
   const [pendingJson, setPendingJson] = useState<any>(null);
+  const [parseWarnings, setParseWarnings] = useState<string[]>([]);
+  const [employeeCount, setEmployeeCount] = useState<number>(0);
 
   const handleLogoFile = useCallback(async (file: File) => {
     const validTypes = ["image/png", "image/svg+xml"];
@@ -52,6 +55,7 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
 
   const handleFile = useCallback(async (file: File) => {
     setError(null);
+    setParseWarnings([]);
     setFileName(file.name);
     setLoading(true);
 
@@ -59,9 +63,23 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
       const text = await file.text();
       const json = JSON.parse(text);
 
-      if (!json.name || typeof json.name !== "string") {
-        throw new Error("JSON must include a 'name' field (string).");
+      // Validate with v2 parser for feedback
+      const name = json.account?.name || json.name;
+      if (!name || typeof name !== "string") {
+        throw new Error("JSON must include a 'name' field (string) at top level or under 'account'.");
       }
+
+      // Run parser validation for warnings
+      const { errors, warnings } = parseAccountJSON(json, "preview");
+      if (errors.length > 0) {
+        throw new Error(errors.join(" "));
+      }
+      setParseWarnings(warnings);
+
+      // Count employees/users for preview
+      const empCount = (json.employees?.length || 0) + (json.users?.length || 0) ||
+        (json.data?.employees?.length || 0);
+      setEmployeeCount(empCount);
 
       setPendingJson(json);
     } catch (e: any) {
@@ -80,7 +98,8 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
       if (logoDataUrl) {
         payload.logo = logoDataUrl;
       }
-      await addAccount(payload.name, payload);
+      const accountName = payload.account?.name || payload.name;
+      await addAccount(accountName, payload);
       toast({
         title: "Account added",
         description: `"${payload.name}" has been created and is now active.`,
@@ -90,6 +109,8 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
       setLogoDataUrl(null);
       setLogoFileName(null);
       setPendingJson(null);
+      setParseWarnings([]);
+      setEmployeeCount(0);
     } catch (e: any) {
       setError(e.message || "Failed to create account.");
     } finally {
@@ -112,7 +133,7 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
   return (
     <Dialog open={open} onOpenChange={(v) => {
       onOpenChange(v);
-      if (!v) { setFileName(null); setLogoDataUrl(null); setLogoFileName(null); setPendingJson(null); setError(null); }
+      if (!v) { setFileName(null); setLogoDataUrl(null); setLogoFileName(null); setPendingJson(null); setParseWarnings([]); setEmployeeCount(0); setError(null); }
     }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
@@ -213,10 +234,27 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
           </div>
         )}
 
+        {parseWarnings.length > 0 && (
+          <div className="flex items-start gap-2 rounded-md bg-warning/10 border border-warning/20 p-3 text-sm text-muted-foreground">
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
+            <div>
+              <p className="font-medium text-foreground text-xs mb-1">Optional sections missing (defaults applied)</p>
+              <p className="text-xs">{parseWarnings.length} section{parseWarnings.length > 1 ? "s" : ""} not provided</p>
+            </div>
+          </div>
+        )}
+
         {pendingJson && (
-          <Button onClick={handleSubmit} disabled={loading} className="w-full">
-            {loading ? "Creating…" : `Create "${pendingJson.name}"`}
-          </Button>
+          <div className="space-y-2">
+            {employeeCount > 0 && (
+              <p className="text-xs text-muted-foreground text-center">
+                {employeeCount} user{employeeCount > 1 ? "s" : ""}/employee{employeeCount > 1 ? "s" : ""} detected
+              </p>
+            )}
+            <Button onClick={handleSubmit} disabled={loading} className="w-full">
+              {loading ? "Creating…" : `Create "${pendingJson.account?.name || pendingJson.name}"`}
+            </Button>
+          </div>
         )}
       </DialogContent>
     </Dialog>

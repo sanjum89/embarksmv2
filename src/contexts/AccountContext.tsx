@@ -1,12 +1,16 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import type { Account, AccountData } from "@/types/account";
+import type { NormalizedAccount } from "@/types/account-v2";
 import { supabase } from "@/integrations/supabase/client";
-import { buildDefaultAccount, generateFallbackData } from "@/lib/accountDefaults";
+import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized } from "@/lib/accountDefaults";
+import { parseAccountJSON } from "@/lib/accountParser";
 
 interface AccountContextType {
   accounts: Account[];
   activeAccountId: string | null;
   activeAccount: Account | null;
+  /** Normalized view of the active account */
+  normalizedAccount: NormalizedAccount | null;
   loading: boolean;
   switchAccount: (id: string) => void;
   addAccount: (name: string, data: Partial<AccountData> & { logo?: string; accent_color?: string; use_case_context?: string }) => Promise<void>;
@@ -17,20 +21,112 @@ const AccountContext = createContext<AccountContextType>({
   accounts: [],
   activeAccountId: null,
   activeAccount: null,
+  normalizedAccount: null,
   loading: true,
   switchAccount: () => {},
   addAccount: async () => {},
   deleteAccount: async () => {},
 });
 
+/**
+ * Build a NormalizedAccount from a legacy Account row.
+ */
+function normalizeFromLegacy(acct: Account): NormalizedAccount {
+  if (acct.is_default) {
+    return buildDefaultNormalized(acct.id);
+  }
+
+  // For uploaded accounts, try v2 parsing from the data blob
+  const data = acct.data as any;
+
+  // Check if this is a v2-style JSON (has `users` or `employees` array + `account` or `name`)
+  const hasV2Shape = data?.users || data?.employees;
+
+  if (hasV2Shape) {
+    const { account: parsed } = parseAccountJSON({ ...data, name: data.name || acct.name }, acct.id);
+    if (parsed) {
+      // Override branding from top-level account fields
+      parsed.branding.logo = acct.logo || parsed.branding.logo;
+      parsed.branding.accentColor = acct.accent_color || parsed.branding.accentColor;
+      parsed.isDefault = acct.is_default;
+      parsed.createdAt = acct.created_at;
+      return parsed;
+    }
+  }
+
+  // Legacy v1 shape: flat AccountData blob
+  const employees = data?.employees || [];
+  const usersById: Record<string, any> = {};
+  const employeesById: Record<string, any> = {};
+  const hierarchyMap: Record<string, string[]> = {};
+
+  for (const e of employees) {
+    usersById[e.id] = {
+      id: e.id,
+      name: e.name,
+      email: e.email || "",
+      role: e.role || "learner",
+      avatarUrl: e.avatarUrl,
+      title: e.title,
+      canManage: e.canManage ?? (e.role === "manager" || e.role === "admin"),
+      linkedEmployeeId: e.id,
+    };
+    employeesById[e.id] = {
+      id: e.id,
+      name: e.name,
+      email: e.email || "",
+      title: e.title,
+      reportsTo: e.reportsTo ?? null,
+      avatarUrl: e.avatarUrl,
+    };
+    if (e.reportsTo) {
+      if (!hierarchyMap[e.reportsTo]) hierarchyMap[e.reportsTo] = [];
+      hierarchyMap[e.reportsTo].push(e.id);
+    }
+  }
+
+  return {
+    id: acct.id,
+    schemaVersion: "1",
+    isDefault: acct.is_default,
+    createdAt: acct.created_at,
+    branding: {
+      name: acct.name,
+      logo: acct.logo,
+      accentColor: acct.accent_color,
+    },
+    proficiencyScale: ["Beginner", "Intermediate", "Advanced", "Expert", "Master"],
+    usersById,
+    employeesById,
+    rolesById: {},
+    projectsById: {},
+    projectAssignments: [],
+    hierarchyMap,
+    skillTargets: data?.skillTargets || [],
+    rolePlays: data?.rolePlays || [],
+    assessments: data?.assessments || [],
+    learningModules: data?.learningModules || [],
+    newHires: data?.newHires || [],
+    programContexts: data?.programContexts || [],
+    teamMembers: Object.values(usersById),
+    profileData: data?.profileData || {},
+    prompts: data?.prompts || {},
+    aiContext: data?.aiManagerConfig || {},
+    pageData: {},
+    my360: {},
+    reflections: [],
+    workSignals: [],
+  };
+}
+
 export function AccountProvider({ children }: { children: ReactNode }) {
   const [accounts, setAccounts] = useState<Account[]>([]);
+  const [normalizedCache, setNormalizedCache] = useState<Record<string, NormalizedAccount>>({});
   const [activeAccountId, setActiveAccountId] = useState<string | null>(
     () => localStorage.getItem("activeAccountId")
   );
   const [loading, setLoading] = useState(true);
 
-  // Load accounts from DB
   useEffect(() => {
     loadAccounts();
   }, []);
@@ -59,10 +155,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       created_at: row.created_at,
     })) as Account[];
 
-    // Seed default account if none exists
     if (accts.length === 0) {
       const defaultAcct = buildDefaultAccount();
-      // Use upsert-like approach: check again to avoid race condition
       const { data: existing } = await supabase
         .from("accounts")
         .select("*")
@@ -104,9 +198,14 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // Build normalized cache
+    const cache: Record<string, NormalizedAccount> = {};
+    for (const acct of accts) {
+      cache[acct.id] = normalizeFromLegacy(acct);
+    }
+    setNormalizedCache(cache);
     setAccounts(accts);
 
-    // Set active account
     const savedId = localStorage.getItem("activeAccountId");
     if (savedId && accts.some((a) => a.id === savedId)) {
       setActiveAccountId(savedId);
@@ -157,6 +256,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       created_at: (inserted as any).created_at,
     };
 
+    const normalized = normalizeFromLegacy(newAcct);
+    setNormalizedCache((prev) => ({ ...prev, [newAcct.id]: normalized }));
     setAccounts((prev) => [...prev, newAcct]);
     switchAccount(newAcct.id);
   }, [switchAccount]);
@@ -169,6 +270,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
 
     setAccounts((prev) => prev.filter((a) => a.id !== id));
+    setNormalizedCache((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
 
     if (activeAccountId === id) {
       const defaultAcct = accounts.find((a) => a.is_default) ?? accounts[0];
@@ -177,12 +283,14 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   }, [accounts, activeAccountId, switchAccount]);
 
   const activeAccount = accounts.find((a) => a.id === activeAccountId) ?? null;
+  const normalizedAccount = activeAccountId ? normalizedCache[activeAccountId] ?? null : null;
 
   return (
     <AccountContext.Provider value={{
       accounts,
       activeAccountId,
       activeAccount,
+      normalizedAccount,
       loading,
       switchAccount,
       addAccount,

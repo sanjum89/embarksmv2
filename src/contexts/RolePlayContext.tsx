@@ -16,9 +16,12 @@ const RolePlayContext = createContext<RolePlayContextType>({
 });
 
 export function RolePlayProvider({ children }: { children: ReactNode }) {
-  const { activeAccount, loading } = useAccount();
+  const { normalizedAccount, activeAccount, loading } = useAccount();
 
   const getInitialPlays = () => {
+    if (normalizedAccount?.rolePlays?.length) {
+      return normalizedAccount.rolePlays;
+    }
     if (activeAccount?.data?.rolePlays?.length) {
       return activeAccount.data.rolePlays;
     }
@@ -31,7 +34,7 @@ export function RolePlayProvider({ children }: { children: ReactNode }) {
     if (!loading) {
       setRolePlays(getInitialPlays());
     }
-  }, [activeAccount?.id, loading]);
+  }, [activeAccount?.id, normalizedAccount?.id, loading]);
 
   const updateRolePlay = (id: string, updates: Partial<RolePlay>) => {
     setRolePlays((prev) =>

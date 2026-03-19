@@ -16,9 +16,12 @@ const SkillTargetsContext = createContext<SkillTargetsContextType>({
 });
 
 export function SkillTargetsProvider({ children }: { children: ReactNode }) {
-  const { activeAccount, loading } = useAccount();
+  const { normalizedAccount, activeAccount, loading } = useAccount();
 
   const getInitialTargets = () => {
+    if (normalizedAccount?.skillTargets?.length) {
+      return normalizedAccount.skillTargets;
+    }
     if (activeAccount?.data?.skillTargets?.length) {
       return activeAccount.data.skillTargets;
     }
@@ -31,7 +34,7 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
     if (!loading) {
       setSkillTargets(getInitialTargets());
     }
-  }, [activeAccount?.id, loading]);
+  }, [activeAccount?.id, normalizedAccount?.id, loading]);
 
   const addSkillTargets = (targets: SkillTarget[]) => {
     setSkillTargets((prev) => [...prev, ...targets]);

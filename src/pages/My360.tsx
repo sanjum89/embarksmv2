@@ -32,6 +32,7 @@ import { ActionPlanView } from "@/components/my360/ActionPlanView";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { profileDataByUser as staticProfileData } from "@/data/mock";
+import { getProfileData } from "@/lib/accountSelectors";
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/hooks/useChartColors";
 import { proficiencyShort } from "@/types/learning";
@@ -92,9 +93,12 @@ type GapFilter = "All" | "Gap" | "No gap";
 
 export default function My360() {
   const { user } = useUser();
-  const { activeAccount } = useAccount();
-  const accountProfileData = activeAccount?.data?.profileData ?? {};
-  const profileData = accountProfileData[user.id] || staticProfileData[user.id] || staticProfileData["u1"];
+  const { activeAccount, normalizedAccount } = useAccount();
+  // Use normalized selector, fallback to legacy
+  const profileData = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)
+    || activeAccount?.data?.profileData?.[user.id]
+    || staticProfileData[user.id]
+    || staticProfileData["u1"];
   const chatRef = useRef<AIChatWrapperHandle>(null);
 
   // Clear chat when profile changes

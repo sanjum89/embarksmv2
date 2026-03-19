@@ -23,15 +23,15 @@ function toAccountEmployee(user: typeof currentUser, reportsTo?: string | null):
 export function buildDefaultAccountData(): AccountData {
   // Default hierarchy: Maya→Alex, Raj→Alex, Emma→Marcus
   const employees: AccountEmployee[] = [
-    toAccountEmployee(currentUser, null),       // Alex - top level
-    toAccountEmployee(marcusWellington, null),   // Marcus - top level
+    toAccountEmployee(currentUser, null),       // Alex - top level (manager)
+    toAccountEmployee(marcusWellington, null),   // Marcus - top level (manager)
     toAccountEmployee(mayaThompson, "u1"),       // Maya → Alex
     toAccountEmployee(rajPatel, "u1"),           // Raj → Alex
     toAccountEmployee(priyaMenon, "u7"),         // Emma → Marcus
     // Additional team members from mockTeamMembers not already included
     ...mockTeamMembers
       .filter((u) => !["u1", "u6", "u7", "u8", "u10"].includes(u.id))
-      .map((u) => toAccountEmployee(u, null)),
+      .map((u) => toAccountEmployee(u, "u1")),  // Jordan, Priya, Marcus W, Sofia → Alex
   ];
 
   return {

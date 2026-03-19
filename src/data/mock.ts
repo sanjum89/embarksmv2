@@ -15,7 +15,7 @@ export const currentUser: User = {
   id: "u1",
   name: "Alex Rivera",
   email: "alex@wfai.com",
-  role: "learner",
+  role: "manager",
   avatarUrl: "",
   title: "Product Manager",
   canManage: true,
@@ -165,7 +165,7 @@ export const mockTeamMembers: User[] = [
   { id: "u2", name: "Jordan Chen", email: "jordan@wfai.com", role: "learner" },
   { id: "u3", name: "Priya Sharma", email: "priya@wfai.com", role: "learner" },
   { id: "u4", name: "Marcus Williams", email: "marcus@wfai.com", role: "learner" },
-  { id: "u5", name: "Sofia Martinez", email: "sofia@wfai.com", role: "manager" },
+  { id: "u5", name: "Sofia Martinez", email: "sofia@wfai.com", role: "learner" },
   mayaThompson,
 ];
 

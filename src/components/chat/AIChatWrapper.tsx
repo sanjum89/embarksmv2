@@ -58,7 +58,7 @@ export const AIChatWrapper = forwardRef<AIChatWrapperHandle, AIChatWrapperProps>
     // New UI: full sidebar panel
     return (
       <div className="w-[400px] shrink-0 border-l border-border h-full overflow-hidden">
-        <AIChatPanel ref={chatRef} contextLabel={contextLabel} suggestedActions={suggestedActions} />
+        <AIChatPanel ref={chatRef} contextLabel={contextLabel} suggestedActions={suggestedActions} emptyStateMessage={emptyStateMessage} />
       </div>
     );
   }

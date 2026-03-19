@@ -13,8 +13,7 @@ export function AccountSwitcher({ expanded }: AccountSwitcherProps) {
   const { accounts, activeAccount, switchAccount, deleteAccount } = useAccount();
   const [addOpen, setAddOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
-
-  if (!activeAccount) return null;
+  const currentAccount = activeAccount ?? accounts[0] ?? null;
 
   return (
     <>
@@ -26,8 +25,8 @@ export function AccountSwitcher({ expanded }: AccountSwitcherProps) {
               expanded ? "px-3 py-2" : "justify-center p-2"
             )}
           >
-            {activeAccount.logo ? (
-              <img src={activeAccount.logo} alt={activeAccount.name} className="h-6 w-6 rounded object-contain shrink-0" />
+            {currentAccount?.logo ? (
+              <img src={currentAccount.logo} alt={currentAccount.name} className="h-6 w-6 rounded object-contain shrink-0" />
             ) : (
               <div className="flex h-6 w-6 items-center justify-center rounded bg-primary/10 shrink-0">
                 <Building2 className="h-3.5 w-3.5 text-primary" />
@@ -36,7 +35,7 @@ export function AccountSwitcher({ expanded }: AccountSwitcherProps) {
             {expanded && (
               <>
                 <span className="text-sm font-medium truncate flex-1 text-left text-foreground">
-                  {activeAccount.name}
+                  {currentAccount?.name ?? "Accounts"}
                 </span>
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
               </>

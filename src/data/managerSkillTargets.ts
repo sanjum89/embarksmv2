@@ -179,7 +179,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s22-2", type: "module", title: "Performance Metrics Deep Dive", description: "AHT, FCR, CSAT, NPS.", duration: "20 min", referenceId: "m56" },
     { id: "s22-3", type: "module", title: "Predictive CX Analytics", description: "Data-driven insights.", duration: "30 min", referenceId: "m92" },
   ]},
-  { id: "mst23", title: "SLA Management", description: "Master SLA tracking and compliance.", category: "Quality Assurance", difficulty: "Intermediate", skills: ["SLA", "Escalation", "Priority Management"], assignedTo: ["u3", "u4", "u6"], steps: [
+  { id: "mst23", title: "SLA Management", description: "Master SLA tracking and compliance.", category: "Quality Assurance", difficulty: "Intermediate", skills: ["SLA", "Escalation", "Priority Management"], assignedTo: ["u6"], steps: [
     { id: "s23-1", type: "module", title: "Understanding SLAs", description: "SLA basics.", duration: "15 min", referenceId: "m29" },
     { id: "s23-2", type: "module", title: "SLA Management and Escalation", description: "Breach risk and proactive escalation.", duration: "25 min", referenceId: "m50" },
     { id: "s23-3", type: "module", title: "Escalation Procedures", description: "When and how to escalate.", duration: "15 min", referenceId: "m16" },

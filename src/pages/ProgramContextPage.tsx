@@ -13,8 +13,12 @@ import type { ProgramContext } from "@/data/mock";
 
 export default function ProgramContextPage() {
   const { normalizedAccount, activeAccount } = useAccount();
-  const programContexts = normalizedAccount?.programContexts ?? activeAccount?.data?.programContexts ?? defaultProgramContexts;
-  const newHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
+  const programContexts = Array.isArray(normalizedAccount?.programContexts) ? normalizedAccount.programContexts
+    : Array.isArray(activeAccount?.data?.programContexts) ? activeAccount.data.programContexts
+    : defaultProgramContexts;
+  const newHires = Array.isArray(normalizedAccount?.newHires) ? normalizedAccount.newHires
+    : Array.isArray(activeAccount?.data?.newHires) ? activeAccount.data.newHires
+    : defaultNewHires;
   const [selectedProgram, setSelectedProgram] = useState<ProgramContext | null>(null);
 
   if (selectedProgram) {
@@ -81,7 +85,9 @@ export default function ProgramContextPage() {
 /* ─── Program Detail View ─── */
 function ProgramDetail({ program, onBack }: { program: ProgramContext; onBack: () => void }) {
   const { normalizedAccount, activeAccount } = useAccount();
-  const newHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
+  const newHires = Array.isArray(normalizedAccount?.newHires) ? normalizedAccount.newHires
+    : Array.isArray(activeAccount?.data?.newHires) ? activeAccount.data.newHires
+    : defaultNewHires;
   const { skillTargets } = useSkillTargets();
   const st4 = skillTargets.find((st) => st.id === program.skillTargetId);
   const steps = st4?.steps ?? [];

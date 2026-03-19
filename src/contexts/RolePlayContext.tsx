@@ -19,10 +19,10 @@ export function RolePlayProvider({ children }: { children: ReactNode }) {
   const { normalizedAccount, activeAccount, loading } = useAccount();
 
   const getInitialPlays = () => {
-    if (normalizedAccount?.rolePlays?.length) {
+    if (Array.isArray(normalizedAccount?.rolePlays) && normalizedAccount.rolePlays.length) {
       return normalizedAccount.rolePlays;
     }
-    if (activeAccount?.data?.rolePlays?.length) {
+    if (Array.isArray(activeAccount?.data?.rolePlays) && activeAccount.data.rolePlays.length) {
       return activeAccount.data.rolePlays;
     }
     return mockRolePlayBank;

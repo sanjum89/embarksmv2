@@ -14,7 +14,9 @@ const levelColors: Record<string, string> = {
 
 export default function NewHiresPanel() {
   const { normalizedAccount, activeAccount } = useAccount();
-  const newHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
+  const newHires = Array.isArray(normalizedAccount?.newHires) ? normalizedAccount.newHires
+    : Array.isArray(activeAccount?.data?.newHires) ? activeAccount.data.newHires
+    : defaultNewHires;
   return (
     <div className="p-6">
       <h3 className="font-display text-lg font-bold text-foreground mb-1">New Hires</h3>

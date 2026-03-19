@@ -162,11 +162,10 @@ export const mockProgramContexts: ProgramContext[] = [
 
 export const mockTeamMembers: User[] = [
   currentUser,
-  { id: "u2", name: "Jordan Chen", email: "jordan@wfai.com", role: "learner" },
-  { id: "u3", name: "Priya Sharma", email: "priya@wfai.com", role: "learner" },
-  { id: "u4", name: "Marcus Williams", email: "marcus@wfai.com", role: "learner" },
-  { id: "u5", name: "Sofia Martinez", email: "sofia@wfai.com", role: "learner" },
   mayaThompson,
+  rajPatel,
+  priyaMenon,
+  marcusWellington,
 ];
 
 /* ─── Assessments ─── */
@@ -284,7 +283,7 @@ export const mockSkillTargets: SkillTarget[] = [
     title: "Customer Objection Handling",
     description: "Master techniques for handling common customer objections during sales conversations.",
     category: "Sales Skills",
-    assignedTo: ["u1", "u2", "u3"],
+    assignedTo: ["u1"],
     progress: 35,
     dueDate: "2026-03-15",
     skills: [
@@ -305,7 +304,7 @@ export const mockSkillTargets: SkillTarget[] = [
     title: "Product Knowledge: Enterprise Suite",
     description: "Deep understanding of the Enterprise Suite product line for effective consultative selling.",
     category: "Product Knowledge",
-    assignedTo: ["u1", "u4"],
+    assignedTo: ["u1"],
     progress: 0,
     dueDate: "2026-03-22",
     skills: [
@@ -327,7 +326,7 @@ export const mockSkillTargets: SkillTarget[] = [
     title: "Empathetic Communication",
     description: "Develop empathy-driven communication skills for customer-facing interactions.",
     category: "Soft Skills",
-    assignedTo: ["u1", "u2", "u3", "u4"],
+    assignedTo: ["u1"],
     progress: 80,
     dueDate: "2026-03-10",
     skills: [
@@ -469,11 +468,6 @@ export const mockPeopleGraphSignals: PeopleGraphSignal[] = [
   { id: "sig2", userId: "u1", skillTargetId: "st3", stepId: "s11", signalType: "assessment_score", value: 65, timestamp: "2026-02-18T09:15:00Z", excludeFromGraph: false },
   { id: "sig3", userId: "u1", skillTargetId: "st3", stepId: "s12", signalType: "module_completion", value: 100, timestamp: "2026-02-19T14:00:00Z", excludeFromGraph: false },
   { id: "sig4", userId: "u1", skillTargetId: "st3", stepId: "s13", signalType: "role_play_rating", value: 85, timestamp: "2026-02-21T11:45:00Z", excludeFromGraph: false },
-  { id: "sig5", userId: "u2", skillTargetId: "st1", stepId: "s1", signalType: "assessment_score", value: 88, timestamp: "2026-02-19T08:30:00Z", excludeFromGraph: false },
-  { id: "sig6", userId: "u2", skillTargetId: "st3", stepId: "s11", signalType: "assessment_score", value: 78, timestamp: "2026-02-17T10:00:00Z", excludeFromGraph: false },
-  { id: "sig7", userId: "u3", skillTargetId: "st1", stepId: "s1", signalType: "assessment_score", value: 55, timestamp: "2026-02-20T14:00:00Z", excludeFromGraph: false },
-  { id: "sig8", userId: "u3", skillTargetId: "st3", stepId: "s11", signalType: "assessment_score", value: 92, timestamp: "2026-02-18T16:30:00Z", excludeFromGraph: false },
-  { id: "sig9", userId: "u4", skillTargetId: "st2", stepId: "s6", signalType: "assessment_score", value: 60, timestamp: "2026-02-22T09:00:00Z", excludeFromGraph: false },
   { id: "sig10", userId: "u1", skillTargetId: "st3", stepId: "s13", signalType: "role_play_rating", value: 90, timestamp: "2026-02-22T15:00:00Z", excludeFromGraph: true },
 ];
 
@@ -487,12 +481,9 @@ export interface TeamMemberProgress {
 }
 
 export const mockTeamProgress: TeamMemberProgress[] = [
-  { user: mockTeamMembers[1], skillTargetId: "st1", progress: 60, lastActivity: "2026-02-25T10:00:00Z", status: "on_track" },
-  { user: mockTeamMembers[2], skillTargetId: "st1", progress: 20, lastActivity: "2026-02-20T14:00:00Z", status: "at_risk" },
-  { user: mockTeamMembers[1], skillTargetId: "st3", progress: 100, lastActivity: "2026-02-24T16:00:00Z", status: "completed" },
-  { user: mockTeamMembers[2], skillTargetId: "st3", progress: 75, lastActivity: "2026-02-23T09:00:00Z", status: "on_track" },
-  { user: mockTeamMembers[3], skillTargetId: "st2", progress: 20, lastActivity: "2026-02-22T09:00:00Z", status: "at_risk" },
-  { user: mockTeamMembers[3], skillTargetId: "st3", progress: 50, lastActivity: "2026-02-24T11:00:00Z", status: "on_track" },
+  { user: mockTeamMembers[1], skillTargetId: "st4", progress: 0, lastActivity: "2026-02-25T10:00:00Z", status: "on_track" },
+  { user: mockTeamMembers[2], skillTargetId: "st5", progress: 13, lastActivity: "2026-02-20T14:00:00Z", status: "on_track" },
+  { user: mockTeamMembers[3], skillTargetId: "st6", progress: 0, lastActivity: "2026-02-22T09:00:00Z", status: "on_track" },
 ];
 
 /* ─── Per-User Profile Data ─── */
@@ -563,7 +554,7 @@ export const profileDataByUser: Record<string, ProfileData> = {
   u6: {
     title: "Apple L1 Customer Support Executive",
     location: "Austin, Texas, USA",
-    manager: "Marcus Wellington",
+    manager: "Alex Rivera",
     yearsExperience: 3,
     status: "New Hire",
     department: "Customer Support",
@@ -633,7 +624,7 @@ export const profileDataByUser: Record<string, ProfileData> = {
   u8: {
     title: "Apple L1 Customer Support Executive",
     location: "Bangalore, India",
-    manager: "Marcus Wellington",
+    manager: "Alex Rivera",
     yearsExperience: 2,
     status: "New Hire",
     department: "Customer Support",
@@ -799,192 +790,6 @@ export const profileDataByUser: Record<string, ProfileData> = {
       { skill_name: "onboarding design", proficiency: "Advanced", assessment_year: 2025 },
       { skill_name: "mentoring", proficiency: "Expert", assessment_year: 2025 },
       { skill_name: "customer experience strategy", proficiency: "Intermediate", assessment_year: 2024 },
-    ],
-  },
-  u2: {
-    title: "CX Specialist",
-    location: "Seattle, WA",
-    manager: "Alex Rivera",
-    yearsExperience: 4,
-    summary:
-      "Customer experience specialist with 4 years of experience in journey mapping and feedback-driven design. Skilled at translating customer insights into actionable process improvements. Previously led CX optimization initiatives at a mid-size SaaS company.",
-    roleSnapshotText: "Design and optimize end-to-end customer experiences across digital and voice channels. Identify friction points and drive measurable improvements in satisfaction scores.",
-    projectSnapshotText: "Currently contributing to the Voice of Customer Analytics initiative, building dashboards and feedback loops for the support operations team.",
-    roleSkillsCurrent: [
-      { skill_name: "Customer Experience Design", proficiency: "Advanced", assessment_year: 2026 },
-      { skill_name: "Journey Mapping", proficiency: "Advanced", assessment_year: 2026 },
-      { skill_name: "Data Analysis", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Feedback Systems", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Stakeholder Presentation", proficiency: "Intermediate", assessment_year: 2025 },
-    ],
-    roleSkillsRequired: [
-      { skill_name: "Customer Experience Design", proficiency: "Expert" },
-      { skill_name: "Journey Mapping", proficiency: "Expert" },
-      { skill_name: "Data Analysis", proficiency: "Advanced" },
-      { skill_name: "Feedback Systems", proficiency: "Advanced" },
-      { skill_name: "Stakeholder Presentation", proficiency: "Advanced" },
-    ],
-    projectSkillsCurrent: [
-      { skill_name: "Survey Design", proficiency: "Advanced", assessment_year: 2026 },
-      { skill_name: "NPS & CSAT Analytics", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Dashboard Building", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Root Cause Analysis", proficiency: "Beginner", assessment_year: 2026 },
-    ],
-    projectSkillsRequired: [
-      { skill_name: "Survey Design", proficiency: "Expert" },
-      { skill_name: "NPS & CSAT Analytics", proficiency: "Advanced" },
-      { skill_name: "Dashboard Building", proficiency: "Advanced" },
-      { skill_name: "Root Cause Analysis", proficiency: "Intermediate" },
-    ],
-    otherSkills: [
-      { skill_name: "Figma", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "Miro", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "Qualtrics", proficiency: "Intermediate", assessment_year: 2025 },
-      { skill_name: "service design", proficiency: "Intermediate", assessment_year: 2024 },
-      { skill_name: "A/B testing", proficiency: "Intermediate", assessment_year: 2025 },
-      { skill_name: "user research", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "persona development", proficiency: "Intermediate", assessment_year: 2024 },
-    ],
-  },
-  u3: {
-    title: "Support Lead",
-    location: "Mumbai, India",
-    manager: "Alex Rivera",
-    yearsExperience: 5,
-    summary:
-      "Support team lead with 5 years of experience managing frontline support teams across APAC. Strong focus on process optimization, quality assurance, and mentoring junior agents. Known for reducing average handle time by 22% through workflow redesign.",
-    roleSnapshotText: "Lead a team of support agents, ensuring consistent service quality. Drive process improvements and coach team members toward performance targets.",
-    projectSnapshotText: "Currently overseeing the Quality Assurance Automation pilot, integrating AI-assisted ticket scoring and agent feedback loops.",
-    roleSkillsCurrent: [
-      { skill_name: "Team Leadership", proficiency: "Advanced", assessment_year: 2026 },
-      { skill_name: "Process Optimization", proficiency: "Advanced", assessment_year: 2026 },
-      { skill_name: "Quality Assurance", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Training & Mentoring", proficiency: "Advanced", assessment_year: 2026 },
-      { skill_name: "Performance Reporting", proficiency: "Intermediate", assessment_year: 2025 },
-    ],
-    roleSkillsRequired: [
-      { skill_name: "Team Leadership", proficiency: "Expert" },
-      { skill_name: "Process Optimization", proficiency: "Expert" },
-      { skill_name: "Quality Assurance", proficiency: "Advanced" },
-      { skill_name: "Training & Mentoring", proficiency: "Expert" },
-      { skill_name: "Performance Reporting", proficiency: "Advanced" },
-    ],
-    projectSkillsCurrent: [
-      { skill_name: "QA Automation Tools", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Ticket Scoring Models", proficiency: "Beginner", assessment_year: 2026 },
-      { skill_name: "Agent Feedback Design", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Data Visualization", proficiency: "Beginner", assessment_year: 2026 },
-    ],
-    projectSkillsRequired: [
-      { skill_name: "QA Automation Tools", proficiency: "Advanced" },
-      { skill_name: "Ticket Scoring Models", proficiency: "Intermediate" },
-      { skill_name: "Agent Feedback Design", proficiency: "Advanced" },
-      { skill_name: "Data Visualization", proficiency: "Intermediate" },
-    ],
-    otherSkills: [
-      { skill_name: "Zendesk", proficiency: "Expert", assessment_year: 2025 },
-      { skill_name: "workforce scheduling", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "conflict resolution", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "SLA management", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "root cause analysis", proficiency: "Intermediate", assessment_year: 2024 },
-      { skill_name: "knowledge management", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "stakeholder communication", proficiency: "Intermediate", assessment_year: 2025 },
-      { skill_name: "lean methodology", proficiency: "Intermediate", assessment_year: 2024 },
-    ],
-  },
-  u4: {
-    title: "Sr. Support Agent",
-    location: "Atlanta, GA",
-    manager: "Alex Rivera",
-    yearsExperience: 6,
-    summary:
-      "Senior support agent with 6 years of hands-on experience in technical troubleshooting and complex case resolution. Consistently ranks in the top 10% for first-contact resolution and customer satisfaction. Specializes in escalation management and product knowledge transfer.",
-    roleSnapshotText: "Handle complex and escalated customer issues across multiple product lines. Serve as a subject matter expert and mentor for junior agents.",
-    projectSnapshotText: "Currently contributing to the Product Knowledge Certification program, developing training content and assessment criteria for new product launches.",
-    roleSkillsCurrent: [
-      { skill_name: "Technical Troubleshooting", proficiency: "Expert", assessment_year: 2026 },
-      { skill_name: "Escalation Management", proficiency: "Advanced", assessment_year: 2026 },
-      { skill_name: "Product Knowledge", proficiency: "Expert", assessment_year: 2026 },
-      { skill_name: "Customer Retention", proficiency: "Advanced", assessment_year: 2026 },
-      { skill_name: "Documentation", proficiency: "Intermediate", assessment_year: 2025 },
-    ],
-    roleSkillsRequired: [
-      { skill_name: "Technical Troubleshooting", proficiency: "Expert" },
-      { skill_name: "Escalation Management", proficiency: "Expert" },
-      { skill_name: "Product Knowledge", proficiency: "Expert" },
-      { skill_name: "Customer Retention", proficiency: "Expert" },
-      { skill_name: "Documentation", proficiency: "Advanced" },
-    ],
-    projectSkillsCurrent: [
-      { skill_name: "Content Authoring", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Assessment Design", proficiency: "Beginner", assessment_year: 2026 },
-      { skill_name: "Knowledge Transfer", proficiency: "Advanced", assessment_year: 2026 },
-      { skill_name: "Product Launch Readiness", proficiency: "Intermediate", assessment_year: 2026 },
-    ],
-    projectSkillsRequired: [
-      { skill_name: "Content Authoring", proficiency: "Advanced" },
-      { skill_name: "Assessment Design", proficiency: "Intermediate" },
-      { skill_name: "Knowledge Transfer", proficiency: "Expert" },
-      { skill_name: "Product Launch Readiness", proficiency: "Advanced" },
-    ],
-    otherSkills: [
-      { skill_name: "Salesforce Service Cloud", proficiency: "Expert", assessment_year: 2025 },
-      { skill_name: "JIRA", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "remote desktop tools", proficiency: "Expert", assessment_year: 2025 },
-      { skill_name: "customer empathy", proficiency: "Expert", assessment_year: 2026 },
-      { skill_name: "cross-functional collaboration", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "incident management", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "product feedback loops", proficiency: "Intermediate", assessment_year: 2024 },
-      { skill_name: "mentoring", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "technical writing", proficiency: "Intermediate", assessment_year: 2025 },
-    ],
-  },
-  u5: {
-    title: "Operations Manager",
-    location: "Austin, TX",
-    manager: "Alex Rivera",
-    yearsExperience: 7,
-    summary:
-      "Operations manager with 7 years of experience driving operational excellence across customer-facing teams. Expert in workforce planning, performance analytics, and strategic process redesign. Led the centralization of support operations across 3 regional hubs, resulting in a 30% efficiency gain.",
-    roleSnapshotText: "Oversee daily operations and resource allocation for support teams. Drive strategic initiatives to improve efficiency, reduce costs, and maintain service quality.",
-    projectSnapshotText: "Currently leading the Workforce Optimization initiative, implementing predictive staffing models and real-time capacity dashboards.",
-    roleSkillsCurrent: [
-      { skill_name: "Operations Management", proficiency: "Expert", assessment_year: 2026 },
-      { skill_name: "Workforce Planning", proficiency: "Advanced", assessment_year: 2026 },
-      { skill_name: "Performance Analytics", proficiency: "Advanced", assessment_year: 2026 },
-      { skill_name: "Strategic Planning", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Budget Management", proficiency: "Intermediate", assessment_year: 2025 },
-    ],
-    roleSkillsRequired: [
-      { skill_name: "Operations Management", proficiency: "Expert" },
-      { skill_name: "Workforce Planning", proficiency: "Expert" },
-      { skill_name: "Performance Analytics", proficiency: "Expert" },
-      { skill_name: "Strategic Planning", proficiency: "Advanced" },
-      { skill_name: "Budget Management", proficiency: "Advanced" },
-    ],
-    projectSkillsCurrent: [
-      { skill_name: "Predictive Modeling", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Capacity Planning Tools", proficiency: "Intermediate", assessment_year: 2026 },
-      { skill_name: "Real-Time Dashboards", proficiency: "Beginner", assessment_year: 2026 },
-      { skill_name: "Change Management", proficiency: "Advanced", assessment_year: 2026 },
-    ],
-    projectSkillsRequired: [
-      { skill_name: "Predictive Modeling", proficiency: "Advanced" },
-      { skill_name: "Capacity Planning Tools", proficiency: "Advanced" },
-      { skill_name: "Real-Time Dashboards", proficiency: "Intermediate" },
-      { skill_name: "Change Management", proficiency: "Expert" },
-    ],
-    otherSkills: [
-      { skill_name: "Tableau", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "Power BI", proficiency: "Intermediate", assessment_year: 2025 },
-      { skill_name: "SQL", proficiency: "Intermediate", assessment_year: 2024 },
-      { skill_name: "project management", proficiency: "Expert", assessment_year: 2025 },
-      { skill_name: "vendor management", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "process automation", proficiency: "Intermediate", assessment_year: 2025 },
-      { skill_name: "six sigma", proficiency: "Intermediate", assessment_year: 2024 },
-      { skill_name: "executive reporting", proficiency: "Advanced", assessment_year: 2025 },
-      { skill_name: "risk assessment", proficiency: "Intermediate", assessment_year: 2024 },
-      { skill_name: "organizational design", proficiency: "Intermediate", assessment_year: 2025 },
     ],
   },
 };

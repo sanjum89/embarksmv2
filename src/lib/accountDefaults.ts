@@ -28,10 +28,6 @@ export function buildDefaultAccountData(): AccountData {
     toAccountEmployee(mayaThompson, "u1"),       // Maya → Alex
     toAccountEmployee(rajPatel, "u1"),           // Raj → Alex
     toAccountEmployee(priyaMenon, "u7"),         // Emma → Marcus
-    // Additional team members from mockTeamMembers not already included
-    ...mockTeamMembers
-      .filter((u) => !["u1", "u6", "u7", "u8", "u10"].includes(u.id))
-      .map((u) => toAccountEmployee(u, "u1")),  // Jordan, Priya, Marcus W, Sofia → Alex
   ];
 
   return {

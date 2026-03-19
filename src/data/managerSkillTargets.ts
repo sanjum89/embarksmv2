@@ -202,7 +202,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s26-3", type: "module", title: "Customer Loyalty Programs", description: "Design loyalty programs.", duration: "25 min", referenceId: "m82" },
     { id: "s26-4", type: "module", title: "Revenue Impact of CX", description: "CX and business outcomes.", duration: "25 min", referenceId: "m83" },
   ]},
-  { id: "mst27", title: "Proactive Customer Care", description: "Move from reactive to proactive support.", category: "Customer Retention", difficulty: "Intermediate", skills: ["Proactive Support", "Customer Outreach", "Prevention"], assignedTo: ["u2", "u6", "u8"], steps: [
+  { id: "mst27", title: "Proactive Customer Care", description: "Move from reactive to proactive support.", category: "Customer Retention", difficulty: "Intermediate", skills: ["Proactive Support", "Customer Outreach", "Prevention"], assignedTo: ["u6", "u8"], steps: [
     { id: "s27-1", type: "module", title: "Proactive Customer Outreach", description: "Monitor and act before issues arise.", duration: "20 min", referenceId: "m65" },
     { id: "s27-2", type: "module", title: "Customer Feedback Loops", description: "Capture actionable insights.", duration: "15 min", referenceId: "m41" },
     { id: "s27-3", type: "module", title: "Customer Education Programs", description: "Educated customers = fewer tickets.", duration: "25 min", referenceId: "m68" },

@@ -149,7 +149,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s17-2", type: "module", title: "Customer Verification and Privacy", description: "Identity verification.", duration: "20 min", referenceId: "m15" },
     { id: "s17-3", type: "module", title: "Privacy and Data Protection", description: "GDPR and data handling.", duration: "20 min", referenceId: "m35" },
   ]},
-  { id: "mst18", title: "Billing & Subscriptions", description: "Handle all billing and subscription queries.", category: "Product Knowledge", difficulty: "Intermediate", skills: ["Billing", "Subscriptions", "Refunds"], assignedTo: ["u2", "u6", "u8"], steps: [
+  { id: "mst18", title: "Billing & Subscriptions", description: "Handle all billing and subscription queries.", category: "Product Knowledge", difficulty: "Intermediate", skills: ["Billing", "Subscriptions", "Refunds"], assignedTo: ["u6", "u8"], steps: [
     { id: "s18-1", type: "module", title: "Apple Billing and Subscriptions", description: "App Store, iTunes purchases.", duration: "20 min", referenceId: "m11" },
     { id: "s18-2", type: "module", title: "Subscription Billing Basics", description: "Recurring billing models.", duration: "20 min", referenceId: "m42" },
     { id: "s18-3", type: "module", title: "Handling Complex Billing Disputes", description: "Chargebacks and disputes.", duration: "25 min", referenceId: "m47" },

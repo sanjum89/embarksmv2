@@ -109,7 +109,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
   ]},
 
   // ── CRM & Tools (11-15) ──
-  { id: "mst11", title: "CRM Power User", description: "Master CRM tools for efficient customer management.", category: "CRM & Tools", difficulty: "Intermediate", skills: ["CRM", "Data Management", "Workflow Automation"], assignedTo: ["u2", "u6", "u8"], steps: [
+  { id: "mst11", title: "CRM Power User", description: "Master CRM tools for efficient customer management.", category: "CRM & Tools", difficulty: "Intermediate", skills: ["CRM", "Data Management", "Workflow Automation"], assignedTo: ["u6", "u8"], steps: [
     { id: "s11-1", type: "module", title: "Introduction to CRM Tools", description: "CRM overview and basics.", duration: "20 min", referenceId: "m25" },
     { id: "s11-2", type: "module", title: "Advanced CRM Workflows", description: "Custom fields, automation.", duration: "30 min", referenceId: "m53" },
     { id: "s11-3", type: "module", title: "Remote Troubleshooting Techniques", description: "Using tools remotely.", duration: "25 min", referenceId: "m60" },

@@ -95,7 +95,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s8-3", type: "module", title: "Managing Customer Expectations", description: "Under-promise, over-deliver.", duration: "20 min", referenceId: "m58" },
     { id: "s8-4", type: "assessment", title: "Empathy Baseline", description: "Assess EQ baseline.", referenceId: "a5" },
   ]},
-  { id: "mst9", title: "Customer Expectation Management", description: "Set and manage expectations effectively.", category: "De-escalation", difficulty: "Intermediate", skills: ["Expectation Setting", "Communication", "Trust Building"], assignedTo: ["u2", "u4", "u8"], steps: [
+  { id: "mst9", title: "Customer Expectation Management", description: "Set and manage expectations effectively.", category: "De-escalation", difficulty: "Intermediate", skills: ["Expectation Setting", "Communication", "Trust Building"], assignedTo: ["u8"], steps: [
     { id: "s9-1", type: "module", title: "Managing Customer Expectations", description: "Techniques for setting expectations.", duration: "20 min", referenceId: "m58" },
     { id: "s9-2", type: "module", title: "Building Rapport with Customers", description: "Trust-building foundations.", duration: "20 min", referenceId: "m33" },
     { id: "s9-3", type: "module", title: "Proactive Customer Outreach", description: "Don't wait for issues.", duration: "20 min", referenceId: "m65" },

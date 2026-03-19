@@ -193,13 +193,16 @@ function ThinkingIndicator() {
 export default function LearnerChat() {
   const { user } = useUser();
   const { skillTargets } = useSkillTargets();
+  const { normalizedAccount, activeAccount } = useAccount();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const userProfile = (profileDataByUser as any)[user.id];
+  const userProfile = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)
+    ?? activeAccount?.data?.profileData?.[user.id]
+    ?? (defaultProfileData as any)[user.id];
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });

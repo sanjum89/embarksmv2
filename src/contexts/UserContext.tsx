@@ -156,13 +156,21 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setSignedInUserIds((prev) => {
       const updated = prev.filter((id) => id !== userId);
       persistIds(activeAccountId, updated);
-      // If we're logging out the active user, switch to the next signed-in user
-      if (user.id === userId && updated.length > 0) {
-        const next = users.find((u) => u.id === updated[0]);
-        if (next) setUser(next);
-      }
       return updated;
     });
+    // If logging out the active user, switch to the next available
+    if (user.id === userId) {
+      // We need to read the updated list after filter - use a microtask
+      setTimeout(() => {
+        setSignedInUserIds((current) => {
+          if (current.length > 0) {
+            const next = users.find((u) => u.id === current[0]);
+            if (next) setUser(next);
+          }
+          return current;
+        });
+      }, 0);
+    }
   }, [user.id, users, activeAccountId]);
 
   const setInitialSignedInUsers = useCallback((accountId: string, userIds: string[]) => {

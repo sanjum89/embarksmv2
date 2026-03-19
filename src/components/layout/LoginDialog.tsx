@@ -66,7 +66,7 @@ export function LoginDialog({ open, onOpenChange, availableUsers, signedInUserId
               <SelectTrigger id="login-user">
                 <SelectValue placeholder="Select a user…" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent position="popper" className="z-[9999]">
                 {unsignedUsers.length === 0 ? (
                   <SelectItem value="__none" disabled>All users are signed in</SelectItem>
                 ) : (

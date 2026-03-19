@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-const categories = [...new Set(managerSkillTargets.map((t) => t.category))];
+const defaultCategories = [...new Set(defaultManagerSkillTargets.map((t) => t.category))];
 
 const difficultyColor: Record<string, string> = {
   Beginner: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",

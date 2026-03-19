@@ -89,7 +89,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s7-4", type: "module", title: "Crisis Communication for Support", description: "Managing major incidents.", duration: "25 min", referenceId: "m71" },
     { id: "s7-5", type: "role_play", title: "De-escalation Scenario", description: "Practice with a frustrated customer.", referenceId: "rp3" },
   ]},
-  { id: "mst8", title: "Emotional Intelligence for Support", description: "Develop EQ skills for better customer outcomes.", category: "De-escalation", difficulty: "Intermediate", skills: ["Emotional Intelligence", "Empathy", "Self-Awareness"], assignedTo: ["u6", "u3", "u9"], steps: [
+  { id: "mst8", title: "Emotional Intelligence for Support", description: "Develop EQ skills for better customer outcomes.", category: "De-escalation", difficulty: "Intermediate", skills: ["Emotional Intelligence", "Empathy", "Self-Awareness"], assignedTo: ["u6", "u9"], steps: [
     { id: "s8-1", type: "module", title: "Understanding Customer Emotions", description: "Emotional psychology.", duration: "25 min", referenceId: "m21" },
     { id: "s8-2", type: "module", title: "Empathy in Digital Communication", description: "Warmth through text.", duration: "20 min", referenceId: "m52" },
     { id: "s8-3", type: "module", title: "Managing Customer Expectations", description: "Under-promise, over-deliver.", duration: "20 min", referenceId: "m58" },

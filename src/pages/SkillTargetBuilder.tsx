@@ -158,7 +158,7 @@ export default function SkillTargetBuilder() {
 
     try {
       const { data, error } = await supabase.functions.invoke("content-search", {
-        body: { query: q, contentCatalog: buildContentCatalog() },
+        body: { query: q, contentCatalog: buildContentCatalog(mockLearningModules, mockAssessments, mockRolePlayBank) },
       });
 
       if (error) throw error;

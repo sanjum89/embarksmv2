@@ -124,7 +124,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s13-2", type: "module", title: "Queue Management for Support Agents", description: "Time management between tickets.", duration: "15 min", referenceId: "m39" },
     { id: "s13-3", type: "module", title: "Data-Driven Case Prioritization", description: "Smart triage with data.", duration: "15 min", referenceId: "m66" },
   ]},
-  { id: "mst14", title: "Automation & Macros", description: "Leverage automation to boost productivity.", category: "CRM & Tools", difficulty: "Intermediate", skills: ["Automation", "Macros", "Productivity"], assignedTo: ["u2", "u3"], steps: [
+  { id: "mst14", title: "Automation & Macros", description: "Leverage automation to boost productivity.", category: "CRM & Tools", difficulty: "Intermediate", skills: ["Automation", "Macros", "Productivity"], assignedTo: ["u6", "u8"], steps: [
     { id: "s14-1", type: "module", title: "Building and Using Macros", description: "Effective macro creation.", duration: "15 min", referenceId: "m67" },
     { id: "s14-2", type: "module", title: "Advanced CRM Workflows", description: "Automation rules and triggers.", duration: "30 min", referenceId: "m53" },
     { id: "s14-3", type: "module", title: "Self-Service Portal Management", description: "Reduce ticket volume.", duration: "15 min", referenceId: "m44" },

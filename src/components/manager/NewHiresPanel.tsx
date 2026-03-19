@@ -18,7 +18,7 @@ export default function NewHiresPanel() {
   return (
     <div className="p-6">
       <h3 className="font-display text-lg font-bold text-foreground mb-1">New Hires</h3>
-      <p className="text-sm text-muted-foreground mb-6">{mockNewHires.length} new team members</p>
+      <p className="text-sm text-muted-foreground mb-6">{newHires.length} new team members</p>
 
       <div className="space-y-4">
         {mockNewHires.map((hire, i) => (

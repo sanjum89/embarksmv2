@@ -155,7 +155,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s18-3", type: "module", title: "Handling Complex Billing Disputes", description: "Chargebacks and disputes.", duration: "25 min", referenceId: "m47" },
     { id: "s18-4", type: "module", title: "Handling Refund Requests", description: "Refund processes.", duration: "15 min", referenceId: "m31" },
   ]},
-  { id: "mst19", title: "Warranty & Repair Expertise", description: "Expert handling of warranty and repair processes.", category: "Product Knowledge", difficulty: "Intermediate", skills: ["Warranty", "Repair", "AppleCare"], assignedTo: ["u4", "u8", "u9"], steps: [
+  { id: "mst19", title: "Warranty & Repair Expertise", description: "Expert handling of warranty and repair processes.", category: "Product Knowledge", difficulty: "Intermediate", skills: ["Warranty", "Repair", "AppleCare"], assignedTo: ["u8", "u9"], steps: [
     { id: "s19-1", type: "module", title: "Warranty and Repair Processes", description: "Coverage and repair flow.", duration: "25 min", referenceId: "m12" },
     { id: "s19-2", type: "module", title: "Warranty Claim Assessment", description: "Evaluating claims.", duration: "25 min", referenceId: "m55" },
     { id: "s19-3", type: "module", title: "Product Return Process", description: "Returns and exchanges.", duration: "15 min", referenceId: "m38" },

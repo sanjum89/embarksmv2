@@ -332,7 +332,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s49-2", type: "module", title: "Strategic CX Consulting", description: "Strategic thinking.", duration: "30 min", referenceId: "m89" },
     { id: "s49-3", type: "module", title: "Workforce Planning for CX", description: "Global capacity.", duration: "25 min", referenceId: "m78" },
   ]},
-  { id: "mst50", title: "AI-Powered Support Transformation", description: "Transform support with AI and automation.", category: "Strategy", difficulty: "Expert", skills: ["AI", "Automation", "Digital Transformation"], assignedTo: ["u3", "u4"], steps: [
+  { id: "mst50", title: "AI-Powered Support Transformation", description: "Transform support with AI and automation.", category: "Strategy", difficulty: "Expert", skills: ["AI", "Automation", "Digital Transformation"], assignedTo: ["u6", "u8"], steps: [
     { id: "s50-1", type: "module", title: "AI and Automation in CX", description: "AI tools and bots.", duration: "30 min", referenceId: "m91" },
     { id: "s50-2", type: "module", title: "CX Technology Stack Mastery", description: "Full tech stack.", duration: "30 min", referenceId: "m90" },
     { id: "s50-3", type: "module", title: "Predictive CX Analytics", description: "Predictive AI.", duration: "30 min", referenceId: "m92" },

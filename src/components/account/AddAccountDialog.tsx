@@ -233,10 +233,27 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
           </div>
         )}
 
+        {parseWarnings.length > 0 && (
+          <div className="flex items-start gap-2 rounded-md bg-warning/10 border border-warning/20 p-3 text-sm text-muted-foreground">
+            <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
+            <div>
+              <p className="font-medium text-foreground text-xs mb-1">Optional sections missing (defaults applied)</p>
+              <p className="text-xs">{parseWarnings.length} section{parseWarnings.length > 1 ? "s" : ""} not provided</p>
+            </div>
+          </div>
+        )}
+
         {pendingJson && (
-          <Button onClick={handleSubmit} disabled={loading} className="w-full">
-            {loading ? "Creating…" : `Create "${pendingJson.name}"`}
-          </Button>
+          <div className="space-y-2">
+            {employeeCount > 0 && (
+              <p className="text-xs text-muted-foreground text-center">
+                {employeeCount} user{employeeCount > 1 ? "s" : ""}/employee{employeeCount > 1 ? "s" : ""} detected
+              </p>
+            )}
+            <Button onClick={handleSubmit} disabled={loading} className="w-full">
+              {loading ? "Creating…" : `Create "${pendingJson.account?.name || pendingJson.name}"`}
+            </Button>
+          </div>
         )}
       </DialogContent>
     </Dialog>

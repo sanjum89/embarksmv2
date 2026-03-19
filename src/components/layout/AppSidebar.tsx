@@ -565,39 +565,23 @@ export function AppSidebar() {
       {/* Brand + toggle */}
       <div className={cn("flex flex-col border-b border-sidebar-border w-full", expanded ? "px-4 py-4" : "items-center py-4")}>
         <div className={cn("flex items-center w-full", expanded ? "justify-between" : "justify-center")}>
+          <div className="flex-1 min-w-0">
+            <AccountSwitcher expanded={expanded} />
+          </div>
           {expanded ? (
-            <>
-              <div className="flex items-center gap-2">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0">
-                  <img src={accountLogo} alt={accountName} className="h-6 w-6 object-contain" style={{ background: 'transparent' }} />
-                </div>
-                <span className="font-display font-bold text-sm text-sidebar-foreground">{accountName}</span>
-              </div>
-              <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
-                <PanelLeftClose className="h-4 w-4" />
-              </button>
-            </>
+            <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors shrink-0">
+              <PanelLeftClose className="h-4 w-4" />
+            </button>
           ) : (
             <div
-              className="relative flex h-9 w-9 items-center justify-center cursor-pointer"
-              onMouseEnter={() => setBrandHovered(true)}
-              onMouseLeave={() => setBrandHovered(false)}
+              className="absolute inset-0 flex items-center justify-center cursor-pointer opacity-0 hover:opacity-100 transition-opacity"
               onClick={toggle}
             >
-              {brandHovered ? (
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent transition-colors">
-                  <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
-                </div>
-              ) : (
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg">
-                  <img src={accountLogo} alt={accountName} className="h-6 w-6 object-contain" style={{ background: 'transparent' }} />
-                </div>
-              )}
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-sidebar-accent transition-colors">
+                <PanelLeftOpen className="h-4.5 w-4.5 text-sidebar-foreground" />
+              </div>
             </div>
           )}
-        </div>
-        <div className={cn("mt-2", expanded ? "" : "px-1")}>
-          <AccountSwitcher expanded={expanded} />
         </div>
       </div>
 

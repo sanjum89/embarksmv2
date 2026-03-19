@@ -165,7 +165,7 @@ export default function SkillTargetBuilder() {
 
       const matchedIds: string[] = data?.matchedIds || [];
       const explanation: string = data?.explanation || "Here are the results I found:";
-      const results = resolveIds(matchedIds);
+      const results = resolveIds(matchedIds, mockLearningModules, mockAssessments, mockRolePlayBank);
 
       const assistantMsg: ChatMsg = results.length
         ? { role: "assistant", text: explanation, results }

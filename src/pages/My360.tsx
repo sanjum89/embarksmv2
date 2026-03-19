@@ -30,7 +30,8 @@ import { AIChatWrapper, AIChatWrapperHandle } from "@/components/chat/AIChatWrap
 import { CareerTimeline } from "@/components/my360/CareerTimeline";
 import { ActionPlanView } from "@/components/my360/ActionPlanView";
 import { useUser } from "@/contexts/UserContext";
-import { profileDataByUser } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
+import { profileDataByUser as staticProfileData } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/hooks/useChartColors";
 import { proficiencyShort } from "@/types/learning";

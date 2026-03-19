@@ -481,12 +481,9 @@ export interface TeamMemberProgress {
 }
 
 export const mockTeamProgress: TeamMemberProgress[] = [
-  { user: mockTeamMembers[1], skillTargetId: "st1", progress: 60, lastActivity: "2026-02-25T10:00:00Z", status: "on_track" },
-  { user: mockTeamMembers[2], skillTargetId: "st1", progress: 20, lastActivity: "2026-02-20T14:00:00Z", status: "at_risk" },
-  { user: mockTeamMembers[1], skillTargetId: "st3", progress: 100, lastActivity: "2026-02-24T16:00:00Z", status: "completed" },
-  { user: mockTeamMembers[2], skillTargetId: "st3", progress: 75, lastActivity: "2026-02-23T09:00:00Z", status: "on_track" },
-  { user: mockTeamMembers[3], skillTargetId: "st2", progress: 20, lastActivity: "2026-02-22T09:00:00Z", status: "at_risk" },
-  { user: mockTeamMembers[3], skillTargetId: "st3", progress: 50, lastActivity: "2026-02-24T11:00:00Z", status: "on_track" },
+  { user: mockTeamMembers[1], skillTargetId: "st4", progress: 0, lastActivity: "2026-02-25T10:00:00Z", status: "on_track" },
+  { user: mockTeamMembers[2], skillTargetId: "st5", progress: 13, lastActivity: "2026-02-20T14:00:00Z", status: "on_track" },
+  { user: mockTeamMembers[3], skillTargetId: "st6", progress: 0, lastActivity: "2026-02-22T09:00:00Z", status: "on_track" },
 ];
 
 /* ─── Per-User Profile Data ─── */

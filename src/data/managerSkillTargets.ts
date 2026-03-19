@@ -196,7 +196,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
   ]},
 
   // ── Customer Retention (26-30) ──
-  { id: "mst26", title: "Customer Retention Playbook", description: "Strategies to retain customers and reduce churn.", category: "Customer Retention", difficulty: "Advanced", skills: ["Retention", "Churn Prevention", "Customer Loyalty"], assignedTo: ["u2", "u3", "u4"], steps: [
+  { id: "mst26", title: "Customer Retention Playbook", description: "Strategies to retain customers and reduce churn.", category: "Customer Retention", difficulty: "Advanced", skills: ["Retention", "Churn Prevention", "Customer Loyalty"], assignedTo: ["u6", "u8"], steps: [
     { id: "s26-1", type: "module", title: "Subscription Retention Strategies", description: "Save the relationship.", duration: "25 min", referenceId: "m48" },
     { id: "s26-2", type: "module", title: "Managing Customer Expectations", description: "Set and exceed expectations.", duration: "20 min", referenceId: "m58" },
     { id: "s26-3", type: "module", title: "Customer Loyalty Programs", description: "Design loyalty programs.", duration: "25 min", referenceId: "m82" },

@@ -230,7 +230,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s31-2", type: "module", title: "Guided Troubleshooting Workflows", description: "Decision trees and tools.", duration: "30 min", referenceId: "m13" },
     { id: "s31-3", type: "module", title: "First Call Resolution Principles", description: "Resolve in one contact.", duration: "20 min", referenceId: "m26" },
   ]},
-  { id: "mst32", title: "Intermediate Troubleshooting", description: "Handle complex multi-system issues.", category: "Troubleshooting", difficulty: "Intermediate", skills: ["Complex Troubleshooting", "Multi-system", "Diagnostics"], assignedTo: ["u2", "u4", "u8"], steps: [
+  { id: "mst32", title: "Intermediate Troubleshooting", description: "Handle complex multi-system issues.", category: "Troubleshooting", difficulty: "Intermediate", skills: ["Complex Troubleshooting", "Multi-system", "Diagnostics"], assignedTo: ["u8"], steps: [
     { id: "s32-1", type: "module", title: "Intermediate Troubleshooting Workflows", description: "Multi-system issues.", duration: "30 min", referenceId: "m69" },
     { id: "s32-2", type: "module", title: "Remote Troubleshooting Techniques", description: "Remote diagnostics.", duration: "25 min", referenceId: "m60" },
     { id: "s32-3", type: "module", title: "Collaborative Problem Solving", description: "Cross-team resolution.", duration: "25 min", referenceId: "m57" },

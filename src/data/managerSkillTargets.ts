@@ -189,7 +189,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s24-2", type: "module", title: "Customer Verification Basics", description: "Identity verification.", duration: "15 min", referenceId: "m27" },
     { id: "s24-3", type: "module", title: "Customer Verification and Privacy", description: "Apple privacy protocols.", duration: "20 min", referenceId: "m15" },
   ]},
-  { id: "mst25", title: "Accessibility in Support", description: "Ensure support is accessible to all customers.", category: "Quality Assurance", difficulty: "Intermediate", skills: ["Accessibility", "Inclusion", "WCAG"], assignedTo: ["u3", "u4", "u9"], steps: [
+  { id: "mst25", title: "Accessibility in Support", description: "Ensure support is accessible to all customers.", category: "Quality Assurance", difficulty: "Intermediate", skills: ["Accessibility", "Inclusion", "WCAG"], assignedTo: ["u9"], steps: [
     { id: "s25-1", type: "module", title: "Accessibility in Customer Support", description: "WCAG guidelines.", duration: "20 min", referenceId: "m64" },
     { id: "s25-2", type: "module", title: "Empathy in Digital Communication", description: "Inclusive communication.", duration: "20 min", referenceId: "m52" },
     { id: "s25-3", type: "module", title: "Customer Segmentation for Support", description: "Adjusting approach by need.", duration: "20 min", referenceId: "m63" },

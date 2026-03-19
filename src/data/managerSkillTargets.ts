@@ -246,7 +246,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s34-2", type: "module", title: "iPhone and iPad Basics", description: "iOS device support.", duration: "25 min", referenceId: "m8" },
     { id: "s34-3", type: "module", title: "Mac Basics for Support", description: "macOS fundamentals.", duration: "20 min", referenceId: "m9" },
   ]},
-  { id: "mst35", title: "Remote Support Specialist", description: "Excel at remote troubleshooting.", category: "Troubleshooting", difficulty: "Intermediate", skills: ["Remote Support", "Screen Sharing", "Remote Diagnostics"], assignedTo: ["u2", "u6"], steps: [
+  { id: "mst35", title: "Remote Support Specialist", description: "Excel at remote troubleshooting.", category: "Troubleshooting", difficulty: "Intermediate", skills: ["Remote Support", "Screen Sharing", "Remote Diagnostics"], assignedTo: ["u6"], steps: [
     { id: "s35-1", type: "module", title: "Remote Troubleshooting Techniques", description: "Guiding customers remotely.", duration: "25 min", referenceId: "m60" },
     { id: "s35-2", type: "module", title: "Live Chat Support Basics", description: "Chat-based support.", duration: "20 min", referenceId: "m24" },
     { id: "s35-3", type: "module", title: "Intermediate Troubleshooting Workflows", description: "Complex scenarios.", duration: "30 min", referenceId: "m69" },

@@ -16,7 +16,7 @@ export interface AIChatWrapperHandle {
 }
 
 export const AIChatWrapper = forwardRef<AIChatWrapperHandle, AIChatWrapperProps>(
-  function AIChatWrapper({ contextLabel, suggestedActions }, ref) {
+  function AIChatWrapper({ contextLabel, suggestedActions, emptyStateMessage }, ref) {
     const { styleTheme } = useTheme();
     const [open, setOpen] = useState(false);
     const chatRef = useRef<AIChatPanelHandle>(null);

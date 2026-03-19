@@ -16,13 +16,14 @@ export default function ProgramContextPanel() {
   const programContexts = normalizedAccount?.programContexts ?? activeAccount?.data?.programContexts ?? defaultProgramContexts;
   const newHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
   const program = programContexts[0];
-  if (!program) return <div className="p-6 text-sm text-muted-foreground">No program context available.</div>;
-  const st4 = skillTargets.find((st) => st.id === program.skillTargetId);
+  const st4 = program ? skillTargets.find((st) => st.id === program.skillTargetId) : undefined;
   const steps = st4?.steps ?? [];
 
-  const [passPercent, setPassPercent] = useState(program.assessmentPassPercentage);
+  const [passPercent, setPassPercent] = useState(program?.assessmentPassPercentage ?? 70);
   const [enabledSteps, setEnabledSteps] = useState<Set<string>>(new Set(steps.map((s) => s.id)));
   const [saved, setSaved] = useState(false);
+
+  if (!program) return <div className="p-6 text-sm text-muted-foreground">No program context available.</div>;
 
   const toggleStep = (id: string) => {
     setEnabledSteps((prev) => {

@@ -534,7 +534,7 @@ onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(t
                 </div>
               ) : (
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg">
-                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
+                  <img src={accountLogo} alt={accountName} className="h-6 w-6 object-contain" style={{ background: 'transparent' }} />
                 </div>
               )}
             </div>

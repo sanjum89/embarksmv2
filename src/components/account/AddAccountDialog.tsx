@@ -98,7 +98,8 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
       if (logoDataUrl) {
         payload.logo = logoDataUrl;
       }
-      await addAccount(payload.name, payload);
+      const accountName = payload.account?.name || payload.name;
+      await addAccount(accountName, payload);
       toast({
         title: "Account added",
         description: `"${payload.name}" has been created and is now active.`,

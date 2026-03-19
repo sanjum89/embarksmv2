@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
+import { AccountSwitcher } from "@/components/account/AccountSwitcher";
 import cornerstoneLogo from "@/assets/cornerstone-logo.svg";
 import learningSpacesIcon from "@/assets/learning-spaces.svg";
 

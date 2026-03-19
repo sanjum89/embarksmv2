@@ -624,7 +624,7 @@ export const profileDataByUser: Record<string, ProfileData> = {
   u8: {
     title: "Apple L1 Customer Support Executive",
     location: "Bangalore, India",
-    manager: "Marcus Wellington",
+    manager: "Alex Rivera",
     yearsExperience: 2,
     status: "New Hire",
     department: "Customer Support",

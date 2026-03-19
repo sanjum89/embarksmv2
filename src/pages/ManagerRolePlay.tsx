@@ -35,6 +35,8 @@ const difficultyColors: Record<string, string> = {
 
 export default function ManagerRolePlay() {
   const { toast } = useToast();
+  const { normalizedAccount, activeAccount } = useAccount();
+  const mockNewHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
   const { rolePlays: globalRolePlays, updateRolePlay } = useRolePlays();
   
   const [rolePlays, setRolePlays] = useState<RolePlayItem[]>(

@@ -21,7 +21,7 @@ export default function NewHiresPanel() {
       <p className="text-sm text-muted-foreground mb-6">{newHires.length} new team members</p>
 
       <div className="space-y-4">
-        {mockNewHires.map((hire, i) => (
+        {newHires.map((hire, i) => (
           <motion.div
             key={hire.user.id}
             initial={{ opacity: 0, y: 8 }}

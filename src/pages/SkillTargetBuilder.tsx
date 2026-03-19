@@ -112,6 +112,12 @@ export default function SkillTargetBuilder() {
   const navigate = useNavigate();
   const { addSkillTargets } = useSkillTargets();
   const { user } = useUser();
+  const { normalizedAccount, activeAccount } = useAccount();
+
+  // Account-aware content sources with fallback
+  const mockLearningModules = normalizedAccount?.learningModules?.length ? normalizedAccount.learningModules : activeAccount?.data?.learningModules ?? defaultLearningModules;
+  const mockAssessments = normalizedAccount?.assessments?.length ? normalizedAccount.assessments : activeAccount?.data?.assessments ?? defaultAssessments;
+  const mockRolePlayBank = normalizedAccount?.rolePlays?.length ? normalizedAccount.rolePlays : activeAccount?.data?.rolePlays ?? defaultRolePlayBank;
 
   // Left panel
   const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", text: WELCOME_MSG }]);

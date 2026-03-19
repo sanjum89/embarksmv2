@@ -123,7 +123,7 @@ export default function ProgramContextPanel() {
           <p className="text-sm font-medium text-foreground">Assigned Learners</p>
         </div>
         <div className="space-y-2">
-          {mockNewHires.filter((h) => program.assignedLearners.includes(h.user.id)).map((hire) => (
+          {newHires.filter((h) => program.assignedLearners.includes(h.user.id)).map((hire) => (
             <div key={hire.user.id} className="flex items-center gap-2.5">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
                 {hire.user.name.split(" ").map((n) => n[0]).join("")}

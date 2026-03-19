@@ -52,6 +52,14 @@ export default function ManagerSkillTargetDetail() {
   const navigate = useNavigate();
   const chatRef = useRef<AIChatPanelHandle>(null);
   const [showAssignees, setShowAssignees] = useState(false);
+  const { normalizedAccount } = useAccount();
+
+  const managerSkillTargets = (normalizedAccount?.skillTargets?.length ? normalizedAccount.skillTargets.map(st => ({
+    ...st,
+    difficulty: "Intermediate" as string,
+    skills: [] as string[],
+    steps: st.steps || [],
+  })) : null) ?? defaultManagerSkillTargets;
 
   const target = managerSkillTargets.find((t) => t.id === id);
   const allProgress = useMemo(() => getAssigneeProgress(), []);

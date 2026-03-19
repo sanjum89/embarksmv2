@@ -20,13 +20,13 @@ const levelColors: Record<string, string> = {
 export function ActionPlanView() {
   const { user } = useUser();
   const { addSkillTargets, skillTargets } = useSkillTargets();
-  const { activeAccount } = useAccount();
+  const { activeAccount, normalizedAccount } = useAccount();
   const { toast } = useToast();
   const [createdGroups, setCreatedGroups] = useState<Set<string>>(new Set());
   const [expandedSkill, setExpandedSkill] = useState<string | null>(null);
 
-  const profileData = activeAccount?.data?.profileData ?? {};
-  const profile = profileData[user.id];
+  const profile = (normalizedAccount ? (await import("@/lib/accountSelectors")).getProfileData(normalizedAccount, user.id) : null)
+    ?? activeAccount?.data?.profileData?.[user.id];
   const { groups, hasRoleGaps } = useMemo(() => getRecommendationsForUser(profile), [profile]);
 
   const handleCreateGroup = (group: RecommendationGroup) => {

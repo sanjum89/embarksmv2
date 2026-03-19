@@ -19,6 +19,15 @@ const difficultyColor: Record<string, string> = {
 
 export default function ManagerSkillTargets() {
   const navigate = useNavigate();
+  const { normalizedAccount } = useAccount();
+  // Use account skill targets if available, otherwise fall back to default
+  const managerSkillTargets = (normalizedAccount?.skillTargets?.length ? normalizedAccount.skillTargets.map(st => ({
+    ...st,
+    difficulty: "Intermediate" as string,
+    skills: [] as string[],
+    steps: st.steps || [],
+  })) : null) ?? defaultManagerSkillTargets;
+
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const progress = useMemo(() => getAssigneeProgress(), []);

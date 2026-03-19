@@ -35,7 +35,11 @@ export default function RolePlayBank() {
   const { toast } = useToast();
   const { rolePlays, updateRolePlay } = useRolePlays();
   const { user } = useUser();
+  const { normalizedAccount, activeAccount } = useAccount();
   const isManager = user.role === "manager";
+
+  const mockNewHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
+  const mockSkillTargets = normalizedAccount?.skillTargets ?? activeAccount?.data?.skillTargets ?? defaultSkillTargets;
 
   // Manager-specific state
   const [createOpen, setCreateOpen] = useState(false);

@@ -283,7 +283,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
   ]},
 
   // ── Leadership & Coaching (41-45) ──
-  { id: "mst41", title: "Team Leadership Foundations", description: "Core leadership skills for aspiring team leads.", category: "Leadership", difficulty: "Advanced", skills: ["Leadership", "Coaching", "Team Development"], assignedTo: ["u2", "u3"], steps: [
+  { id: "mst41", title: "Team Leadership Foundations", description: "Core leadership skills for aspiring team leads.", category: "Leadership", difficulty: "Advanced", skills: ["Leadership", "Coaching", "Team Development"], assignedTo: ["u6", "u8"], steps: [
     { id: "s41-1", type: "module", title: "Support Team Leadership", description: "Leading support teams.", duration: "25 min", referenceId: "m74" },
     { id: "s41-2", type: "module", title: "Coaching and Mentoring in CX", description: "Develop your team.", duration: "25 min", referenceId: "m75" },
     { id: "s41-3", type: "module", title: "Quality Assurance and Calibration", description: "Maintaining standards.", duration: "25 min", referenceId: "m76" },

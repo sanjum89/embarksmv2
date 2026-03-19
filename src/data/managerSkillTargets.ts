@@ -207,7 +207,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s27-2", type: "module", title: "Customer Feedback Loops", description: "Capture actionable insights.", duration: "15 min", referenceId: "m41" },
     { id: "s27-3", type: "module", title: "Customer Education Programs", description: "Educated customers = fewer tickets.", duration: "25 min", referenceId: "m68" },
   ]},
-  { id: "mst28", title: "Customer Journey Excellence", description: "Understand and optimize the full customer journey.", category: "Customer Retention", difficulty: "Advanced", skills: ["Journey Mapping", "Touchpoint Optimization", "CX Design"], assignedTo: ["u3", "u4"], steps: [
+  { id: "mst28", title: "Customer Journey Excellence", description: "Understand and optimize the full customer journey.", category: "Customer Retention", difficulty: "Advanced", skills: ["Journey Mapping", "Touchpoint Optimization", "CX Design"], assignedTo: ["u6", "u8"], steps: [
     { id: "s28-1", type: "module", title: "Customer Journey Mapping", description: "Read and use journey maps.", duration: "20 min", referenceId: "m49" },
     { id: "s28-2", type: "module", title: "Customer Segmentation for Support", description: "VIP vs standard.", duration: "20 min", referenceId: "m63" },
     { id: "s28-3", type: "module", title: "Customer Onboarding Essentials", description: "First experience matters.", duration: "25 min", referenceId: "m30" },

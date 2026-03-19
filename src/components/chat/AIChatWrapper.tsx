@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 interface AIChatWrapperProps {
   contextLabel?: string;
   suggestedActions?: { label: string }[];
+  emptyStateMessage?: string;
 }
 
 export interface AIChatWrapperHandle {

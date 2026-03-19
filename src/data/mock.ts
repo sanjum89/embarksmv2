@@ -304,7 +304,7 @@ export const mockSkillTargets: SkillTarget[] = [
     title: "Product Knowledge: Enterprise Suite",
     description: "Deep understanding of the Enterprise Suite product line for effective consultative selling.",
     category: "Product Knowledge",
-    assignedTo: ["u1", "u4"],
+    assignedTo: ["u1"],
     progress: 0,
     dueDate: "2026-03-22",
     skills: [

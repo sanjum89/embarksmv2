@@ -1,28 +1,32 @@
 
 
-## Problem
+# Add Logo Upload to Add Account Dialog
 
-The `railPalette` function currently colors each segment based on the entry *below* it. This means:
-- The segment from **Mar → Feb** gets Feb's color (Yellow) — should be Orange
-- The segment from **Feb → Jan** gets Jan's color (Green) — should be Yellow
-- The segment from **Jan → 2025** gets 2025's color (Green) — correct
+## What changes
 
-The desired behavior: each rail segment should use the color of the entry *above* it (the current entry), since the segment visually connects downward from that entry.
+### 1. `src/components/account/AddAccountDialog.tsx`
+- Add a separate file input for PNG/SVG logo upload (before or alongside the JSON upload)
+- Convert the uploaded image to a base64 data URL and store it in state
+- Show a preview of the uploaded logo with transparent background
+- Pass the logo data URL to `addAccount()` via the `logo` field in the JSON data
 
-## Fix
+### 2. `src/components/layout/AppSidebar.tsx`
+- Import `useAccount` context
+- Replace all hardcoded `cornerstoneLogo` references with `activeAccount?.logo || cornerstoneLogo`
+- Also update the brand name text to use `activeAccount?.name || "cornerstone"` (optional but consistent)
 
-Change `railPalette` to return the color of the current entry (`careerEntries[i]`) instead of the next one (`careerEntries[i + 1]`):
+### 3. Logo handling details
+- Accept `.png` and `.svg` files only
+- Convert to base64 data URL using `FileReader.readAsDataURL()`
+- For SVG files, also read as text to verify it's valid SVG
+- The logo is stored in the `accounts.logo` column (already exists as text/nullable)
+- Data URLs naturally preserve transparency — no special handling needed
+- Logo preview in the dialog will use a checkered background pattern to show transparency
 
-```typescript
-const railPalette = (i: number) => {
-  return palette(careerEntries[i]);
-};
-```
-
-This gives:
-- **Mar segment** (Mar → Feb): Orange
-- **Feb segment** (Feb → Jan): Yellow  
-- **Jan segment and below**: Green
-
-Single line change in `src/components/my360/CareerTimeline.tsx`.
+### Flow
+1. User opens Add Account dialog
+2. Uploads JSON file (existing behavior)
+3. Optionally uploads a logo (PNG/SVG) — separate drop zone or button
+4. On submit, logo data URL is included in the `addAccount()` call
+5. Sidebar reads `activeAccount.logo` and displays it instead of the default Cornerstone logo
 

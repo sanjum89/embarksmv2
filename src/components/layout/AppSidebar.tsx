@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, LogOut, LogIn } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -36,6 +36,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { AccountSwitcher } from "@/components/account/AccountSwitcher";
+import { LoginDialog } from "@/components/layout/LoginDialog";
 import cornerstoneLogo from "@/assets/cornerstone-logo.svg";
 import learningSpacesIcon from "@/assets/learning-spaces.svg";
 
@@ -88,7 +89,7 @@ const navItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-  const { user, switchUser, setRole, availableUsers } = useUser();
+  const { user, switchUser, setRole, availableUsers, signedInUserIds, loginUser, logoutUser } = useUser();
   const { activeAccount } = useAccount();
   const { expanded, toggle } = useSidebarState();
   const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight } = useTheme();
@@ -101,6 +102,28 @@ export function AppSidebar() {
   const [brandHovered, setBrandHovered] = useState(false);
   const [viewMode, setViewMode] = useState<"me" | "team">("me");
   const [switchingProfile, setSwitchingProfile] = useState(false);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+
+  const handleLogin = (userId: string) => {
+    setSwitchingProfile(true);
+    setTimeout(() => {
+      loginUser(userId);
+      const u = availableUsers.find((x) => x.id === userId);
+      if (u?.canManage && viewMode === "team") {
+        setRole("manager");
+        navigate("/manager");
+      } else {
+        setRole("learner");
+        setViewMode("me");
+        navigate("/");
+      }
+      setSwitchingProfile(false);
+    }, 1000);
+  };
+
+  const handleLogout = (userId: string) => {
+    logoutUser(userId);
+  };
 
   const filteredItems = navItems.filter((item) => {
     if (!item.roles.includes(user.role)) return false;
@@ -420,35 +443,71 @@ export function AppSidebar() {
               </PopoverTrigger>
               <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-64 p-2">
                 <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Switch profile</p>
-                {availableUsers.map((u) => {
+                {availableUsers
+                  .slice()
+                  .sort((a, b) => {
+                    const aIn = signedInUserIds.includes(a.id) ? 0 : 1;
+                    const bIn = signedInUserIds.includes(b.id) ? 0 : 1;
+                    return aIn - bIn;
+                  })
+                  .map((u) => {
                   const isActive = u.id === user.id;
+                  const isSignedIn = signedInUserIds.includes(u.id);
                   return (
                     <button
                       key={u.id}
-onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(true); setTimeout(() => { switchUser(u.id); if (u.canManage && viewMode === "team") { setRole("manager"); navigate("/manager"); } else { setRole("learner"); setViewMode("me"); navigate("/"); } setSwitchingProfile(false); }, 1000); }}
+                      onClick={() => {
+                        if (!isSignedIn || isActive || switchingProfile) return;
+                        setSwitchingProfile(true);
+                        setTimeout(() => {
+                          switchUser(u.id);
+                          if (u.canManage && viewMode === "team") { setRole("manager"); navigate("/manager"); }
+                          else { setRole("learner"); setViewMode("me"); navigate("/"); }
+                          setSwitchingProfile(false);
+                        }, 1000);
+                      }}
                       className={cn(
                         "flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm transition-colors text-left",
-                        isActive ? "bg-primary/10 text-foreground font-medium" : "text-foreground hover:bg-secondary"
+                        isActive ? "bg-primary/10 text-foreground font-medium" : isSignedIn ? "text-foreground hover:bg-secondary" : "text-muted-foreground/50 cursor-default"
                       )}
                     >
-                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
+                      <div className={cn("flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold shrink-0", isSignedIn ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
                         {u.name.split(" ").map((n) => n[0]).join("")}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <p className="text-sm truncate">{u.name}</p>
-                          {u.canManage && <Shield className="h-3 w-3 text-primary shrink-0" />}
+                          {u.canManage && <Shield className={cn("h-3 w-3 shrink-0", isSignedIn ? "text-primary" : "text-muted-foreground/40")} />}
                         </div>
                         <p className="text-xs text-muted-foreground truncate">{u.title}</p>
-                        <p className="text-[10px] text-emerald-500 flex items-center gap-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
-                          Signed in
-                        </p>
+                        {isSignedIn && (
+                          <p className="text-[10px] text-emerald-500 flex items-center gap-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+                            Signed in
+                          </p>
+                        )}
                       </div>
                       {isActive && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
+                      {isSignedIn && !isActive && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleLogout(u.id); }}
+                          className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                          title="Sign out"
+                        >
+                          <LogOut className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </button>
                   );
                 })}
+                <Separator className="my-1.5" />
+                <button
+                  onClick={() => setLoginDialogOpen(true)}
+                  className="flex items-center gap-2 w-full rounded-md px-2 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+                >
+                  <LogIn className="h-3.5 w-3.5" />
+                  Login as different user
+                </button>
               </PopoverContent>
             </Popover>
           </div>
@@ -462,6 +521,13 @@ onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(t
           </div>
         </div>
       )}
+      <LoginDialog
+        open={loginDialogOpen}
+        onOpenChange={setLoginDialogOpen}
+        availableUsers={availableUsers}
+        signedInUserIds={signedInUserIds}
+        onLogin={handleLogin}
+      />
       </>
     );
   }
@@ -730,35 +796,71 @@ onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(t
           </PopoverTrigger>
            <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-64 p-2">
             <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Switch profile</p>
-            {availableUsers.map((u) => {
+            {availableUsers
+              .slice()
+              .sort((a, b) => {
+                const aIn = signedInUserIds.includes(a.id) ? 0 : 1;
+                const bIn = signedInUserIds.includes(b.id) ? 0 : 1;
+                return aIn - bIn;
+              })
+              .map((u) => {
               const isActive = u.id === user.id;
+              const isSignedIn = signedInUserIds.includes(u.id);
               return (
                 <button
                   key={u.id}
-                  onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(true); setTimeout(() => { switchUser(u.id); if (u.canManage && viewMode === "team") { setRole("manager"); navigate("/manager"); } else { setRole("learner"); setViewMode("me"); navigate("/"); } setSwitchingProfile(false); }, 1000); }}
+                  onClick={() => {
+                    if (!isSignedIn || isActive || switchingProfile) return;
+                    setSwitchingProfile(true);
+                    setTimeout(() => {
+                      switchUser(u.id);
+                      if (u.canManage && viewMode === "team") { setRole("manager"); navigate("/manager"); }
+                      else { setRole("learner"); setViewMode("me"); navigate("/"); }
+                      setSwitchingProfile(false);
+                    }, 1000);
+                  }}
                   className={cn(
                     "flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm transition-colors text-left",
-                    isActive ? "bg-accent/10 text-foreground font-medium" : "text-foreground hover:bg-secondary"
+                    isActive ? "bg-accent/10 text-foreground font-medium" : isSignedIn ? "text-foreground hover:bg-secondary" : "text-muted-foreground/50 cursor-default"
                   )}
                 >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-sidebar-accent text-[10px] font-bold text-sidebar-accent-foreground shrink-0">
+                  <div className={cn("flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold shrink-0", isSignedIn ? "bg-sidebar-accent text-sidebar-accent-foreground" : "bg-muted text-muted-foreground")}>
                     {u.name.split(" ").map((n) => n[0]).join("")}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       <p className="text-sm truncate">{u.name}</p>
-                      {u.canManage && <Shield className="h-3 w-3 text-accent shrink-0" />}
+                      {u.canManage && <Shield className={cn("h-3 w-3 shrink-0", isSignedIn ? "text-accent" : "text-muted-foreground/40")} />}
                     </div>
                     <p className="text-xs text-muted-foreground truncate">{u.title}</p>
-                    <p className="text-[10px] text-emerald-500 flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
-                      Signed in
-                    </p>
+                    {isSignedIn && (
+                      <p className="text-[10px] text-emerald-500 flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+                        Signed in
+                      </p>
+                    )}
                   </div>
                   {isActive && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
+                  {isSignedIn && !isActive && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleLogout(u.id); }}
+                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      title="Sign out"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </button>
               );
             })}
+            <Separator className="my-1.5" />
+            <button
+              onClick={() => setLoginDialogOpen(true)}
+              className="flex items-center gap-2 w-full rounded-md px-2 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              Login as different user
+            </button>
           </PopoverContent>
         </Popover>
       </div>
@@ -771,6 +873,13 @@ onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(t
         </div>
       </div>
     )}
+    <LoginDialog
+      open={loginDialogOpen}
+      onOpenChange={setLoginDialogOpen}
+      availableUsers={availableUsers}
+      signedInUserIds={signedInUserIds}
+      onLogin={handleLogin}
+    />
     </>
   );
 }

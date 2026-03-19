@@ -275,7 +275,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s39-2", type: "module", title: "Product Return Process", description: "Returns and exchanges.", duration: "15 min", referenceId: "m38" },
     { id: "s39-3", type: "module", title: "Subscription Billing Basics", description: "Proration and billing.", duration: "20 min", referenceId: "m42" },
   ]},
-  { id: "mst40", title: "Process Optimization", description: "Identify and implement operational improvements.", category: "Operations", difficulty: "Advanced", skills: ["Process Improvement", "Lean", "Efficiency"], assignedTo: ["u3", "u4"], steps: [
+  { id: "mst40", title: "Process Optimization", description: "Identify and implement operational improvements.", category: "Operations", difficulty: "Advanced", skills: ["Process Improvement", "Lean", "Efficiency"], assignedTo: ["u6", "u8"], steps: [
     { id: "s40-1", type: "module", title: "Performance Metrics Deep Dive", description: "Full metric spectrum.", duration: "20 min", referenceId: "m56" },
     { id: "s40-2", type: "module", title: "Data-Driven Case Prioritization", description: "Smart prioritization.", duration: "15 min", referenceId: "m66" },
     { id: "s40-3", type: "module", title: "Operational Excellence Frameworks", description: "Six Sigma and LEAN.", duration: "30 min", referenceId: "m85" },

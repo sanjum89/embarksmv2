@@ -235,7 +235,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s32-2", type: "module", title: "Remote Troubleshooting Techniques", description: "Remote diagnostics.", duration: "25 min", referenceId: "m60" },
     { id: "s32-3", type: "module", title: "Collaborative Problem Solving", description: "Cross-team resolution.", duration: "25 min", referenceId: "m57" },
   ]},
-  { id: "mst33", title: "Advanced Diagnostics", description: "Expert-level technical problem-solving.", category: "Troubleshooting", difficulty: "Advanced", skills: ["Advanced Diagnostics", "Root Cause Analysis", "Technical Support"], assignedTo: ["u3", "u4"], steps: [
+  { id: "mst33", title: "Advanced Diagnostics", description: "Expert-level technical problem-solving.", category: "Troubleshooting", difficulty: "Advanced", skills: ["Advanced Diagnostics", "Root Cause Analysis", "Technical Support"], assignedTo: ["u6", "u8"], steps: [
     { id: "s33-1", type: "module", title: "Advanced Troubleshooting Frameworks", description: "Root cause analysis.", duration: "30 min", referenceId: "m73" },
     { id: "s33-2", type: "module", title: "Enterprise Incident Management", description: "Enterprise-grade response.", duration: "30 min", referenceId: "m84" },
     { id: "s33-3", type: "module", title: "Technical Writing for Support", description: "Clear technical docs.", duration: "25 min", referenceId: "m72" },

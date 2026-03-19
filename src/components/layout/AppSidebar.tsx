@@ -95,6 +95,7 @@ export function AppSidebar() {
   const [managerOpen, setManagerOpen] = useState(true);
   const [brandHovered, setBrandHovered] = useState(false);
   const [viewMode, setViewMode] = useState<"me" | "team">("me");
+  const [switchingProfile, setSwitchingProfile] = useState(false);
 
   const filteredItems = navItems.filter((item) => {
     if (!item.roles.includes(user.role)) return false;

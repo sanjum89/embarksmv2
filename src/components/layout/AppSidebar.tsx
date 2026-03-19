@@ -789,35 +789,71 @@ export function AppSidebar() {
           </PopoverTrigger>
            <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-64 p-2">
             <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Switch profile</p>
-            {availableUsers.map((u) => {
+            {availableUsers
+              .slice()
+              .sort((a, b) => {
+                const aIn = signedInUserIds.includes(a.id) ? 0 : 1;
+                const bIn = signedInUserIds.includes(b.id) ? 0 : 1;
+                return aIn - bIn;
+              })
+              .map((u) => {
               const isActive = u.id === user.id;
+              const isSignedIn = signedInUserIds.includes(u.id);
               return (
                 <button
                   key={u.id}
-                  onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(true); setTimeout(() => { switchUser(u.id); if (u.canManage && viewMode === "team") { setRole("manager"); navigate("/manager"); } else { setRole("learner"); setViewMode("me"); navigate("/"); } setSwitchingProfile(false); }, 1000); }}
+                  onClick={() => {
+                    if (!isSignedIn || isActive || switchingProfile) return;
+                    setSwitchingProfile(true);
+                    setTimeout(() => {
+                      switchUser(u.id);
+                      if (u.canManage && viewMode === "team") { setRole("manager"); navigate("/manager"); }
+                      else { setRole("learner"); setViewMode("me"); navigate("/"); }
+                      setSwitchingProfile(false);
+                    }, 1000);
+                  }}
                   className={cn(
                     "flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm transition-colors text-left",
-                    isActive ? "bg-accent/10 text-foreground font-medium" : "text-foreground hover:bg-secondary"
+                    isActive ? "bg-accent/10 text-foreground font-medium" : isSignedIn ? "text-foreground hover:bg-secondary" : "text-muted-foreground/50 cursor-default"
                   )}
                 >
-                  <div className="flex h-7 w-7 items-center justify-center rounded-full bg-sidebar-accent text-[10px] font-bold text-sidebar-accent-foreground shrink-0">
+                  <div className={cn("flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold shrink-0", isSignedIn ? "bg-sidebar-accent text-sidebar-accent-foreground" : "bg-muted text-muted-foreground")}>
                     {u.name.split(" ").map((n) => n[0]).join("")}
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       <p className="text-sm truncate">{u.name}</p>
-                      {u.canManage && <Shield className="h-3 w-3 text-accent shrink-0" />}
+                      {u.canManage && <Shield className={cn("h-3 w-3 shrink-0", isSignedIn ? "text-accent" : "text-muted-foreground/40")} />}
                     </div>
                     <p className="text-xs text-muted-foreground truncate">{u.title}</p>
-                    <p className="text-[10px] text-emerald-500 flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
-                      Signed in
-                    </p>
+                    {isSignedIn && (
+                      <p className="text-[10px] text-emerald-500 flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
+                        Signed in
+                      </p>
+                    )}
                   </div>
                   {isActive && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
+                  {isSignedIn && !isActive && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleLogout(u.id); }}
+                      className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                      title="Sign out"
+                    >
+                      <LogOut className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </button>
               );
             })}
+            <Separator className="my-1.5" />
+            <button
+              onClick={() => setLoginDialogOpen(true)}
+              className="flex items-center gap-2 w-full rounded-md px-2 py-2 text-sm text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            >
+              <LogIn className="h-3.5 w-3.5" />
+              Login as different user
+            </button>
           </PopoverContent>
         </Popover>
       </div>

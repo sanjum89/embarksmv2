@@ -327,7 +327,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s48-3", type: "module", title: "Voice of Customer Program Design", description: "VOC programs.", duration: "25 min", referenceId: "m93" },
     { id: "s48-4", type: "module", title: "Global CX Operations", description: "Cross-cultural CX.", duration: "30 min", referenceId: "m88" },
   ]},
-  { id: "mst49", title: "Global Support Operations", description: "Manage support across regions and cultures.", category: "Strategy", difficulty: "Expert", skills: ["Global Operations", "Localization", "Cultural Intelligence"], assignedTo: ["u3", "u4"], steps: [
+  { id: "mst49", title: "Global Support Operations", description: "Manage support across regions and cultures.", category: "Strategy", difficulty: "Expert", skills: ["Global Operations", "Localization", "Cultural Intelligence"], assignedTo: ["u6", "u8"], steps: [
     { id: "s49-1", type: "module", title: "Global CX Operations", description: "Cross-cultural support.", duration: "30 min", referenceId: "m88" },
     { id: "s49-2", type: "module", title: "Strategic CX Consulting", description: "Strategic thinking.", duration: "30 min", referenceId: "m89" },
     { id: "s49-3", type: "module", title: "Workforce Planning for CX", description: "Global capacity.", duration: "25 min", referenceId: "m78" },

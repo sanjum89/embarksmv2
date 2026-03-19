@@ -521,8 +521,8 @@ function UploadModal({ open, onClose, addedIds, onAdd }: { open: boolean; onClos
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
 
-  const allModules: ContentItem[] = mockLearningModules.map((m) => ({ kind: "module" as const, data: m }));
-  const allRolePlays: ContentItem[] = mockRolePlayBank.map((r) => ({ kind: "roleplay" as const, data: r }));
+  const allModules: ContentItem[] = defaultLearningModules.map((m) => ({ kind: "module" as const, data: m }));
+  const allRolePlays: ContentItem[] = defaultRolePlayBank.map((r) => ({ kind: "roleplay" as const, data: r }));
   const allItems = [...allModules, ...allRolePlays];
 
   const filtered = search.trim()

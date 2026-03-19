@@ -36,7 +36,7 @@ export default function ProgramContextPage() {
         </div>
 
         <div className="space-y-3">
-          {mockProgramContexts.map((pc, i) => (
+          {programContexts.map((pc, i) => (
             <motion.button
               key={pc.id}
               initial={{ opacity: 0, y: 8 }}

@@ -15,7 +15,7 @@ export const currentUser: User = {
   id: "u1",
   name: "Alex Rivera",
   email: "alex@wfai.com",
-  role: "learner",
+  role: "manager",
   avatarUrl: "",
   title: "Product Manager",
   canManage: true,

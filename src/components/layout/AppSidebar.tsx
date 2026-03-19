@@ -529,7 +529,8 @@ export function AppSidebar() {
         onLogin={handleLogin}
       />
       </>
-
+    );
+  }
 
   /* ── New theme sidebar (unchanged) ── */
   const renderLink = (path: string, icon: React.ElementType, label: string, indented = false) => {

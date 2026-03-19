@@ -32,6 +32,7 @@ import { ActionPlanView } from "@/components/my360/ActionPlanView";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { profileDataByUser as staticProfileData } from "@/data/mock";
+import { getProfileData } from "@/lib/accountSelectors";
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/hooks/useChartColors";
 import { proficiencyShort } from "@/types/learning";

@@ -1,212 +1,113 @@
 
 
-# Normalized Multi-Account Architecture Refactor
+# Page Wiring Pass — Account-Aware Data Hookup
 
-## Overview
+## Summary
 
-Refactor the data layer from a flat JSONB blob (`AccountData`) to a normalized entity model with derived selectors. Keep all existing pages, components, layouts, and styling intact — only change how data flows into them.
+Replace all direct `@/data/mock` imports and hardcoded data access in pages/components with account-aware reads from `useAccount()` + normalized selectors. No UI/layout changes.
 
-## Current State
+## Files to Modify (14 files)
 
-- `AccountContext` already supports multi-account switching, add, delete
-- `AccountData` is a flat blob: employees, skillTargets, rolePlays, assessments, learningModules, newHires, programContexts, teamMembers, profileData
-- Users and employees are conflated (same `User` type)
-- Projects are embedded inside employee profile text, not first-class entities
-- Pages read from context hooks (`useUser`, `useSkillTargets`, `useAccount`) — some still import mock data directly
+### Tier 1: High-impact pages
 
-## Architecture
+**1. `src/pages/LearnerChat.tsx`**
+- Replace `import { profileDataByUser } from "@/data/mock"` with account-aware profile lookup
+- Add `useAccount()`, use `getProfileData(normalizedAccount, user.id)` with fallback to legacy
 
-```text
-┌─────────────────────────────────────────────────┐
-│  Upload JSON  →  parse & validate  →  normalize │
-└──────────────────────┬──────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────┐
-│           AccountStore (React Context)          │
-│                                                 │
-│  accountsById: Record<id, NormalizedAccount>    │
-│  activeAccountId: string                        │
-│  ─────────────────────────────────────────────  │
-│  Normalized entities per account:               │
-│    usersById, employeesById, rolesById,         │
-│    projectsById, projectAssignments,            │
-│    hierarchyMap, skillTargets, rolePlays,       │
-│    assessments, modules, proficiencyScale,      │
-│    branding, prompts, aiContext, pageData,       │
-│    my360, reflections, workSignals              │
-└──────────────────────┬──────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────┐
-│        Selector / Service Layer (pure fns)      │
-│  getActiveAccount, getCurrentUser,              │
-│  getDirectReports, getEmployeeProjects,         │
-│  getRoleGap, getProjectGap, getCombinedGap,     │
-│  getAccountBranding, getAdminOrgSummary, ...    │
-└──────────────────────┬──────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────┐
-│  Existing Pages (unchanged layout/UI)           │
-│  Dashboard, My360, ManagerView, TeamInsights,   │
-│  AIManager, SkillTargets, RolePlay, Admin       │
-│  → Read from selectors, not raw data            │
-└─────────────────────────────────────────────────┘
+**2. `src/pages/My360.tsx`**
+- Already partially wired. Remove remaining `import { profileDataByUser as staticProfileData } from "@/data/mock"` — it's only used as a final fallback. Keep the fallback chain but source from normalized first.
+
+**3. `src/components/my360/ActionPlanView.tsx`**
+- Already uses `activeAccount?.data?.profileData` — add normalized account as primary source via `getProfileData(normalizedAccount, user.id)`
+
+**4. `src/pages/ManagerView.tsx`**
+- Already partially wired. The `generateResponse` function still references `mockNewHires` by name internally — ensure it uses the account-sourced data passed to it (already done via params, just naming clarity)
+
+**5. `src/pages/TeamInsights.tsx`**
+- Already wired via selectors. No changes needed.
+
+### Tier 2: Manager tools
+
+**6. `src/components/manager/NewHiresPanel.tsx`**
+- Replace `import { mockNewHires } from "@/data/mock"` with props or account context
+- Accept `newHires` as a prop from parent (ManagerView already has account-aware data)
+
+**7. `src/components/manager/ProgramContextPanel.tsx`**
+- Replace `import { mockProgramContexts, mockNewHires } from "@/data/mock"` with props or account context
+- Accept `programContexts` and `newHires` as props
+
+**8. `src/pages/ProgramContextPage.tsx`**
+- Replace `import { mockProgramContexts, mockNewHires } from "@/data/mock"` with account-aware data via `useAccount()`
+
+**9. `src/pages/ManagerSkillTargets.tsx`**
+- Replace `import { managerSkillTargets } from "@/data/managerSkillTargets"` with account-aware fallback: use normalized `skillTargets` if present, fall back to `managerSkillTargets`
+
+**10. `src/pages/ManagerSkillTargetDetail.tsx`**
+- Same as above — source from normalized account with fallback
+
+### Tier 3: Role Play & Learning
+
+**11. `src/pages/RolePlayBank.tsx`**
+- Replace `import { mockSkillTargets, mockNewHires } from "@/data/mock"` with account-aware data
+- Use `useSkillTargets()` for skill targets (already available)
+- Use `useAccount()` for newHires (for manager assignment list)
+
+**12. `src/pages/ManagerRolePlay.tsx`**
+- Replace `import { mockNewHires } from "@/data/mock"` with account-aware newHires from `useAccount()`
+
+### Tier 4: Content pages (already context-driven)
+
+**13. `src/pages/AIManager.tsx`**
+- Add `useAccount()` to read `normalizedAccount?.aiContext` and `normalizedAccount?.branding`
+- Pass account context (persona, tone) to `buildFlowSteps` if available
+- Pass user's role/project info for account-specific messaging
+
+**14. `src/pages/SkillTargetBuilder.tsx`**
+- Replace `import { mockLearningModules, mockAssessments, mockRolePlayBank } from "@/data/mock"` with account-aware data: prefer normalized account content, fall back to mock
+
+## Pattern for each file
+
+```typescript
+// Before
+import { mockNewHires } from "@/data/mock";
+// uses mockNewHires directly
+
+// After
+import { useAccount } from "@/contexts/AccountContext";
+const { normalizedAccount, activeAccount } = useAccount();
+const newHires = normalizedAccount?.newHires 
+  ?? activeAccount?.data?.newHires 
+  ?? defaultNewHires; // import default only as final fallback
 ```
 
-## Implementation Plan
+## Files NOT changed
+- `src/pages/Dashboard.tsx` — already uses `useSkillTargets()` context (account-aware)
+- `src/pages/SkillTargetDetail.tsx` — already uses `useSkillTargets()` context
+- `src/pages/RolePlaySession.tsx` — already uses `useRolePlays()` context
+- `src/pages/AssessmentPage.tsx` — uses `mockAssessments` but these are content items, will wire via normalized `assessments` array
+- `src/pages/LearningModulePage.tsx` — same pattern, wire via normalized `learningModules`
+- `src/contexts/*` — already wired in previous pass
+- All UI components, layouts, navigation — unchanged
 
-### Phase 1: New Type System (~3 files)
+## Data flow after wiring
 
-**`src/types/account-v2.ts`** — Define all normalized entity types:
-
-- `NormalizedAccount` — top-level container with entity maps
-- `AccountBranding` — name, logo, accentColor, copy
-- `ProficiencyScale` — labeled levels with order (supports custom scales)
-- `AccountUser` — app persona (id, name, email, role, linkedEmployeeId)
-- `AccountEmployee` — workforce record (id, name, title, department, skills, roleId, reportsTo)
-- `AccountRole` — role catalog entry (id, name, requiredSkills)
-- `AccountProject` — first-class project (id, name, description, managerIds, requiredSkills, status, metadata)
-- `ProjectAssignment` — many-to-many (employeeId, projectId)
-- `AccountPrompts`, `AccountAIContext`, `AccountPageData`, `AccountMy360Data`, `AccountReflection`, `AccountWorkSignal`
-- Keep existing `SkillTarget`, `RolePlay`, `Assessment`, `LearningModule` types as-is
-
-### Phase 2: JSON Parser & Normalizer (~2 files)
-
-**`src/lib/accountParser.ts`**:
-- `parseAccountJSON(raw: unknown): NormalizedAccount` — validates top-level sections, normalizes into entity maps
-- Schema version check (v1 assumed if missing)
-- Required sections: `account` (name), `users` or `employees`
-- Optional sections: everything else — missing sections get fallback generation
-- Build `hierarchyMap` from employee `reportsTo` fields
-- Build `projectAssignments` from explicit assignment array or employee.projectIds
-
-**`src/lib/accountFallbacks.ts`**:
-- `generateFallbacks(partial: Partial<NormalizedAccount>): NormalizedAccount`
-- Fill missing sections with empty collections (not demo data)
-- Generate lightweight pageData stubs from available employees/roles/projects
-
-### Phase 3: Selector / Service Layer (~1 file)
-
-**`src/lib/accountSelectors.ts`** — Pure functions taking `NormalizedAccount` as input:
-
-- `getAccountBranding(acct)` → branding object
-- `getUserById(acct, id)` / `getEmployeeById(acct, id)`
-- `getCurrentEmployee(acct, userId)` — resolves user→employee link
-- `getDirectReports(acct, employeeId)` → employee[]
-- `getFullReportingTree(acct, employeeId)` → employee[]
-- `getEmployeeProjects(acct, employeeId)` → project[]
-- `getProjectMembers(acct, projectId)` → employee[]
-- `getRoleByEmployee(acct, employeeId)` → role
-- `getEmployeeRoleGap(acct, employeeId)` → gap[] (employee skills vs role required)
-- `getEmployeeProjectGap(acct, employeeId, projectId)` → gap[]
-- `getCombinedGap(acct, employeeId)` → merged gap[]
-- `getAdminOrgSummary(acct)` → org-wide stats
-- `getManagerTeamSummary(acct, managerId)` → team stats
-- `getLearnerHomeData(acct, userId)` → dashboard data
-
-### Phase 4: Migrate AccountContext (~1 file)
-
-**`src/contexts/AccountContext.tsx`**:
-- Change internal state from `Account[]` to `Record<string, NormalizedAccount>`
-- `addAccount` now calls `parseAccountJSON` + `generateFallbacks`
-- Default "Cornerstone Demo" account built via a `buildDefaultNormalized()` that maps existing mock data into the new normalized shape
-- Expose `activeNormalizedAccount` alongside existing `activeAccount` for backward compat during migration
-- Expose key selectors as convenience hooks or keep them as importable functions
-
-### Phase 5: Migrate Default Account Data (~1 file)
-
-**`src/lib/accountDefaults.ts`**:
-- Add `buildDefaultNormalized(): NormalizedAccount` that maps existing mock data into normalized entities
-- Create explicit `AccountRole` entries from existing profile data
-- Create explicit `AccountProject` entries from embedded project references (e.g., "Apple Support Program", "WFAI Onboarding")
-- Create `ProjectAssignment` records from existing employee→program relationships
-- Map existing `profileDataByUser` into employee skills + my360 data
-
-### Phase 6: Wire Pages to Selectors (~8-10 files, minimal changes each)
-
-For each page, replace direct mock imports or raw `activeAccount.data.*` access with selector calls:
-
-- **Dashboard.tsx** — already reads from `useSkillTargets()`, minimal change
-- **My360.tsx** — replace `profileDataByUser` lookup with `getCurrentEmployee` + gap selectors
-- **ActionPlanView.tsx** — same as My360
-- **ManagerView.tsx** — replace `mockNewHires`, `mockProgramContexts` with account data
-- **TeamInsights.tsx** — use `getDirectReports` / `getManagerTeamSummary`
-- **AIManager.tsx** — use `aiContext` from account if available
-- **SkillTargetsContext.tsx** — already account-aware, just point to normalized data
-- **RolePlayContext.tsx** — already account-aware
-- **UserContext.tsx** — map `AccountUser[]` from normalized account, preserve user↔employee separation
-
-### Phase 7: Upload Validation & Feedback (~1 file)
-
-**`src/components/account/AddAccountDialog.tsx`**:
-- After JSON parse, run `parseAccountJSON` which validates structure
-- Show validation errors for missing required sections
-- Show warnings for missing optional sections (with fallback notice)
-- Preview account name + employee count before confirming
-
-## JSON Upload Schema (for reference)
-
-```json
-{
-  "schemaVersion": "1",
-  "account": { "name": "Acme Corp", "logo": "...", "accentColor": "#FF5500" },
-  "proficiencyScale": ["Beginner", "Intermediate", "Advanced", "Expert", "Master"],
-  "users": [
-    { "id": "u1", "name": "...", "email": "...", "role": "manager", "linkedEmployeeId": "e1" }
-  ],
-  "employees": [
-    { "id": "e1", "name": "...", "title": "...", "roleId": "r1", "reportsTo": null, "skills": [...] }
-  ],
-  "rolesCatalog": [
-    { "id": "r1", "name": "Sales Manager", "requiredSkills": [...] }
-  ],
-  "projects": [
-    { "id": "p1", "name": "...", "requiredSkills": [...], "managerIds": ["e1"] }
-  ],
-  "projectAssignments": [
-    { "employeeId": "e2", "projectId": "p1" }
-  ],
-  "hierarchy": { ... },
-  "skillTargets": [...],
-  "rolePlays": [...],
-  "prompts": { ... },
-  "aiContext": { ... },
-  "my360": { ... },
-  "pageData": { ... }
-}
+```text
+Account JSON → AccountContext (normalized) → Page hooks
+                                           ↓
+                              useAccount().normalizedAccount
+                              useSkillTargets() 
+                              useRolePlays()
+                              useUser()
+                                           ↓
+                              Selectors: getProfileData, 
+                              getDirectReports, etc.
+                                           ↓
+                              Existing page renders
 ```
 
 ## What does NOT change
-
-- All page layouts, components, navigation, styling
-- Sidebar structure, profile switcher, theme system
-- Role play session, assessment page, learning module page UI
-- Edge functions (chat, role-play-chat, content-search)
-- Supabase storage schema (accounts table keeps JSONB, just stores normalized shape)
-- No real auth, no real backend changes
-
-## Files created/modified summary
-
-| File | Action |
-|------|--------|
-| `src/types/account-v2.ts` | Create — normalized entity types |
-| `src/lib/accountParser.ts` | Create — JSON parse + validate + normalize |
-| `src/lib/accountFallbacks.ts` | Create — fallback generation for missing sections |
-| `src/lib/accountSelectors.ts` | Create — derived selector functions |
-| `src/lib/accountDefaults.ts` | Modify — add `buildDefaultNormalized()` |
-| `src/contexts/AccountContext.tsx` | Modify — use normalized store internally |
-| `src/contexts/UserContext.tsx` | Modify — separate user from employee |
-| `src/contexts/SkillTargetsContext.tsx` | Minor — point to normalized skillTargets |
-| `src/contexts/RolePlayContext.tsx` | Minor — point to normalized rolePlays |
-| `src/components/account/AddAccountDialog.tsx` | Modify — validation feedback |
-| `src/pages/My360.tsx` | Modify — use selectors |
-| `src/components/my360/ActionPlanView.tsx` | Modify — use selectors |
-| `src/pages/ManagerView.tsx` | Modify — use account data instead of mock imports |
-| `src/pages/TeamInsights.tsx` | Modify — use selectors |
-| `src/types/account.ts` | Keep for backward compat, deprecate gradually |
-
-## Estimated scope
-
-- ~4 new files (types, parser, fallbacks, selectors)
-- ~10 modified files (context + pages)
-- No new pages, no new UI components, no redesign
+- No page layouts, styling, or navigation changes
+- No new pages or components
+- No backend/DB changes
+- No auth changes
 

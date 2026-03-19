@@ -304,7 +304,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s44-2", type: "module", title: "Performance Metrics Deep Dive", description: "Quality metrics.", duration: "20 min", referenceId: "m56" },
     { id: "s44-3", type: "module", title: "Advanced Reporting and Dashboards", description: "Visualize quality data.", duration: "25 min", referenceId: "m79" },
   ]},
-  { id: "mst45", title: "Workforce Planning", description: "Plan and optimize support team capacity.", category: "Leadership", difficulty: "Expert", skills: ["Workforce Planning", "Capacity", "Scheduling"], assignedTo: ["u3"], steps: [
+  { id: "mst45", title: "Workforce Planning", description: "Plan and optimize support team capacity.", category: "Leadership", difficulty: "Expert", skills: ["Workforce Planning", "Capacity", "Scheduling"], assignedTo: ["u6"], steps: [
     { id: "s45-1", type: "module", title: "Workforce Planning for CX", description: "Demand forecasting.", duration: "25 min", referenceId: "m78" },
     { id: "s45-2", type: "module", title: "Operational Excellence Frameworks", description: "LEAN principles.", duration: "30 min", referenceId: "m85" },
     { id: "s45-3", type: "module", title: "Predictive CX Analytics", description: "Predictive staffing.", duration: "30 min", referenceId: "m92" },

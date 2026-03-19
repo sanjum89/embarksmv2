@@ -69,22 +69,6 @@ export function UserProvider({ children }: { children: ReactNode }) {
     if (normalizedAccount && Object.keys(normalizedAccount.usersById).length > 0) {
       return Object.values(normalizedAccount.usersById).map(accountUserToUser);
     }
-    // Fallback: map employees to users with inferred roles
-    if (normalizedAccount && Object.keys(normalizedAccount.employeesById).length > 0) {
-      const hierarchy = normalizedAccount.hierarchyMap || {};
-      return Object.values(normalizedAccount.employeesById).map((emp) => {
-        const isManager = !!(hierarchy[emp.id] && hierarchy[emp.id].length > 0);
-        return {
-          id: emp.id,
-          name: emp.name,
-          email: emp.email || "",
-          role: (isManager ? "manager" : "learner") as UserRole,
-          avatarUrl: emp.avatarUrl,
-          title: emp.title,
-          canManage: isManager,
-        };
-      });
-    }
     if (activeAccount?.data?.employees?.length) {
       return activeAccount.data.employees.map((e) => ({
         id: e.id,

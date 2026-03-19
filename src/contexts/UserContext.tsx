@@ -2,12 +2,25 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 import type { User, UserRole } from "@/types/learning";
 import { currentUser, availableUsers as defaultAvailableUsers } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";
+import type { AccountUser } from "@/types/account-v2";
 
 interface UserContextType {
   user: User;
   setRole: (role: UserRole) => void;
   switchUser: (userId: string) => void;
   availableUsers: User[];
+}
+
+function accountUserToUser(au: AccountUser): User {
+  return {
+    id: au.id,
+    name: au.name,
+    email: au.email,
+    role: au.role,
+    avatarUrl: au.avatarUrl,
+    title: au.title,
+    canManage: au.canManage,
+  };
 }
 
 const fallbackUserContext: UserContextType = {
@@ -20,9 +33,14 @@ const fallbackUserContext: UserContextType = {
 const UserContext = createContext<UserContextType>(fallbackUserContext);
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  const { activeAccount, loading } = useAccount();
+  const { normalizedAccount, activeAccount, loading } = useAccount();
 
-  const getUsers = () => {
+  const getUsers = (): User[] => {
+    // Prefer normalized account users
+    if (normalizedAccount && Object.keys(normalizedAccount.usersById).length > 0) {
+      return Object.values(normalizedAccount.usersById).map(accountUserToUser);
+    }
+    // Fallback to legacy employees
     if (activeAccount?.data?.employees?.length) {
       return activeAccount.data.employees.map((e) => ({
         id: e.id,
@@ -46,7 +64,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const newUsers = getUsers();
       setUser(newUsers[0] || currentUser);
     }
-  }, [activeAccount?.id, loading]);
+  }, [activeAccount?.id, normalizedAccount?.id, loading]);
 
   const setRole = (role: UserRole) => {
     setUser((prev) => ({ ...prev, role }));

@@ -92,7 +92,9 @@ type GapFilter = "All" | "Gap" | "No gap";
 
 export default function My360() {
   const { user } = useUser();
-  const profileData = profileDataByUser[user.id] || profileDataByUser["u1"];
+  const { activeAccount } = useAccount();
+  const accountProfileData = activeAccount?.data?.profileData ?? {};
+  const profileData = accountProfileData[user.id] || staticProfileData[user.id] || staticProfileData["u1"];
   const chatRef = useRef<AIChatWrapperHandle>(null);
 
   // Clear chat when profile changes

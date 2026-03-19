@@ -10,8 +10,6 @@ import {
   BarChart3,
   Bot,
   CircleUser,
-  PanelLeftClose,
-  PanelLeftOpen,
   ChevronDown,
   ChevronRight,
   Check,

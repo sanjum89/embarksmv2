@@ -521,9 +521,15 @@ export function AppSidebar() {
           </div>
         </div>
       )}
+      <LoginDialog
+        open={loginDialogOpen}
+        onOpenChange={setLoginDialogOpen}
+        availableUsers={availableUsers}
+        signedInUserIds={signedInUserIds}
+        onLogin={handleLogin}
+      />
       </>
-    );
-  }
+
 
   /* ── New theme sidebar (unchanged) ── */
   const renderLink = (path: string, icon: React.ElementType, label: string, indented = false) => {

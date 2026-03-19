@@ -89,7 +89,7 @@ const navItems: NavItem[] = [
 ];
 
 export function AppSidebar() {
-  const { user, switchUser, setRole, availableUsers } = useUser();
+  const { user, switchUser, setRole, availableUsers, signedInUserIds, loginUser, logoutUser } = useUser();
   const { activeAccount } = useAccount();
   const { expanded, toggle } = useSidebarState();
   const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight } = useTheme();
@@ -102,6 +102,28 @@ export function AppSidebar() {
   const [brandHovered, setBrandHovered] = useState(false);
   const [viewMode, setViewMode] = useState<"me" | "team">("me");
   const [switchingProfile, setSwitchingProfile] = useState(false);
+  const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+
+  const handleLogin = (userId: string) => {
+    setSwitchingProfile(true);
+    setTimeout(() => {
+      loginUser(userId);
+      const u = availableUsers.find((x) => x.id === userId);
+      if (u?.canManage && viewMode === "team") {
+        setRole("manager");
+        navigate("/manager");
+      } else {
+        setRole("learner");
+        setViewMode("me");
+        navigate("/");
+      }
+      setSwitchingProfile(false);
+    }, 1000);
+  };
+
+  const handleLogout = (userId: string) => {
+    logoutUser(userId);
+  };
 
   const filteredItems = navItems.filter((item) => {
     if (!item.roles.includes(user.role)) return false;

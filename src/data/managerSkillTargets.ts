@@ -265,7 +265,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s37-3", type: "module", title: "Collaborative Problem Solving", description: "Cross-team resolution.", duration: "25 min", referenceId: "m57" },
     { id: "s37-4", type: "module", title: "Internal Communication", description: "Shift handoffs.", duration: "15 min", referenceId: "m62" },
   ]},
-  { id: "mst38", title: "Self-Service Strategy", description: "Build and optimize self-service capabilities.", category: "Operations", difficulty: "Intermediate", skills: ["Self-Service", "Portal Management", "Deflection"], assignedTo: ["u3", "u4"], steps: [
+  { id: "mst38", title: "Self-Service Strategy", description: "Build and optimize self-service capabilities.", category: "Operations", difficulty: "Intermediate", skills: ["Self-Service", "Portal Management", "Deflection"], assignedTo: ["u6", "u8"], steps: [
     { id: "s38-1", type: "module", title: "Self-Service Portal Management", description: "FAQ and help content.", duration: "15 min", referenceId: "m44" },
     { id: "s38-2", type: "module", title: "Knowledge Base Content Creation", description: "Effective articles.", duration: "20 min", referenceId: "m51" },
     { id: "s38-3", type: "module", title: "Customer Education Programs", description: "Reduce ticket volume.", duration: "25 min", referenceId: "m68" },

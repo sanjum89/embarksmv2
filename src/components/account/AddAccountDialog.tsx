@@ -132,7 +132,7 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
   return (
     <Dialog open={open} onOpenChange={(v) => {
       onOpenChange(v);
-      if (!v) { setFileName(null); setLogoDataUrl(null); setLogoFileName(null); setPendingJson(null); setError(null); }
+      if (!v) { setFileName(null); setLogoDataUrl(null); setLogoFileName(null); setPendingJson(null); setParseWarnings([]); setEmployeeCount(0); setError(null); }
     }}>
       <DialogContent className="max-w-md">
         <DialogHeader>

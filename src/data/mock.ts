@@ -326,7 +326,7 @@ export const mockSkillTargets: SkillTarget[] = [
     title: "Empathetic Communication",
     description: "Develop empathy-driven communication skills for customer-facing interactions.",
     category: "Soft Skills",
-    assignedTo: ["u1", "u2", "u3", "u4"],
+    assignedTo: ["u1"],
     progress: 80,
     dueDate: "2026-03-10",
     skills: [

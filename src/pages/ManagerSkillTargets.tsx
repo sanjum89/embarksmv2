@@ -30,7 +30,7 @@ export default function ManagerSkillTargets() {
 
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const progress = useMemo(() => getAssigneeProgress(), []);
+  const categories = useMemo(() => [...new Set(managerSkillTargets.map((t: any) => t.category as string))], [managerSkillTargets]);
 
   const filtered = useMemo(() => {
     return managerSkillTargets.filter((t) => {

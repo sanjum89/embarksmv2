@@ -513,9 +513,9 @@ onClick={() => { if (isActive || switchingProfile) return; setSwitchingProfile(t
             <>
               <div className="flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-lg shrink-0">
-                  <img src={cornerstoneLogo} alt="Cornerstone" className="h-6 w-6 object-contain" />
+                  <img src={accountLogo} alt={accountName} className="h-6 w-6 object-contain" style={{ background: 'transparent' }} />
                 </div>
-                <span className="font-display font-bold text-sm text-sidebar-foreground">cornerstone</span>
+                <span className="font-display font-bold text-sm text-sidebar-foreground">{accountName}</span>
               </div>
               <button onClick={toggle} className="flex h-8 w-8 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 transition-colors">
                 <PanelLeftClose className="h-4 w-4" />

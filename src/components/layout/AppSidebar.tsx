@@ -97,7 +97,7 @@ export function AppSidebar() {
   const location = useLocation();
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
   const [managerOpen, setManagerOpen] = useState(true);
-  const [brandHovered, setBrandHovered] = useState(false);
+  
   const [viewMode, setViewMode] = useState<"me" | "team">("me");
   const [switchingProfile, setSwitchingProfile] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);

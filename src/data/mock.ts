@@ -283,7 +283,7 @@ export const mockSkillTargets: SkillTarget[] = [
     title: "Customer Objection Handling",
     description: "Master techniques for handling common customer objections during sales conversations.",
     category: "Sales Skills",
-    assignedTo: ["u1", "u2", "u3"],
+    assignedTo: ["u1"],
     progress: 35,
     dueDate: "2026-03-15",
     skills: [

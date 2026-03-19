@@ -114,7 +114,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s11-2", type: "module", title: "Advanced CRM Workflows", description: "Custom fields, automation.", duration: "30 min", referenceId: "m53" },
     { id: "s11-3", type: "module", title: "Remote Troubleshooting Techniques", description: "Using tools remotely.", duration: "25 min", referenceId: "m60" },
   ]},
-  { id: "mst12", title: "Knowledge Base Management", description: "Create and maintain effective knowledge resources.", category: "CRM & Tools", difficulty: "Intermediate", skills: ["Knowledge Management", "Content Creation", "Search Optimization"], assignedTo: ["u3", "u4", "u9"], steps: [
+  { id: "mst12", title: "Knowledge Base Management", description: "Create and maintain effective knowledge resources.", category: "CRM & Tools", difficulty: "Intermediate", skills: ["Knowledge Management", "Content Creation", "Search Optimization"], assignedTo: ["u9"], steps: [
     { id: "s12-1", type: "module", title: "Knowledge Base Navigation", description: "Efficient KB navigation.", duration: "15 min", referenceId: "m28" },
     { id: "s12-2", type: "module", title: "Knowledge Base Content Creation", description: "Writing effective articles.", duration: "20 min", referenceId: "m51" },
     { id: "s12-3", type: "module", title: "Self-Service Portal Management", description: "FAQ and help content.", duration: "15 min", referenceId: "m44" },

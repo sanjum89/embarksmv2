@@ -37,7 +37,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator";
 import { AccountSwitcher } from "@/components/account/AccountSwitcher";
 import { LoginDialog } from "@/components/layout/LoginDialog";
-import cornerstoneLogo from "@/assets/cornerstone-logo.svg";
+
 import learningSpacesIcon from "@/assets/learning-spaces.svg";
 
 interface NavItem {

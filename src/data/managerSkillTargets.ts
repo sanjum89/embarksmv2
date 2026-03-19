@@ -294,7 +294,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s42-2", type: "module", title: "Quality Assurance and Calibration", description: "Score calibration.", duration: "25 min", referenceId: "m76" },
     { id: "s42-3", type: "module", title: "Performance Metrics Deep Dive", description: "Metrics-driven coaching.", duration: "20 min", referenceId: "m56" },
   ]},
-  { id: "mst43", title: "Change Management for CX", description: "Lead teams through organizational change.", category: "Leadership", difficulty: "Expert", skills: ["Change Management", "Communication", "Stakeholder Management"], assignedTo: ["u3"], steps: [
+  { id: "mst43", title: "Change Management for CX", description: "Lead teams through organizational change.", category: "Leadership", difficulty: "Expert", skills: ["Change Management", "Communication", "Stakeholder Management"], assignedTo: ["u6"], steps: [
     { id: "s43-1", type: "module", title: "Change Management for CX", description: "Leading through change.", duration: "25 min", referenceId: "m77" },
     { id: "s43-2", type: "module", title: "Support Team Leadership", description: "Team leadership context.", duration: "25 min", referenceId: "m74" },
     { id: "s43-3", type: "module", title: "Strategic CX Consulting", description: "CX strategy skills.", duration: "30 min", referenceId: "m89" },

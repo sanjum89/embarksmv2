@@ -167,6 +167,12 @@ function ThinkingIndicator() {
 export default function ManagerView() {
   const { user } = useUser();
   const { skillTargets } = useSkillTargets();
+  const { normalizedAccount, activeAccount } = useAccount();
+
+  // Use account-aware data with fallback to defaults
+  const mockNewHires = normalizedAccount?.newHires ?? activeAccount?.data?.newHires ?? defaultNewHires;
+  const mockProgramContexts = normalizedAccount?.programContexts ?? activeAccount?.data?.programContexts ?? defaultProgramContexts;
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [activePanel, setActivePanel] = useState<string | null>(null);

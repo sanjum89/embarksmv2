@@ -444,12 +444,7 @@ export function AppSidebar() {
               <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-64 p-2">
                 <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Switch profile</p>
                 {availableUsers
-                  .slice()
-                  .sort((a, b) => {
-                    const aIn = signedInUserIds.includes(a.id) ? 0 : 1;
-                    const bIn = signedInUserIds.includes(b.id) ? 0 : 1;
-                    return aIn - bIn;
-                  })
+                  .filter((u) => signedInUserIds.includes(u.id))
                   .map((u) => {
                   const isActive = u.id === user.id;
                   const isSignedIn = signedInUserIds.includes(u.id);
@@ -797,12 +792,7 @@ export function AppSidebar() {
            <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-64 p-2">
             <p className="text-xs font-medium text-muted-foreground px-2 pb-2">Switch profile</p>
             {availableUsers
-              .slice()
-              .sort((a, b) => {
-                const aIn = signedInUserIds.includes(a.id) ? 0 : 1;
-                const bIn = signedInUserIds.includes(b.id) ? 0 : 1;
-                return aIn - bIn;
-              })
+              .filter((u) => signedInUserIds.includes(u.id))
               .map((u) => {
               const isActive = u.id === user.id;
               const isSignedIn = signedInUserIds.includes(u.id);

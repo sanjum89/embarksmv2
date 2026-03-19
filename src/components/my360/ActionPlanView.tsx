@@ -4,7 +4,7 @@ import { BookOpen, Target, ArrowRight, CheckCircle2, Plus, Sparkles } from "luci
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
-import { profileDataByUser } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 import { getRecommendationsForUser, type SkillRecommendation, type RecommendationGroup } from "@/lib/skillRecommendations";
 import type { SkillTarget } from "@/types/learning";
 import { useToast } from "@/hooks/use-toast";

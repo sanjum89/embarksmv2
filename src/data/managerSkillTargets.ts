@@ -316,7 +316,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s46-2", type: "module", title: "Performance Metrics Deep Dive", description: "Full metric spectrum.", duration: "20 min", referenceId: "m56" },
     { id: "s46-3", type: "module", title: "Advanced Reporting and Dashboards", description: "Build dashboards.", duration: "25 min", referenceId: "m79" },
   ]},
-  { id: "mst47", title: "Predictive Analytics for CX", description: "Use data to predict and prevent issues.", category: "Analytics", difficulty: "Expert", skills: ["Predictive Analytics", "Machine Learning", "Forecasting"], assignedTo: ["u3", "u4"], steps: [
+  { id: "mst47", title: "Predictive Analytics for CX", description: "Use data to predict and prevent issues.", category: "Analytics", difficulty: "Expert", skills: ["Predictive Analytics", "Machine Learning", "Forecasting"], assignedTo: ["u6", "u8"], steps: [
     { id: "s47-1", type: "module", title: "Predictive CX Analytics", description: "AI-driven insights.", duration: "30 min", referenceId: "m92" },
     { id: "s47-2", type: "module", title: "AI and Automation in CX", description: "AI tools.", duration: "30 min", referenceId: "m91" },
     { id: "s47-3", type: "module", title: "Data-Driven Case Prioritization", description: "Smart triage.", duration: "15 min", referenceId: "m66" },

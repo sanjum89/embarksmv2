@@ -289,7 +289,7 @@ export const managerSkillTargets: ManagerSkillTarget[] = [
     { id: "s41-3", type: "module", title: "Quality Assurance and Calibration", description: "Maintaining standards.", duration: "25 min", referenceId: "m76" },
     { id: "s41-4", type: "role_play", title: "Leadership Scenario", description: "Coaching conversation practice.", referenceId: "rp1" },
   ]},
-  { id: "mst42", title: "Performance Coaching", description: "Coach team members to improve performance.", category: "Leadership", difficulty: "Advanced", skills: ["Coaching", "Performance Management", "Feedback"], assignedTo: ["u3", "u4"], steps: [
+  { id: "mst42", title: "Performance Coaching", description: "Coach team members to improve performance.", category: "Leadership", difficulty: "Advanced", skills: ["Coaching", "Performance Management", "Feedback"], assignedTo: ["u6", "u8"], steps: [
     { id: "s42-1", type: "module", title: "Coaching and Mentoring in CX", description: "Coaching techniques.", duration: "25 min", referenceId: "m75" },
     { id: "s42-2", type: "module", title: "Quality Assurance and Calibration", description: "Score calibration.", duration: "25 min", referenceId: "m76" },
     { id: "s42-3", type: "module", title: "Performance Metrics Deep Dive", description: "Metrics-driven coaching.", duration: "20 min", referenceId: "m56" },

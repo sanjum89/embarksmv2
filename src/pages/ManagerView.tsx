@@ -89,7 +89,7 @@ const suggestionCards = [
   { label: "Analyze the job roles in my org", prompt: "Analyze job roles in my organization", illustration: "roles" },
 ];
 
-function generateResponse(prompt: string, skillTargets: any[]): Omit<ChatMessage, "id"> {
+function generateResponse(prompt: string, skillTargets: any[], mockNewHires: any[], mockProgramContexts: any[]): Omit<ChatMessage, "id"> {
   const lower = prompt.toLowerCase();
 
   if (lower.includes("new hire")) {

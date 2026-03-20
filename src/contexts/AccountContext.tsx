@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized } from "@/lib/accountDefaults";
 import { parseAccountJSON } from "@/lib/accountParser";
 import { generateProfileData } from "@/lib/profileDataGenerator";
+import { deriveReflections } from "@/lib/adminDataDerivation";
 
 interface AccountContextType {
   accounts: Account[];
@@ -54,6 +55,13 @@ function normalizeFromLegacy(acct: Account): NormalizedAccount {
       // Auto-generate profileData if missing but employees have skills
       if (Object.keys(parsed.profileData).length === 0 && Object.values(parsed.employeesById).some(e => e.skills?.length)) {
         parsed.profileData = generateProfileData(parsed);
+      }
+      // Auto-derive reflections from employee data when none provided
+      if (!parsed.reflections?.length) {
+        const rawEmps = data?.employees || [];
+        if (rawEmps.length > 0) {
+          parsed.reflections = deriveReflections(rawEmps);
+        }
       }
       return parsed;
     }

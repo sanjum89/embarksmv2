@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, UserPlus, Search, Bot, Mic, X, Check, Pencil } from "lucide-react";
-import { mockNewHires as defaultNewHires } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useRolePlays } from "@/contexts/RolePlayContext";
 import { cn } from "@/lib/utils";

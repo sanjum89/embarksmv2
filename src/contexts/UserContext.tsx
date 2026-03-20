@@ -93,13 +93,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Signed-in user IDs, persisted per-account in localStorage
   const [signedInUserIds, setSignedInUserIds] = useState<string[]>(() => {
-    const persisted = readPersistedIds(activeAccountId);
-    if (persisted.length === 0 && users.length > 0) {
-      const initial = [users[0].id];
-      persistIds(activeAccountId, initial);
-      return initial;
-    }
-    return persisted;
+    return readPersistedIds(activeAccountId);
   });
 
   const [user, setUser] = useState<User>(() => {
@@ -129,12 +123,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Fallback: sign in the first user
-      const newFirst = newUsers[0] || currentUser;
-      setUser(newFirst);
-      const newIds = newUsers.length > 0 ? [newFirst.id] : [];
-      setSignedInUserIds(newIds);
-      persistIds(activeAccountId, newIds);
+      // No persisted session — show login page
+      setSignedInUserIds([]);
+      persistIds(activeAccountId, []);
+      setUser(newUsers[0] || currentUser);
     }
   }, [activeAccountId, loading]);
 

@@ -1,67 +1,56 @@
 
 
-# Rathbones Role Plays + Assigned Tab in Role Play Bank
+# Rathbones Investment Manager Foundations — Skill Target
 
-## Overview
-Create 5 Rathbones wealth management role plays, add Clara/Elliot/Sophie as users, and add an "Assigned to Me" tab to the Role Play Bank page.
+## What
+Create a single skill target assigned to Clara (u12), Elliot (u13), and Sophie (u14) with 7 chapters, 1 checkpoint assessment, and 1 role play. Per-user skip behavior pre-marks chapters 1-2 as completed for Clara and Elliot.
 
-## New Users (Clara, Elliot, Sophie)
+## Step Sequence (9 steps)
 
-Add three Investment Manager users to `src/data/mock.ts` and wire them into `src/lib/accountDefaults.ts`:
+| Order | Type | Title | Duration |
+|-------|------|-------|----------|
+| 1 | module (PDF) | Rathbones Investment Manager Role and Good Client Outcomes | 20 min |
+| 2 | module (video) | Leading Client Relationships with Confidence | 25 min |
+| 3 | module (PDF) | Suitability, Documentation, and Client Fairness | 20 min |
+| 4 | module (video) | Working with Financial Planning, Portfolio Management, and Client Support | 25 min |
+| 5 | assessment | A1 — Client Outcomes and Suitability Checkpoint | 15 min |
+| 6 | module (PDF) | Investment Process and Portfolio Alignment Basics | 20 min |
+| 7 | module (video) | Communicating Clearly with Clients and Internal Partners | 25 min |
+| 8 | module (PDF) | Professional Integrity, Attention to Detail, and Ownership | 15 min |
+| 9 | role_play | RP1 — First Client Intro and Risk Appetite Conversation | 20 min |
 
-| ID | Name | Title |
-|----|------|-------|
-| u12 | Clara Whitfield | Investment Manager |
-| u13 | Elliot Hargreaves | Investment Manager |
-| u14 | Sophie Langford | Investment Manager |
+Assessment A1 passing score: 80%. No skip rules on the assessment itself.
 
-All three are learners reporting to u1 (Alex Rivera).
+## Skills on the Card
 
-## 5 New Role Plays (all beginner, Rathbones-branded)
+| Skill | Current | Target |
+|-------|---------|--------|
+| Client Relationship Management | Beginner | Intermediate |
+| Suitability and Documentation | Beginner | Intermediate |
+| Investment Communication | Beginner | Intermediate |
+| Active Listening | Intermediate | Advanced |
 
-Added to the **top** of `mockRolePlayBank` in `src/data/mock.ts`:
+## Skip Behavior (per-user pre-completion)
 
-**RP1 — First Client Intro and Risk Appetite Conversation** (`rp-rb1`)
-- Scenario: You're meeting a new Rathbones client for the first time. Understand their financial goals, family situation, and risk appetite. The client is a recently retired professional with £800k in savings, cautious but open to guidance.
-- AI Persona: Margaret Ellsworth, 63, recently retired NHS consultant. Polite, well-informed, slightly anxious about market volatility. Wants to protect capital but generate modest income. Will mention her late husband managed finances previously. Asks thoughtful questions about fees and ESG options.
-- Assigned to: Clara, Elliot, Sophie
+Clara and Elliot: Steps 1 and 2 are marked `status: "completed"` and `skippable: true`. Step 3 starts as `"available"`.
 
-**RP2 — Explaining a Portfolio Recommendation to a Cautious Client** (`rp-rb2`)
-- Scenario: Present a balanced portfolio recommendation to a cautious client who is wary of equities after losing money in 2008. Explain asset allocation, risk-return trade-offs, and how Rathbones manages downside risk.
-- AI Persona: David Ashworth, 58, semi-retired business owner, £1.2M portfolio. Still scarred by 2008 losses. Deeply skeptical of equities, prefers cash and property. Will challenge you on fees, past performance, and why bonds aren't enough. Polite but firm — needs data and reassurance, not sales talk.
-- Assigned to: Clara, Elliot, Sophie
+Sophie: No skips. Step 1 is `"available"`, all others `"locked"`.
 
-**RP3 — Internal Collaboration with Financial Planning / Portfolio Management** (`rp-rb3`)
-- Scenario: You need to brief a senior Financial Planner and a Portfolio Manager on a complex client case involving inheritance tax planning, pension drawdown, and a property sale. Present a clear summary and seek their input on the investment strategy.
-- AI Persona: Starts as James Cartwright, Senior Financial Planner — collaborative, detail-oriented, asks probing questions about the client's tax position and timelines. Mid-conversation, introduces Helen Park, Portfolio Manager — more direct, expects concise briefs, challenges your proposed allocation and asks for justification.
-- Not assigned to anyone (reusable)
+Since the current `SkillTarget` model has a single `steps` array (not per-user), we'll create **3 separate skill target instances** — one per user — so each has the correct initial step statuses.
 
-**RP4 — Handling a Cautious Client Question About Risk and Costs** (`rp-rb4`)
-- Scenario: During a routine review meeting, your client asks pointed questions about why their portfolio underperformed a simple tracker fund and whether Rathbones' fees are justified. Handle the conversation with transparency and confidence.
-- AI Persona: Richard Townsend, 52, successful solicitor, £650k portfolio. Analytically minded — has been reading investment articles and comparing Rathbones' performance to Vanguard trackers. Not angry, but wants a clear, honest answer. Will press on total cost of ownership and alpha generation.
-- Not assigned to anyone (reusable)
+## RP1 Reference
 
-**RP5 — Business Development Intro Conversation with a Prospective Client** (`rp-rb5`)
-- Scenario: You've been introduced to a prospective client at a professional networking event. They currently use a large bank's wealth management arm but are dissatisfied with the impersonal service. Open the conversation, build rapport, and position Rathbones' value proposition without being pushy.
-- AI Persona: Amara Osei, 45, tech company CFO, £2M+ investable assets. Confident, direct, time-poor. Currently with a high-street bank wealth team and finds them formulaic. Open to alternatives but won't tolerate a hard sell. Values personalised service and ESG credentials. Will test whether you understand her situation before engaging further.
-- Not assigned to anyone (reusable)
+The role play `rp-rb1` already exists in `mockRolePlayBank`. The step will reference it via `referenceId: "rp-rb1"`.
 
-## RolePlay Type Update
-**File: `src/types/learning.ts`**
-- Add optional `assignedTo?: string[]` field to the `RolePlay` interface
+## New Learning Modules + Assessment
 
-## Role Play Bank — "Assigned to Me" Tab
-**File: `src/pages/RolePlayBank.tsx`**
-- Add a tab bar above the search: **All Role Plays** | **Assigned to Me**
-- "Assigned to Me" filters to role plays where `rp.assignedTo?.includes(user.id)`
-- This tab is the default view shown first
-- Existing filters (search, difficulty, tags) apply within each tab
+Add 7 new `LearningModule` entries and 1 new `Assessment` to `mockLearningModules` and `mockAssessments` in `src/data/mock.ts`.
 
-## Files Summary
+## Changes
+
 | File | Action |
 |------|--------|
-| `src/types/learning.ts` | Add `assignedTo?: string[]` to RolePlay |
-| `src/data/mock.ts` | Add 3 users + 5 role plays at top of array |
-| `src/lib/accountDefaults.ts` | Wire Clara/Elliot/Sophie into employees, users, hierarchy |
-| `src/pages/RolePlayBank.tsx` | Add "All" / "Assigned to Me" tab bar |
+| `src/data/mock.ts` | Add 7 learning modules (`m-rb1` to `m-rb7`), 1 assessment (`a-rb1`), and 3 skill target instances (`st-rb-clara`, `st-rb-elliot`, `st-rb-sophie`) |
+
+Single file change — all data goes into `mock.ts` following existing patterns.
 

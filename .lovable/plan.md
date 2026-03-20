@@ -1,48 +1,67 @@
 
 
-# Fix: Brand Theme Not Fully Applying to Buttons
+# Rathbones Role Plays + Assigned Tab in Role Play Bank
 
-## Problem
-The `gradient-accent` CSS utility in `index.css` has a **hardcoded amber** gradient stop (`hsl(38 92% 60%)`), so buttons using this class always look yellowish regardless of the selected theme. Similarly, `gradient-primary` has a hardcoded navy stop.
+## Overview
+Create 5 Rathbones wealth management role plays, add Clara/Elliot/Sophie as users, and add an "Assigned to Me" tab to the Role Play Bank page.
 
-## Root Cause
-```css
-/* index.css — hardcoded colors ignore theme overrides */
-.gradient-accent {
-  background: linear-gradient(135deg, hsl(var(--accent)), hsl(38 92% 60%));
-}
-.gradient-primary {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(222 60% 30%));
-}
-```
+## New Users (Clara, Elliot, Sophie)
 
-These are used across ~15+ files for buttons, avatars, progress bars, and send buttons.
+Add three Investment Manager users to `src/data/mock.ts` and wire them into `src/lib/accountDefaults.ts`:
 
-## Fix
+| ID | Name | Title |
+|----|------|-------|
+| u12 | Clara Whitfield | Investment Manager |
+| u13 | Elliot Hargreaves | Investment Manager |
+| u14 | Sophie Langford | Investment Manager |
 
-### File: `src/index.css`
-Replace hardcoded gradient stops with CSS variable-derived lighter/darker variants:
+All three are learners reporting to u1 (Alex Rivera).
 
-```css
-.gradient-accent {
-  background: linear-gradient(135deg, hsl(var(--accent)), hsl(var(--accent) / 0.8));
-}
-.gradient-primary {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8));
-}
-```
+## 5 New Role Plays (all beginner, Rathbones-branded)
 
-This ensures gradients always follow the active theme's accent/primary colors.
+Added to the **top** of `mockRolePlayBank` in `src/data/mock.ts`:
 
-### File: `src/hooks/useBrandColors.ts`
-Also override `--warning` to match the accent color so warning badges align with the brand:
-```ts
-"--warning": accent,
-"--warning-foreground": `${pH} 60% 12%`,
-```
+**RP1 — First Client Intro and Risk Appetite Conversation** (`rp-rb1`)
+- Scenario: You're meeting a new Rathbones client for the first time. Understand their financial goals, family situation, and risk appetite. The client is a recently retired professional with £800k in savings, cautious but open to guidance.
+- AI Persona: Margaret Ellsworth, 63, recently retired NHS consultant. Polite, well-informed, slightly anxious about market volatility. Wants to protect capital but generate modest income. Will mention her late husband managed finances previously. Asks thoughtful questions about fees and ESG options.
+- Assigned to: Clara, Elliot, Sophie
 
-| File | Change |
+**RP2 — Explaining a Portfolio Recommendation to a Cautious Client** (`rp-rb2`)
+- Scenario: Present a balanced portfolio recommendation to a cautious client who is wary of equities after losing money in 2008. Explain asset allocation, risk-return trade-offs, and how Rathbones manages downside risk.
+- AI Persona: David Ashworth, 58, semi-retired business owner, £1.2M portfolio. Still scarred by 2008 losses. Deeply skeptical of equities, prefers cash and property. Will challenge you on fees, past performance, and why bonds aren't enough. Polite but firm — needs data and reassurance, not sales talk.
+- Assigned to: Clara, Elliot, Sophie
+
+**RP3 — Internal Collaboration with Financial Planning / Portfolio Management** (`rp-rb3`)
+- Scenario: You need to brief a senior Financial Planner and a Portfolio Manager on a complex client case involving inheritance tax planning, pension drawdown, and a property sale. Present a clear summary and seek their input on the investment strategy.
+- AI Persona: Starts as James Cartwright, Senior Financial Planner — collaborative, detail-oriented, asks probing questions about the client's tax position and timelines. Mid-conversation, introduces Helen Park, Portfolio Manager — more direct, expects concise briefs, challenges your proposed allocation and asks for justification.
+- Not assigned to anyone (reusable)
+
+**RP4 — Handling a Cautious Client Question About Risk and Costs** (`rp-rb4`)
+- Scenario: During a routine review meeting, your client asks pointed questions about why their portfolio underperformed a simple tracker fund and whether Rathbones' fees are justified. Handle the conversation with transparency and confidence.
+- AI Persona: Richard Townsend, 52, successful solicitor, £650k portfolio. Analytically minded — has been reading investment articles and comparing Rathbones' performance to Vanguard trackers. Not angry, but wants a clear, honest answer. Will press on total cost of ownership and alpha generation.
+- Not assigned to anyone (reusable)
+
+**RP5 — Business Development Intro Conversation with a Prospective Client** (`rp-rb5`)
+- Scenario: You've been introduced to a prospective client at a professional networking event. They currently use a large bank's wealth management arm but are dissatisfied with the impersonal service. Open the conversation, build rapport, and position Rathbones' value proposition without being pushy.
+- AI Persona: Amara Osei, 45, tech company CFO, £2M+ investable assets. Confident, direct, time-poor. Currently with a high-street bank wealth team and finds them formulaic. Open to alternatives but won't tolerate a hard sell. Values personalised service and ESG credentials. Will test whether you understand her situation before engaging further.
+- Not assigned to anyone (reusable)
+
+## RolePlay Type Update
+**File: `src/types/learning.ts`**
+- Add optional `assignedTo?: string[]` field to the `RolePlay` interface
+
+## Role Play Bank — "Assigned to Me" Tab
+**File: `src/pages/RolePlayBank.tsx`**
+- Add a tab bar above the search: **All Role Plays** | **Assigned to Me**
+- "Assigned to Me" filters to role plays where `rp.assignedTo?.includes(user.id)`
+- This tab is the default view shown first
+- Existing filters (search, difficulty, tags) apply within each tab
+
+## Files Summary
+| File | Action |
 |------|--------|
-| `src/index.css` | Replace hardcoded gradient stops with CSS variable references |
-| `src/hooks/useBrandColors.ts` | Add `--warning` override to match brand accent |
+| `src/types/learning.ts` | Add `assignedTo?: string[]` to RolePlay |
+| `src/data/mock.ts` | Add 3 users + 5 role plays at top of array |
+| `src/lib/accountDefaults.ts` | Wire Clara/Elliot/Sophie into employees, users, hierarchy |
+| `src/pages/RolePlayBank.tsx` | Add "All" / "Assigned to Me" tab bar |
 

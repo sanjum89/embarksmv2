@@ -22,10 +22,10 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
   const st4 = program ? skillTargets.find((st) => st.id === program.skillTargetId) : undefined;
   const steps = st4?.steps ?? [];
 
-  const [passPercent, setPassPercent] = useState(program.assessmentPassPercentage);
+  const [passPercent, setPassPercent] = useState(program?.assessmentPassPercentage ?? 70);
   const [enabledSteps, setEnabledSteps] = useState<Set<string>>(new Set(steps.map((s) => s.id)));
   const [assigned, setAssigned] = useState(false);
-  const [selectedLearners, setSelectedLearners] = useState<Set<string>>(new Set(program.assignedLearners));
+  const [selectedLearners, setSelectedLearners] = useState<Set<string>>(new Set(program?.assignedLearners || []));
 
   const toggleStep = (id: string) => {
     setEnabledSteps((prev) => {

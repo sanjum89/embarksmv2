@@ -302,6 +302,22 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     return newAcct.id;
   }, [switchAccount]);
 
+  const updateAccount = useCallback(async (id: string, fields: { logo?: string | null; accent_color?: string | null }) => {
+    const { error } = await supabase.from("accounts").update(fields).eq("id", id);
+    if (error) throw error;
+
+    setAccounts((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, ...fields } as Account : a))
+    );
+    // Update normalized cache
+    setNormalizedCache((prev) => {
+      const acct = accounts.find((a) => a.id === id);
+      if (!acct) return prev;
+      const updated = { ...acct, ...fields } as Account;
+      return { ...prev, [id]: normalizeFromLegacy(updated) };
+    });
+  }, [accounts]);
+
   const deleteAccount = useCallback(async (id: string) => {
     const acct = accounts.find((a) => a.id === id);
     if (!acct || acct.is_default) return;

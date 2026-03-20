@@ -286,7 +286,8 @@ export default function My360() {
               <ResponsivePillRow
                 totalCount={profileData.roleSkillsCurrent?.length ?? 0}
                 renderPill={(i) => {
-                  const entry = profileData.roleSkillsCurrent[i];
+                  const entry = profileData.roleSkillsCurrent?.[i];
+                  if (!entry) return null;
                   const displayName = entry.skill_name.length > 13
                     ? entry.skill_name.slice(0, 10) + "..."
                     : entry.skill_name;

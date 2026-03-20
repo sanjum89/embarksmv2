@@ -4,6 +4,7 @@ import { LoginPage } from "./LoginPage";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUser } from "@/contexts/UserContext";
+import { useBrandColors } from "@/hooks/useBrandColors";
 import { cn } from "@/lib/utils";
 
 export function AppLayout() {
@@ -11,6 +12,9 @@ export function AppLayout() {
   const { styleTheme } = useTheme();
   const { signedInUserIds } = useUser();
   const isTraditional = styleTheme === "traditional";
+
+  // Apply brand colors from active account
+  useBrandColors();
 
   // When no users are signed in, show login page
   if (signedInUserIds.length === 0) {

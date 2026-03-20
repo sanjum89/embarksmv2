@@ -4,6 +4,8 @@ import { getPeopleGraphRows } from "@/lib/accountSelectors";
 import { Search, ChevronUp, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { AnimatePresence } from "framer-motion";
+import EmployeeDetailPanel from "./EmployeeDetailPanel";
 
 interface Props {
   account: NormalizedAccount;

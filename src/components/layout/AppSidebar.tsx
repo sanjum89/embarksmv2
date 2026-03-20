@@ -8,7 +8,6 @@ import {
   Drama,
   Shield,
   BarChart3,
-  Bot,
   CircleUser,
   ChevronDown,
   ChevronRight,

@@ -3,15 +3,18 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Play, FileText, CheckCircle2 } from "lucide-react";
 
-import { mockLearningModules } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { useAccount } from "@/contexts/AccountContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { AIChatPanel } from "@/components/chat/AIChatPanel";
+import { mockLearningModules as defaultLearningModules } from "@/data/mock";
 
 export default function LearningModulePage() {
   const { mid, id: skillTargetId } = useParams();
-  const foundModule = mockLearningModules.find((m) => m.id === mid);
+  const { normalizedAccount } = useAccount();
+  const learningModules = normalizedAccount?.learningModules?.length ? normalizedAccount.learningModules : defaultLearningModules;
+  const foundModule = learningModules.find((m) => m.id === mid);
   const { updateSkillTarget, skillTargets } = useSkillTargets();
   const { styleTheme } = useTheme();
   const isNewUI = styleTheme === "new";

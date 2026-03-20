@@ -17,7 +17,9 @@ interface TraditionalContentViewerProps {
 
 export function TraditionalContentViewer({ step, onClose, skillTargetId, allSteps, onNavigateToStep }: TraditionalContentViewerProps) {
   const isAssessment = step.type === "assessment";
-  const assessment = isAssessment ? mockAssessments.find((a) => a.id === step.referenceId) : null;
+  const { normalizedAccount } = useAccount();
+  const assessments = normalizedAccount?.assessments?.length ? normalizedAccount.assessments : defaultAssessments;
+  const assessment = isAssessment ? assessments.find((a) => a.id === step.referenceId) : null;
 
   return (
     <div className="flex flex-col h-full">

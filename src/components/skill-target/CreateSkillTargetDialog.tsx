@@ -261,7 +261,7 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
 
   /* Manual flow */
   const handleManualCreate = () => {
-    const selected = mockLearningModules.filter((m) => selectedModules.has(m.id));
+    const selected = accountModules.filter((m) => selectedModules.has(m.id));
     const steps: StepItem[] = selected.map((m, i) => ({
       id: `step-man-${Date.now()}-${i}`,
       type: "module" as const,

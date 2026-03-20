@@ -269,7 +269,11 @@ export default function LearnerChat() {
 
                 {/* Super Agent Card */}
                 <div className="mb-6">
-                  <SuperAgentCard />
+                  <SuperAgentCard
+                    hasUnread={superAgentUnread > 0}
+                    unreadCount={superAgentUnread}
+                    lastMessage={superAgentLastMsg}
+                  />
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 mb-6">

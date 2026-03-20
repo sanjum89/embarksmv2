@@ -321,7 +321,7 @@ export default function RolePlayBank() {
                     <div className="flex items-center gap-2">
                       <Bot className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-xs text-muted-foreground truncate">
-                        {rp.aiCloneConfig.persona}
+                        {rp.aiCloneConfig?.persona || "AI Persona"}
                       </span>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-1">

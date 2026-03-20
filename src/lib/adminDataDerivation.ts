@@ -379,7 +379,7 @@ export function deriveOrgOverview(employees: EmployeeSource[], hierarchyMap: Rec
     functions,
     roleDistribution: {
       Managers: managerCount,
-      Individual contributors: Math.max(0, totalEmployees - managerCount),
+      "Individual contributors": Math.max(0, totalEmployees - managerCount),
     },
     tenureBands,
     riskBands,

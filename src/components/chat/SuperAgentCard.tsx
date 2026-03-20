@@ -27,9 +27,9 @@ export function SuperAgentCard({ hasUnread = true, unreadCount = 0, lastMessage 
     >
       {/* Animated shimmer */}
       <motion.div
-        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent -skew-x-12"
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.18] to-transparent -skew-x-12"
         animate={{ x: ["-100%", "200%"] }}
-        transition={{ duration: 3, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
+        transition={{ duration: 1.8, repeat: Infinity, repeatDelay: 1.2, ease: "easeInOut" }}
       />
 
       {/* Subtle pulse ring behind card */}

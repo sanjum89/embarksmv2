@@ -15,8 +15,11 @@ interface TrainingAssignPanelProps {
 
 export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelProps) {
   const { skillTargets } = useSkillTargets();
-  const program = mockProgramContexts[0];
-  const st4 = skillTargets.find((st) => st.id === program.skillTargetId);
+  const { normalizedAccount, activeAccount } = useAccount();
+  const programContexts = normalizedAccount?.programContexts || activeAccount?.data?.programContexts || [];
+  const newHires = normalizedAccount?.newHires || activeAccount?.data?.newHires || [];
+  const program = programContexts[0];
+  const st4 = program ? skillTargets.find((st) => st.id === program.skillTargetId) : undefined;
   const steps = st4?.steps ?? [];
 
   const [passPercent, setPassPercent] = useState(program.assessmentPassPercentage);

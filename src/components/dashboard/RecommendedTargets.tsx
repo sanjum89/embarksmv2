@@ -23,7 +23,7 @@ export function RecommendedTargets({ traditional }: Props) {
   // Get categories of user's current targets for relevance sorting
   const userCategories = new Set(
     skillTargets
-      .filter((st) => st.assignedTo.includes(user.id))
+      .filter((st) => st.assignedTo?.includes(user.id))
       .map((st) => st.category)
   );
 

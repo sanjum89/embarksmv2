@@ -206,7 +206,7 @@ export function getManagerTeamSummary(acct: NormalizedAccount, managerId: string
 
 export function getLearnerHomeData(acct: NormalizedAccount, userId: string) {
   const user = acct.usersById[userId];
-  const assignedTargets = acct.skillTargets.filter((st) => st.assignedTo.includes(userId));
+  const assignedTargets = acct.skillTargets.filter((st) => st.assignedTo?.includes(userId));
   return {
     user,
     assignedTargets,

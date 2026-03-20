@@ -58,7 +58,17 @@ export const priyaMenon: User = {
   title: "Apple L1 Customer Support Executive (Fresher)",
 };
 
-export const availableUsers: User[] = [currentUser, marcusWellington, mayaThompson, rajPatel, priyaMenon];
+export const sarahAdmin: User = {
+  id: "u11",
+  name: "Sarah Chen",
+  email: "sarah.chen@wfai.com",
+  role: "admin",
+  avatarUrl: "",
+  title: "HR Director",
+  canManage: true,
+};
+
+export const availableUsers: User[] = [currentUser, marcusWellington, mayaThompson, rajPatel, priyaMenon, sarahAdmin];
 
 /* ─── New Hires ─── */
 export interface NewHire {
@@ -790,6 +800,47 @@ export const profileDataByUser: Record<string, ProfileData> = {
       { skill_name: "onboarding design", proficiency: "Advanced", assessment_year: 2025 },
       { skill_name: "mentoring", proficiency: "Expert", assessment_year: 2025 },
       { skill_name: "customer experience strategy", proficiency: "Intermediate", assessment_year: 2024 },
+    ],
+  },
+  u11: {
+    title: "HR Director",
+    location: "San Francisco, CA",
+    manager: "Chief People Officer",
+    yearsExperience: 10,
+    department: "Human Resources",
+    summary:
+      "Seasoned HR leader with 10+ years driving talent strategy, workforce analytics, and organizational development. Oversees onboarding programs, performance management, and employee engagement across the organization. Passionate about using data to make people decisions.",
+    roleSnapshotText: "Lead HR strategy, talent operations, and workforce analytics. Ensure organizational health through data-driven people programs.",
+    projectSnapshotText: "Overseeing the Apple L1 Customer Support onboarding initiative from an HR perspective — tracking hiring pipeline, onboarding effectiveness, and early attrition risk.",
+    roleSkillsCurrent: [
+      { skill_name: "People Strategy", proficiency: "Expert", assessment_year: 2026 },
+      { skill_name: "Workforce Analytics", proficiency: "Advanced", assessment_year: 2026 },
+      { skill_name: "Organizational Development", proficiency: "Advanced", assessment_year: 2026 },
+      { skill_name: "Employee Relations", proficiency: "Expert", assessment_year: 2026 },
+    ],
+    roleSkillsRequired: [
+      { skill_name: "People Strategy", proficiency: "Expert" },
+      { skill_name: "Workforce Analytics", proficiency: "Expert" },
+      { skill_name: "Organizational Development", proficiency: "Expert" },
+      { skill_name: "Employee Relations", proficiency: "Expert" },
+    ],
+    projectSkillsCurrent: [
+      { skill_name: "Onboarding Program Design", proficiency: "Advanced", assessment_year: 2026 },
+      { skill_name: "Attrition Risk Analysis", proficiency: "Intermediate", assessment_year: 2026 },
+      { skill_name: "Compliance Monitoring", proficiency: "Advanced", assessment_year: 2026 },
+    ],
+    projectSkillsRequired: [
+      { skill_name: "Onboarding Program Design", proficiency: "Expert" },
+      { skill_name: "Attrition Risk Analysis", proficiency: "Advanced" },
+      { skill_name: "Compliance Monitoring", proficiency: "Advanced" },
+    ],
+    otherSkills: [
+      { skill_name: "talent acquisition", proficiency: "Expert", assessment_year: 2025 },
+      { skill_name: "performance management", proficiency: "Expert", assessment_year: 2025 },
+      { skill_name: "HRIS administration", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "diversity and inclusion", proficiency: "Advanced", assessment_year: 2025 },
+      { skill_name: "compensation and benefits", proficiency: "Intermediate", assessment_year: 2024 },
+      { skill_name: "employment law", proficiency: "Intermediate", assessment_year: 2024 },
     ],
   },
 };

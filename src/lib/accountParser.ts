@@ -524,7 +524,7 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     newHires: json.newHires || [],
     programContexts: json.programContexts || [],
     teamMembers: Object.values(usersById),
-    profileData: json.profileData || json.my360?.profileData || {},
+    profileData: normalizeProfileData(json.profileData || json.my360?.profileData || {}),
     prompts: json.prompts || {},
     aiContext: json.aiContext || {},
     pageData: json.pageData || {},

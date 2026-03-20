@@ -298,6 +298,21 @@ export default function SuperAgentChat() {
     streamResponse(allMsgs);
   };
 
+  const handleReset = async () => {
+    if (!accountId) return;
+    await supabase
+      .from("super_agent_conversations")
+      .delete()
+      .eq("account_id", accountId)
+      .eq("user_id", user.id);
+    setMessages([]);
+    setSuggestions([]);
+    const initialStage = isNewJoiner ? "welcome" : "general";
+    setStage(initialStage);
+    setLoaded(false);
+    setTimeout(() => setLoaded(true), 100);
+  };
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isStreaming]);

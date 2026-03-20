@@ -314,17 +314,27 @@ export default function SuperAgentChat() {
     <div className="flex flex-1 h-full min-h-0 overflow-hidden">
       <div className="flex flex-col min-h-0 flex-1">
         {/* Header */}
-        <div className="shrink-0 border-b border-border px-6 py-3 flex items-center gap-3 bg-background">
-          <button onClick={() => navigate("/chat")} className="text-muted-foreground hover:text-foreground transition-colors">
+        <div className="shrink-0 px-6 py-3.5 flex items-center gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md">
+          <button onClick={() => navigate("/chat")} className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-primary" />
-            </div>
+          <div className="flex items-center gap-3">
+            <motion.div
+              className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center"
+              animate={{ rotate: [0, 3, -3, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Sparkles className="h-5 w-5" />
+            </motion.div>
             <div>
-              <h2 className="text-sm font-semibold text-foreground leading-tight">Super Agent</h2>
-              <p className="text-[11px] text-muted-foreground">Your AI Assistant</p>
+              <h2 className="text-sm font-bold leading-tight">Super Agent</h2>
+              <div className="flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
+                </span>
+                <p className="text-[11px] text-primary-foreground/75">Online now</p>
+              </div>
             </div>
           </div>
         </div>

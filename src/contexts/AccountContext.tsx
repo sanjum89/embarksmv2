@@ -56,6 +56,13 @@ function normalizeFromLegacy(acct: Account): NormalizedAccount {
       if (Object.keys(parsed.profileData).length === 0 && Object.values(parsed.employeesById).some(e => e.skills?.length)) {
         parsed.profileData = generateProfileData(parsed);
       }
+      // Auto-derive reflections from employee data when none provided
+      if (!parsed.reflections?.length) {
+        const rawEmps = data?.employees || [];
+        if (rawEmps.length > 0) {
+          parsed.reflections = deriveReflections(rawEmps);
+        }
+      }
       return parsed;
     }
   }

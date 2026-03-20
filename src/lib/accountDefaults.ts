@@ -174,6 +174,15 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
     my360: {},
     reflections: [],
     workSignals: [],
+    architectureSources: [],
+    architectureSignalCounts: [],
+    namedEmployees: [],
+    peopleGraph: [],
+    signals: [],
+    showcaseCases: [],
+    explainability: [],
+    performanceAlerts: [],
+    recommendedCTAs: [],
   };
 }
 

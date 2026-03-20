@@ -53,7 +53,7 @@ export function SuperAgentCard({ hasUnread = true, unreadCount = 0, lastMessage 
           </motion.div>
           {/* Unread count badge */}
           {unreadCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[11px] font-bold shadow-md border-2 border-primary">
+            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-green-500 text-white text-[11px] font-bold shadow-md border-2 border-primary">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}

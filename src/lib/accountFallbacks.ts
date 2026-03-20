@@ -38,5 +38,22 @@ export function generateNormalizedFallbacks(partial: Partial<NormalizedAccount>)
     my360: partial.my360 || {},
     reflections: partial.reflections || [],
     workSignals: partial.workSignals || [],
+
+    // New dataset sections
+    header: partial.header,
+    companyProfile: partial.companyProfile,
+    siteProfile: partial.siteProfile,
+    siteRationale: partial.siteRationale,
+    architectureSources: partial.architectureSources || [],
+    architectureSignalCounts: partial.architectureSignalCounts || [],
+    namedEmployees: partial.namedEmployees || [],
+    orgOverview: partial.orgOverview,
+    peopleGraph: partial.peopleGraph || [],
+    signals: partial.signals || [],
+    showcaseCases: partial.showcaseCases || [],
+    explainability: partial.explainability || [],
+    learningAndSkills: partial.learningAndSkills,
+    performanceAlerts: partial.performanceAlerts || [],
+    recommendedCTAs: partial.recommendedCTAs || [],
   };
 }

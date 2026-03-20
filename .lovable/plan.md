@@ -1,39 +1,61 @@
 
 
-# Fix Super Agent Card: Markdown Rendering + Show Latest Message
+# Account Branding Configuration Panel
 
-## Problems
-1. **Bold not rendering**: `lastMessage` contains raw markdown (`**Clara**`) but is rendered as plain text via `truncate` — asterisks show literally
-2. **Shows first message**: The query fetches the conversation but always takes the first assistant message's content (slice of `.content`) — it should show the **latest** assistant message
+## What
+Add a branding panel accessible from the sidebar that lets users:
+1. Pick from 6 preset color schemes
+2. Enter custom client colors (primary + accent hex values) to auto-generate a full theme
+3. Upload/change the account logo
 
 ## Changes
 
-### 1. Strip markdown from preview text
-**File: `src/pages/LearnerChat.tsx` (~line 222)**
+### 1. Database: Create `logos` storage bucket
+- SQL migration to create a public `logos` bucket with open read/write policies
 
-Instead of `lastAssistant.content?.slice(0, 80)`, strip markdown bold markers before slicing:
-```ts
-const preview = lastAssistant.content?.replace(/\*\*/g, "").slice(0, 80);
-setSuperAgentLastMsg(preview);
-```
+### 2. Add `updateAccount` to AccountContext
+**File: `src/contexts/AccountContext.tsx`**
+- New method `updateAccount(id, { logo?, accent_color? })` — updates the `accounts` row and refreshes local state
 
-This gives a clean plain-text preview on the card (the card uses `truncate` so full markdown rendering isn't appropriate here).
+### 3. Create `useBrandColors` hook
+**File: `src/hooks/useBrandColors.ts`** (new)
+- On active account change, reads `accent_color` (JSON string with HSL values)
+- Applies CSS custom properties (`--primary`, `--accent`, `--sidebar-background`, `--ring`, etc.) to `:root`
+- Restores defaults when switching to an account with no custom colors
 
-### 2. Show the latest message, not the first
-**File: `src/pages/LearnerChat.tsx` (~line 221)**
+### 4. Create BrandingPanel component
+**File: `src/components/account/BrandingPanel.tsx`** (new)
+- Opens as a dialog from the sidebar
+- **Logo section**: Upload PNG/SVG, preview current logo, clear button
+- **Preset section**: 6 clickable color swatches:
+  - Navy & Amber (default), Teal & Coral, Purple & Gold, Forest & Amber, Slate & Blue, Charcoal & Red
+- **Custom section**: Two hex color inputs (Primary Color, Accent Color) with color picker inputs. On "Apply", the system derives a full HSL theme (sidebar, foreground, ring, borders) from those two colors and saves it as a custom preset
+- Saves to `accounts.accent_color` as JSON: `{"preset":"custom","primary":"H S% L%","accent":"H S% L%","sidebar":"H S% L%"}`
 
-The current code already uses `[...msgs].reverse().find(...)` which should get the last assistant message. However, the `parseSuggestions` cleanup may not be applied — the stored messages might have the `SUGGESTIONS:` line stripped already. The real issue is that the preview is being set from stored (cleaned) messages which start with the first welcome. Let me verify: the `.reverse().find()` logic looks correct — it finds the last assistant message. The content is then sliced to 80 chars.
+### 5. Add Branding button to sidebar
+**File: `src/components/layout/AppSidebar.tsx`**
+- Add a `Paintbrush` icon button in the sidebar footer area (near Theme toggle)
+- Opens BrandingPanel dialog
 
-The actual issue is likely that the conversation is loaded and the first assistant message is the welcome, and the latest message hasn't been stored yet (or the query returns stale data). But more likely, the `lastAssistant` variable correctly finds the last one — the user may just be seeing the welcome message because that IS the latest (fresh reset).
+### 6. Wire up `useBrandColors` in AppLayout
+**File: `src/components/layout/AppLayout.tsx`**
+- Call `useBrandColors()` so colors apply on every account switch
 
-Actually, looking more carefully: the code at line 222 does `[...msgs].reverse().find(...)` which correctly gets the **last** assistant message. If it's showing the first message, it might be that the conversation only has one assistant message (the welcome). But the user says "the latest message should be shown" — so there must be newer messages not appearing.
+## Custom Color Logic
+When a user enters two hex colors:
+- Convert hex → HSL
+- Primary color → `--primary`, `--ring`
+- Accent color → `--accent`, `--sidebar-primary`
+- Derive sidebar background by taking primary hue at 60% saturation, 16% lightness
+- Derive foreground colors automatically (light on dark, dark on light)
 
-I'll ensure both fixes are applied:
-- Strip `**` from preview
-- Confirm the reverse-find logic is correct (it is), but also ensure the preview updates reactively
-
-### Files
-| File | Change |
+## Files Summary
+| File | Action |
 |------|--------|
-| `src/pages/LearnerChat.tsx` | Strip `**` markers from preview text before displaying |
+| SQL migration | Create `logos` storage bucket |
+| `src/contexts/AccountContext.tsx` | Add `updateAccount` |
+| `src/hooks/useBrandColors.ts` | New — apply CSS vars from account |
+| `src/components/account/BrandingPanel.tsx` | New — presets + custom color inputs + logo upload |
+| `src/components/layout/AppSidebar.tsx` | Add Branding button |
+| `src/components/layout/AppLayout.tsx` | Wire `useBrandColors` hook |
 

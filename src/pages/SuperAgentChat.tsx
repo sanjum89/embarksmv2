@@ -36,13 +36,18 @@ function parseSuggestions(text: string): { clean: string; suggestions: string[] 
 
 function ThinkingIndicator() {
   return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
-      <div className="flex gap-1">
-        {[0, 0.2, 0.4].map((d) => (
-          <motion.div key={d} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: d }} className="h-1.5 w-1.5 rounded-full bg-primary" />
-        ))}
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-start gap-3 px-1 py-3">
+      <div className="shrink-0 h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+        <Sparkles className="h-3.5 w-3.5 text-primary" />
       </div>
-      <span className="text-xs italic">Thinking...</span>
+      <div className="flex items-center gap-2 pt-1.5">
+        <div className="flex gap-1">
+          {[0, 0.2, 0.4].map((d) => (
+            <motion.div key={d} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: d }} className="h-1.5 w-1.5 rounded-full bg-primary" />
+          ))}
+        </div>
+        <span className="text-xs italic text-muted-foreground">Thinking...</span>
+      </div>
     </motion.div>
   );
 }
@@ -309,17 +314,27 @@ export default function SuperAgentChat() {
     <div className="flex flex-1 h-full min-h-0 overflow-hidden">
       <div className="flex flex-col min-h-0 flex-1">
         {/* Header */}
-        <div className="shrink-0 border-b border-border px-6 py-3 flex items-center gap-3 bg-background">
-          <button onClick={() => navigate("/chat")} className="text-muted-foreground hover:text-foreground transition-colors">
+        <div className="shrink-0 px-6 py-3.5 flex items-center gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md">
+          <button onClick={() => navigate("/chat")} className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Sparkles className="h-4 w-4 text-primary" />
-            </div>
+          <div className="flex items-center gap-3">
+            <motion.div
+              className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center"
+              animate={{ rotate: [0, 3, -3, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            >
+              <Sparkles className="h-5 w-5" />
+            </motion.div>
             <div>
-              <h2 className="text-sm font-semibold text-foreground leading-tight">Super Agent</h2>
-              <p className="text-[11px] text-muted-foreground">Your AI Assistant</p>
+              <h2 className="text-sm font-bold leading-tight">Super Agent</h2>
+              <div className="flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400" />
+                </span>
+                <p className="text-[11px] text-primary-foreground/75">Online now</p>
+              </div>
             </div>
           </div>
         </div>
@@ -332,14 +347,19 @@ export default function SuperAgentChat() {
                 <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                   {msg.role === "user" ? (
                     <div className="flex justify-end mb-1">
-                      <div className="rounded-xl bg-muted px-4 py-2.5 text-sm text-foreground max-w-[85%]">
+                      <div className="rounded-2xl bg-primary text-primary-foreground px-4 py-2.5 text-sm max-w-[85%] shadow-sm">
                         {msg.content}
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      <div className="prose prose-sm max-w-none text-foreground text-sm leading-relaxed">
-                        <ReactMarkdown>{parseSuggestions(msg.content).clean}</ReactMarkdown>
+                    <div className="flex items-start gap-3">
+                      <div className="shrink-0 h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
+                        <Sparkles className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <div className="bg-card border border-border/50 rounded-2xl px-5 py-4 shadow-sm max-w-[85%]">
+                        <div className="prose prose-sm max-w-none text-foreground text-sm leading-relaxed">
+                          <ReactMarkdown>{parseSuggestions(msg.content).clean}</ReactMarkdown>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -374,9 +394,9 @@ export default function SuperAgentChat() {
 
             {/* Suggestion Pills */}
             {suggestions.length > 0 && !isStreaming && (
-              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-2 pt-1">
+              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-2 pt-1 pl-10">
                 {suggestions.map((pill) => (
-                  <button key={pill} onClick={() => handleSend(pill)} className="rounded-full border border-border bg-card px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-secondary hover:border-primary/30 transition-colors active:scale-[0.97]">
+                  <button key={pill} onClick={() => handleSend(pill)} className="group/pill rounded-full border border-primary/20 bg-card px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]">
                     {pill}
                   </button>
                 ))}
@@ -389,7 +409,7 @@ export default function SuperAgentChat() {
         </div>
 
         {/* Input */}
-        <div className="shrink-0 px-6 pb-6 pt-3 bg-background">
+        <div className="shrink-0 px-6 pb-6 pt-3 bg-background border-t border-border/50 shadow-[0_-2px_12px_-4px_hsl(var(--border)/0.3)]">
           <div className="max-w-[680px] mx-auto relative">
             <Input
               ref={inputRef}
@@ -397,11 +417,17 @@ export default function SuperAgentChat() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") handleSend(input); }}
               placeholder="Ask anything..."
-              className="pr-12 h-12 rounded-2xl border-border shadow-sm text-sm"
+              className="pr-12 h-12 rounded-2xl border-border shadow-md text-sm focus-visible:ring-primary/30"
               disabled={isStreaming}
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2">
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleSend(input)} disabled={!input.trim() || isStreaming}>
+              <Button
+                size="icon"
+                variant={input.trim() ? "default" : "ghost"}
+                className={cn("h-8 w-8 rounded-xl transition-all", input.trim() && "bg-primary text-primary-foreground shadow-sm")}
+                onClick={() => handleSend(input)}
+                disabled={!input.trim() || isStreaming}
+              >
                 <Send className="h-3.5 w-3.5" />
               </Button>
             </div>

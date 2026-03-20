@@ -565,7 +565,7 @@ export function AppSidebar() {
                 Me
               </button>
               <button
-                onClick={() => { setViewMode("team"); setRole("manager"); navigate("/manager"); }}
+                onClick={() => { setViewMode("team"); setRole(teamRole); navigate("/manager"); }}
                 className={cn(
                   "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
                   viewMode === "team"

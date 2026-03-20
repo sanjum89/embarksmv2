@@ -29,6 +29,7 @@ const AccountContext = createContext<AccountContextType>({
   switchAccount: () => {},
   addAccount: async () => "",
   deleteAccount: async () => {},
+  updateAccount: async () => {},
 });
 
 /**

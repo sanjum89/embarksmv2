@@ -34,6 +34,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator";
 import { AccountSwitcher } from "@/components/account/AccountSwitcher";
 import { LoginDialog } from "@/components/layout/LoginDialog";
+import { BrandingPanel } from "@/components/account/BrandingPanel";
 
 import learningSpacesIcon from "@/assets/learning-spaces.svg";
 

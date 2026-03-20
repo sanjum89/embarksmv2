@@ -302,7 +302,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     return newAcct.id;
   }, [switchAccount]);
 
-  const updateAccount = useCallback(async (id: string, fields: { logo?: string | null; accent_color?: string | null }) => {
+  const updateAccount = useCallback(async (id: string, fields: { logo?: string | null; accent_color?: string | null; logo_superlight?: string | null }) => {
     const { error } = await supabase.from("accounts").update(fields).eq("id", id);
     if (error) throw error;
 

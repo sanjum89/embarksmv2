@@ -35,7 +35,7 @@ export default function Dashboard() {
   const isTraditional = styleTheme === "traditional";
 
   const targets = useMemo(() => {
-    const assigned = mockSkillTargets.filter((st) => st.assignedTo.includes(user.id));
+    const assigned = mockSkillTargets.filter((st) => st.assignedTo?.includes(user.id));
     switch (activeFilter) {
       case "in_progress":
         return assigned.filter((st) => st.progress > 0 && st.progress < 100);

@@ -51,6 +51,10 @@ function normalizeFromLegacy(acct: Account): NormalizedAccount {
       parsed.branding.accentColor = acct.accent_color || parsed.branding.accentColor;
       parsed.isDefault = acct.is_default;
       parsed.createdAt = acct.created_at;
+      // Auto-generate profileData if missing but employees have skills
+      if (Object.keys(parsed.profileData).length === 0 && Object.values(parsed.employeesById).some(e => e.skills?.length)) {
+        parsed.profileData = generateProfileData(parsed);
+      }
       return parsed;
     }
   }

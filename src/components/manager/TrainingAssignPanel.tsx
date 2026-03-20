@@ -72,7 +72,7 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
         <BookOpen className="h-4 w-4 text-success" />
         <h3 className="font-display text-lg font-bold text-foreground">Assign Training</h3>
       </div>
-      <p className="text-sm text-muted-foreground mb-6">Apple L1 Customer Support Readiness</p>
+      <p className="text-sm text-muted-foreground mb-6">{program?.name || "Training Program"}</p>
 
       {/* Pass % */}
       <div className="rounded-xl border border-border bg-background p-4 mb-5">

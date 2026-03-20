@@ -115,7 +115,7 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
       <div className="rounded-xl border border-border bg-background p-4 mb-5">
         <p className="text-sm font-medium text-foreground mb-3">Assign To</p>
         <div className="space-y-2">
-          {mockNewHires.map((hire) => (
+          {newHires.map((hire) => (
             <label key={hire.user.id} className="flex items-center gap-2.5 cursor-pointer">
               <Checkbox
                 checked={selectedLearners.has(hire.user.id)}

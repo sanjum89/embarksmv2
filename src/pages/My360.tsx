@@ -94,11 +94,24 @@ type GapFilter = "All" | "Gap" | "No gap";
 export default function My360() {
   const { user } = useUser();
   const { activeAccount, normalizedAccount } = useAccount();
-  // Use normalized selector, fallback to legacy
+  // Use normalized selector; for non-default accounts avoid static fallback
+  const isDefaultAccount = normalizedAccount?.isDefault !== false;
   const profileData = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)
     || activeAccount?.data?.profileData?.[user.id]
-    || staticProfileData[user.id]
-    || staticProfileData["u1"];
+    || (isDefaultAccount ? staticProfileData[user.id] || staticProfileData["u1"] : null);
+
+  if (!profileData) {
+    return (
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <p className="font-display text-lg font-semibold text-foreground">No Profile Data</p>
+            <p className="mt-1 text-sm text-muted-foreground">This account does not have profile data for the current user. Upload an account with employee skills to auto-generate profiles.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   const chatRef = useRef<AIChatWrapperHandle>(null);
 
   // Clear chat when profile changes

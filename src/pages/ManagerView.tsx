@@ -168,13 +168,9 @@ export default function ManagerView() {
   const { skillTargets } = useSkillTargets();
   const { normalizedAccount, activeAccount } = useAccount();
 
-  // Use account-aware data with fallback to defaults
-  const mockNewHires = Array.isArray(normalizedAccount?.newHires) ? normalizedAccount.newHires
-    : Array.isArray(activeAccount?.data?.newHires) ? activeAccount.data.newHires
-    : defaultNewHires;
-  const mockProgramContexts = Array.isArray(normalizedAccount?.programContexts) ? normalizedAccount.programContexts
-    : Array.isArray(activeAccount?.data?.programContexts) ? activeAccount.data.programContexts
-    : defaultProgramContexts;
+  // Use account-aware data — no demo fallback for uploaded accounts
+  const mockNewHires = normalizedAccount?.newHires || activeAccount?.data?.newHires || [];
+  const mockProgramContexts = normalizedAccount?.programContexts || activeAccount?.data?.programContexts || [];
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");

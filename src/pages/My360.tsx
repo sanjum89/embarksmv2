@@ -315,7 +315,7 @@ export default function My360() {
                 renderExpandedList={() => (
                   <div className="space-y-2">
                     <p className="text-xs font-semibold text-muted-foreground mb-2">All Core Skills</p>
-                    {profileData.roleSkillsCurrent.map((entry, i) => (
+                    {(profileData.roleSkillsCurrent || []).map((entry, i) => (
                       <div key={i} className="flex items-center justify-between gap-4 text-sm">
                         <span className="font-medium text-foreground">{entry.skill_name}</span>
                         <div className="flex items-center gap-2 text-muted-foreground text-xs">

@@ -22,7 +22,7 @@ import My360 from "./pages/My360";
 import ManagerView from "./pages/ManagerView";
 import LearnerChat from "./pages/LearnerChat";
 import SuperAgentChat from "./pages/SuperAgentChat";
-import AIManager from "./pages/AIManager";
+
 import ManagerSkillTargets from "./pages/ManagerSkillTargets";
 import ManagerSkillTargetDetail from "./pages/ManagerSkillTargetDetail";
 
@@ -50,7 +50,7 @@ const App = () => (
               <Route path="/" element={<Dashboard />} />
               <Route path="/chat" element={<LearnerChat />} />
               <Route path="/chat/super-agent" element={<SuperAgentChat />} />
-              <Route path="/ai-manager" element={<AIManager />} />
+              
               <Route path="/create-skill-target" element={<SkillTargetBuilder />} />
               <Route path="/skill-target/:id" element={<SkillTargetDetail />} />
               <Route path="/skill-target/:id/assessment/:aid" element={<AssessmentPage />} />

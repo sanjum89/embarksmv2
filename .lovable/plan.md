@@ -1,83 +1,60 @@
 
 
-# Improve Account Creation Flow
+# Add Admin User to the Default Cornerstone Demo Account
 
 ## What Changes
 
-Expand the `AddAccountDialog` from 2 steps (upload → profiles) to 4 steps:
+Add a new admin persona to the default Cornerstone Demo account so there's a user who can access the Admin Dashboard tab and see org-wide data (employees, hierarchy, skills, reflections, work signals, performance).
 
-1. **Upload** — keep as-is
-2. **Validation + Parse Summary** — new dedicated review step showing detected/missing sections
-3. **Persona Selection** — enhance existing step with role editing, hierarchy context, reportsTo info
-4. **Choose Initial Persona** — new step to pick who to sign in as first
+## Plan
 
-## Technical Plan
+### Step 1: Add admin user to mock data
+**File: `src/data/mock.ts`**
 
-### File: `src/components/account/AddAccountDialog.tsx`
-
-**Step type change:**
+Add a new user constant:
 ```typescript
-type Step = "upload" | "review" | "profiles" | "initial";
+export const sarahAdmin: User = {
+  id: "u11",
+  name: "Sarah Chen",
+  email: "sarah.chen@wfai.com",
+  role: "admin",
+  avatarUrl: "",
+  title: "HR Director",
+  canManage: true,
+};
 ```
 
-**Step 2 — Review screen** (new, between upload and profiles):
-- Show account name, schema version, employee count, user count
-- Categorized section checklist with status badges:
-  - **Required** (name, employees/users) — green check or red error
-  - **Learning** (skillTargets, learningModules, assessments, rolePlays) — detected/missing
-  - **Admin/Team** (companyProfile, siteProfile, reflections, workSignals, showcaseCases, explainability, org, signals, architectureSources) — detected/missing
-  - **Other** (prompts, hierarchy, profileData, projects, rolesCatalog)
-- For missing optional sections: yellow "not provided" badge
-- For profileData specifically: if missing but employees have skills, show "Will be generated from employee data"
-- For missing learning/content sections: explicitly state "Empty — no demo data will be injected"
-- Errors block the "Next" button; warnings don't
-- "Next: Choose Profiles →" button
+Add `sarahAdmin` to the `availableUsers` array.
 
-**Step 3 — Persona Selection** (enhance existing):
-- Add role selector dropdown (Admin / Manager / Learner) per row using existing `Select` component — the `setEmployeeRole` function already exists but isn't wired to UI
-- Show `reportsTo` name (look up from employee data) as subtitle context
-- Show "Has N direct reports" if applicable
-- Show suggested role with "(suggested)" label next to the inferred value
-- Keep existing checkbox selection behavior (none pre-selected)
+### Step 2: Wire admin into default account
+**File: `src/lib/accountDefaults.ts`**
 
-**Step 4 — Choose Initial Persona** (new):
-- Show only the selected profiles from step 3
-- Radio-button selection for "Sign in as"
-- Pre-select the first admin, or first manager, or first selected person
-- "Create Account" button (moves the existing create logic here)
-- Block if no selection
+- Import `sarahAdmin` from mock
+- Add to `buildDefaultAccountData()` employees list with `reportsTo: null`
+- Add to `reportsToMap` in `buildDefaultNormalized()`: `u11: null`
+- Ensure `usersById` includes the admin user (already handled by iterating `defaultAvailableUsers`)
 
-**On create:**
-- After `addAccount` and `setInitialSignedInUsers`, also call `switchUser` on the chosen initial persona so the app immediately activates that identity
-- This requires passing the initial persona ID back — the `handleCreate` callback already has access to `switchUser` via the `useUser` hook (need to destructure it)
+### Step 3: Generate sample admin-visible data for the default account
+**File: `src/lib/accountDefaults.ts`** in `buildDefaultNormalized()`
 
-### File: `src/contexts/UserContext.tsx`
+Populate currently-empty arrays so the admin dashboard tabs have content:
+- `reflections` — sample entries for existing employees (confidence, workload, sentiment, themes)
+- `workSignals` — sample `WorkSignalCard` entries (productivity, compliance, capacity categories with metrics/flags)
+- `namedEmployees` — derive from existing employees with added grade, level, tenure, shift, engagement/performance indicators
+- `peopleGraph` — derive rows from named employees with flags
+- `orgOverview` — summary stats (totalEmployees, managers, ICs, avgTenure, functions, summaryBlocks)
+- `performanceAlerts` — a few sample alerts
+- `recommendedCTAs` — a few sample action items
+- `learningAndSkills` — summary with category totals, completion counts, coverage, top skill gaps
 
-No changes needed — `switchUser` and `setInitialSignedInUsers` already exist and handle everything.
-
-### Parser enhancement for review data
-
-Add a helper to `parseAccountJSON` or extract from the existing parse result to produce a structured "detection summary" object:
-
-```typescript
-interface ParseSectionStatus {
-  key: string;
-  label: string;
-  category: "required" | "learning" | "admin" | "other";
-  detected: boolean;
-  count?: number; // array length if applicable
-  note?: string;  // e.g. "Will be generated from employee data"
-}
-```
-
-This can be computed in the dialog from the raw JSON + parse warnings without changing the parser itself — just inspect `json.skillTargets`, `json.reflections`, etc. directly.
+This gives the admin dashboard meaningful data to display when using the default account.
 
 ### Files Modified
-- `src/components/account/AddAccountDialog.tsx` — main changes (4-step flow, review UI, role selector, initial persona picker)
+- `src/data/mock.ts` — add `sarahAdmin` user + export in `availableUsers`
+- `src/lib/accountDefaults.ts` — wire admin user + populate admin dashboard data arrays
 
 ### Files NOT Modified
-- No parser changes needed
-- No context changes needed
-- No route/page/layout changes
-- No backend changes
+- No UI changes needed — admin tabs already exist
+- No parser/context changes needed
+- No route changes needed
 

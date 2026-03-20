@@ -110,7 +110,8 @@ export function AppSidebar() {
       loginUser(userId);
       const u = availableUsers.find((x) => x.id === userId);
       if (u?.canManage && viewMode === "team") {
-        setRole("manager");
+        const loginTeamRole = u.role === "admin" ? "admin" : "manager";
+        setRole(loginTeamRole);
         navigate("/manager");
       } else {
         setRole("learner");

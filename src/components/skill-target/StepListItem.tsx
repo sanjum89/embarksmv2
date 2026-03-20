@@ -12,7 +12,7 @@ import {
 import type { StepItem, StepType } from "@/types/learning";
 import { cn } from "@/lib/utils";
 
-const stepTypeIcons: Record<StepType, React.ElementType> = {
+const stepTypeIcons: Record<string, React.ElementType> = {
   assessment: ClipboardCheck,
   role_play: MessageSquare,
   module: BookOpen,

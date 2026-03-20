@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Search, Bot, Plus, Trash2, UserPlus, Pencil, Check, Mic, X } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import { mockSkillTargets as defaultSkillTargets, mockNewHires as defaultNewHires } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";

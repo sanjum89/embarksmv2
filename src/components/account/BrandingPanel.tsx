@@ -51,6 +51,15 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
     }
   };
 
+  const handleResetToDefault = async () => {
+    try {
+      await updateAccount(activeAccount.id, { accent_color: null });
+      toast.success("Reset to default colors");
+    } catch {
+      toast.error("Failed to reset colors");
+    }
+  };
+
   const handleCustomApply = async () => {
     const config = deriveFromCustomColors(customPrimary, customAccent);
     try {
@@ -241,6 +250,19 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
             Apply Custom Colors
           </Button>
         </div>
+
+        <Separator />
+
+        {/* Reset */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={handleResetToDefault}
+          disabled={!activeAccount.accent_color}
+        >
+          Reset to Default
+        </Button>
       </DialogContent>
     </Dialog>
   );

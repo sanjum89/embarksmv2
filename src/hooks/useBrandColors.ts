@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useAccount } from "@/contexts/AccountContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface BrandColorConfig {
   preset?: string;
@@ -134,15 +135,36 @@ export function deriveFromCustomColors(primaryHex: string, accentHex: string): B
   return { preset: "custom", primary, accent, sidebar };
 }
 
+const SIDEBAR_VARS = [
+  "--sidebar-background",
+  "--sidebar-foreground",
+  "--sidebar-primary",
+  "--sidebar-primary-foreground",
+  "--sidebar-accent",
+  "--sidebar-accent-foreground",
+  "--sidebar-border",
+  "--sidebar-ring",
+  "--sidebar-muted",
+];
+
+const NON_SIDEBAR_VARS = [
+  "--primary",
+  "--primary-foreground",
+  "--accent",
+  "--accent-foreground",
+  "--ring",
+];
+
 export function useBrandColors() {
   const { activeAccount } = useAccount();
+  const { superLight, theme, styleTheme } = useTheme();
 
   useEffect(() => {
     const root = document.documentElement;
 
     if (!activeAccount?.accent_color) {
-      // Restore defaults
-      Object.entries(DEFAULTS_LIGHT).forEach(([prop, val]) => {
+      // Restore defaults — remove all inline overrides
+      Object.keys(DEFAULTS_LIGHT).forEach((prop) => {
         root.style.removeProperty(prop);
       });
       return;
@@ -154,8 +176,24 @@ export function useBrandColors() {
       if (!primary || !accent || !sidebar) return;
 
       const vars = deriveThemeVars(primary, accent, sidebar);
+
+      // Always apply non-sidebar vars
       Object.entries(vars).forEach(([prop, val]) => {
-        root.style.setProperty(prop, val);
+        if (NON_SIDEBAR_VARS.includes(prop)) {
+          root.style.setProperty(prop, val);
+        }
+      });
+
+      // Only apply sidebar vars when NOT in super-light mode (inline styles override CSS classes)
+      const isSuperLight = superLight && styleTheme !== "traditional" && theme !== "dark";
+      Object.entries(vars).forEach(([prop, val]) => {
+        if (SIDEBAR_VARS.includes(prop)) {
+          if (isSuperLight) {
+            root.style.removeProperty(prop);
+          } else {
+            root.style.setProperty(prop, val);
+          }
+        }
       });
     } catch {
       // Not valid JSON, ignore
@@ -166,5 +204,5 @@ export function useBrandColors() {
         root.style.removeProperty(prop);
       });
     };
-  }, [activeAccount?.accent_color, activeAccount?.id]);
+  }, [activeAccount?.accent_color, activeAccount?.id, superLight, theme, styleTheme]);
 }

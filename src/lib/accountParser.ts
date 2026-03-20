@@ -545,11 +545,43 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     projectsById,
     projectAssignments,
     hierarchyMap,
-    skillTargets: (json.skillTargets || []).map((st: any) => ({
-      ...st,
-      assignedTo: st.assignedTo || [],
+    skillTargets: (json.skillTargets || []).map((st: any) => {
+      const stepTypeMap: Record<string, string> = { rolePlay: "role_play" };
+      const normalizedSteps = (st.steps || []).map((step: any, idx: number) => ({
+        id: step.id || `step-${idx}`,
+        type: stepTypeMap[step.type] || step.type || "module",
+        title: step.title || "",
+        description: step.description || "",
+        order: idx,
+        skippable: !!step.skipCondition,
+        skipCondition: step.skipCondition,
+        status: idx === 0 ? "available" : "locked",
+        duration: step.duration || (step.minutes ? `${step.minutes} min` : undefined),
+        referenceId: step.referenceId || step.id || `ref-${idx}`,
+      }));
+      const normalizedSkills = (st.targetSkills || st.skills || []).map((s: any) => ({
+        name: s.name || s.skill || s.skillName || "Unknown",
+        current: s.current || "Beginner",
+        target: s.target || "Intermediate",
+      }));
+      return {
+        ...st,
+        assignedTo: st.assignedTo || [],
+        steps: normalizedSteps,
+        skills: normalizedSkills,
+        progress: st.progress ?? 0,
+        locked: st.locked ?? (st.status === "locked"),
+      };
+    }),
+    rolePlays: (json.rolePlays || []).map((rp: any) => ({
+      ...rp,
+      tags: rp.tags || [],
+      difficulty: rp.difficulty || "intermediate",
+      isPrivate: rp.isPrivate ?? false,
+      scenario: rp.scenario || rp.description || "",
+      aiCloneConfig: rp.aiCloneConfig || { persona: rp.persona || "AI Persona", context: rp.description || "" },
+      assignedTo: rp.assignedTo || [],
     })),
-    rolePlays: json.rolePlays || [],
     assessments: json.assessments || [],
     learningModules: json.learningModules || json.modules || [],
     newHires: json.newHires || [],

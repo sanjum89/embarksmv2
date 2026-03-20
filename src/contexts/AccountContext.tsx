@@ -351,6 +351,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       switchAccount,
       addAccount,
       deleteAccount,
+      updateAccount,
     }}>
       {children}
     </AccountContext.Provider>

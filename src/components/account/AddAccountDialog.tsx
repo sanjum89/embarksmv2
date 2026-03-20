@@ -169,9 +169,8 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
       setUserCount(users.length);
       setEmployeeCount(employees.length);
 
-      // Pre-select users defined in JSON
-      const preSelected = new Set(rows.filter((r) => r.preSelected).map((r) => r.id));
-      setSelectedIds(preSelected);
+      // Start with no users pre-selected — let the user choose individually
+      setSelectedIds(new Set());
 
       // Set initial roles
       const initialRoles: Record<string, UserRole> = {};

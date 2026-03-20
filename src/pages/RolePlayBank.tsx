@@ -121,8 +121,8 @@ export default function RolePlayBank() {
     setEditTitle(rp.title);
     setEditScenario(rp.scenario);
     setEditDifficulty(rp.difficulty);
-    setEditPersona(rp.aiCloneConfig.persona);
-    setEditContext(rp.aiCloneConfig.context);
+    setEditPersona(rp.aiCloneConfig?.persona || "");
+    setEditContext(rp.aiCloneConfig?.context || "");
     setEditOpen(rp.id);
   };
 

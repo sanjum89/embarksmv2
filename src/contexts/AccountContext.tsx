@@ -17,6 +17,7 @@ interface AccountContextType {
   switchAccount: (id: string) => void;
   addAccount: (name: string, data: Partial<AccountData> & { logo?: string; accent_color?: string; use_case_context?: string }, selectedUsers?: import("@/types/account-v2").AccountUser[]) => Promise<string>;
   deleteAccount: (id: string) => Promise<void>;
+  updateAccount: (id: string, fields: { logo?: string | null; accent_color?: string | null }) => Promise<void>;
 }
 
 const AccountContext = createContext<AccountContextType>({
@@ -28,6 +29,7 @@ const AccountContext = createContext<AccountContextType>({
   switchAccount: () => {},
   addAccount: async () => "",
   deleteAccount: async () => {},
+  updateAccount: async () => {},
 });
 
 /**
@@ -300,6 +302,22 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     return newAcct.id;
   }, [switchAccount]);
 
+  const updateAccount = useCallback(async (id: string, fields: { logo?: string | null; accent_color?: string | null }) => {
+    const { error } = await supabase.from("accounts").update(fields).eq("id", id);
+    if (error) throw error;
+
+    setAccounts((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, ...fields } as Account : a))
+    );
+    // Update normalized cache
+    setNormalizedCache((prev) => {
+      const acct = accounts.find((a) => a.id === id);
+      if (!acct) return prev;
+      const updated = { ...acct, ...fields } as Account;
+      return { ...prev, [id]: normalizeFromLegacy(updated) };
+    });
+  }, [accounts]);
+
   const deleteAccount = useCallback(async (id: string) => {
     const acct = accounts.find((a) => a.id === id);
     if (!acct || acct.is_default) return;
@@ -333,6 +351,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       switchAccount,
       addAccount,
       deleteAccount,
+      updateAccount,
     }}>
       {children}
     </AccountContext.Provider>

@@ -190,7 +190,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
       if (existing && existing.length > 0) {
         accts = (existing as any[]).map((row) => ({
-          id: row.id, name: row.name, logo: row.logo,
+          id: row.id, name: row.name, logo: row.logo, logo_superlight: row.logo_superlight,
           accent_color: row.accent_color, use_case_context: row.use_case_context,
           is_default: row.is_default, data: row.data as AccountData, created_at: row.created_at,
         }));

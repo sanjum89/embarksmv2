@@ -121,8 +121,8 @@ export default function RolePlayBank() {
     setEditTitle(rp.title);
     setEditScenario(rp.scenario);
     setEditDifficulty(rp.difficulty);
-    setEditPersona(rp.aiCloneConfig.persona);
-    setEditContext(rp.aiCloneConfig.context);
+    setEditPersona(rp.aiCloneConfig?.persona || "");
+    setEditContext(rp.aiCloneConfig?.context || "");
     setEditOpen(rp.id);
   };
 
@@ -321,11 +321,11 @@ export default function RolePlayBank() {
                     <div className="flex items-center gap-2">
                       <Bot className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-xs text-muted-foreground truncate">
-                        {rp.aiCloneConfig.persona}
+                        {rp.aiCloneConfig?.persona || "AI Persona"}
                       </span>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-1">
-                      {rp.tags.map((tag) => (
+                      {(rp.tags || []).map((tag) => (
                         <span key={tag} className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                           {tag}
                         </span>

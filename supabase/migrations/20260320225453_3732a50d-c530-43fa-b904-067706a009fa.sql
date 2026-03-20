@@ -1,0 +1,1 @@
+ALTER TABLE public.accounts ADD COLUMN logo_superlight TEXT DEFAULT NULL;

@@ -1,22 +1,32 @@
 
 
-## Fix: Role Selector Bug + Shield Icons for Manager/Admin
+## Fix: Navigation items missing on first login for admin users
 
-### Problem
-When selecting a role (e.g., Admin) for one user in the profile selection step, it visually appears to apply to all other checked users. This is likely caused by Radix Select portal conflicts when multiple Select components are rendered inside a ScrollArea without `position="popper"`.
+### Root Cause
 
-### Changes
+In `AppSidebar.tsx`, the nav filter at line 124 checks `item.roles.includes(user.role)`. On first login as an admin user, `user.role` is `"admin"` and `viewMode` is `"me"`. The learner-mode items ("New Chat", "AI Manager") require `roles: ["learner"]`, so they're filtered out. Only "Learning Spaces" (which includes `"admin"` in its roles) shows up.
 
-**1. Fix role Select portal issue (`src/components/account/AddAccountDialog.tsx`)**
-- Add `position="popper"` and `className="z-[9999]"` to each `SelectContent` in the role dropdown (same fix pattern used elsewhere in the app for Select inside dialogs/scroll areas)
+When toggling to Team and back to Me, `setRole("learner")` is called, changing `user.role` to `"learner"` — which then passes the filter.
 
-**2. Add differentiated shield icons for Manager vs Admin**
-- After a user is checked and assigned a role, show a shield icon next to their name reflecting the **current selected role** (not just `hasDirectReports`):
-  - **Admin**: `ShieldCheck` icon (filled/prominent, primary color)
-  - **Manager**: `Shield` icon (outline, muted color)
-  - **Learner**: No shield icon
-- This replaces the current static `hasDirectReports` shield with a dynamic icon based on `roleMap[row.id]`
+### Fix
+
+Change the `filteredItems` logic to derive an **effective role** from `viewMode` instead of relying on `user.role`:
+- `viewMode === "me"` → treat as `"learner"` for filtering purposes
+- `viewMode === "team"` → treat as `"manager"` (or `"admin"` if user is admin)
+
+**File:** `src/components/layout/AppSidebar.tsx` (~line 124)
+
+```typescript
+const effectiveRole = viewMode === "me" ? "learner" : user.role === "admin" ? "admin" : "manager";
+
+const filteredItems = navItems.filter((item) => {
+  if (!item.roles.includes(effectiveRole)) return false;
+  // ... rest of filtering unchanged
+});
+```
+
+This ensures admin users in "me" mode see all learner nav items immediately on first login.
 
 ### Files Modified
-- `src/components/account/AddAccountDialog.tsx`
+- `src/components/layout/AppSidebar.tsx`
 

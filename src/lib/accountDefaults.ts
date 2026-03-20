@@ -32,6 +32,9 @@ export function buildDefaultAccountData(): AccountData {
     toAccountEmployee(rajPatel, "u1"),
     toAccountEmployee(priyaMenon, "u7"),
     toAccountEmployee(sarahAdmin, null),
+    toAccountEmployee(claraWhitfield, "u1"),
+    toAccountEmployee(elliotHargreaves, "u1"),
+    toAccountEmployee(sophieLangford, "u1"),
   ];
 
   return {

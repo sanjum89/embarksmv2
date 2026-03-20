@@ -68,7 +68,34 @@ export const sarahAdmin: User = {
   canManage: true,
 };
 
-export const availableUsers: User[] = [currentUser, marcusWellington, mayaThompson, rajPatel, priyaMenon, sarahAdmin];
+export const claraWhitfield: User = {
+  id: "u12",
+  name: "Clara Whitfield",
+  email: "clara.whitfield@rathbones.com",
+  role: "learner",
+  avatarUrl: "",
+  title: "Investment Manager",
+};
+
+export const elliotHargreaves: User = {
+  id: "u13",
+  name: "Elliot Hargreaves",
+  email: "elliot.hargreaves@rathbones.com",
+  role: "learner",
+  avatarUrl: "",
+  title: "Investment Manager",
+};
+
+export const sophieLangford: User = {
+  id: "u14",
+  name: "Sophie Langford",
+  email: "sophie.langford@rathbones.com",
+  role: "learner",
+  avatarUrl: "",
+  title: "Investment Manager",
+};
+
+export const availableUsers: User[] = [currentUser, marcusWellington, mayaThompson, rajPatel, priyaMenon, sarahAdmin, claraWhitfield, elliotHargreaves, sophieLangford];
 
 /* ─── New Hires ─── */
 export interface NewHire {

@@ -49,11 +49,21 @@ function normalizeProficiency(value: unknown): string {
 function parseSkills(source: Record<string, any>): AccountEmployee["skills"] {
   if (Array.isArray(source.skills)) {
     return source.skills
-      .map((s: any) => ({
-        skillName: s?.skillName || s?.skill_name || s?.name,
-        proficiency: normalizeProficiency(s?.proficiency || s?.level),
-        assessmentYear: s?.assessmentYear || s?.assessment_year,
-      }))
+      .map((s: any) => {
+        // Handle plain string entries (e.g. ["Client Relationship Management", ...])
+        if (typeof s === "string") {
+          return {
+            skillName: s,
+            proficiency: normalizeProficiency(undefined),
+            assessmentYear: new Date().getFullYear(),
+          };
+        }
+        return {
+          skillName: s?.skillName || s?.skill_name || s?.name,
+          proficiency: normalizeProficiency(s?.proficiency || s?.level),
+          assessmentYear: s?.assessmentYear || s?.assessment_year,
+        };
+      })
       .filter((s) => s.skillName);
   }
 
@@ -504,7 +514,10 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     projectsById,
     projectAssignments,
     hierarchyMap,
-    skillTargets: json.skillTargets || [],
+    skillTargets: (json.skillTargets || []).map((st: any) => ({
+      ...st,
+      assignedTo: st.assignedTo || Object.keys(employeesById),
+    })),
     rolePlays: json.rolePlays || [],
     assessments: json.assessments || [],
     learningModules: json.learningModules || json.modules || [],

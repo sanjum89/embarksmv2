@@ -372,13 +372,21 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
             )}
 
             {parseWarnings.length > 0 && (
-              <div className="flex items-start gap-2 rounded-md bg-warning/10 border border-warning/20 p-3 text-sm text-muted-foreground">
-                <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5 text-warning" />
-                <div>
-                  <p className="font-medium text-foreground text-xs mb-1">Optional sections missing (defaults applied)</p>
-                  <p className="text-xs">{parseWarnings.length} section{parseWarnings.length > 1 ? "s" : ""} not provided</p>
-                </div>
-              </div>
+              <details className="rounded-md bg-warning/10 border border-warning/20 p-3 text-sm text-muted-foreground">
+                <summary className="flex items-center gap-2 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-warning" />
+                  <div className="flex-1">
+                    <p className="font-medium text-foreground text-xs">Optional sections missing (defaults applied)</p>
+                    <p className="text-xs">{parseWarnings.length} section{parseWarnings.length > 1 ? "s" : ""} not provided</p>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform [[open]>&]:rotate-90" />
+                </summary>
+                <ul className="mt-2 space-y-0.5 text-xs pl-6 list-disc">
+                  {parseWarnings.map((w, i) => (
+                    <li key={i}>{w}</li>
+                  ))}
+                </ul>
+              </details>
             )}
 
             {pendingJson && (

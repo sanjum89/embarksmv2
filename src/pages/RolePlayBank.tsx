@@ -73,12 +73,13 @@ export default function RolePlayBank() {
 
   const filtered = useMemo(() => {
     return rolePlays.filter((rp) => {
+      if (activeTab === "assigned" && !rp.assignedTo?.includes(user.id)) return false;
       if (difficulty !== "all" && rp.difficulty !== difficulty) return false;
       if (selectedTag && !rp.tags.includes(selectedTag)) return false;
       if (search && !rp.title.toLowerCase().includes(search.toLowerCase()) && !rp.scenario.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [search, difficulty, selectedTag, rolePlays]);
+  }, [search, difficulty, selectedTag, rolePlays, activeTab, user.id]);
 
   const handleAddToSkillTarget = (rpTitle: string, stTitle: string) => {
     toast({

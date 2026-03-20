@@ -48,7 +48,7 @@ export default function Dashboard() {
     }
   }, [user.id, activeFilter, mockSkillTargets]);
 
-  const allTargets = mockSkillTargets.filter((st) => st.assignedTo.includes(user.id));
+  const allTargets = mockSkillTargets.filter((st) => st.assignedTo?.includes(user.id));
   const hasAnyTargets = allTargets.length > 0;
   const stats = {
     total: allTargets.length,

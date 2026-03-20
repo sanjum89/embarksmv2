@@ -50,6 +50,10 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
     onAssigned?.();
   };
 
+  if (!program) {
+    return <div className="p-6 text-sm text-muted-foreground">No training program available for this account.</div>;
+  }
+
   if (assigned) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-6">

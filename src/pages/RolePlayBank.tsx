@@ -67,7 +67,7 @@ export default function RolePlayBank() {
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
-    rolePlays.forEach((rp) => rp.tags.forEach((t) => tags.add(t)));
+    rolePlays.forEach((rp) => (rp.tags || []).forEach((t) => tags.add(t)));
     return Array.from(tags).sort();
   }, [rolePlays]);
 

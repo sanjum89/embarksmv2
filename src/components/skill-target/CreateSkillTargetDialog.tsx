@@ -173,7 +173,7 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
   const [createdTarget, setCreatedTarget] = useState<SkillTarget | null>(null);
 
   // Dynamic recommendations based on current user
-  const profile = profileDataByUser[user.id];
+  const profile = normalizedAccount?.profileData?.[user.id] || defaultProfileData[user.id];
   const { groups, hasRoleGaps } = useMemo(() => getRecommendationsForUser(profile), [profile]);
 
   const filteredModules = useMemo(() => {

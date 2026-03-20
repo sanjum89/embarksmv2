@@ -325,7 +325,7 @@ export default function RolePlayBank() {
                       </span>
                     </div>
                     <div className="mt-3 flex flex-wrap gap-1">
-                      {rp.tags.map((tag) => (
+                      {(rp.tags || []).map((tag) => (
                         <span key={tag} className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
                           {tag}
                         </span>

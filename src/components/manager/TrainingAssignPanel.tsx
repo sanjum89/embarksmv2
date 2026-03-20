@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, CheckCircle2, Trash2, Plus } from "lucide-react";
-import { mockProgramContexts, mockNewHires } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";

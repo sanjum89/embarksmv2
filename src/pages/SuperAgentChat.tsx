@@ -390,12 +390,18 @@ export default function SuperAgentChat() {
               ))}
             </AnimatePresence>
 
-            {/* Assessment CTA */}
+            {/* Assessment CTA with onboarding context */}
             {showAssessmentCTA && !isStreaming && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3 max-w-[85%] pl-10">
+                <div className="bg-primary/5 border border-primary/15 rounded-2xl px-5 py-4">
+                  <p className="text-sm font-medium text-foreground mb-2">📋 Why this assessment?</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Before we begin your training, this short assessment helps us understand what you already know. Based on your results, we'll <strong className="text-foreground">customise your learning path</strong> — skipping modules you've already mastered and focusing on the areas where you'll benefit most. This means you'll graduate faster and spend your time where it counts.
+                  </p>
+                </div>
                 <button
                   onClick={() => setAssessmentOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
                 >
                   <ClipboardList className="h-4 w-4" />
                   Start Assessment

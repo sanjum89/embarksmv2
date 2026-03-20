@@ -444,21 +444,6 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
                           <p className="text-xs text-muted-foreground truncate">{row.title}</p>
                         )}
                       </div>
-                      {checked && (
-                        <Select
-                          value={currentRole}
-                          onValueChange={(v) => setEmployeeRole(row.id, v as UserRole)}
-                        >
-                          <SelectTrigger className="w-[100px] h-7 text-xs">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent position="popper" className="z-[9999]">
-                            <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="manager">Manager</SelectItem>
-                            <SelectItem value="learner">Learner</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
                     </div>
                   );
                 })}

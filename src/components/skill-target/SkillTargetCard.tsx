@@ -12,11 +12,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const stepTypeIcons: Record<StepType, React.ElementType> = {
+const stepTypeIcons: Record<string, React.ElementType> = {
   assessment: ClipboardCheck,
   role_play: MessageSquare,
   module: BookOpen,
 };
+
+const fallbackIcon = BookOpen;
 
 interface SkillTargetCardProps {
   target: SkillTarget;
@@ -103,7 +105,7 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
               </p>
               <div className="flex items-center gap-2">
                 {(() => {
-                  const Icon = stepTypeIcons[nextStep.type];
+                  const Icon = stepTypeIcons[nextStep.type] || fallbackIcon;
                   return (
                     <div className={cn(
                       "flex h-5 w-5 items-center justify-center rounded",
@@ -127,7 +129,7 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
           {/* Step type pills */}
           <div className="mb-4 flex flex-wrap gap-1.5">
             {target.steps.map((step) => {
-              const Icon = stepTypeIcons[step.type];
+              const Icon = stepTypeIcons[step.type] || fallbackIcon;
               return (
                 <span
                   key={step.id}

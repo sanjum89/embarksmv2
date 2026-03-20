@@ -284,7 +284,7 @@ export default function My360() {
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <ResponsivePillRow
-                totalCount={profileData.roleSkillsCurrent.length}
+                totalCount={profileData.roleSkillsCurrent?.length ?? 0}
                 renderPill={(i) => {
                   const entry = profileData.roleSkillsCurrent[i];
                   const displayName = entry.skill_name.length > 13

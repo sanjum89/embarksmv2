@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized } from "@/lib/accountDefaults";
 import { parseAccountJSON } from "@/lib/accountParser";
 import { generateProfileData } from "@/lib/profileDataGenerator";
+import { deriveReflections } from "@/lib/adminDataDerivation";
 
 interface AccountContextType {
   accounts: Account[];

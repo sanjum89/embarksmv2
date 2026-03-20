@@ -67,7 +67,7 @@ export default function RolePlayBank() {
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
-    rolePlays.forEach((rp) => rp.tags.forEach((t) => tags.add(t)));
+    rolePlays.forEach((rp) => (rp.tags || []).forEach((t) => tags.add(t)));
     return Array.from(tags).sort();
   }, [rolePlays]);
 
@@ -75,7 +75,7 @@ export default function RolePlayBank() {
     return rolePlays.filter((rp) => {
       if (activeTab === "assigned" && !rp.assignedTo?.includes(user.id)) return false;
       if (difficulty !== "all" && rp.difficulty !== difficulty) return false;
-      if (selectedTag && !rp.tags.includes(selectedTag)) return false;
+      if (selectedTag && !(rp.tags || []).includes(selectedTag)) return false;
       if (search && !rp.title.toLowerCase().includes(search.toLowerCase()) && !rp.scenario.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });

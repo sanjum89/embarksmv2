@@ -212,6 +212,34 @@ export default function RolePlayBank() {
           </div>
         </motion.div>
 
+        {/* Tab bar */}
+        <div className="mb-4">
+          <div className="inline-flex items-center gap-1 rounded-lg bg-muted p-1">
+            <button
+              onClick={() => setActiveTab("assigned")}
+              className={cn(
+                "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
+                activeTab === "assigned"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Assigned to Me
+            </button>
+            <button
+              onClick={() => setActiveTab("all")}
+              className={cn(
+                "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
+                activeTab === "all"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              All Role Plays
+            </button>
+          </div>
+        </div>
+
         {/* Search + filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           <div className="relative flex-1">

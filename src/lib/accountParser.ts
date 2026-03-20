@@ -547,7 +547,7 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     hierarchyMap,
     skillTargets: (json.skillTargets || []).map((st: any) => ({
       ...st,
-      assignedTo: st.assignedTo || Object.keys(employeesById),
+      assignedTo: st.assignedTo || [],
     })),
     rolePlays: json.rolePlays || [],
     assessments: json.assessments || [],

@@ -4,6 +4,7 @@ import type { NormalizedAccount } from "@/types/account-v2";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized } from "@/lib/accountDefaults";
 import { parseAccountJSON } from "@/lib/accountParser";
+import { generateProfileData } from "@/lib/profileDataGenerator";
 
 interface AccountContextType {
   accounts: Account[];

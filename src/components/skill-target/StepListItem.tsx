@@ -33,9 +33,9 @@ interface StepListItemProps {
 }
 
 export function StepListItem({ step, index, skillTargetId, isLast, showAccentLine }: StepListItemProps) {
-  const TypeIcon = stepTypeIcons[step.type];
+  const TypeIcon = stepTypeIcons[step.type] || BookOpen;
   const isClickable = step.status === "available" || step.status === "in_progress" || step.status === "completed" || step.status === "skipped";
-  const routeSegment = stepTypeRoutes[step.type];
+  const routeSegment = stepTypeRoutes[step.type] || "module";
   const href = `/skill-target/${skillTargetId}/${routeSegment}/${step.referenceId}`;
 
   const statusIndicator = () => {

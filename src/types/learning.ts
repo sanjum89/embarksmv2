@@ -68,6 +68,7 @@ export interface RolePlay {
   difficulty: "beginner" | "intermediate" | "advanced";
   isPrivate: boolean;
   tags: string[];
+  assignedTo?: string[];
   aiCloneConfig: {
     persona: string;
     context: string;

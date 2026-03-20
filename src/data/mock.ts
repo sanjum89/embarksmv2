@@ -68,7 +68,34 @@ export const sarahAdmin: User = {
   canManage: true,
 };
 
-export const availableUsers: User[] = [currentUser, marcusWellington, mayaThompson, rajPatel, priyaMenon, sarahAdmin];
+export const claraWhitfield: User = {
+  id: "u12",
+  name: "Clara Whitfield",
+  email: "clara.whitfield@rathbones.com",
+  role: "learner",
+  avatarUrl: "",
+  title: "Investment Manager",
+};
+
+export const elliotHargreaves: User = {
+  id: "u13",
+  name: "Elliot Hargreaves",
+  email: "elliot.hargreaves@rathbones.com",
+  role: "learner",
+  avatarUrl: "",
+  title: "Investment Manager",
+};
+
+export const sophieLangford: User = {
+  id: "u14",
+  name: "Sophie Langford",
+  email: "sophie.langford@rathbones.com",
+  role: "learner",
+  avatarUrl: "",
+  title: "Investment Manager",
+};
+
+export const availableUsers: User[] = [currentUser, marcusWellington, mayaThompson, rajPatel, priyaMenon, sarahAdmin, claraWhitfield, elliotHargreaves, sophieLangford];
 
 /* ─── New Hires ─── */
 export interface NewHire {
@@ -456,6 +483,11 @@ export const mockSkillTargets: SkillTarget[] = [
 ];
 /* ─── Role Plays ─── */
 export const mockRolePlayBank: RolePlay[] = [
+  { id: "rp-rb1", title: "First Client Intro and Risk Appetite Conversation", scenario: "You're meeting a new Rathbones client for the first time. Understand their financial goals, family situation, and risk appetite. The client is a recently retired professional with £800k in savings, cautious but open to guidance.", difficulty: "beginner", isPrivate: false, tags: ["wealth-management", "client-intro", "risk-appetite", "rathbones"], assignedTo: ["u12", "u13", "u14"], aiCloneConfig: { persona: "Margaret Ellsworth, 63, recently retired NHS consultant", context: "Margaret is polite, well-informed, and slightly anxious about market volatility. She wants to protect her £800k in capital but generate modest income. Her late husband previously managed the family finances, so this is her first time engaging directly with an investment manager. She will ask thoughtful questions about fees, ESG investment options, and how Rathbones would protect her capital in a downturn. She responds well to patience and clarity, but will disengage if she feels rushed or patronised." } },
+  { id: "rp-rb2", title: "Explaining a Portfolio Recommendation to a Cautious Client", scenario: "Present a balanced portfolio recommendation to a cautious client who is wary of equities after losing money in 2008. Explain asset allocation, risk-return trade-offs, and how Rathbones manages downside risk.", difficulty: "beginner", isPrivate: false, tags: ["wealth-management", "portfolio", "risk-management", "rathbones"], assignedTo: ["u12", "u13", "u14"], aiCloneConfig: { persona: "David Ashworth, 58, semi-retired business owner with £1.2M portfolio", context: "David is still scarred by significant losses during the 2008 financial crisis. He is deeply skeptical of equities and currently holds most of his wealth in cash and property. He will challenge you on fees, past performance data, and why bonds alone aren't sufficient. He is polite but firm — he needs data, historical evidence, and reassurance rather than sales talk. He will ask about total cost of ownership and wants to understand exactly how Rathbones manages downside risk differently from his previous adviser." } },
+  { id: "rp-rb3", title: "Internal Collaboration with Financial Planning / Portfolio Management", scenario: "You need to brief a senior Financial Planner and a Portfolio Manager on a complex client case involving inheritance tax planning, pension drawdown, and a property sale. Present a clear summary and seek their input on the investment strategy.", difficulty: "beginner", isPrivate: false, tags: ["wealth-management", "internal-collaboration", "financial-planning", "rathbones"], aiCloneConfig: { persona: "James Cartwright, Senior Financial Planner / Helen Park, Portfolio Manager", context: "The conversation starts with James Cartwright, a collaborative and detail-oriented Senior Financial Planner who asks probing questions about the client's tax position, pension drawdown timeline, and property sale proceeds. Mid-conversation, he introduces Helen Park, a Portfolio Manager who is more direct and expects concise briefs. Helen will challenge your proposed asset allocation and ask for justification of your risk positioning. Both expect you to demonstrate command of the client's full financial picture and articulate a coherent investment rationale." } },
+  { id: "rp-rb4", title: "Handling a Cautious Client Question About Risk and Costs", scenario: "During a routine review meeting, your client asks pointed questions about why their portfolio underperformed a simple tracker fund and whether Rathbones' fees are justified. Handle the conversation with transparency and confidence.", difficulty: "beginner", isPrivate: false, tags: ["wealth-management", "fees", "performance", "client-review", "rathbones"], aiCloneConfig: { persona: "Richard Townsend, 52, successful solicitor with £650k portfolio", context: "Richard is analytically minded and has been reading investment articles comparing active management to passive tracker funds. He has specifically looked at Vanguard's LifeStrategy range and wants to understand why Rathbones' fees are justified given recent underperformance against a simple 60/40 tracker. He is not angry, but wants a clear, honest answer. He will press on total cost of ownership, alpha generation, and whether discretionary management genuinely adds value. He respects transparency and will lose trust if he senses evasion." } },
+  { id: "rp-rb5", title: "Business Development Intro Conversation with a Prospective Client", scenario: "You've been introduced to a prospective client at a professional networking event. They currently use a large bank's wealth management arm but are dissatisfied with the impersonal service. Open the conversation, build rapport, and position Rathbones' value proposition without being pushy.", difficulty: "beginner", isPrivate: false, tags: ["wealth-management", "business-development", "prospecting", "rathbones"], aiCloneConfig: { persona: "Amara Osei, 45, tech company CFO with £2M+ investable assets", context: "Amara is confident, direct, and time-poor. She currently uses a high-street bank's wealth management team and finds them formulaic and impersonal. She is open to alternatives but will not tolerate a hard sell. She values personalised service, ESG credentials, and evidence that you understand her specific situation as a senior executive with stock options, international tax exposure, and philanthropic interests. She will test whether you listen before pitching, and will disengage quickly if the conversation feels generic." } },
   { id: "rp14", title: "Battery Drain Complaint — Post-Update iPhone", scenario: "A customer calls in upset about their iPhone's battery draining much faster after the latest iOS update. They believe the update broke their phone's battery. They're frustrated but reasonable — not aggressive, just disappointed and looking for a real explanation and solution. They may mention considering switching to Android if the issue isn't resolved.", difficulty: "beginner", isPrivate: false, tags: ["support", "apple", "battery", "troubleshooting", "empathy"], aiCloneConfig: { persona: "Frustrated but reasonable iPhone user, mid-30s professional. Not aggressive or pushy — just genuinely disappointed. Will express frustration calmly but firmly. Wants a real explanation, not scripted answers. Will mention the update as the cause. May say things like 'I love my iPhone but this is really annoying' or 'I just want it to work like it used to'. Will listen to solutions if they sound genuine. Might mention switching to Android but more as a concern than a threat.", context: "iPhone 15 Pro, updated to latest iOS 2 weeks ago. Battery now lasts only half the day instead of a full day. Has tried restarting. No new apps installed recently. Uses phone for work email, photos, and social media. Has been an Apple customer for 8 years." } },
   { id: "rp1", title: "Price Objection – SMB Customer", scenario: "A budget-conscious small business owner is evaluating your product alongside two competitors. They like the features but push back hard on pricing, asking for a 30% discount.", difficulty: "intermediate", isPrivate: false, tags: ["pricing", "objections", "SMB"], aiCloneConfig: { persona: "Budget-conscious small business owner", context: "Evaluating 3 competitors, price-sensitive, team of 12" } },
   { id: "rp2", title: "Enterprise Demo Walkthrough", scenario: "A VP of Operations at a Fortune 500 company wants a focused demo of your reporting and compliance features. They have strict requirements and limited time.", difficulty: "advanced", isPrivate: false, tags: ["demo", "enterprise", "product"], aiCloneConfig: { persona: "VP of Operations at Fortune 500", context: "Needs compliance reporting, has strict requirements, 30-minute window" } },

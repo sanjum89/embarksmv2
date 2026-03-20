@@ -8,6 +8,9 @@ import {
   rajPatel,
   priyaMenon,
   sarahAdmin,
+  claraWhitfield,
+  elliotHargreaves,
+  sophieLangford,
   availableUsers as defaultAvailableUsers,
   mockNewHires,
   mockProgramContexts,
@@ -32,6 +35,9 @@ export function buildDefaultAccountData(): AccountData {
     toAccountEmployee(rajPatel, "u1"),
     toAccountEmployee(priyaMenon, "u7"),
     toAccountEmployee(sarahAdmin, null),
+    toAccountEmployee(claraWhitfield, "u1"),
+    toAccountEmployee(elliotHargreaves, "u1"),
+    toAccountEmployee(sophieLangford, "u1"),
   ];
 
   return {
@@ -268,6 +274,9 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
     u8: "u1",
     u10: "u7",
     u11: null,
+    u12: "u1",
+    u13: "u1",
+    u14: "u1",
   };
 
   for (const u of users) {

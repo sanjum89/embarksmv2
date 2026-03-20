@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageSquare, Search, Bot, Plus, Trash2, UserPlus, Pencil, Check, Mic, X } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 import { mockSkillTargets as defaultSkillTargets, mockNewHires as defaultNewHires } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";
@@ -32,6 +33,7 @@ export default function RolePlayBank() {
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState<DifficultyFilter>("all");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"assigned" | "all">("assigned");
   const { toast } = useToast();
   const { rolePlays, updateRolePlay } = useRolePlays();
   const { user } = useUser();
@@ -71,12 +73,13 @@ export default function RolePlayBank() {
 
   const filtered = useMemo(() => {
     return rolePlays.filter((rp) => {
+      if (activeTab === "assigned" && !rp.assignedTo?.includes(user.id)) return false;
       if (difficulty !== "all" && rp.difficulty !== difficulty) return false;
       if (selectedTag && !rp.tags.includes(selectedTag)) return false;
       if (search && !rp.title.toLowerCase().includes(search.toLowerCase()) && !rp.scenario.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
-  }, [search, difficulty, selectedTag, rolePlays]);
+  }, [search, difficulty, selectedTag, rolePlays, activeTab, user.id]);
 
   const handleAddToSkillTarget = (rpTitle: string, stTitle: string) => {
     toast({
@@ -208,6 +211,34 @@ export default function RolePlayBank() {
             )}
           </div>
         </motion.div>
+
+        {/* Tab bar */}
+        <div className="mb-4">
+          <div className="inline-flex items-center gap-1 rounded-lg bg-muted p-1">
+            <button
+              onClick={() => setActiveTab("assigned")}
+              className={cn(
+                "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
+                activeTab === "assigned"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Assigned to Me
+            </button>
+            <button
+              onClick={() => setActiveTab("all")}
+              className={cn(
+                "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
+                activeTab === "all"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              All Role Plays
+            </button>
+          </div>
+        </div>
 
         {/* Search + filters */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">

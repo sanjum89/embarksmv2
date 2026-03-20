@@ -1,26 +1,44 @@
 
 
-# Enhance Super Agent Card: Unread Badge + Prominent Shimmer
+# Elevate Super Agent Chat Interior Design
+
+The current chat page is plain — white background, basic header, flat message bubbles. It needs to match the energy of the Super Agent card.
 
 ## Changes
 
-### 1. SuperAgentCard — shimmer + unread count badge
-**File: `src/components/chat/SuperAgentCard.tsx`**
+### 1. Header — branded & alive
+**File: `src/pages/SuperAgentChat.tsx`** (lines 311-325)
 
-- Add `unreadCount` prop (number) alongside existing `hasUnread`
-- Show a red/accent circular badge with the count number next to the "Live" pill when `unreadCount > 0`
-- Increase shimmer prominence: change `via-white/[0.08]` → `via-white/[0.15]`, reduce `repeatDelay` from 4s → 1.5s, and shorten duration from 3s → 2s
+- Replace the flat header with a gradient background matching the card's primary palette (`bg-gradient-to-r from-primary to-primary/80`)
+- White text, larger icon container with `bg-white/15 backdrop-blur-sm`
+- Add animated green live dot next to subtitle
+- Sparkles icon gets a gentle rotation animation (matching card)
 
-### 2. LearnerChat — fetch unread count from DB
-**File: `src/pages/LearnerChat.tsx`**
+### 2. Assistant messages — avatar + styled bubble
+**File: `src/pages/SuperAgentChat.tsx`** (lines 339-344)
 
-- On mount, query `super_agent_conversations` for the current user/account
-- Count assistant messages that arrived after the user's last visit (or use a simple heuristic: if conversation exists and has messages, show count of assistant messages since last user message)
-- Pass `unreadCount` and `lastMessage` (last assistant message text) to `SuperAgentCard`
+- Add a small Sparkles avatar icon to the left of each assistant message
+- Wrap assistant text in a subtle card-like bubble (`bg-card border border-border/50 rounded-2xl px-5 py-4 shadow-sm`)
+- User messages get the primary color treatment (`bg-primary text-primary-foreground`) instead of plain muted
 
-### Files
-| Action | File |
-|--------|------|
-| Edit | `src/components/chat/SuperAgentCard.tsx` — add unread badge, increase shimmer |
-| Edit | `src/pages/LearnerChat.tsx` — fetch conversation state, pass props |
+### 3. Input bar — elevated
+**File: `src/pages/SuperAgentChat.tsx`** (lines 391-408)
+
+- Add a subtle top border gradient or shadow to separate from messages
+- Send button gets primary color when active (`bg-primary text-primary-foreground` when input has text)
+- Input gets a slightly elevated shadow and focus ring matching primary
+
+### 4. Suggestion pills — accent border
+**File: `src/pages/SuperAgentChat.tsx`** (lines 376-384)
+
+- Give pills a primary-tinted border (`border-primary/20`) and a subtle primary hover state
+- Add a small sparkle/arrow icon on hover
+
+### 5. Thinking indicator — on-brand
+**File: `src/pages/SuperAgentChat.tsx`** (lines 37-48)
+
+- Add the Sparkles avatar to thinking indicator too, for consistency
+
+### Files Modified
+- `src/pages/SuperAgentChat.tsx` — all visual changes in one file
 

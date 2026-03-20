@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Building2, Plus, Trash2, Check, ChevronDown, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { useAccount } from "@/contexts/AccountContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { AddAccountDialog } from "./AddAccountDialog";
@@ -14,13 +15,20 @@ interface AccountSwitcherProps {
 
 export function AccountSwitcher({ expanded, onToggleSidebar, variant = "new" }: AccountSwitcherProps) {
   const { accounts, activeAccount, switchAccount, deleteAccount } = useAccount();
+  const { styleTheme, superLight } = useTheme();
   const [addOpen, setAddOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [brandHovered, setBrandHovered] = useState(false);
 
   if (!activeAccount) return null;
 
-  const accountLogo = activeAccount.logo || cornerstoneLogo;
+  // Pick the right logo based on theme mode
+  const isSuperLightActive = styleTheme === "new" && superLight;
+  const superLightLogo = (activeAccount as any).logo_superlight;
+  const accountLogo = isSuperLightActive && superLightLogo
+    ? superLightLogo
+    : activeAccount.logo || cornerstoneLogo;
+
   const isTraditional = variant === "traditional";
 
   return (

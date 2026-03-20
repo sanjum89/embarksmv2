@@ -172,6 +172,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       id: row.id,
       name: row.name,
       logo: row.logo,
+      logo_superlight: row.logo_superlight,
       accent_color: row.accent_color,
       use_case_context: row.use_case_context,
       is_default: row.is_default,

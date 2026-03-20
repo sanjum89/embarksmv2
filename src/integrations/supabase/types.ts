@@ -47,6 +47,47 @@ export type Database = {
         }
         Relationships: []
       }
+      super_agent_conversations: {
+        Row: {
+          account_id: string
+          created_at: string | null
+          id: string
+          messages: Json
+          metadata: Json | null
+          onboarding_stage: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string | null
+          id?: string
+          messages?: Json
+          metadata?: Json | null
+          onboarding_stage?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string | null
+          id?: string
+          messages?: Json
+          metadata?: Json | null
+          onboarding_stage?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "super_agent_conversations_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

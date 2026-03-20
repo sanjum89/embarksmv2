@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.role-play-chat]
 verify_jwt = false
+
+[functions.super-agent-chat]
+verify_jwt = false

@@ -219,7 +219,7 @@ export default function LearnerChat() {
       if (msgs.length === 0) return;
       // Last assistant message as preview
       const lastAssistant = [...msgs].reverse().find((m: any) => m.role === "assistant");
-      if (lastAssistant) setSuperAgentLastMsg(lastAssistant.content?.slice(0, 80));
+      if (lastAssistant) setSuperAgentLastMsg(lastAssistant.content?.replace(/\*\*/g, "").replace(/SUGGESTIONS:.*$/s, "").trim().slice(0, 80));
       // Count assistant messages after the last user message
       const lastUserIdx = msgs.map((m: any) => m.role).lastIndexOf("user");
       const unread = lastUserIdx === -1

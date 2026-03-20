@@ -1,44 +1,58 @@
 
 
-# Elevate Super Agent Chat Interior Design
+# Fix Super Agent: Concise Responses + Onboarding-Aware Suggestion Pills
 
-The current chat page is plain — white background, basic header, flat message bubbles. It needs to match the energy of the Super Agent card.
+## Problem
+1. AI responses are too wordy and hard to scan
+2. Suggestion pills don't consistently guide the user through the onboarding flow
+3. When users ask off-topic questions, they lose their place in the onboarding journey
 
-## Changes
+## Solution
 
-### 1. Header — branded & alive
-**File: `src/pages/SuperAgentChat.tsx`** (lines 311-325)
+### 1. Rewrite system prompt for brevity + structured suggestions
+**File: `supabase/functions/super-agent-chat/index.ts`**
 
-- Replace the flat header with a gradient background matching the card's primary palette (`bg-gradient-to-r from-primary to-primary/80`)
-- White text, larger icon container with `bg-white/15 backdrop-blur-sm`
-- Add animated green live dot next to subtitle
-- Sparkles icon gets a gentle rotation animation (matching card)
+Update `baseRules` to enforce concise responses:
+- Add strict length rules: "Keep responses to 2-4 short paragraphs max. Use bullet points, not paragraphs of text. Never write more than 6 lines of prose."
+- Add formatting guidance: "Use bold for key terms. Prefer lists over paragraphs."
 
-### 2. Assistant messages — avatar + styled bubble
-**File: `src/pages/SuperAgentChat.tsx`** (lines 339-344)
+Update suggestion pill rules to be onboarding-aware:
+- Add an `ONBOARDING_FLOW` constant that defines the ordered stages and their corresponding "next step" pill label
+- Instruct the AI: "The FIRST suggestion pill must ALWAYS be the next onboarding step (provided below). Remaining 1-3 pills can be contextual to the current conversation."
+- Each stage prompt includes the exact next-step pill text:
+  - `welcome` → pill: "Let's get started"
+  - `profile-review` → pill: "Show me my onboarding plan"
+  - `feedback` → pill: "What's my 20-day plan?"
+  - `task-list` → pill: "Start my assessment"
+  - `pre-assessment` → pill: "Take the assessment"
+  - `post-assessment` → pill: "View my skill target"
+  - `post-completion` → pill: "Write a reflection"
+  - `general` → no fixed pill, all contextual
 
-- Add a small Sparkles avatar icon to the left of each assistant message
-- Wrap assistant text in a subtle card-like bubble (`bg-card border border-border/50 rounded-2xl px-5 py-4 shadow-sm`)
-- User messages get the primary color treatment (`bg-primary text-primary-foreground`) instead of plain muted
+Trim each stage's instructions to be shorter — remove verbose descriptions, keep to 2-3 bullet points max per stage.
 
-### 3. Input bar — elevated
-**File: `src/pages/SuperAgentChat.tsx`** (lines 391-408)
+### 2. Shorten stage-specific prompts
+**File: `supabase/functions/super-agent-chat/index.ts`**
 
-- Add a subtle top border gradient or shadow to separate from messages
-- Send button gets primary color when active (`bg-primary text-primary-foreground` when input has text)
-- Input gets a slightly elevated shadow and focus ring matching primary
+For each stage, reduce the instruction to essentials. Example for `task-list`:
+- Instead of the full 12-item list in the prompt, present it as a compact numbered list and tell the AI to keep commentary to 1-2 sentences before and after
+- Add: "Do NOT elaborate on each item. Just list them cleanly."
 
-### 4. Suggestion pills — accent border
-**File: `src/pages/SuperAgentChat.tsx`** (lines 376-384)
+For `pre-assessment`:
+- Remove the verbose reassurance paragraph
+- Keep to: "Explain the assessment briefly (2 sentences). Encourage them. End with CTA."
 
-- Give pills a primary-tinted border (`border-primary/20`) and a subtle primary hover state
-- Add a small sparkle/arrow icon on hover
+### 3. Off-topic handling with onboarding anchor
+**File: `supabase/functions/super-agent-chat/index.ts`**
 
-### 5. Thinking indicator — on-brand
-**File: `src/pages/SuperAgentChat.tsx`** (lines 37-48)
-
-- Add the Sparkles avatar to thinking indicator too, for consistency
+Add to `baseRules`:
+```
+IMPORTANT — OFF-TOPIC HANDLING:
+If the user asks something outside the onboarding flow, answer their question helpfully and concisely. But ALWAYS include the next onboarding step as the FIRST suggestion pill so they can return to the flow.
+```
 
 ### Files Modified
-- `src/pages/SuperAgentChat.tsx` — all visual changes in one file
+| Action | File |
+|--------|------|
+| Edit | `supabase/functions/super-agent-chat/index.ts` — rewrite prompts for brevity + onboarding-anchored pills |
 

@@ -409,7 +409,7 @@ export default function SuperAgentChat() {
         </div>
 
         {/* Input */}
-        <div className="shrink-0 px-6 pb-6 pt-3 bg-background">
+        <div className="shrink-0 px-6 pb-6 pt-3 bg-background border-t border-border/50 shadow-[0_-2px_12px_-4px_hsl(var(--border)/0.3)]">
           <div className="max-w-[680px] mx-auto relative">
             <Input
               ref={inputRef}
@@ -417,11 +417,17 @@ export default function SuperAgentChat() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") handleSend(input); }}
               placeholder="Ask anything..."
-              className="pr-12 h-12 rounded-2xl border-border shadow-sm text-sm"
+              className="pr-12 h-12 rounded-2xl border-border shadow-md text-sm focus-visible:ring-primary/30"
               disabled={isStreaming}
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2">
-              <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => handleSend(input)} disabled={!input.trim() || isStreaming}>
+              <Button
+                size="icon"
+                variant={input.trim() ? "default" : "ghost"}
+                className={cn("h-8 w-8 rounded-xl transition-all", input.trim() && "bg-primary text-primary-foreground shadow-sm")}
+                onClick={() => handleSend(input)}
+                disabled={!input.trim() || isStreaming}
+              >
                 <Send className="h-3.5 w-3.5" />
               </Button>
             </div>

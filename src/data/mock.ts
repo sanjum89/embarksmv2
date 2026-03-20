@@ -287,6 +287,19 @@ export const mockAssessments: Assessment[] = [
       { id: "q24", question: "AppleCare+ provides:", options: ["Free unlimited repairs", "Extended warranty with accidental damage coverage", "Free device upgrades", "Priority store access"], correctIndex: 1 },
     ],
   },
+  {
+    id: "a-rb1",
+    title: "Client Outcomes and Suitability Checkpoint",
+    type: "post",
+    passingScore: 80,
+    questions: [
+      { id: "q-rb1", question: "What is the primary obligation of a Rathbones Investment Manager when recommending a portfolio?", options: ["Maximise returns at all costs", "Ensure suitability for the client's circumstances and objectives", "Match the benchmark index", "Minimise all risk exposure"], correctIndex: 1 },
+      { id: "q-rb2", question: "Which of the following best describes 'good client outcomes'?", options: ["The client's portfolio outperforms the market every quarter", "The client's financial plan aligns with their goals, risk appetite, and personal circumstances", "The client never experiences any portfolio losses", "The client receives the lowest possible fees"], correctIndex: 1 },
+      { id: "q-rb3", question: "When documenting a suitability assessment, you should:", options: ["Record only the final recommendation", "Document the client's objectives, risk profile, and rationale for the recommendation", "Copy a template from a similar client", "Leave documentation for the compliance team to complete"], correctIndex: 1 },
+      { id: "q-rb4", question: "A client expresses concern about market volatility. The best first step is:", options: ["Immediately move them to cash", "Acknowledge their concern and review their risk profile together", "Explain that volatility is normal and move on", "Recommend a different adviser"], correctIndex: 1 },
+      { id: "q-rb5", question: "Which internal team should you consult when a client case involves inheritance tax planning?", options: ["Marketing", "Financial Planning", "Reception", "IT Support"], correctIndex: 1 },
+    ],
+  },
 ];
 
 /* ─── Learning Modules ─── */

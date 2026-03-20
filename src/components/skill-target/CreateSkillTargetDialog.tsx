@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useToast } from "@/hooks/use-toast";
-import { mockLearningModules, profileDataByUser } from "@/data/mock";
+import { mockLearningModules as defaultLearningModules, profileDataByUser as defaultProfileData } from "@/data/mock";
 import { getRecommendationsForUser, type SkillGap, type RecommendationGroup } from "@/lib/skillRecommendations";
 import type { SkillTarget, StepItem, LearningModule } from "@/types/learning";
 import {

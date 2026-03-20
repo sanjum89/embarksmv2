@@ -147,6 +147,9 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
   const { user } = useUser();
   const { addSkillTargets } = useSkillTargets();
   const { toast } = useToast();
+  const { normalizedAccount } = useAccount();
+
+  const accountModules = normalizedAccount?.learningModules?.length ? normalizedAccount.learningModules : defaultLearningModules;
 
   const [step, setStep] = useState<Step>("method");
 

@@ -53,12 +53,6 @@ const navItems: NavItem[] = [
     roles: ["learner"],
   },
   {
-    label: "AI Manager",
-    path: "/ai-manager",
-    icon: Bot,
-    roles: ["learner"],
-  },
-  {
     label: "New Chat",
     path: "/manager",
     icon: Building2,

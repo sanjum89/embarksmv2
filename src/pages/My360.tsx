@@ -144,6 +144,11 @@ export default function My360() {
     return allGapRows;
   }, [allGapRows, gapFilter]);
 
+  const formatShortYear = (value: unknown) => {
+    if (value == null || value === "") return "—";
+    return `'${String(value).slice(-2)}`;
+  };
+
   if (!profileData) {
     return (
       <div className="flex-1 overflow-y-auto p-6">
@@ -288,11 +293,14 @@ export default function My360() {
                 renderPill={(i) => {
                   const entry = profileData.roleSkillsCurrent?.[i];
                   if (!entry) return null;
-                  const displayName = entry.skill_name.length > 13
-                    ? entry.skill_name.slice(0, 10) + "..."
-                    : entry.skill_name;
+                  const skillName = typeof entry.skill_name === "string" && entry.skill_name.trim()
+                    ? entry.skill_name
+                    : "Unknown skill";
+                  const displayName = skillName.length > 13
+                    ? skillName.slice(0, 10) + "..."
+                    : skillName;
                   const shortLevel = proficiencyShort[entry.proficiency];
-                  const shortYear = `'${String(entry.assessment_year).slice(-2)}`;
+                  const shortYear = formatShortYear(entry.assessment_year);
                   const skillColors = [
                     "bg-accent/10 text-accent border border-accent/20",
                     "bg-info/10 text-info border border-info/20",
@@ -317,7 +325,7 @@ export default function My360() {
                     <p className="text-xs font-semibold text-muted-foreground mb-2">All Core Skills</p>
                     {(profileData.roleSkillsCurrent || []).map((entry, i) => (
                       <div key={i} className="flex items-center justify-between gap-4 text-sm">
-                        <span className="font-medium text-foreground">{entry.skill_name}</span>
+                        <span className="font-medium text-foreground">{entry.skill_name || "Unknown skill"}</span>
                         <div className="flex items-center gap-2 text-muted-foreground text-xs">
                           <span>{entry.proficiency}</span>
                           <span>·</span>
@@ -342,11 +350,11 @@ export default function My360() {
                   const skill = profileData.otherSkills?.[i];
                   if (!skill) return null;
                   const shortLevel = proficiencyShort[skill.proficiency];
-                  const shortYear = `'${String(skill.assessment_year).slice(-2)}`;
+                  const shortYear = formatShortYear(skill.assessment_year);
                   return (
                     <div className="relative group">
                       <span className="inline-flex items-center rounded-full border border-border pl-4 pr-1.5 py-2 text-sm font-medium text-foreground gap-1.5 whitespace-nowrap cursor-default">
-                        <span>{skill.skill_name}</span>
+                        <span>{skill.skill_name || "Unknown skill"}</span>
                         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-muted-foreground">
                           {shortLevel}
                         </span>
@@ -357,7 +365,7 @@ export default function My360() {
                       {/* Hover card */}
                       <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block z-50">
                         <div className="rounded-xl bg-card border border-border p-4 shadow-card-hover min-w-[200px]">
-                          <p className="font-display text-sm font-bold text-foreground">{skill.skill_name}</p>
+                          <p className="font-display text-sm font-bold text-foreground">{skill.skill_name || "Unknown skill"}</p>
                           <div className="mt-2 space-y-1">
                             <div className="flex justify-between text-xs">
                               <span className="text-muted-foreground">Proficiency</span>
@@ -379,9 +387,9 @@ export default function My360() {
                 renderExpandedList={() => (
                   <div className="space-y-2">
                     <p className="text-xs font-semibold text-muted-foreground mb-2">All Other Skills</p>
-                    {profileData.otherSkills.map((skill, i) => (
+                    {(profileData.otherSkills ?? []).map((skill, i) => (
                       <div key={i} className="flex items-center justify-between gap-4 text-sm">
-                        <span className="font-medium text-foreground">{skill.skill_name}</span>
+                        <span className="font-medium text-foreground">{skill.skill_name || "Unknown skill"}</span>
                         <div className="flex items-center gap-2 text-muted-foreground text-xs">
                           <span>{skill.proficiency}</span>
                           <span>·</span>

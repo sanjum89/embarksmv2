@@ -8,8 +8,6 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
   const result: Record<string, ProfileData> = {};
 
   for (const emp of Object.values(acct.employeesById)) {
-    if (!emp.skills?.length) continue;
-
     // Find manager name
     let managerName = "—";
     if (emp.reportsTo && acct.employeesById[emp.reportsTo]) {
@@ -24,7 +22,9 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
       assessment_year: new Date().getFullYear(),
     }));
 
-    const roleSkillsCurrent = emp.skills.map((s) => ({
+    const employeeSkills = emp.skills || [];
+
+    const roleSkillsCurrent = employeeSkills.map((s) => ({
       skill_name: s.skillName,
       proficiency: s.proficiency as any,
       assessment_year: s.assessmentYear || new Date().getFullYear(),
@@ -54,7 +54,7 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
 
     // Project current = employee's current proficiency for project-required skills
     const projectSkillsCurrent = uniqueProjectRequired.map((req) => {
-      const current = emp.skills?.find((s) => s.skillName === req.skill_name);
+        const current = employeeSkills.find((s) => s.skillName === req.skill_name);
       return {
         skill_name: req.skill_name,
         proficiency: (current?.proficiency || "Beginner") as any,
@@ -64,7 +64,7 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
 
     // Other skills = skills not in role requirements
     const roleSkillNames = new Set(roleSkillsRequired.map((s) => s.skill_name));
-    const otherSkills = emp.skills
+    const otherSkills = employeeSkills
       .filter((s) => !roleSkillNames.has(s.skillName))
       .map((s) => ({
         skill_name: s.skillName,
@@ -73,14 +73,26 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
       }));
 
     const projectNames = empProjects.map((p) => p.name).join(", ");
+    const yearsExperience = typeof emp.tenure === "number" ? emp.tenure : Number.parseFloat(String(emp.tenure ?? 0)) || 0;
+    const location = (acct as any).namedEmployees?.find((n: any) => n.id === emp.id)?.location || emp.location || "—";
+    const team = emp.department || emp.function;
+    const title = emp.title || role?.name || "Team Member";
+    const summaryParts = [
+      `${emp.name} is a ${title}`,
+      team ? `working in ${team}` : undefined,
+      projectNames ? `currently contributing to ${projectNames}` : undefined,
+      employeeSkills.length ? `with ${employeeSkills.length} tracked skill${employeeSkills.length === 1 ? "" : "s"}` : `with profile scaffolding generated from available workforce data`,
+    ].filter(Boolean);
 
     result[emp.id] = {
-      title: emp.title || "Team Member",
-      location: (acct as any).namedEmployees?.find((n: any) => n.id === emp.id)?.location || "—",
+      title,
+      location,
       manager: managerName,
-      yearsExperience: 0,
-      summary: `${emp.name} is a ${emp.title || "team member"}${emp.department ? ` in ${emp.department}` : ""}.${projectNames ? ` Currently assigned to: ${projectNames}.` : ""}`,
-      roleSnapshotText: role ? `${role.name} — ${role.requiredSkills.length} required skills` : emp.title || "Team Member",
+      yearsExperience,
+      team,
+      program: projectNames || undefined,
+      summary: `${summaryParts.join(" ")}.`,
+      roleSnapshotText: role ? `${role.name} — ${role.requiredSkills.length} required skills` : title,
       projectSnapshotText: projectNames || "No active projects",
       roleSkillsCurrent,
       roleSkillsRequired,

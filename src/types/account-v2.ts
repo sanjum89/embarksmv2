@@ -44,6 +44,21 @@ export interface AccountEmployee {
   reportsTo?: string | null;
   skills?: EmployeeSkill[];
   avatarUrl?: string;
+  grade?: string;
+  level?: string;
+  shift?: string;
+  tenure?: number | string;
+  function?: string;
+  location?: string;
+  engagementScore?: number;
+  performanceRating?: string;
+  riskFlag?: string;
+  learningIndicators?: Record<string, any>;
+  workSignalIndicators?: Record<string, any>;
+  arc?: string;
+  aspiration?: any;
+  canManage?: boolean;
+  role?: UserRole;
 }
 
 export interface EmployeeSkill {

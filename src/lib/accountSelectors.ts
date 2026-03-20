@@ -26,6 +26,17 @@ import type {
 } from "@/types/account-v2";
 import type { ProfileData } from "@/data/mock";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
+import {
+  deriveExplainabilityTraces,
+  deriveLearningAndSkills,
+  deriveOrgOverview,
+  derivePeopleGraph,
+  derivePerformanceAlerts,
+  deriveRecommendedCTAs,
+  deriveReflections,
+  deriveShowcaseCases,
+  deriveWorkSignals,
+} from "@/lib/adminDataDerivation";
 
 const DEFAULT_SCALE_ORDER: Record<string, number> = {
   Beginner: 1, Intermediate: 2, Advanced: 3, Expert: 4, Master: 5,
@@ -33,6 +44,14 @@ const DEFAULT_SCALE_ORDER: Record<string, number> = {
 
 function profOrder(level: string): number {
   return DEFAULT_SCALE_ORDER[level] ?? 0;
+}
+
+function getAdminEmployeeSource(acct: NormalizedAccount): any[] {
+  const namedById = Object.fromEntries(acct.namedEmployees.map((employee) => [employee.id, employee]));
+  return Object.values(acct.employeesById).map((employee) => ({
+    ...employee,
+    ...(namedById[employee.id] || {}),
+  }));
 }
 
 /* ─── Account-level ─── */
@@ -250,50 +269,12 @@ export function getArchitectureSignalCounts(acct: NormalizedAccount): Architectu
 
 export function getOrgOverviewData(acct: NormalizedAccount): OrgOverviewData {
   if (acct.orgOverview) return acct.orgOverview;
-
-  // Derive from employees
-  const employees = getAllEmployees(acct);
-  const managers = new Set<string>();
-  for (const reports of Object.values(acct.hierarchyMap)) {
-    if (reports.length > 0) managers.add(reports[0]); // parent is a manager
-  }
-  // Actually the keys of hierarchyMap are the managers
-  const managerCount = Object.keys(acct.hierarchyMap).filter(id => acct.hierarchyMap[id].length > 0).length;
-
-  const functions: Record<string, number> = {};
-  for (const emp of employees) {
-    const dept = emp.department || "Other";
-    functions[dept] = (functions[dept] || 0) + 1;
-  }
-
-  return {
-    totalEmployees: employees.length,
-    managers: managerCount,
-    individualContributors: employees.length - managerCount,
-    functions,
-  };
+  return deriveOrgOverview(getAdminEmployeeSource(acct), acct.hierarchyMap);
 }
 
 export function getPeopleGraphRows(acct: NormalizedAccount): PeopleGraphRow[] {
   if (acct.peopleGraph.length > 0) return acct.peopleGraph;
-
-  // Derive from namedEmployees or employees
-  const source = acct.namedEmployees.length > 0 ? acct.namedEmployees : getAllEmployees(acct);
-  return source.map((emp: any) => ({
-    employeeId: emp.id,
-    name: emp.name,
-    role: emp.title,
-    level: emp.level,
-    tenure: emp.tenure,
-    grade: emp.grade,
-    shift: emp.shift,
-    learningIndicators: emp.learningIndicators,
-    workSignalIndicators: emp.workSignalIndicators,
-    engagementIndicators: emp.engagementIndicators,
-    performanceIndicators: emp.performanceIndicators,
-    labels: emp.labels,
-    flags: emp.riskFlag ? [emp.riskFlag] : [],
-  }));
+  return derivePeopleGraph(getAdminEmployeeSource(acct), acct.hierarchyMap);
 }
 
 export function getEmployeeSignals(acct: NormalizedAccount, employeeId: string): EmployeeSignal[] {
@@ -301,7 +282,7 @@ export function getEmployeeSignals(acct: NormalizedAccount, employeeId: string):
 }
 
 export function getReflections(acct: NormalizedAccount, employeeId?: string): ReflectionEntry[] {
-  const entries = acct.reflections as ReflectionEntry[];
+  const entries = (acct.reflections?.length ? acct.reflections : deriveReflections(getAdminEmployeeSource(acct))) as ReflectionEntry[];
   if (!employeeId) return entries;
   return entries.filter((r) => r.employeeId === employeeId);
 }
@@ -321,36 +302,49 @@ export function getReflectionSummary(acct: NormalizedAccount, employeeId?: strin
     .slice(0, 5)
     .map(([t]) => t);
 
+  const sentimentTrend = entries.length
+    ? entries[0]?.sentiment || (() => {
+        const counts = entries.reduce<Record<string, number>>((acc, entry) => {
+          if (entry.sentiment) acc[entry.sentiment] = (acc[entry.sentiment] || 0) + 1;
+          return acc;
+        }, {});
+
+        return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+      })()
+    : undefined;
+
   return {
     employeeId,
     avgConfidence: withConfidence.length ? withConfidence.reduce((s, e) => s + (e.confidence || 0), 0) / withConfidence.length : undefined,
     avgWorkload: withWorkload.length ? withWorkload.reduce((s, e) => s + (e.workload || 0), 0) / withWorkload.length : undefined,
+    sentimentTrend,
     topThemes,
     entries,
   };
 }
 
 export function getWorkSignalsData(acct: NormalizedAccount): WorkSignalCard[] {
-  return acct.workSignals as WorkSignalCard[];
+  return (acct.workSignals?.length ? acct.workSignals : deriveWorkSignals(getAdminEmployeeSource(acct))) as WorkSignalCard[];
 }
 
 export function getLearningAndSkillsData(acct: NormalizedAccount): LearningAndSkillsSummary | undefined {
-  return acct.learningAndSkills;
+  return acct.learningAndSkills || deriveLearningAndSkills(getAdminEmployeeSource(acct));
 }
 
 export function getShowcaseCases(acct: NormalizedAccount): ShowcaseCase[] {
-  return acct.showcaseCases;
+  return acct.showcaseCases?.length ? acct.showcaseCases : deriveShowcaseCases(getAdminEmployeeSource(acct), getReflections(acct));
 }
 
 export function getExplainabilityTrace(acct: NormalizedAccount, employeeId?: string): ExplainabilityTrace[] {
-  if (!employeeId) return acct.explainability;
-  return acct.explainability.filter((e) => e.employeeId === employeeId);
+  const traces = acct.explainability?.length ? acct.explainability : deriveExplainabilityTraces(getAdminEmployeeSource(acct), getReflections(acct));
+  if (!employeeId) return traces;
+  return traces.filter((e) => e.employeeId === employeeId);
 }
 
 export function getPerformanceAlerts(acct: NormalizedAccount): PerformanceAlert[] {
-  return acct.performanceAlerts;
+  return acct.performanceAlerts?.length ? acct.performanceAlerts : derivePerformanceAlerts(getAdminEmployeeSource(acct));
 }
 
 export function getRecommendedCTAs(acct: NormalizedAccount): RecommendedCTA[] {
-  return acct.recommendedCTAs;
+  return acct.recommendedCTAs?.length ? acct.recommendedCTAs : deriveRecommendedCTAs(getAdminEmployeeSource(acct));
 }

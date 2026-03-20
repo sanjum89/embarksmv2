@@ -33,6 +33,82 @@ export interface ParseResult {
   warnings: string[];
 }
 
+function normalizeProficiency(value: unknown): string {
+  const raw = String(value ?? "Beginner").trim();
+  const lookup: Record<string, string> = {
+    beginner: "Beginner",
+    intermediate: "Intermediate",
+    advanced: "Advanced",
+    expert: "Expert",
+    master: "Master",
+  };
+
+  return lookup[raw.toLowerCase()] || raw || "Beginner";
+}
+
+function parseSkills(source: Record<string, any>): AccountEmployee["skills"] {
+  if (Array.isArray(source.skills)) {
+    return source.skills
+      .map((s: any) => ({
+        skillName: s?.skillName || s?.skill_name || s?.name,
+        proficiency: normalizeProficiency(s?.proficiency || s?.level),
+        assessmentYear: s?.assessmentYear || s?.assessment_year,
+      }))
+      .filter((s) => s.skillName);
+  }
+
+  const proficiencyMap = source.proficiency || source.proficiencies || source.skillProficiency || source.skill_proficiency;
+  if (proficiencyMap && typeof proficiencyMap === "object") {
+    return Object.entries(proficiencyMap)
+      .map(([skillName, proficiency]) => ({
+        skillName,
+        proficiency: normalizeProficiency(proficiency),
+        assessmentYear: new Date().getFullYear(),
+      }))
+      .filter((s) => s.skillName);
+  }
+
+  return [];
+}
+
+function resolveDepartment(source: Record<string, any>): string | undefined {
+  return source.department || source.function || source.fn || source.team;
+}
+
+function normalizeLearningIndicators(source: Record<string, any>): Record<string, any> | undefined {
+  const learning = source.learningIndicators || source.learning_indicators || source.learning;
+  if (!learning || typeof learning !== "object") return undefined;
+
+  return {
+    ...learning,
+    modulesCompleted:
+      learning.modulesCompleted ?? learning.modules_completed ?? learning.completedModules ?? learning.completed ?? learning.completions,
+    assessmentAvg:
+      learning.assessmentAvg ?? learning.assessment_avg ?? learning.avgScore ?? learning.averageScore ?? learning.score,
+    certifications:
+      learning.certifications ?? learning.certs ?? learning.licenses,
+  };
+}
+
+function normalizeWorkSignalIndicators(source: Record<string, any>): Record<string, any> | undefined {
+  const signals = source.workSignalIndicators || source.work_signal_indicators || source.workSignals || source.work_signals;
+  if (!signals || typeof signals !== "object") return undefined;
+
+  return {
+    ...signals,
+    throughput: signals.throughput ?? signals.capacity ?? signals.load,
+    quality: signals.quality ?? signals.workQuality,
+    compliance: signals.compliance ?? signals.adherence,
+  };
+}
+
+function inferUserRole(source: Record<string, any>, managerIds: Set<string>): "admin" | "manager" | "learner" {
+  const rawRole = String(source.role || source.userRole || "").toLowerCase();
+  if (rawRole === "admin" || rawRole === "manager" || rawRole === "learner") return rawRole;
+  if (source.canManage === true || managerIds.has(source.id)) return "manager";
+  return "learner";
+}
+
 /**
  * Parse and normalize a raw JSON upload into a NormalizedAccount.
  */
@@ -114,15 +190,26 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
         name: e.name,
         email: e.email || "",
         title: e.title,
-        department: e.department,
+        department: resolveDepartment(e),
         roleId: e.roleId,
         reportsTo: e.reportsTo ?? null,
-        skills: e.skills?.map((s: any) => ({
-          skillName: s.skillName || s.skill_name || s.name,
-          proficiency: s.proficiency || s.level || "Beginner",
-          assessmentYear: s.assessmentYear || s.assessment_year,
-        })),
+        skills: parseSkills(e),
         avatarUrl: e.avatarUrl,
+        grade: e.grade,
+        level: e.level,
+        shift: e.shift || e.hris?.shift,
+        tenure: e.tenure,
+        function: e.function || e.fn,
+        location: e.location,
+        engagementScore: e.engagementScore || e.engagement_score,
+        performanceRating: e.performanceRating || e.performance_rating,
+        riskFlag: e.riskFlag || e.risk_flag || e.risk,
+        learningIndicators: normalizeLearningIndicators(e),
+        workSignalIndicators: normalizeWorkSignalIndicators(e),
+        arc: e.arc,
+        aspiration: e.aspiration,
+        canManage: e.canManage,
+        role: e.role,
       };
     }
   }
@@ -135,26 +222,26 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
         name: ne.name,
         email: ne.email || "",
         title: ne.title,
-        department: ne.department,
+        department: resolveDepartment(ne),
         roleId: ne.roleId,
         reportsTo: ne.reportsTo ?? null,
-        skills: ne.skills?.map((s: any) => ({
-          skillName: s.skillName || s.skill_name || s.name,
-          proficiency: s.proficiency || s.level || "Beginner",
-          assessmentYear: s.assessmentYear || s.assessment_year,
-        })),
+        skills: parseSkills(ne),
         avatarUrl: ne.avatarUrl,
         grade: ne.grade,
         level: ne.level,
         shift: ne.shift,
         tenure: ne.tenure,
-        function: ne.function,
+        function: ne.function || ne.fn,
         location: ne.location,
         engagementScore: ne.engagementScore || ne.engagement_score,
         performanceRating: ne.performanceRating || ne.performance_rating,
-        riskFlag: ne.riskFlag || ne.risk_flag,
-        learningIndicators: ne.learningIndicators || ne.learning_indicators,
-        workSignalIndicators: ne.workSignalIndicators || ne.work_signal_indicators,
+        riskFlag: ne.riskFlag || ne.risk_flag || ne.risk,
+        learningIndicators: normalizeLearningIndicators(ne),
+        workSignalIndicators: normalizeWorkSignalIndicators(ne),
+        arc: ne.arc,
+        aspiration: ne.aspiration,
+        canManage: ne.canManage,
+        role: ne.role,
       };
       namedEmployees.push(record);
       if (!employeesById[ne.id]) {
@@ -240,6 +327,26 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
         hierarchyMap[emp.reportsTo].push(emp.id);
       }
     }
+  }
+
+  const managerIds = new Set(Object.keys(hierarchyMap).filter((id) => hierarchyMap[id]?.length > 0));
+  const existingLinkedEmployeeIds = new Set(
+    Object.values(usersById).map((user) => user.linkedEmployeeId || user.id)
+  );
+
+  for (const employee of Object.values(employeesById)) {
+    if (existingLinkedEmployeeIds.has(employee.id)) continue;
+    const role = inferUserRole(employee, managerIds);
+    usersById[employee.id] = {
+      id: employee.id,
+      name: employee.name,
+      email: employee.email || "",
+      role,
+      avatarUrl: employee.avatarUrl,
+      title: employee.title,
+      canManage: role !== "learner",
+      linkedEmployeeId: employee.id,
+    };
   }
 
   // Architecture sources

@@ -96,6 +96,10 @@ export function AppSidebar() {
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
   const [managerOpen, setManagerOpen] = useState(true);
   
+  // Store the user's original base role so team mode doesn't overwrite admin → manager
+  const baseRole = availableUsers.find((u) => u.id === user.id)?.role ?? user.role;
+  const teamRole = baseRole === "admin" ? "admin" : "manager";
+
   const [viewMode, setViewMode] = useState<"me" | "team">("me");
   const [switchingProfile, setSwitchingProfile] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);

@@ -31,6 +31,25 @@ function accountUserToUser(au: AccountUser): User {
   };
 }
 
+function employeeToFallbackUser(employee: AccountUser | AccountEmployee, hierarchyMap: Record<string, string[]>): User {
+  const rawRole = String((employee as any).role || "").toLowerCase();
+  const inferredRole: UserRole = rawRole === "admin" || rawRole === "manager" || rawRole === "learner"
+    ? rawRole as UserRole
+    : hierarchyMap[employee.id]?.length
+      ? "manager"
+      : "learner";
+
+  return {
+    id: employee.id,
+    name: employee.name,
+    email: employee.email,
+    role: inferredRole,
+    avatarUrl: employee.avatarUrl,
+    title: employee.title,
+    canManage: inferredRole !== "learner",
+  };
+}
+
 function readPersistedIds(accountId: string | null): string[] {
   if (!accountId) return [];
   try {
@@ -66,8 +85,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const activeAccountId = activeAccount?.id ?? null;
 
   const getUsers = (): User[] => {
-    if (normalizedAccount && Object.keys(normalizedAccount.usersById).length > 0) {
-      return Object.values(normalizedAccount.usersById).map(accountUserToUser);
+    if (normalizedAccount) {
+      const explicitUsers = Object.values(normalizedAccount.usersById).map(accountUserToUser);
+      const linkedIds = new Set(Object.values(normalizedAccount.usersById).map((user) => user.linkedEmployeeId || user.id));
+      const fallbackUsers = Object.values(normalizedAccount.employeesById)
+        .filter((employee) => !linkedIds.has(employee.id))
+        .map((employee) => employeeToFallbackUser(employee, normalizedAccount.hierarchyMap));
+
+      if (explicitUsers.length > 0 || fallbackUsers.length > 0) {
+        return [...explicitUsers, ...fallbackUsers];
+      }
     }
     if (activeAccount?.data?.employees?.length) {
       return activeAccount.data.employees.map((e) => ({

@@ -202,7 +202,7 @@ export function AppSidebar() {
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => {
-                        if (viewMode === "me") { setViewMode("team"); setRole("manager"); navigate("/manager"); }
+                        if (viewMode === "me") { setViewMode("team"); setRole(teamRole); navigate("/manager"); }
                         else { setViewMode("me"); setRole("learner"); navigate("/"); }
                       }}
                       className={cn(

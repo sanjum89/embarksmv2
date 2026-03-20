@@ -21,6 +21,7 @@ import TeamInsights from "./pages/TeamInsights";
 import My360 from "./pages/My360";
 import ManagerView from "./pages/ManagerView";
 import LearnerChat from "./pages/LearnerChat";
+import SuperAgentChat from "./pages/SuperAgentChat";
 import AIManager from "./pages/AIManager";
 import ManagerSkillTargets from "./pages/ManagerSkillTargets";
 import ManagerSkillTargetDetail from "./pages/ManagerSkillTargetDetail";

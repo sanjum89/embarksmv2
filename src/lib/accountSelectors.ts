@@ -303,10 +303,14 @@ export function getReflectionSummary(acct: NormalizedAccount, employeeId?: strin
     .map(([t]) => t);
 
   const sentimentTrend = entries.length
-    ? entries[0]?.sentiment || entries.reduce<Record<string, number>>((acc, entry) => {
-        if (entry.sentiment) acc[entry.sentiment] = (acc[entry.sentiment] || 0) + 1;
-        return acc;
-      }, {})[0]
+    ? entries[0]?.sentiment || (() => {
+        const counts = entries.reduce<Record<string, number>>((acc, entry) => {
+          if (entry.sentiment) acc[entry.sentiment] = (acc[entry.sentiment] || 0) + 1;
+          return acc;
+        }, {});
+
+        return Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+      })()
     : undefined;
 
   return {

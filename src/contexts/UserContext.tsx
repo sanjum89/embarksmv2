@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, ty
 import type { User, UserRole } from "@/types/learning";
 import { currentUser, availableUsers as defaultAvailableUsers } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";
-import type { AccountUser } from "@/types/account-v2";
+import type { AccountEmployee, AccountUser } from "@/types/account-v2";
 
 function storageKey(accountId: string) {
   return `signedInUsers_${accountId}`;

@@ -79,6 +79,10 @@ export default function SuperAgentChat() {
   const tenure = (employee as any)?.tenure;
   const isNewJoiner = tenure !== undefined && tenure <= 6;
 
+  const lockedTargets = skillTargets
+    .filter((st) => st.locked && st.assignedTo?.includes(user.id))
+    .map((st) => ({ title: st.title, category: st.category }));
+
   const userContext = {
     name: user.name,
     role: user.role,
@@ -87,6 +91,7 @@ export default function SuperAgentChat() {
     skills: userProfile?.roleSkillsCurrent?.map((s: any) => s.skill_name) || [],
     reportsTo: (employee as any)?.reportsTo || null,
     accountName: normalizedAccount?.branding?.name || activeAccount?.name,
+    lockedTargets,
   };
 
   // Load persisted conversation

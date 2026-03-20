@@ -1,7 +1,6 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Trash2, UserPlus, Search, Bot, Mic, X, Check, Pencil } from "lucide-react";
-import { mockNewHires as defaultNewHires } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";
 import { useRolePlays } from "@/contexts/RolePlayContext";
 import { cn } from "@/lib/utils";
@@ -36,9 +35,7 @@ const difficultyColors: Record<string, string> = {
 export default function ManagerRolePlay() {
   const { toast } = useToast();
   const { normalizedAccount, activeAccount } = useAccount();
-  const mockNewHires = Array.isArray(normalizedAccount?.newHires) ? normalizedAccount.newHires
-    : Array.isArray(activeAccount?.data?.newHires) ? activeAccount.data.newHires
-    : defaultNewHires;
+  const mockNewHires = normalizedAccount?.newHires || activeAccount?.data?.newHires || [];
   const { rolePlays: globalRolePlays, updateRolePlay } = useRolePlays();
   
   const [rolePlays, setRolePlays] = useState<RolePlayItem[]>(

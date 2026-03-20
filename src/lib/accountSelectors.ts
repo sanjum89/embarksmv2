@@ -6,6 +6,23 @@ import type {
   AccountProject,
   AccountBranding,
   SkillGapEntry,
+  AccountHeader,
+  CompanyProfile,
+  SiteProfile,
+  SiteRationale,
+  ArchitectureSource,
+  ArchitectureSignalCount,
+  OrgOverviewData,
+  PeopleGraphRow,
+  EmployeeSignal,
+  ReflectionEntry,
+  ReflectionSummary,
+  WorkSignalCard,
+  LearningAndSkillsSummary,
+  ShowcaseCase,
+  ExplainabilityTrace,
+  PerformanceAlert,
+  RecommendedCTA,
 } from "@/types/account-v2";
 import type { ProfileData } from "@/data/mock";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
@@ -203,4 +220,137 @@ export function getLearnerHomeData(acct: NormalizedAccount, userId: string) {
 
 export function getProfileData(acct: NormalizedAccount, userId: string): ProfileData | undefined {
   return acct.profileData[userId];
+}
+
+/* ─── New Dataset Selectors ─── */
+
+export function getHeader(acct: NormalizedAccount): AccountHeader | undefined {
+  return acct.header;
+}
+
+export function getCompanyProfile(acct: NormalizedAccount): CompanyProfile | undefined {
+  return acct.companyProfile;
+}
+
+export function getSiteProfile(acct: NormalizedAccount): SiteProfile | undefined {
+  return acct.siteProfile;
+}
+
+export function getSiteRationale(acct: NormalizedAccount): SiteRationale | undefined {
+  return acct.siteRationale;
+}
+
+export function getArchitectureSources(acct: NormalizedAccount): ArchitectureSource[] {
+  return acct.architectureSources;
+}
+
+export function getArchitectureSignalCounts(acct: NormalizedAccount): ArchitectureSignalCount[] {
+  return acct.architectureSignalCounts;
+}
+
+export function getOrgOverviewData(acct: NormalizedAccount): OrgOverviewData {
+  if (acct.orgOverview) return acct.orgOverview;
+
+  // Derive from employees
+  const employees = getAllEmployees(acct);
+  const managers = new Set<string>();
+  for (const reports of Object.values(acct.hierarchyMap)) {
+    if (reports.length > 0) managers.add(reports[0]); // parent is a manager
+  }
+  // Actually the keys of hierarchyMap are the managers
+  const managerCount = Object.keys(acct.hierarchyMap).filter(id => acct.hierarchyMap[id].length > 0).length;
+
+  const functions: Record<string, number> = {};
+  for (const emp of employees) {
+    const dept = emp.department || "Other";
+    functions[dept] = (functions[dept] || 0) + 1;
+  }
+
+  return {
+    totalEmployees: employees.length,
+    managers: managerCount,
+    individualContributors: employees.length - managerCount,
+    functions,
+  };
+}
+
+export function getPeopleGraphRows(acct: NormalizedAccount): PeopleGraphRow[] {
+  if (acct.peopleGraph.length > 0) return acct.peopleGraph;
+
+  // Derive from namedEmployees or employees
+  const source = acct.namedEmployees.length > 0 ? acct.namedEmployees : getAllEmployees(acct);
+  return source.map((emp: any) => ({
+    employeeId: emp.id,
+    name: emp.name,
+    role: emp.title,
+    level: emp.level,
+    tenure: emp.tenure,
+    grade: emp.grade,
+    shift: emp.shift,
+    learningIndicators: emp.learningIndicators,
+    workSignalIndicators: emp.workSignalIndicators,
+    engagementIndicators: emp.engagementIndicators,
+    performanceIndicators: emp.performanceIndicators,
+    labels: emp.labels,
+    flags: emp.riskFlag ? [emp.riskFlag] : [],
+  }));
+}
+
+export function getEmployeeSignals(acct: NormalizedAccount, employeeId: string): EmployeeSignal[] {
+  return acct.signals.filter((s) => s.employeeId === employeeId);
+}
+
+export function getReflections(acct: NormalizedAccount, employeeId?: string): ReflectionEntry[] {
+  const entries = acct.reflections as ReflectionEntry[];
+  if (!employeeId) return entries;
+  return entries.filter((r) => r.employeeId === employeeId);
+}
+
+export function getReflectionSummary(acct: NormalizedAccount, employeeId?: string): ReflectionSummary {
+  const entries = getReflections(acct, employeeId);
+  const withConfidence = entries.filter((e) => e.confidence != null);
+  const withWorkload = entries.filter((e) => e.workload != null);
+
+  const allThemes = entries.flatMap((e) => e.themes || []);
+  const themeCounts: Record<string, number> = {};
+  for (const t of allThemes) {
+    themeCounts[t] = (themeCounts[t] || 0) + 1;
+  }
+  const topThemes = Object.entries(themeCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([t]) => t);
+
+  return {
+    employeeId,
+    avgConfidence: withConfidence.length ? withConfidence.reduce((s, e) => s + (e.confidence || 0), 0) / withConfidence.length : undefined,
+    avgWorkload: withWorkload.length ? withWorkload.reduce((s, e) => s + (e.workload || 0), 0) / withWorkload.length : undefined,
+    topThemes,
+    entries,
+  };
+}
+
+export function getWorkSignalsData(acct: NormalizedAccount): WorkSignalCard[] {
+  return acct.workSignals as WorkSignalCard[];
+}
+
+export function getLearningAndSkillsData(acct: NormalizedAccount): LearningAndSkillsSummary | undefined {
+  return acct.learningAndSkills;
+}
+
+export function getShowcaseCases(acct: NormalizedAccount): ShowcaseCase[] {
+  return acct.showcaseCases;
+}
+
+export function getExplainabilityTrace(acct: NormalizedAccount, employeeId?: string): ExplainabilityTrace[] {
+  if (!employeeId) return acct.explainability;
+  return acct.explainability.filter((e) => e.employeeId === employeeId);
+}
+
+export function getPerformanceAlerts(acct: NormalizedAccount): PerformanceAlert[] {
+  return acct.performanceAlerts;
+}
+
+export function getRecommendedCTAs(acct: NormalizedAccount): RecommendedCTA[] {
+  return acct.recommendedCTAs;
 }

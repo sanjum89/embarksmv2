@@ -4,6 +4,7 @@ import type { NormalizedAccount } from "@/types/account-v2";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized } from "@/lib/accountDefaults";
 import { parseAccountJSON } from "@/lib/accountParser";
+import { generateProfileData } from "@/lib/profileDataGenerator";
 
 interface AccountContextType {
   accounts: Account[];
@@ -50,6 +51,10 @@ function normalizeFromLegacy(acct: Account): NormalizedAccount {
       parsed.branding.accentColor = acct.accent_color || parsed.branding.accentColor;
       parsed.isDefault = acct.is_default;
       parsed.createdAt = acct.created_at;
+      // Auto-generate profileData if missing but employees have skills
+      if (Object.keys(parsed.profileData).length === 0 && Object.values(parsed.employeesById).some(e => e.skills?.length)) {
+        parsed.profileData = generateProfileData(parsed);
+      }
       return parsed;
     }
   }
@@ -116,6 +121,15 @@ function normalizeFromLegacy(acct: Account): NormalizedAccount {
     my360: {},
     reflections: [],
     workSignals: [],
+    architectureSources: [],
+    architectureSignalCounts: [],
+    namedEmployees: [],
+    peopleGraph: [],
+    signals: [],
+    showcaseCases: [],
+    explainability: [],
+    performanceAlerts: [],
+    recommendedCTAs: [],
   };
 }
 

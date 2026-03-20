@@ -94,17 +94,7 @@ type GapFilter = "All" | "Gap" | "No gap";
 export default function My360() {
   const { user } = useUser();
   const { activeAccount, normalizedAccount } = useAccount();
-  // Use normalized selector, fallback to legacy
-  const profileData = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)
-    || activeAccount?.data?.profileData?.[user.id]
-    || staticProfileData[user.id]
-    || staticProfileData["u1"];
   const chatRef = useRef<AIChatWrapperHandle>(null);
-
-  // Clear chat when profile changes
-  useEffect(() => {
-    chatRef.current?.clearMessages();
-  }, [user.id]);
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
@@ -113,14 +103,26 @@ export default function My360() {
   const [gapFilter, setGapFilter] = useState<GapFilter>("All");
   const colors = useChartColors();
 
+  // Clear chat when profile changes
+  useEffect(() => {
+    chatRef.current?.clearMessages();
+  }, [user.id]);
+
+  // Use normalized selector; for non-default accounts avoid static fallback
+  const isDefaultAccount = normalizedAccount?.isDefault !== false;
+  const profileData = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)
+    || activeAccount?.data?.profileData?.[user.id]
+    || (isDefaultAccount ? staticProfileData[user.id] || staticProfileData["u1"] : null);
+
   // Derived core skills from role skills current
   const coreSkillNames = useMemo(
-    () => profileData.roleSkillsCurrent.map((s) => s.skill_name),
-    [profileData.roleSkillsCurrent]
+    () => profileData?.roleSkillsCurrent?.map((s) => s.skill_name) || [],
+    [profileData?.roleSkillsCurrent]
   );
 
   // Derived radar data based on gap source
   const radarSkills = useMemo(() => {
+    if (!profileData) return [];
     if (gapSource === "Role") {
       return deriveRadarSkills(profileData.roleSkillsCurrent, profileData.roleSkillsRequired);
     }
@@ -129,6 +131,7 @@ export default function My360() {
 
   // Derived gap rows
   const allGapRows = useMemo(() => {
+    if (!profileData) return [];
     const gaps = gapSource === "Role"
       ? deriveSkillGaps(profileData.roleSkillsCurrent, profileData.roleSkillsRequired)
       : deriveSkillGaps(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
@@ -140,6 +143,19 @@ export default function My360() {
     if (gapFilter === "No gap") return allGapRows.filter((r) => !r.hasGap);
     return allGapRows;
   }, [allGapRows, gapFilter]);
+
+  if (!profileData) {
+    return (
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <p className="font-display text-lg font-semibold text-foreground">No Profile Data</p>
+            <p className="mt-1 text-sm text-muted-foreground">This account does not have profile data for the current user. Upload an account with employee skills to auto-generate profiles.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
 
   const handleRoleExploreClick = () => {

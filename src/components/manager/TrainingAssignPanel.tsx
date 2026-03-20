@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, CheckCircle2, Trash2, Plus } from "lucide-react";
-import { mockProgramContexts, mockNewHires } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,14 +15,17 @@ interface TrainingAssignPanelProps {
 
 export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelProps) {
   const { skillTargets } = useSkillTargets();
-  const program = mockProgramContexts[0];
-  const st4 = skillTargets.find((st) => st.id === program.skillTargetId);
+  const { normalizedAccount, activeAccount } = useAccount();
+  const programContexts = normalizedAccount?.programContexts || activeAccount?.data?.programContexts || [];
+  const newHires = normalizedAccount?.newHires || activeAccount?.data?.newHires || [];
+  const program = programContexts[0];
+  const st4 = program ? skillTargets.find((st) => st.id === program.skillTargetId) : undefined;
   const steps = st4?.steps ?? [];
 
-  const [passPercent, setPassPercent] = useState(program.assessmentPassPercentage);
+  const [passPercent, setPassPercent] = useState(program?.assessmentPassPercentage ?? 70);
   const [enabledSteps, setEnabledSteps] = useState<Set<string>>(new Set(steps.map((s) => s.id)));
   const [assigned, setAssigned] = useState(false);
-  const [selectedLearners, setSelectedLearners] = useState<Set<string>>(new Set(program.assignedLearners));
+  const [selectedLearners, setSelectedLearners] = useState<Set<string>>(new Set(program?.assignedLearners || []));
 
   const toggleStep = (id: string) => {
     setEnabledSteps((prev) => {
@@ -47,6 +50,10 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
     onAssigned?.();
   };
 
+  if (!program) {
+    return <div className="p-6 text-sm text-muted-foreground">No training program available for this account.</div>;
+  }
+
   if (assigned) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-6">
@@ -69,7 +76,7 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
         <BookOpen className="h-4 w-4 text-success" />
         <h3 className="font-display text-lg font-bold text-foreground">Assign Training</h3>
       </div>
-      <p className="text-sm text-muted-foreground mb-6">Apple L1 Customer Support Readiness</p>
+      <p className="text-sm text-muted-foreground mb-6">{program?.name || "Training Program"}</p>
 
       {/* Pass % */}
       <div className="rounded-xl border border-border bg-background p-4 mb-5">
@@ -78,9 +85,11 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
           <span className="text-sm font-bold text-foreground">{passPercent}%</span>
         </div>
         <Slider value={[passPercent]} onValueChange={([v]) => setPassPercent(v)} min={50} max={100} step={5} />
-        <p className="text-[10px] text-muted-foreground mt-2">
-          &gt;{program.adaptiveSkipThresholds.skipOne}% skips Module 2 · ≥{program.adaptiveSkipThresholds.skipTwo}% skips Modules 2 & 3
-        </p>
+        {program?.adaptiveSkipThresholds && (
+          <p className="text-[10px] text-muted-foreground mt-2">
+            &gt;{program.adaptiveSkipThresholds.skipOne}% skips Module 2 · ≥{program.adaptiveSkipThresholds.skipTwo}% skips Modules 2 & 3
+          </p>
+        )}
       </div>
 
       {/* Chapters */}
@@ -110,7 +119,7 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
       <div className="rounded-xl border border-border bg-background p-4 mb-5">
         <p className="text-sm font-medium text-foreground mb-3">Assign To</p>
         <div className="space-y-2">
-          {mockNewHires.map((hire) => (
+          {newHires.map((hire) => (
             <label key={hire.user.id} className="flex items-center gap-2.5 cursor-pointer">
               <Checkbox
                 checked={selectedLearners.has(hire.user.id)}

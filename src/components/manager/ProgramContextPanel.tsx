@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Settings, Users, Target, BookOpen, CheckCircle2 } from "lucide-react";
-import { mockProgramContexts as defaultProgramContexts, mockNewHires as defaultNewHires } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { Slider } from "@/components/ui/slider";
@@ -13,12 +12,8 @@ import { cn } from "@/lib/utils";
 export default function ProgramContextPanel() {
   const { normalizedAccount, activeAccount } = useAccount();
   const { skillTargets } = useSkillTargets();
-  const programContexts = Array.isArray(normalizedAccount?.programContexts) ? normalizedAccount.programContexts
-    : Array.isArray(activeAccount?.data?.programContexts) ? activeAccount.data.programContexts
-    : defaultProgramContexts;
-  const newHires = Array.isArray(normalizedAccount?.newHires) ? normalizedAccount.newHires
-    : Array.isArray(activeAccount?.data?.newHires) ? activeAccount.data.newHires
-    : defaultNewHires;
+  const programContexts = normalizedAccount?.programContexts || activeAccount?.data?.programContexts || [];
+  const newHires = normalizedAccount?.newHires || activeAccount?.data?.newHires || [];
   const program = programContexts[0];
   const st4 = program ? skillTargets.find((st) => st.id === program.skillTargetId) : undefined;
   const steps = st4?.steps ?? [];

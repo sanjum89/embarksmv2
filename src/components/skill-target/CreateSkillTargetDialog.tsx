@@ -8,8 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { useAccount } from "@/contexts/AccountContext";
 import { useToast } from "@/hooks/use-toast";
-import { mockLearningModules, profileDataByUser } from "@/data/mock";
+import { mockLearningModules as defaultLearningModules, profileDataByUser as defaultProfileData } from "@/data/mock";
 import { getRecommendationsForUser, type SkillGap, type RecommendationGroup } from "@/lib/skillRecommendations";
 import type { SkillTarget, StepItem, LearningModule } from "@/types/learning";
 import {
@@ -147,6 +148,9 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
   const { user } = useUser();
   const { addSkillTargets } = useSkillTargets();
   const { toast } = useToast();
+  const { normalizedAccount } = useAccount();
+
+  const accountModules = normalizedAccount?.learningModules?.length ? normalizedAccount.learningModules : defaultLearningModules;
 
   const [step, setStep] = useState<Step>("method");
 
@@ -170,14 +174,14 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
   const [createdTarget, setCreatedTarget] = useState<SkillTarget | null>(null);
 
   // Dynamic recommendations based on current user
-  const profile = profileDataByUser[user.id];
+  const profile = normalizedAccount?.profileData?.[user.id] || defaultProfileData[user.id];
   const { groups, hasRoleGaps } = useMemo(() => getRecommendationsForUser(profile), [profile]);
 
   const filteredModules = useMemo(() => {
-    if (!moduleSearch.trim()) return mockLearningModules;
+    if (!moduleSearch.trim()) return accountModules;
     const q = moduleSearch.toLowerCase();
-    return mockLearningModules.filter((m) => m.title.toLowerCase().includes(q));
-  }, [moduleSearch]);
+    return accountModules.filter((m) => m.title.toLowerCase().includes(q));
+  }, [moduleSearch, accountModules]);
 
   const reset = () => {
     setStep("method");
@@ -258,7 +262,7 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
 
   /* Manual flow */
   const handleManualCreate = () => {
-    const selected = mockLearningModules.filter((m) => selectedModules.has(m.id));
+    const selected = accountModules.filter((m) => selectedModules.has(m.id));
     const steps: StepItem[] = selected.map((m, i) => ({
       id: `step-man-${Date.now()}-${i}`,
       type: "module" as const,

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Maximize2, X, ThumbsUp, ThumbsDown, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { mockAssessments } from "@/data/mock";
+import { mockAssessments as defaultAssessments } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import type { StepItem, Assessment } from "@/types/learning";
@@ -16,7 +17,9 @@ interface TraditionalContentViewerProps {
 
 export function TraditionalContentViewer({ step, onClose, skillTargetId, allSteps, onNavigateToStep }: TraditionalContentViewerProps) {
   const isAssessment = step.type === "assessment";
-  const assessment = isAssessment ? mockAssessments.find((a) => a.id === step.referenceId) : null;
+  const { normalizedAccount } = useAccount();
+  const assessments = normalizedAccount?.assessments?.length ? normalizedAccount.assessments : defaultAssessments;
+  const assessment = isAssessment ? assessments.find((a) => a.id === step.referenceId) : null;
 
   return (
     <div className="flex flex-col h-full">

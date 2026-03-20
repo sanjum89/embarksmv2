@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useAccount } from "@/contexts/AccountContext";
+import { useTheme } from "@/contexts/ThemeContext";
 
 interface BrandColorConfig {
   preset?: string;

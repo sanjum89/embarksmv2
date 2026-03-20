@@ -235,9 +235,14 @@ export default function LearnerChat() {
           {showHome ? (
             <div className="flex flex-col items-center justify-center min-h-full px-6">
               <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[680px] pt-16 pb-8">
-                <h1 className="font-display text-[28px] font-bold text-foreground mb-8">
+                <h1 className="font-display text-[28px] font-bold text-foreground mb-6">
                   Hi {firstName}, let's grow together
                 </h1>
+
+                {/* Super Agent Card */}
+                <div className="mb-6">
+                  <SuperAgentCard />
+                </div>
 
                 <div className="grid grid-cols-3 gap-3 mb-6">
                   {suggestionCards.map((card, i) => (

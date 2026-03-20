@@ -121,8 +121,10 @@ export function AppSidebar() {
     logoutUser(userId);
   };
 
+  const effectiveRole = viewMode === "me" ? "learner" : user.role === "admin" ? "admin" : "manager";
+
   const filteredItems = navItems.filter((item) => {
-    if (!item.roles.includes(user.role)) return false;
+    if (!item.roles.includes(effectiveRole)) return false;
     // Hide Learning Spaces in team/manager mode
     if (item.label === "Learning Spaces" && viewMode === "team") return false;
     // Hide learner New Chat in team mode (it has no children and path=/chat)

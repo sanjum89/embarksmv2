@@ -116,12 +116,13 @@ export default function My360() {
 
   // Derived core skills from role skills current
   const coreSkillNames = useMemo(
-    () => profileData.roleSkillsCurrent.map((s) => s.skill_name),
-    [profileData.roleSkillsCurrent]
+    () => profileData?.roleSkillsCurrent?.map((s) => s.skill_name) || [],
+    [profileData?.roleSkillsCurrent]
   );
 
   // Derived radar data based on gap source
   const radarSkills = useMemo(() => {
+    if (!profileData) return [];
     if (gapSource === "Role") {
       return deriveRadarSkills(profileData.roleSkillsCurrent, profileData.roleSkillsRequired);
     }
@@ -130,6 +131,7 @@ export default function My360() {
 
   // Derived gap rows
   const allGapRows = useMemo(() => {
+    if (!profileData) return [];
     const gaps = gapSource === "Role"
       ? deriveSkillGaps(profileData.roleSkillsCurrent, profileData.roleSkillsRequired)
       : deriveSkillGaps(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
@@ -141,6 +143,19 @@ export default function My360() {
     if (gapFilter === "No gap") return allGapRows.filter((r) => !r.hasGap);
     return allGapRows;
   }, [allGapRows, gapFilter]);
+
+  if (!profileData) {
+    return (
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <p className="font-display text-lg font-semibold text-foreground">No Profile Data</p>
+            <p className="mt-1 text-sm text-muted-foreground">This account does not have profile data for the current user. Upload an account with employee skills to auto-generate profiles.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
 
   const handleRoleExploreClick = () => {

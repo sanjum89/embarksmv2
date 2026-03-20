@@ -1,27 +1,22 @@
 
 
-## Combine Logo/Name and Account Switcher into One Element
+## Fix: Role Selector Bug + Shield Icons for Manager/Admin
 
-The sidebar header currently has two separate elements stacked vertically:
-1. **Logo + Account Name** (static display)
-2. **Account Switcher** (interactive dropdown)
-
-This is redundant — the account switcher already shows the account logo and name. The plan is to remove the static logo/name row and make the AccountSwitcher the sole header element in both themes.
+### Problem
+When selecting a role (e.g., Admin) for one user in the profile selection step, it visually appears to apply to all other checked users. This is likely caused by Radix Select portal conflicts when multiple Select components are rendered inside a ScrollArea without `position="popper"`.
 
 ### Changes
 
-**1. `src/components/layout/AppSidebar.tsx`** — Both Traditional and New UI themes:
-- Remove the static logo + account name display row (lines 157-183 for Traditional, lines 572-603 for New UI)
-- Remove the separate `<AccountSwitcher>` wrapper div
-- Place `<AccountSwitcher>` directly as the only header element
-- Keep the collapse/expand toggle button integrated (move it into AccountSwitcher's row or keep it alongside)
+**1. Fix role Select portal issue (`src/components/account/AddAccountDialog.tsx`)**
+- Add `position="popper"` and `className="z-[9999]"` to each `SelectContent` in the role dropdown (same fix pattern used elsewhere in the app for Select inside dialogs/scroll areas)
 
-**2. `src/components/account/AccountSwitcher.tsx`**:
-- Add the sidebar collapse toggle button (PanelLeftClose / PanelLeftOpen) to the right side of the switcher when expanded
-- Accept `onToggle` prop and `brandHovered`/`setBrandHovered` state (or handle internally)
-- In collapsed state: show just the account logo (with hover-to-expand behavior for the toggle)
-- In expanded state: show logo + account name + chevron + toggle button in one row
+**2. Add differentiated shield icons for Manager vs Admin**
+- After a user is checked and assigned a role, show a shield icon next to their name reflecting the **current selected role** (not just `hasDirectReports`):
+  - **Admin**: `ShieldCheck` icon (filled/prominent, primary color)
+  - **Manager**: `Shield` icon (outline, muted color)
+  - **Learner**: No shield icon
+- This replaces the current static `hasDirectReports` shield with a dynamic icon based on `roleMap[row.id]`
 
-### Result
-One unified interactive element in the sidebar header that shows the account branding and opens the account switcher dropdown on click, with the collapse toggle integrated alongside.
+### Files Modified
+- `src/components/account/AddAccountDialog.tsx`
 

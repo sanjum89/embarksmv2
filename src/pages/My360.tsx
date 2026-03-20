@@ -337,9 +337,10 @@ export default function My360() {
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <ResponsivePillRow
-                totalCount={profileData.otherSkills.length}
+                totalCount={profileData.otherSkills?.length ?? 0}
                 renderPill={(i) => {
-                  const skill = profileData.otherSkills[i];
+                  const skill = profileData.otherSkills?.[i];
+                  if (!skill) return null;
                   const shortLevel = proficiencyShort[skill.proficiency];
                   const shortYear = `'${String(skill.assessment_year).slice(-2)}`;
                   return (

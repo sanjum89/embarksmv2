@@ -81,9 +81,11 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
           <span className="text-sm font-bold text-foreground">{passPercent}%</span>
         </div>
         <Slider value={[passPercent]} onValueChange={([v]) => setPassPercent(v)} min={50} max={100} step={5} />
-        <p className="text-[10px] text-muted-foreground mt-2">
-          &gt;{program.adaptiveSkipThresholds.skipOne}% skips Module 2 · ≥{program.adaptiveSkipThresholds.skipTwo}% skips Modules 2 & 3
-        </p>
+        {program?.adaptiveSkipThresholds && (
+          <p className="text-[10px] text-muted-foreground mt-2">
+            &gt;{program.adaptiveSkipThresholds.skipOne}% skips Module 2 · ≥{program.adaptiveSkipThresholds.skipTwo}% skips Modules 2 & 3
+          </p>
+        )}
       </div>
 
       {/* Chapters */}

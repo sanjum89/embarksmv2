@@ -5,10 +5,11 @@ import { cn } from "@/lib/utils";
 
 interface SuperAgentCardProps {
   hasUnread?: boolean;
+  unreadCount?: number;
   lastMessage?: string;
 }
 
-export function SuperAgentCard({ hasUnread = true, lastMessage }: SuperAgentCardProps) {
+export function SuperAgentCard({ hasUnread = true, unreadCount = 0, lastMessage }: SuperAgentCardProps) {
   const navigate = useNavigate();
 
   return (
@@ -26,9 +27,9 @@ export function SuperAgentCard({ hasUnread = true, lastMessage }: SuperAgentCard
     >
       {/* Animated shimmer */}
       <motion.div
-        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent -skew-x-12"
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.18] to-transparent -skew-x-12"
         animate={{ x: ["-100%", "200%"] }}
-        transition={{ duration: 3, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
+        transition={{ duration: 1.8, repeat: Infinity, repeatDelay: 1.2, ease: "easeInOut" }}
       />
 
       {/* Subtle pulse ring behind card */}
@@ -50,11 +51,19 @@ export function SuperAgentCard({ hasUnread = true, lastMessage }: SuperAgentCard
           >
             <Sparkles className="h-5.5 w-5.5" />
           </motion.div>
-          {/* Live dot */}
-          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-400 border-2 border-primary" />
-          </span>
+          {/* Unread count badge */}
+          {unreadCount > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-destructive text-destructive-foreground text-[11px] font-bold shadow-md border-2 border-primary">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
+          {/* Live dot (show when no unread count) */}
+          {unreadCount === 0 && (
+            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-400 border-2 border-primary" />
+            </span>
+          )}
         </div>
 
         <div className="flex-1 min-w-0">

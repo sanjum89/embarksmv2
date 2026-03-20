@@ -1,10 +1,11 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, MessageSquare, ThumbsUp, ThumbsDown, Link2, Info } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
+import { supabase } from "@/integrations/supabase/client";
 import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { getProfileData } from "@/lib/accountSelectors";
 import { cn } from "@/lib/utils";
@@ -198,8 +199,36 @@ export default function LearnerChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [superAgentUnread, setSuperAgentUnread] = useState(0);
+  const [superAgentLastMsg, setSuperAgentLastMsg] = useState<string | undefined>();
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch unread count from super_agent_conversations
+  useEffect(() => {
+    if (!normalizedAccount?.id || !user?.id) return;
+    const fetchUnread = async () => {
+      const { data } = await supabase
+        .from("super_agent_conversations")
+        .select("messages")
+        .eq("account_id", normalizedAccount.id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!data?.messages) return;
+      const msgs = data.messages as any[];
+      if (msgs.length === 0) return;
+      // Last assistant message as preview
+      const lastAssistant = [...msgs].reverse().find((m: any) => m.role === "assistant");
+      if (lastAssistant) setSuperAgentLastMsg(lastAssistant.content?.slice(0, 80));
+      // Count assistant messages after the last user message
+      const lastUserIdx = msgs.map((m: any) => m.role).lastIndexOf("user");
+      const unread = lastUserIdx === -1
+        ? msgs.filter((m: any) => m.role === "assistant").length
+        : msgs.slice(lastUserIdx + 1).filter((m: any) => m.role === "assistant").length;
+      setSuperAgentUnread(unread);
+    };
+    fetchUnread();
+  }, [normalizedAccount?.id, user?.id]);
 
   const userProfile = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)
     ?? activeAccount?.data?.profileData?.[user.id]
@@ -240,7 +269,11 @@ export default function LearnerChat() {
 
                 {/* Super Agent Card */}
                 <div className="mb-6">
-                  <SuperAgentCard />
+                  <SuperAgentCard
+                    hasUnread={superAgentUnread > 0}
+                    unreadCount={superAgentUnread}
+                    lastMessage={superAgentLastMsg}
+                  />
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 mb-6">

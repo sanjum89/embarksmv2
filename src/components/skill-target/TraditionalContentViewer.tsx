@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Maximize2, X, ThumbsUp, ThumbsDown, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { mockAssessments } from "@/data/mock";
+import { mockAssessments as defaultAssessments } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import type { StepItem, Assessment } from "@/types/learning";

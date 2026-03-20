@@ -290,6 +290,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       id: (inserted as any).id,
       name: (inserted as any).name,
       logo: (inserted as any).logo,
+      logo_superlight: (inserted as any).logo_superlight,
       accent_color: (inserted as any).accent_color,
       use_case_context: (inserted as any).use_case_context,
       is_default: false,

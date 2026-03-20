@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, ArrowLeft, Sparkles, ClipboardList } from "lucide-react";
+import { Send, ArrowLeft, Sparkles, ClipboardList, RotateCcw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
@@ -298,6 +298,21 @@ export default function SuperAgentChat() {
     streamResponse(allMsgs);
   };
 
+  const handleReset = async () => {
+    if (!accountId) return;
+    await supabase
+      .from("super_agent_conversations")
+      .delete()
+      .eq("account_id", accountId)
+      .eq("user_id", user.id);
+    setMessages([]);
+    setSuggestions([]);
+    const initialStage = isNewJoiner ? "welcome" : "general";
+    setStage(initialStage);
+    setLoaded(false);
+    setTimeout(() => setLoaded(true), 100);
+  };
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isStreaming]);
@@ -318,7 +333,7 @@ export default function SuperAgentChat() {
           <button onClick={() => navigate("/chat")} className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-1">
             <motion.div
               className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center"
               animate={{ rotate: [0, 3, -3, 0] }}
@@ -337,6 +352,14 @@ export default function SuperAgentChat() {
               </div>
             </div>
           </div>
+          <button
+            onClick={handleReset}
+            disabled={isStreaming || messages.length === 0}
+            className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors active:scale-[0.95]"
+            title="Reset conversation"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </button>
         </div>
 
         {/* Messages */}

@@ -5,10 +5,11 @@ import { cn } from "@/lib/utils";
 
 interface SuperAgentCardProps {
   hasUnread?: boolean;
+  unreadCount?: number;
   lastMessage?: string;
 }
 
-export function SuperAgentCard({ hasUnread = true, lastMessage }: SuperAgentCardProps) {
+export function SuperAgentCard({ hasUnread = true, unreadCount = 0, lastMessage }: SuperAgentCardProps) {
   const navigate = useNavigate();
 
   return (

@@ -129,7 +129,7 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
           {/* Step type pills */}
           <div className="mb-4 flex flex-wrap gap-1.5">
             {target.steps.map((step) => {
-              const Icon = stepTypeIcons[step.type];
+              const Icon = stepTypeIcons[step.type] || fallbackIcon;
               return (
                 <span
                   key={step.id}

@@ -177,10 +177,10 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
   const { groups, hasRoleGaps } = useMemo(() => getRecommendationsForUser(profile), [profile]);
 
   const filteredModules = useMemo(() => {
-    if (!moduleSearch.trim()) return mockLearningModules;
+    if (!moduleSearch.trim()) return accountModules;
     const q = moduleSearch.toLowerCase();
-    return mockLearningModules.filter((m) => m.title.toLowerCase().includes(q));
-  }, [moduleSearch]);
+    return accountModules.filter((m) => m.title.toLowerCase().includes(q));
+  }, [moduleSearch, accountModules]);
 
   const reset = () => {
     setStep("method");

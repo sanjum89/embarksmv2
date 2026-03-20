@@ -250,6 +250,19 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
             Apply Custom Colors
           </Button>
         </div>
+
+        <Separator />
+
+        {/* Reset */}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={handleResetToDefault}
+          disabled={!activeAccount.accent_color}
+        >
+          Reset to Default
+        </Button>
       </DialogContent>
     </Dialog>
   );

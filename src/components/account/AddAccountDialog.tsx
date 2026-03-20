@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Upload, FileJson, AlertCircle, ImageIcon, X, AlertTriangle, Shield, ChevronRight } from "lucide-react";
+import { Upload, FileJson, AlertCircle, ImageIcon, X, AlertTriangle, Shield, ShieldCheck, ChevronRight } from "lucide-react";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { parseAccountJSON } from "@/lib/accountParser";
@@ -409,6 +409,7 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
               <div className="space-y-1">
                 {employeeRows.map((row) => {
                   const checked = selectedIds.has(row.id);
+                  const currentRole = roleMap[row.id] || row.inferredRole;
                   return (
                     <div
                       key={row.id}
@@ -424,8 +425,11 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm font-medium text-foreground truncate">{row.name}</span>
-                          {row.hasDirectReports && (
-                            <Shield className="h-3.5 w-3.5 text-primary shrink-0" />
+                          {checked && currentRole === "admin" && (
+                            <ShieldCheck className="h-4 w-4 text-primary fill-primary/20 shrink-0" />
+                          )}
+                          {checked && currentRole === "manager" && (
+                            <Shield className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                           )}
                         </div>
                         {row.title && (
@@ -434,13 +438,13 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
                       </div>
                       {checked && (
                         <Select
-                          value={roleMap[row.id] || row.inferredRole}
+                          value={currentRole}
                           onValueChange={(v) => setEmployeeRole(row.id, v as UserRole)}
                         >
                           <SelectTrigger className="w-[100px] h-7 text-xs">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent position="popper" className="z-[9999]">
                             <SelectItem value="admin">Admin</SelectItem>
                             <SelectItem value="manager">Manager</SelectItem>
                             <SelectItem value="learner">Learner</SelectItem>

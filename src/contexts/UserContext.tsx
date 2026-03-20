@@ -93,13 +93,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Signed-in user IDs, persisted per-account in localStorage
   const [signedInUserIds, setSignedInUserIds] = useState<string[]>(() => {
-    const persisted = readPersistedIds(activeAccountId);
-    if (persisted.length === 0 && users.length > 0) {
-      const initial = [users[0].id];
-      persistIds(activeAccountId, initial);
-      return initial;
-    }
-    return persisted;
+    return readPersistedIds(activeAccountId);
   });
 
   const [user, setUser] = useState<User>(() => {

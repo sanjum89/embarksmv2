@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Loader2, LogOut, LogIn } from "lucide-react";
+import { Loader2, LogOut, LogIn, Paintbrush } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,

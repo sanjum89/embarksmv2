@@ -74,6 +74,13 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
     sidebar: "0 0% 12%",
     swatch: ["hsl(0, 0%, 20%)", "hsl(0, 72%, 51%)"],
   },
+  "rathbones": {
+    label: "Rathbones",
+    primary: "230 75% 20%",
+    accent: "22 75% 81%",
+    sidebar: "230 75% 14%",
+    swatch: ["hsl(230, 75%, 20%)", "hsl(22, 75%, 81%)"],
+  },
 };
 
 function deriveThemeVars(primary: string, accent: string, sidebar: string): Record<string, string> {

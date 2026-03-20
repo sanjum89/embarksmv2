@@ -1,21 +1,29 @@
 
 
-## Fix: Skill targets assigned to all users instead of specific ones
+## Add "Rathbones Investment Domain Bridge" Skill Target for Elliot
 
-### Problem
-When the Rathbones account JSON is uploaded, its skill targets don't include an `assignedTo` field. The parser in `accountParser.ts` line 550 defaults missing `assignedTo` to `Object.keys(employeesById)` — assigning every skill target to all 12 employees (including Helena), when they should only be assigned to Clara, Elliot, and Sophie.
+### What
+Add a new skill target to the Rathbones account's `data.skillTargets` array in the database, assigned exclusively to Elliot (RAT-E004).
 
-### Solution
-Remove the fallback that assigns skill targets to all employees. If a skill target doesn't specify `assignedTo`, it should default to an empty array (unassigned) rather than being broadcast to everyone.
+### Database Update
+Run a SQL migration to append the new skill target to the Rathbones account's JSON data. The target will include:
 
-### Changes
+- **ID**: `RAT-ST-BRIDGE-001`
+- **Title**: Rathbones Investment Domain Bridge
+- **Description**: Bridge Elliot from adjacent-domain experience into the Rathbones investment-management context
+- **Category**: Investment Management
+- **assignedTo**: `["RAT-E004"]` (Elliot March only)
+- **6 steps** in order:
+  1. PDF — Investment Management Vocabulary and Core Concepts (`type: "module"`)
+  2. Video — How Rathbones Investment Managers Work with Client Objectives (`type: "module"`)
+  3. PDF — Portfolio Basics, Risk, and Suitability Foundations (`type: "module"`)
+  4. Video — The Difference Between Adjacent Financial Experience and IM Expectations (`type: "module"`)
+  5. Assessment A0 — Domain Bridge Check (`type: "assessment"`)
+- **4 targetSkills**: Investment Research, Portfolio Construction, Investment Communication, Regulatory Compliance (all Beginner → Intermediate)
 
-**`src/lib/accountParser.ts`** (1 line change)
-- Line 550: Change `assignedTo: st.assignedTo || Object.keys(employeesById)` → `assignedTo: st.assignedTo || []`
-- This means uploaded skill targets without explicit assignment won't appear on anyone's dashboard until properly assigned
+### Also fix: existing Rathbones skill targets missing `assignedTo`
+The 3 existing targets (RAT-ST-001, 002, 003) currently have no `assignedTo` field, meaning after the recent parser fix they show for nobody. I'll update them to be assigned to Clara (RAT-E003), Elliot (RAT-E004), and Sophie (RAT-E005) as originally intended.
 
-### Impact
-- Rathbones account: The 3 skill targets will no longer show for Helena and the other 9 employees
-- To assign them to Clara/Elliot/Sophie specifically, the Rathbones JSON would need `assignedTo` fields added, OR assignment can happen through the manager/builder UI
-- Default account skill targets in `mock.ts` already have explicit `assignedTo` arrays and are unaffected
+### Technical approach
+Single SQL update using `jsonb_set` to replace the `skillTargets` array in the `accounts.data` column for the Rathbones account, including all 4 targets (3 existing + 1 new bridge) with proper `assignedTo` arrays.
 

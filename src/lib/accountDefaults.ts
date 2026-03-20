@@ -190,19 +190,17 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
  * Fill missing fields in uploaded JSON with sensible synthetic fallback data.
  */
 export function generateFallbackData(partial: Partial<AccountData>): AccountData {
-  const defaults = buildDefaultAccountData();
-
   return {
     employees: partial.employees?.map((e) => ({
       ...e,
       role: e.role || "learner",
       email: e.email || `${e.name?.toLowerCase().replace(/\s/g, ".")}@example.com`,
       reportsTo: e.reportsTo ?? null,
-    })) ?? defaults.employees,
-    skillTargets: partial.skillTargets ?? defaults.skillTargets,
-    rolePlays: partial.rolePlays ?? defaults.rolePlays,
-    assessments: partial.assessments ?? defaults.assessments,
-    learningModules: partial.learningModules ?? defaults.learningModules,
+    })) ?? [],
+    skillTargets: partial.skillTargets ?? [],
+    rolePlays: partial.rolePlays ?? [],
+    assessments: partial.assessments ?? [],
+    learningModules: partial.learningModules ?? [],
     newHires: partial.newHires ?? [],
     programContexts: partial.programContexts ?? [],
     teamMembers: partial.teamMembers ?? partial.employees?.map((e) => ({

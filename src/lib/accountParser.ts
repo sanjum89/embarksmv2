@@ -7,6 +7,23 @@ import type {
   ProjectAssignment,
   AccountBranding,
   AccountAIContext,
+  NamedEmployeeRecord,
+  ArchitectureSource,
+  ArchitectureSignalCount,
+  OrgOverviewData,
+  PeopleGraphRow,
+  EmployeeSignal,
+  ReflectionEntry,
+  WorkSignalCard,
+  ShowcaseCase,
+  ExplainabilityTrace,
+  LearningAndSkillsSummary,
+  PerformanceAlert,
+  RecommendedCTA,
+  AccountHeader,
+  CompanyProfile,
+  SiteProfile,
+  SiteRationale,
 } from "@/types/account-v2";
 import { generateNormalizedFallbacks } from "@/lib/accountFallbacks";
 
@@ -37,13 +54,16 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     return { account: null, errors, warnings };
   }
 
-  // Must have users or employees
-  if (!json.users?.length && !json.employees?.length) {
-    errors.push("Must include 'users' or 'employees' array with at least one entry.");
+  // Must have users or employees or namedEmployees
+  if (!json.users?.length && !json.employees?.length && !json.namedEmployees?.length) {
+    errors.push("Must include 'users', 'employees', or 'namedEmployees' array with at least one entry.");
     return { account: null, errors, warnings };
   }
 
   const schemaVersion = json.schemaVersion || "1";
+
+  // Header
+  const header: AccountHeader | undefined = json.header || undefined;
 
   // Branding
   const branding: AccountBranding = {
@@ -52,6 +72,15 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     accentColor: accountSection.accentColor || accountSection.accent_color || json.accent_color || null,
     copy: accountSection.copy || {},
   };
+
+  // Company Profile
+  const companyProfile: CompanyProfile | undefined = json.companyProfile || json.company_profile || undefined;
+
+  // Site Profile
+  const siteProfile: SiteProfile | undefined = json.siteProfile || json.site_profile || undefined;
+
+  // Site Rationale
+  const siteRationale: SiteRationale | undefined = json.siteRationale || json.site_rationale || undefined;
 
   // Proficiency scale
   const proficiencyScale = json.proficiencyScale || ["Beginner", "Intermediate", "Advanced", "Expert", "Master"];
@@ -72,6 +101,9 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
       };
     }
   }
+
+  // Named Employees (extended)
+  const namedEmployees: NamedEmployeeRecord[] = [];
 
   // Employees
   const employeesById: Record<string, AccountEmployee> = {};
@@ -95,9 +127,43 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     }
   }
 
-  // If no users but has employees, keep usersById empty.
-  // The upload dialog will let the user explicitly choose sign-in personas.
+  // Named employees → also populate employeesById
+  if (json.namedEmployees?.length) {
+    for (const ne of json.namedEmployees) {
+      const record: NamedEmployeeRecord = {
+        id: ne.id,
+        name: ne.name,
+        email: ne.email || "",
+        title: ne.title,
+        department: ne.department,
+        roleId: ne.roleId,
+        reportsTo: ne.reportsTo ?? null,
+        skills: ne.skills?.map((s: any) => ({
+          skillName: s.skillName || s.skill_name || s.name,
+          proficiency: s.proficiency || s.level || "Beginner",
+          assessmentYear: s.assessmentYear || s.assessment_year,
+        })),
+        avatarUrl: ne.avatarUrl,
+        grade: ne.grade,
+        level: ne.level,
+        shift: ne.shift,
+        tenure: ne.tenure,
+        function: ne.function,
+        location: ne.location,
+        engagementScore: ne.engagementScore || ne.engagement_score,
+        performanceRating: ne.performanceRating || ne.performance_rating,
+        riskFlag: ne.riskFlag || ne.risk_flag,
+        learningIndicators: ne.learningIndicators || ne.learning_indicators,
+        workSignalIndicators: ne.workSignalIndicators || ne.work_signal_indicators,
+      };
+      namedEmployees.push(record);
+      if (!employeesById[ne.id]) {
+        employeesById[ne.id] = record;
+      }
+    }
+  }
 
+  // If no users but has employees, keep usersById empty.
   // If no employees but has users, create employees from users
   if (Object.keys(employeesById).length === 0) {
     for (const u of Object.values(usersById)) {
@@ -158,20 +224,160 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     }));
   }
 
-  // Build hierarchy map from employee reportsTo
+  // Build hierarchy map from employee reportsTo or from hierarchy section
   const hierarchyMap: Record<string, string[]> = {};
-  for (const emp of Object.values(employeesById)) {
-    if (emp.reportsTo && employeesById[emp.reportsTo]) {
-      if (!hierarchyMap[emp.reportsTo]) hierarchyMap[emp.reportsTo] = [];
-      hierarchyMap[emp.reportsTo].push(emp.id);
+  if (json.hierarchy && typeof json.hierarchy === "object" && !Array.isArray(json.hierarchy)) {
+    // Direct hierarchy map: { managerId: [reportId, ...] }
+    for (const [managerId, reports] of Object.entries(json.hierarchy)) {
+      if (Array.isArray(reports)) {
+        hierarchyMap[managerId] = reports as string[];
+      }
+    }
+  } else {
+    for (const emp of Object.values(employeesById)) {
+      if (emp.reportsTo && employeesById[emp.reportsTo]) {
+        if (!hierarchyMap[emp.reportsTo]) hierarchyMap[emp.reportsTo] = [];
+        hierarchyMap[emp.reportsTo].push(emp.id);
+      }
     }
   }
+
+  // Architecture sources
+  const architectureSources: ArchitectureSource[] = (json.architectureSources || json.architecture_sources || []).map((s: any) => ({
+    id: s.id || crypto.randomUUID(),
+    name: s.name,
+    type: s.type,
+    description: s.description,
+    signalTypes: s.signalTypes || s.signal_types || [],
+    ...s,
+  }));
+
+  // Architecture signal counts
+  const architectureSignalCounts: ArchitectureSignalCount[] = (json.architectureSignalCounts || json.architecture_signal_counts || []).map((c: any) => ({
+    sourceId: c.sourceId || c.source_id,
+    source: c.source,
+    signalType: c.signalType || c.signal_type,
+    count: c.count,
+    period: c.period,
+    ...c,
+  }));
+
+  // Org overview
+  const orgOverview: OrgOverviewData | undefined = json.org || json.orgOverview || json.org_overview || undefined;
+
+  // People graph
+  const peopleGraph: PeopleGraphRow[] = (json.peopleGraph || json.people_graph || []).map((r: any) => ({
+    employeeId: r.employeeId || r.employee_id || r.id,
+    name: r.name,
+    role: r.role,
+    level: r.level,
+    tenure: r.tenure,
+    grade: r.grade,
+    shift: r.shift,
+    learningIndicators: r.learningIndicators || r.learning_indicators,
+    workSignalIndicators: r.workSignalIndicators || r.work_signal_indicators,
+    engagementIndicators: r.engagementIndicators || r.engagement_indicators,
+    performanceIndicators: r.performanceIndicators || r.performance_indicators,
+    labels: r.labels,
+    flags: r.flags,
+    ...r,
+  }));
+
+  // Signals
+  const signals: EmployeeSignal[] = (json.signals || []).map((s: any) => ({
+    id: s.id || crypto.randomUUID(),
+    employeeId: s.employeeId || s.employee_id,
+    category: s.category,
+    type: s.type,
+    value: s.value,
+    timestamp: s.timestamp,
+    source: s.source,
+    ...s,
+  }));
+
+  // Reflections
+  const reflections: ReflectionEntry[] = (json.reflections || []).map((r: any) => ({
+    id: r.id || crypto.randomUUID(),
+    employeeId: r.employeeId || r.employee_id,
+    date: r.date,
+    confidence: r.confidence,
+    workload: r.workload,
+    sentiment: r.sentiment,
+    themes: r.themes,
+    managerFeedback: r.managerFeedback || r.manager_feedback,
+    content: r.content,
+    ...r,
+  }));
+
+  // Work signals
+  const workSignals: WorkSignalCard[] = (json.workSignals || json.work_signals || []).map((w: any) => ({
+    category: w.category || "General",
+    title: w.title,
+    metrics: w.metrics,
+    flags: w.flags,
+    summary: w.summary,
+    ...w,
+  }));
+
+  // Showcase cases
+  const showcaseCases: ShowcaseCase[] = (json.showcaseCases || json.showcase_cases || []).map((c: any) => ({
+    id: c.id || crypto.randomUUID(),
+    title: c.title,
+    employeeId: c.employeeId || c.employee_id,
+    employeeName: c.employeeName || c.employee_name,
+    riskLabel: c.riskLabel || c.risk_label,
+    inputSignals: c.inputSignals || c.input_signals,
+    reasoningChain: c.reasoningChain || c.reasoning_chain,
+    synthesis: c.synthesis,
+    recommendedActions: c.recommendedActions || c.recommended_actions,
+    ...c,
+  }));
+
+  // Explainability
+  const explainability: ExplainabilityTrace[] = (json.explainability || []).map((e: any) => ({
+    employeeId: e.employeeId || e.employee_id,
+    employeeName: e.employeeName || e.employee_name,
+    inputSignals: e.inputSignals || e.input_signals,
+    reasoningSteps: e.reasoningSteps || e.reasoning_steps,
+    synthesizedOutput: e.synthesizedOutput || e.synthesized_output,
+    confidence: e.confidence,
+    recommendedCTAs: e.recommendedCTAs || e.recommended_ctas,
+    ...e,
+  }));
+
+  // Learning & Skills Summary
+  const learningAndSkills: LearningAndSkillsSummary | undefined = json.learning || json.learningAndSkills || json.learning_and_skills || undefined;
+
+  // Performance alerts
+  const performanceAlerts: PerformanceAlert[] = (json.performanceAlerts || json.performance_alerts || []).map((a: any) => ({
+    id: a.id || crypto.randomUUID(),
+    employeeId: a.employeeId || a.employee_id,
+    type: a.type,
+    severity: a.severity,
+    message: a.message,
+    date: a.date,
+    ...a,
+  }));
+
+  // Recommended CTAs
+  const recommendedCTAs: RecommendedCTA[] = (json.recommendedCTAs || json.recommended_ctas || []).map((c: any) => ({
+    id: c.id || crypto.randomUUID(),
+    title: c.title,
+    description: c.description,
+    priority: c.priority,
+    targetEmployeeId: c.targetEmployeeId || c.target_employee_id,
+    action: c.action,
+    ...c,
+  }));
 
   // Optional sections with warnings
   const optionalSections = [
     "rolesCatalog", "projects", "projectAssignments", "skillTargets",
     "rolePlays", "prompts", "aiContext", "my360", "pageData",
-    "reflections", "workSignals",
+    "reflections", "workSignals", "header", "companyProfile", "siteProfile",
+    "siteRationale", "architectureSources", "architectureSignalCounts",
+    "namedEmployees", "org", "signals", "showcaseCases", "explainability",
+    "learning",
   ];
   for (const section of optionalSections) {
     if (!json[section]) {
@@ -203,8 +409,23 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     aiContext: json.aiContext || {},
     pageData: json.pageData || {},
     my360: json.my360 || {},
-    reflections: json.reflections || [],
-    workSignals: json.workSignals || [],
+    reflections,
+    workSignals,
+    header,
+    companyProfile,
+    siteProfile,
+    siteRationale,
+    architectureSources,
+    architectureSignalCounts,
+    namedEmployees,
+    orgOverview,
+    peopleGraph,
+    signals,
+    showcaseCases,
+    explainability,
+    learningAndSkills,
+    performanceAlerts,
+    recommendedCTAs,
   };
 
   const account = generateNormalizedFallbacks(partial);

@@ -318,7 +318,7 @@ export default function SuperAgentChat() {
           <button onClick={() => navigate("/chat")} className="text-primary-foreground/70 hover:text-primary-foreground transition-colors">
             <ArrowLeft className="h-4 w-4" />
           </button>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-1">
             <motion.div
               className="h-10 w-10 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center"
               animate={{ rotate: [0, 3, -3, 0] }}
@@ -337,6 +337,14 @@ export default function SuperAgentChat() {
               </div>
             </div>
           </div>
+          <button
+            onClick={handleReset}
+            disabled={isStreaming || messages.length === 0}
+            className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors active:scale-[0.95]"
+            title="Reset conversation"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </button>
         </div>
 
         {/* Messages */}

@@ -12,11 +12,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const stepTypeIcons: Record<StepType, React.ElementType> = {
+const stepTypeIcons: Record<string, React.ElementType> = {
   assessment: ClipboardCheck,
   role_play: MessageSquare,
   module: BookOpen,
 };
+
+const fallbackIcon = BookOpen;
 
 interface SkillTargetCardProps {
   target: SkillTarget;

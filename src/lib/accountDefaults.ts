@@ -274,6 +274,9 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
     u8: "u1",
     u10: "u7",
     u11: null,
+    u12: "u1",
+    u13: "u1",
+    u14: "u1",
   };
 
   for (const u of users) {

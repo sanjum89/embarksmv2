@@ -138,6 +138,13 @@ export function AppSidebar() {
     // Hide manager New Chat in me mode
     if (item.path === "/manager" && viewMode === "me") return false;
     return true;
+  }).sort((a, b) => {
+    // In team mode, put Admin first
+    if (viewMode === "team") {
+      if (a.label === "Admin") return -1;
+      if (b.label === "Admin") return 1;
+    }
+    return 0;
   });
 
   const isTraditional = styleTheme === "traditional";

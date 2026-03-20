@@ -514,7 +514,10 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     projectsById,
     projectAssignments,
     hierarchyMap,
-    skillTargets: json.skillTargets || [],
+    skillTargets: (json.skillTargets || []).map((st: any) => ({
+      ...st,
+      assignedTo: st.assignedTo || Object.keys(employeesById),
+    })),
     rolePlays: json.rolePlays || [],
     assessments: json.assessments || [],
     learningModules: json.learningModules || json.modules || [],

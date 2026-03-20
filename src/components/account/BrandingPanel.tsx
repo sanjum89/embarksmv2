@@ -110,14 +110,28 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
     const setUploading = variant === "main" ? setUploadingMain : setUploadingSuperLight;
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
+      // Delete any existing files for this variant first
       const suffix = variant === "superlight" ? "-superlight" : "";
-      const path = `${activeAccount.id}/logo${suffix}.${ext}`;
+      const prefix = `${activeAccount.id}/logo${suffix}`;
+      const { data: existingFiles } = await supabase.storage.from("logos").list(activeAccount.id);
+      if (existingFiles) {
+        const toDelete = existingFiles
+          .filter((f) => f.name.startsWith(`logo${suffix}.`))
+          .map((f) => `${activeAccount.id}/${f.name}`);
+        if (toDelete.length > 0) {
+          await supabase.storage.from("logos").remove(toDelete);
+        }
+      }
+
+      const ext = file.name.split(".").pop();
+      const path = `${prefix}.${ext}`;
       const { error: uploadError } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
       if (uploadError) throw uploadError;
       const { data: urlData } = supabase.storage.from("logos").getPublicUrl(path);
+      // Append cache-buster to avoid stale cached URLs
+      const freshUrl = `${urlData.publicUrl}?t=${Date.now()}`;
       const field = variant === "main" ? "logo" : "logo_superlight";
-      await updateAccount(activeAccount.id, { [field]: urlData.publicUrl });
+      await updateAccount(activeAccount.id, { [field]: freshUrl });
       toast.success(variant === "main" ? "Logo updated" : "Super Light logo updated");
     } catch (err: any) { toast.error(err.message || "Failed to upload logo"); }
     finally { setUploading(false); }

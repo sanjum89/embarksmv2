@@ -1,56 +1,21 @@
 
 
-# Rathbones Investment Manager Foundations — Skill Target
+## Fix: Skill targets assigned to all users instead of specific ones
 
-## What
-Create a single skill target assigned to Clara (u12), Elliot (u13), and Sophie (u14) with 7 chapters, 1 checkpoint assessment, and 1 role play. Per-user skip behavior pre-marks chapters 1-2 as completed for Clara and Elliot.
+### Problem
+When the Rathbones account JSON is uploaded, its skill targets don't include an `assignedTo` field. The parser in `accountParser.ts` line 550 defaults missing `assignedTo` to `Object.keys(employeesById)` — assigning every skill target to all 12 employees (including Helena), when they should only be assigned to Clara, Elliot, and Sophie.
 
-## Step Sequence (9 steps)
+### Solution
+Remove the fallback that assigns skill targets to all employees. If a skill target doesn't specify `assignedTo`, it should default to an empty array (unassigned) rather than being broadcast to everyone.
 
-| Order | Type | Title | Duration |
-|-------|------|-------|----------|
-| 1 | module (PDF) | Rathbones Investment Manager Role and Good Client Outcomes | 20 min |
-| 2 | module (video) | Leading Client Relationships with Confidence | 25 min |
-| 3 | module (PDF) | Suitability, Documentation, and Client Fairness | 20 min |
-| 4 | module (video) | Working with Financial Planning, Portfolio Management, and Client Support | 25 min |
-| 5 | assessment | A1 — Client Outcomes and Suitability Checkpoint | 15 min |
-| 6 | module (PDF) | Investment Process and Portfolio Alignment Basics | 20 min |
-| 7 | module (video) | Communicating Clearly with Clients and Internal Partners | 25 min |
-| 8 | module (PDF) | Professional Integrity, Attention to Detail, and Ownership | 15 min |
-| 9 | role_play | RP1 — First Client Intro and Risk Appetite Conversation | 20 min |
+### Changes
 
-Assessment A1 passing score: 80%. No skip rules on the assessment itself.
+**`src/lib/accountParser.ts`** (1 line change)
+- Line 550: Change `assignedTo: st.assignedTo || Object.keys(employeesById)` → `assignedTo: st.assignedTo || []`
+- This means uploaded skill targets without explicit assignment won't appear on anyone's dashboard until properly assigned
 
-## Skills on the Card
-
-| Skill | Current | Target |
-|-------|---------|--------|
-| Client Relationship Management | Beginner | Intermediate |
-| Suitability and Documentation | Beginner | Intermediate |
-| Investment Communication | Beginner | Intermediate |
-| Active Listening | Intermediate | Advanced |
-
-## Skip Behavior (per-user pre-completion)
-
-Clara and Elliot: Steps 1 and 2 are marked `status: "completed"` and `skippable: true`. Step 3 starts as `"available"`.
-
-Sophie: No skips. Step 1 is `"available"`, all others `"locked"`.
-
-Since the current `SkillTarget` model has a single `steps` array (not per-user), we'll create **3 separate skill target instances** — one per user — so each has the correct initial step statuses.
-
-## RP1 Reference
-
-The role play `rp-rb1` already exists in `mockRolePlayBank`. The step will reference it via `referenceId: "rp-rb1"`.
-
-## New Learning Modules + Assessment
-
-Add 7 new `LearningModule` entries and 1 new `Assessment` to `mockLearningModules` and `mockAssessments` in `src/data/mock.ts`.
-
-## Changes
-
-| File | Action |
-|------|--------|
-| `src/data/mock.ts` | Add 7 learning modules (`m-rb1` to `m-rb7`), 1 assessment (`a-rb1`), and 3 skill target instances (`st-rb-clara`, `st-rb-elliot`, `st-rb-sophie`) |
-
-Single file change — all data goes into `mock.ts` following existing patterns.
+### Impact
+- Rathbones account: The 3 skill targets will no longer show for Helena and the other 9 employees
+- To assign them to Clara/Elliot/Sophie specifically, the Rathbones JSON would need `assignedTo` fields added, OR assignment can happen through the manager/builder UI
+- Default account skill targets in `mock.ts` already have explicit `assignedTo` arrays and are unaffected
 

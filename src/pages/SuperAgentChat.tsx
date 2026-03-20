@@ -347,14 +347,19 @@ export default function SuperAgentChat() {
                 <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                   {msg.role === "user" ? (
                     <div className="flex justify-end mb-1">
-                      <div className="rounded-xl bg-muted px-4 py-2.5 text-sm text-foreground max-w-[85%]">
+                      <div className="rounded-2xl bg-primary text-primary-foreground px-4 py-2.5 text-sm max-w-[85%] shadow-sm">
                         {msg.content}
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-2">
-                      <div className="prose prose-sm max-w-none text-foreground text-sm leading-relaxed">
-                        <ReactMarkdown>{parseSuggestions(msg.content).clean}</ReactMarkdown>
+                    <div className="flex items-start gap-3">
+                      <div className="shrink-0 h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
+                        <Sparkles className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <div className="bg-card border border-border/50 rounded-2xl px-5 py-4 shadow-sm max-w-[85%]">
+                        <div className="prose prose-sm max-w-none text-foreground text-sm leading-relaxed">
+                          <ReactMarkdown>{parseSuggestions(msg.content).clean}</ReactMarkdown>
+                        </div>
                       </div>
                     </div>
                   )}

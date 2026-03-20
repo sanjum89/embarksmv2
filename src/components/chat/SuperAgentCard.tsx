@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sparkles, MessageCircle } from "lucide-react";
+import { Sparkles, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -8,54 +8,80 @@ interface SuperAgentCardProps {
   lastMessage?: string;
 }
 
-export function SuperAgentCard({ hasUnread, lastMessage }: SuperAgentCardProps) {
+export function SuperAgentCard({ hasUnread = true, lastMessage }: SuperAgentCardProps) {
   const navigate = useNavigate();
 
   return (
     <motion.button
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      initial={{ opacity: 0, y: 16, filter: "blur(4px)" }}
+      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       onClick={() => navigate("/chat/super-agent")}
       className={cn(
-        "relative w-full rounded-2xl p-5 text-left transition-all duration-200",
-        "bg-gradient-to-br from-primary/[0.06] via-primary/[0.03] to-transparent",
-        "border-2 border-primary/20 hover:border-primary/40",
-        "shadow-[0_2px_12px_-2px_hsl(var(--primary)/0.1)] hover:shadow-[0_4px_20px_-4px_hsl(var(--primary)/0.18)]",
-        "active:scale-[0.98]"
+        "group relative w-full rounded-2xl text-left overflow-hidden",
+        "bg-primary text-primary-foreground",
+        "shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.35)] hover:shadow-[0_8px_32px_-4px_hsl(var(--primary)/0.5)]",
+        "active:scale-[0.98] transition-shadow duration-300"
       )}
     >
-      {/* Unread indicator */}
+      {/* Animated shimmer */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.08] to-transparent -skew-x-12"
+        animate={{ x: ["-100%", "200%"] }}
+        transition={{ duration: 3, repeat: Infinity, repeatDelay: 4, ease: "easeInOut" }}
+      />
+
+      {/* Subtle pulse ring behind card */}
       {hasUnread && (
-        <span className="absolute top-3 right-3 flex h-3 w-3">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-60" />
-          <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
-        </span>
+        <motion.div
+          className="absolute -inset-[2px] rounded-2xl border-2 border-primary/40"
+          animate={{ opacity: [0.4, 0.8, 0.4], scale: [1, 1.01, 1] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+        />
       )}
 
-      <div className="flex items-start gap-4">
-        {/* Icon */}
-        <div className="shrink-0 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-          <Sparkles className="h-5 w-5" />
+      <div className="relative px-5 py-4 flex items-center gap-4">
+        {/* Animated icon */}
+        <div className="shrink-0 relative">
+          <motion.div
+            className="h-12 w-12 rounded-xl bg-white/15 backdrop-blur-sm flex items-center justify-center"
+            animate={{ rotate: [0, 3, -3, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Sparkles className="h-5.5 w-5.5" />
+          </motion.div>
+          {/* Live dot */}
+          <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
+            <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-green-400 border-2 border-primary" />
+          </span>
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-[15px] font-semibold text-foreground leading-tight">
+          <div className="flex items-center gap-2 mb-0.5">
+            <h3 className="text-[15px] font-bold leading-tight">
               Super Agent
             </h3>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary uppercase tracking-wider">
-              AI
+            <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
+              Live
             </span>
           </div>
-          <p className="text-[13px] text-muted-foreground leading-snug">
-            {lastMessage || "Your personal AI assistant — onboarding, skills, career guidance & more"}
-          </p>
+          <motion.p
+            className="text-[13px] text-primary-foreground/75 leading-snug truncate"
+            animate={hasUnread ? { opacity: [0.7, 1, 0.7] } : {}}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            {lastMessage || "Hey! I'm here to help you get started →"}
+          </motion.p>
         </div>
 
-        <div className="shrink-0 self-center text-muted-foreground/40">
-          <MessageCircle className="h-4 w-4" />
-        </div>
+        <motion.div
+          className="shrink-0 text-primary-foreground/50 group-hover:text-primary-foreground/90 transition-colors"
+          animate={{ x: [0, 3, 0] }}
+          transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <ChevronRight className="h-5 w-5" />
+        </motion.div>
       </div>
     </motion.button>
   );

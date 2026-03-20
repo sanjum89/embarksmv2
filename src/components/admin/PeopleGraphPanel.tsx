@@ -81,26 +81,48 @@ export default function PeopleGraphPanel({ account }: Props) {
             </thead>
             <tbody>
               {filtered.map((row) => (
-                <tr key={row.employeeId} className="border-t border-border hover:bg-muted/30 transition-colors">
-                  <td className="px-4 py-2.5 font-medium text-foreground">{row.name}</td>
-                  <td className="px-4 py-2.5 text-muted-foreground">{row.role || "—"}</td>
-                  <td className="px-4 py-2.5 text-muted-foreground">{row.level || "—"}</td>
-                  <td className="px-4 py-2.5 text-muted-foreground">{row.tenure != null ? row.tenure : "—"}</td>
-                  <td className="px-4 py-2.5 text-muted-foreground">{row.grade || "—"}</td>
-                  <td className="px-4 py-2.5">
-                    {row.flags?.length ? (
-                      <div className="flex flex-wrap gap-1">
-                        {row.flags.map((f, i) => (
-                          <span key={i} className="rounded-full bg-warning/10 text-warning text-[10px] font-medium px-2 py-0.5">
-                            {f}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-xs">—</span>
+                <>
+                  <tr
+                    key={row.employeeId}
+                    onClick={() => setExpandedId(expandedId === row.employeeId ? null : row.employeeId)}
+                    className={cn(
+                      "border-t border-border hover:bg-muted/30 transition-colors cursor-pointer",
+                      expandedId === row.employeeId && "bg-muted/20"
                     )}
-                  </td>
-                </tr>
+                  >
+                    <td className="px-4 py-2.5 font-medium text-foreground">{row.name}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{row.role || "—"}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{row.level || "—"}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{row.tenure != null ? row.tenure : "—"}</td>
+                    <td className="px-4 py-2.5 text-muted-foreground">{row.grade || "—"}</td>
+                    <td className="px-4 py-2.5">
+                      {row.flags?.length ? (
+                        <div className="flex flex-wrap gap-1">
+                          {row.flags.map((f, i) => (
+                            <span key={i} className="rounded-full bg-warning/10 text-warning text-[10px] font-medium px-2 py-0.5">
+                              {f}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </td>
+                  </tr>
+                  {expandedId === row.employeeId && (
+                    <tr key={`${row.employeeId}-detail`}>
+                      <td colSpan={6} className="p-0">
+                        <AnimatePresence>
+                          <EmployeeDetailPanel
+                            row={row}
+                            account={account}
+                            onClose={() => setExpandedId(null)}
+                          />
+                        </AnimatePresence>
+                      </td>
+                    </tr>
+                  )}
+                </>
               ))}
             </tbody>
           </table>

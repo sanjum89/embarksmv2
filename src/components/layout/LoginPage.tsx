@@ -15,14 +15,12 @@ export function LoginPage() {
   const { availableUsers, loginUser } = useUser();
 
   const [selectedAccountId, setSelectedAccountId] = useState(activeAccountId ?? "");
-  const [selectedUserId, setSelectedUserId] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleAccountChange = (id: string) => {
     setSelectedAccountId(id);
     switchAccount(id);
-    setSelectedUserId("");
     setError("");
   };
 
@@ -33,15 +31,17 @@ export function LoginPage() {
       setError("Please select an account");
       return;
     }
-    if (!selectedUserId) {
-      setError("Please select a user");
-      return;
-    }
     if (password !== PASSWORD) {
       setError("Incorrect password");
       return;
     }
-    const success = loginUser(selectedUserId);
+    // Find the admin user, fall back to first user
+    const adminUser = availableUsers.find((u) => u.role === "admin") || availableUsers[0];
+    if (!adminUser) {
+      setError("No users available for this account.");
+      return;
+    }
+    const success = loginUser(adminUser.id);
     if (!success) {
       setError("Login failed. Please try again.");
     }
@@ -88,27 +88,6 @@ export function LoginPage() {
               </Select>
             </div>
 
-            {/* User selector */}
-            <div className="space-y-2">
-              <Label htmlFor="login-user">User</Label>
-              <Select value={selectedUserId} onValueChange={(v) => { setSelectedUserId(v); setError(""); }}>
-                <SelectTrigger id="login-user">
-                  <SelectValue placeholder="Select a user…" />
-                </SelectTrigger>
-                <SelectContent position="popper" className="z-[9999]">
-                  {availableUsers.length === 0 ? (
-                    <SelectItem value="__none" disabled>No users available</SelectItem>
-                  ) : (
-                    availableUsers.map((u) => (
-                      <SelectItem key={u.id} value={u.id}>
-                        {u.name}{u.title ? ` — ${u.title}` : ""}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="login-password">Password</Label>
@@ -123,7 +102,7 @@ export function LoginPage() {
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 
-            <Button type="submit" className="w-full gap-2" disabled={availableUsers.length === 0}>
+            <Button type="submit" className="w-full gap-2">
               <LogIn className="h-4 w-4" />
               Sign In
             </Button>

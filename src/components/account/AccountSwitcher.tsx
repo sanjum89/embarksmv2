@@ -46,7 +46,7 @@ export function AccountSwitcher({ expanded, onToggleSidebar, variant = "new" }: 
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg shrink-0">
                     <img src={accountLogo} alt={activeAccount.name} className="h-6 w-6 object-contain" style={{ background: 'transparent' }} />
                   </div>
-                  <span className="font-display font-bold text-sm truncate flex-1 text-left text-foreground">
+                  <span className="font-display font-bold text-sm truncate flex-1 text-left text-sidebar-foreground">
                     {activeAccount.name}
                   </span>
                   <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />

@@ -27,6 +27,7 @@ export interface Account {
   id: string;
   name: string;
   logo?: string | null;
+  logo_superlight?: string | null;
   accent_color?: string | null;
   use_case_context?: string | null;
   is_default: boolean;

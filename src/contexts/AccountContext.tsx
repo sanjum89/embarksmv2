@@ -17,7 +17,7 @@ interface AccountContextType {
   switchAccount: (id: string) => void;
   addAccount: (name: string, data: Partial<AccountData> & { logo?: string; accent_color?: string; use_case_context?: string }, selectedUsers?: import("@/types/account-v2").AccountUser[]) => Promise<string>;
   deleteAccount: (id: string) => Promise<void>;
-  updateAccount: (id: string, fields: { logo?: string | null; accent_color?: string | null }) => Promise<void>;
+  updateAccount: (id: string, fields: { logo?: string | null; accent_color?: string | null; logo_superlight?: string | null }) => Promise<void>;
 }
 
 const AccountContext = createContext<AccountContextType>({
@@ -302,7 +302,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     return newAcct.id;
   }, [switchAccount]);
 
-  const updateAccount = useCallback(async (id: string, fields: { logo?: string | null; accent_color?: string | null }) => {
+  const updateAccount = useCallback(async (id: string, fields: { logo?: string | null; accent_color?: string | null; logo_superlight?: string | null }) => {
     const { error } = await supabase.from("accounts").update(fields).eq("id", id);
     if (error) throw error;
 

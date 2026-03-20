@@ -22,6 +22,7 @@ export type Database = {
           id: string
           is_default: boolean | null
           logo: string | null
+          logo_superlight: string | null
           name: string
           use_case_context: string | null
         }
@@ -32,6 +33,7 @@ export type Database = {
           id?: string
           is_default?: boolean | null
           logo?: string | null
+          logo_superlight?: string | null
           name: string
           use_case_context?: string | null
         }
@@ -42,6 +44,7 @@ export type Database = {
           id?: string
           is_default?: boolean | null
           logo?: string | null
+          logo_superlight?: string | null
           name?: string
           use_case_context?: string | null
         }

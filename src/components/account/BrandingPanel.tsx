@@ -15,17 +15,63 @@ interface BrandingPanelProps {
   trigger: React.ReactNode;
 }
 
+function LogoUploadSlot({
+  label,
+  hint,
+  currentUrl,
+  uploading,
+  onUpload,
+  onClear,
+}: {
+  label: string;
+  hint: string;
+  currentUrl?: string | null;
+  uploading: boolean;
+  onUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onClear: () => void;
+}) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  return (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-medium">{label}</Label>
+      <div className="flex items-center gap-3">
+        {currentUrl ? (
+          <div className="relative h-10 w-10 rounded-lg border border-border overflow-hidden bg-muted flex items-center justify-center">
+            <img src={currentUrl} alt={label} className="h-full w-full object-contain" />
+            <button
+              onClick={onClear}
+              className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
+            >
+              <X className="h-2.5 w-2.5" />
+            </button>
+          </div>
+        ) : (
+          <div className="h-10 w-10 rounded-lg border border-dashed border-border flex items-center justify-center text-muted-foreground">
+            <Upload className="h-4 w-4" />
+          </div>
+        )}
+        <div>
+          <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading} className="h-7 text-xs">
+            {uploading ? "Uploading…" : "Upload"}
+          </Button>
+          <p className="text-[10px] text-muted-foreground mt-0.5">{hint}</p>
+        </div>
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onUpload} />
+      </div>
+    </div>
+  );
+}
+
 export function BrandingPanel({ trigger }: BrandingPanelProps) {
   const { activeAccount, updateAccount } = useAccount();
   const [open, setOpen] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingMain, setUploadingMain] = useState(false);
+  const [uploadingSuperLight, setUploadingSuperLight] = useState(false);
   const [customPrimary, setCustomPrimary] = useState("#1a3a5c");
   const [customAccent, setCustomAccent] = useState("#e8a020");
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!activeAccount) return null;
 
-  // Parse current preset
   let currentPreset = "navy-amber";
   try {
     if (activeAccount.accent_color) {
@@ -37,86 +83,50 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
   const handlePresetSelect = async (presetKey: string) => {
     const preset = COLOR_PRESETS[presetKey];
     if (!preset) return;
-    const config = JSON.stringify({
-      preset: presetKey,
-      primary: preset.primary,
-      accent: preset.accent,
-      sidebar: preset.sidebar,
-    });
+    const config = JSON.stringify({ preset: presetKey, primary: preset.primary, accent: preset.accent, sidebar: preset.sidebar });
     try {
       await updateAccount(activeAccount.id, { accent_color: config });
       toast.success(`Applied "${preset.label}" theme`);
-    } catch (err) {
-      toast.error("Failed to save color scheme");
-    }
+    } catch { toast.error("Failed to save color scheme"); }
   };
 
   const handleResetToDefault = async () => {
     try {
       await updateAccount(activeAccount.id, { accent_color: null });
       toast.success("Reset to default colors");
-    } catch {
-      toast.error("Failed to reset colors");
-    }
+    } catch { toast.error("Failed to reset colors"); }
   };
 
   const handleCustomApply = async () => {
     const config = deriveFromCustomColors(customPrimary, customAccent);
     try {
-      await updateAccount(activeAccount.id, {
-        accent_color: JSON.stringify(config),
-      });
+      await updateAccount(activeAccount.id, { accent_color: JSON.stringify(config) });
       toast.success("Applied custom color scheme");
-    } catch (err) {
-      toast.error("Failed to save custom colors");
-    }
+    } catch { toast.error("Failed to save custom colors"); }
   };
 
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
-      return;
-    }
-
+  const uploadLogo = async (file: File, variant: "main" | "superlight") => {
+    if (!file.type.startsWith("image/")) { toast.error("Please upload an image file"); return; }
+    const setUploading = variant === "main" ? setUploadingMain : setUploadingSuperLight;
     setUploading(true);
     try {
       const ext = file.name.split(".").pop();
-      const path = `${activeAccount.id}/logo.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("logos")
-        .upload(path, file, { upsert: true });
-
+      const suffix = variant === "superlight" ? "-superlight" : "";
+      const path = `${activeAccount.id}/logo${suffix}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("logos").upload(path, file, { upsert: true });
       if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from("logos")
-        .getPublicUrl(path);
-
-      await updateAccount(activeAccount.id, { logo: urlData.publicUrl });
-      toast.success("Logo updated");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to upload logo");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleClearLogo = async () => {
-    try {
-      await updateAccount(activeAccount.id, { logo: null });
-      toast.success("Logo cleared");
-    } catch {
-      toast.error("Failed to clear logo");
-    }
+      const { data: urlData } = supabase.storage.from("logos").getPublicUrl(path);
+      const field = variant === "main" ? "logo" : "logo_superlight";
+      await updateAccount(activeAccount.id, { [field]: urlData.publicUrl });
+      toast.success(variant === "main" ? "Logo updated" : "Super Light logo updated");
+    } catch (err: any) { toast.error(err.message || "Failed to upload logo"); }
+    finally { setUploading(false); }
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Paintbrush className="h-5 w-5" />
@@ -126,42 +136,26 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
 
         {/* Logo Section */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium">Account Logo</Label>
-          <div className="flex items-center gap-3">
-            {activeAccount.logo ? (
-              <div className="relative h-12 w-12 rounded-lg border border-border overflow-hidden bg-muted flex items-center justify-center">
-                <img src={activeAccount.logo} alt="Logo" className="h-full w-full object-contain" />
-                <button
-                  onClick={handleClearLogo}
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            ) : (
-              <div className="h-12 w-12 rounded-lg border border-dashed border-border flex items-center justify-center text-muted-foreground">
-                <Upload className="h-5 w-5" />
-              </div>
-            )}
-            <div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploading}
-              >
-                {uploading ? "Uploading…" : "Upload Logo"}
-              </Button>
-              <p className="text-xs text-muted-foreground mt-1">PNG or SVG recommended</p>
-            </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleLogoUpload}
-            />
-          </div>
+          <Label className="text-sm font-medium">Account Logos</Label>
+          <p className="text-xs text-muted-foreground">
+            Upload separate logos for different theme modes.
+          </p>
+          <LogoUploadSlot
+            label="Light & Dark Mode Logo"
+            hint="Used on coloured / dark sidebars"
+            currentUrl={activeAccount.logo}
+            uploading={uploadingMain}
+            onUpload={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0], "main")}
+            onClear={async () => { try { await updateAccount(activeAccount.id, { logo: null }); toast.success("Logo cleared"); } catch { toast.error("Failed to clear logo"); } }}
+          />
+          <LogoUploadSlot
+            label="Super Light Mode Logo"
+            hint="Used on white sidebar backgrounds"
+            currentUrl={(activeAccount as any).logo_superlight}
+            uploading={uploadingSuperLight}
+            onUpload={(e) => e.target.files?.[0] && uploadLogo(e.target.files[0], "superlight")}
+            onClear={async () => { try { await updateAccount(activeAccount.id, { logo_superlight: null }); toast.success("Super Light logo cleared"); } catch { toast.error("Failed to clear logo"); } }}
+          />
         </div>
 
         <Separator />
@@ -176,27 +170,15 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
                 onClick={() => handlePresetSelect(key)}
                 className={cn(
                   "flex flex-col items-center gap-1.5 p-2 rounded-lg border transition-all",
-                  currentPreset === key
-                    ? "border-ring bg-muted shadow-sm"
-                    : "border-transparent hover:bg-muted/50"
+                  currentPreset === key ? "border-ring bg-muted shadow-sm" : "border-transparent hover:bg-muted/50"
                 )}
               >
                 <div className="flex gap-0.5">
-                  <div
-                    className="h-6 w-6 rounded-l-md"
-                    style={{ backgroundColor: preset.swatch[0] }}
-                  />
-                  <div
-                    className="h-6 w-6 rounded-r-md"
-                    style={{ backgroundColor: preset.swatch[1] }}
-                  />
+                  <div className="h-6 w-6 rounded-l-md" style={{ backgroundColor: preset.swatch[0] }} />
+                  <div className="h-6 w-6 rounded-r-md" style={{ backgroundColor: preset.swatch[1] }} />
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground leading-tight text-center">
-                  {preset.label}
-                </span>
-                {currentPreset === key && (
-                  <Check className="h-3 w-3 text-primary" />
-                )}
+                <span className="text-[10px] font-medium text-muted-foreground leading-tight text-center">{preset.label}</span>
+                {currentPreset === key && <Check className="h-3 w-3 text-primary" />}
               </button>
             ))}
           </div>
@@ -207,60 +189,29 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
         {/* Custom Colors */}
         <div className="space-y-3">
           <Label className="text-sm font-medium">Custom Client Colors</Label>
-          <p className="text-xs text-muted-foreground">
-            Enter your client's brand colors and we'll generate a full theme.
-          </p>
+          <p className="text-xs text-muted-foreground">Enter your client's brand colors and we'll generate a full theme.</p>
           <div className="flex gap-3">
             <div className="flex-1 space-y-1.5">
               <Label className="text-xs">Primary</Label>
               <div className="flex gap-2 items-center">
-                <input
-                  type="color"
-                  value={customPrimary}
-                  onChange={(e) => setCustomPrimary(e.target.value)}
-                  className="h-8 w-8 rounded border border-input cursor-pointer"
-                />
-                <Input
-                  value={customPrimary}
-                  onChange={(e) => setCustomPrimary(e.target.value)}
-                  className="h-8 text-xs font-mono"
-                  placeholder="#1a3a5c"
-                />
+                <input type="color" value={customPrimary} onChange={(e) => setCustomPrimary(e.target.value)} className="h-8 w-8 rounded border border-input cursor-pointer" />
+                <Input value={customPrimary} onChange={(e) => setCustomPrimary(e.target.value)} className="h-8 text-xs font-mono" placeholder="#1a3a5c" />
               </div>
             </div>
             <div className="flex-1 space-y-1.5">
               <Label className="text-xs">Accent</Label>
               <div className="flex gap-2 items-center">
-                <input
-                  type="color"
-                  value={customAccent}
-                  onChange={(e) => setCustomAccent(e.target.value)}
-                  className="h-8 w-8 rounded border border-input cursor-pointer"
-                />
-                <Input
-                  value={customAccent}
-                  onChange={(e) => setCustomAccent(e.target.value)}
-                  className="h-8 text-xs font-mono"
-                  placeholder="#e8a020"
-                />
+                <input type="color" value={customAccent} onChange={(e) => setCustomAccent(e.target.value)} className="h-8 w-8 rounded border border-input cursor-pointer" />
+                <Input value={customAccent} onChange={(e) => setCustomAccent(e.target.value)} className="h-8 text-xs font-mono" placeholder="#e8a020" />
               </div>
             </div>
           </div>
-          <Button onClick={handleCustomApply} size="sm" className="w-full">
-            Apply Custom Colors
-          </Button>
+          <Button onClick={handleCustomApply} size="sm" className="w-full">Apply Custom Colors</Button>
         </div>
 
         <Separator />
 
-        {/* Reset */}
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full"
-          onClick={handleResetToDefault}
-          disabled={!activeAccount.accent_color}
-        >
+        <Button variant="outline" size="sm" className="w-full" onClick={handleResetToDefault} disabled={!activeAccount.accent_color}>
           Reset to Default
         </Button>
       </DialogContent>

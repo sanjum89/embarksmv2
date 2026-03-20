@@ -216,6 +216,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
         accts = [{
           id: (inserted as any).id, name: (inserted as any).name, logo: (inserted as any).logo,
+          logo_superlight: (inserted as any).logo_superlight,
           accent_color: (inserted as any).accent_color, use_case_context: (inserted as any).use_case_context,
           is_default: (inserted as any).is_default, data: (inserted as any).data as AccountData,
           created_at: (inserted as any).created_at,

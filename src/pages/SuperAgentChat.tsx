@@ -36,13 +36,18 @@ function parseSuggestions(text: string): { clean: string; suggestions: string[] 
 
 function ThinkingIndicator() {
   return (
-    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-center gap-2 px-4 py-3 text-sm text-muted-foreground">
-      <div className="flex gap-1">
-        {[0, 0.2, 0.4].map((d) => (
-          <motion.div key={d} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: d }} className="h-1.5 w-1.5 rounded-full bg-primary" />
-        ))}
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-start gap-3 px-1 py-3">
+      <div className="shrink-0 h-7 w-7 rounded-lg bg-primary/10 flex items-center justify-center">
+        <Sparkles className="h-3.5 w-3.5 text-primary" />
       </div>
-      <span className="text-xs italic">Thinking...</span>
+      <div className="flex items-center gap-2 pt-1.5">
+        <div className="flex gap-1">
+          {[0, 0.2, 0.4].map((d) => (
+            <motion.div key={d} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: d }} className="h-1.5 w-1.5 rounded-full bg-primary" />
+          ))}
+        </div>
+        <span className="text-xs italic text-muted-foreground">Thinking...</span>
+      </div>
     </motion.div>
   );
 }

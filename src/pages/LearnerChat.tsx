@@ -10,6 +10,8 @@ import { getProfileData } from "@/lib/accountSelectors";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { SuperAgentCard } from "@/components/chat/SuperAgentCard";
+import { Button } from "@/components/ui/button";
 
 /* ─── Suggestion Card Illustrations ─── */
 const CardIllustration = ({ type }: { type: string }) => {

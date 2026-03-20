@@ -46,13 +46,16 @@ export interface RadarEntry {
 }
 
 export function deriveRadarSkills(
-  skillsCurrent: SkillEntry[],
-  skillsRequired: SkillRequirement[]
+  skillsCurrent?: SkillEntry[],
+  skillsRequired?: SkillRequirement[]
 ): RadarEntry[] {
+  if (!skillsRequired?.length) return [];
+  const current = skillsCurrent || [];
   return skillsRequired.map((req) => {
-    const cur = skillsCurrent.find((s) => s.skill_name === req.skill_name);
+    const name = req.skill_name || "Unknown";
+    const cur = current.find((s) => s.skill_name === req.skill_name);
     return {
-      skill: req.skill_name.length > 16 ? req.skill_name.slice(0, 14) + "…" : req.skill_name,
+      skill: name.length > 16 ? name.slice(0, 14) + "…" : name,
       score: cur ? proficiencyNumeric[cur.proficiency] : 0,
       target: proficiencyNumeric[req.proficiency],
     };

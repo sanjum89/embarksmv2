@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
+import { supabase } from "@/integrations/supabase/client";
 import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { getProfileData } from "@/lib/accountSelectors";
 import { cn } from "@/lib/utils";

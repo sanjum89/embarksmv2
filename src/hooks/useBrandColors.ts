@@ -94,6 +94,8 @@ function deriveThemeVars(primary: string, accent: string, sidebar: string): Reco
     "--accent": accent,
     "--accent-foreground": `${pH} 60% 12%`,
     "--ring": primary,
+    "--warning": accent,
+    "--warning-foreground": `${pH} 60% 12%`,
     "--sidebar-background": sidebar,
     "--sidebar-foreground": `${pH} 20% 85%`,
     "--sidebar-primary": accent,

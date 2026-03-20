@@ -18,7 +18,7 @@ const stepTypeIcons: Record<string, React.ElementType> = {
   module: BookOpen,
 };
 
-const stepTypeRoutes: Record<StepType, string> = {
+const stepTypeRoutes: Record<string, string> = {
   assessment: "assessment",
   role_play: "role-play",
   module: "module",

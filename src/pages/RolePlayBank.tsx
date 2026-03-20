@@ -33,6 +33,7 @@ export default function RolePlayBank() {
   const [search, setSearch] = useState("");
   const [difficulty, setDifficulty] = useState<DifficultyFilter>("all");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"assigned" | "all">("assigned");
   const { toast } = useToast();
   const { rolePlays, updateRolePlay } = useRolePlays();
   const { user } = useUser();

@@ -123,12 +123,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Fallback: sign in the first user
-      const newFirst = newUsers[0] || currentUser;
-      setUser(newFirst);
-      const newIds = newUsers.length > 0 ? [newFirst.id] : [];
-      setSignedInUserIds(newIds);
-      persistIds(activeAccountId, newIds);
+      // No persisted session — show login page
+      setSignedInUserIds([]);
+      persistIds(activeAccountId, []);
+      setUser(newUsers[0] || currentUser);
     }
   }, [activeAccountId, loading]);
 

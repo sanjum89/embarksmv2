@@ -284,9 +284,10 @@ export default function My360() {
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <ResponsivePillRow
-                totalCount={profileData.roleSkillsCurrent.length}
+                totalCount={profileData.roleSkillsCurrent?.length ?? 0}
                 renderPill={(i) => {
-                  const entry = profileData.roleSkillsCurrent[i];
+                  const entry = profileData.roleSkillsCurrent?.[i];
+                  if (!entry) return null;
                   const displayName = entry.skill_name.length > 13
                     ? entry.skill_name.slice(0, 10) + "..."
                     : entry.skill_name;
@@ -314,7 +315,7 @@ export default function My360() {
                 renderExpandedList={() => (
                   <div className="space-y-2">
                     <p className="text-xs font-semibold text-muted-foreground mb-2">All Core Skills</p>
-                    {profileData.roleSkillsCurrent.map((entry, i) => (
+                    {(profileData.roleSkillsCurrent || []).map((entry, i) => (
                       <div key={i} className="flex items-center justify-between gap-4 text-sm">
                         <span className="font-medium text-foreground">{entry.skill_name}</span>
                         <div className="flex items-center gap-2 text-muted-foreground text-xs">
@@ -336,9 +337,10 @@ export default function My360() {
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <ResponsivePillRow
-                totalCount={profileData.otherSkills.length}
+                totalCount={profileData.otherSkills?.length ?? 0}
                 renderPill={(i) => {
-                  const skill = profileData.otherSkills[i];
+                  const skill = profileData.otherSkills?.[i];
+                  if (!skill) return null;
                   const shortLevel = proficiencyShort[skill.proficiency];
                   const shortYear = `'${String(skill.assessment_year).slice(-2)}`;
                   return (

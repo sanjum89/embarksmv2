@@ -6,7 +6,6 @@ import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { cn } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import NewHiresPanel from "@/components/manager/NewHiresPanel";

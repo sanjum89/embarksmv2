@@ -379,6 +379,37 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     ...c,
   }));
 
+  // Normalize profile data skill entries: { skill, level } → { skill_name, proficiency }
+  function normalizeProfileData(raw: Record<string, any>): Record<string, any> {
+    const normalizeSkillArray = (arr: any[]) =>
+      (arr || []).map((s: any) => ({
+        skill_name: s.skill_name || s.skill || s.skillName || s.name || "Unknown",
+        proficiency: normalizeProficiency(s.proficiency || s.level || s.currentLevel),
+        assessment_year: s.assessment_year || s.assessmentYear || new Date().getFullYear(),
+      }));
+    const normalizeReqArray = (arr: any[]) =>
+      (arr || []).map((s: any) => ({
+        skill_name: s.skill_name || s.skill || s.skillName || s.name || "Unknown",
+        proficiency: normalizeProficiency(s.proficiency || s.requiredLevel || s.level),
+        assessment_year: s.assessment_year || s.assessmentYear || new Date().getFullYear(),
+      }));
+
+    const result: Record<string, any> = {};
+    for (const [userId, profile] of Object.entries(raw)) {
+      if (!profile || typeof profile !== "object") { result[userId] = profile; continue; }
+      const p = profile as any;
+      result[userId] = {
+        ...p,
+        roleSkillsCurrent: normalizeSkillArray(p.roleSkillsCurrent),
+        roleSkillsRequired: normalizeReqArray(p.roleSkillsRequired),
+        projectSkillsCurrent: normalizeSkillArray(p.projectSkillsCurrent),
+        projectSkillsRequired: normalizeReqArray(p.projectSkillsRequired),
+        otherSkills: normalizeSkillArray(p.otherSkills),
+      };
+    }
+    return result;
+  }
+
   // Org overview
   const orgOverview: OrgOverviewData | undefined = json.org || json.orgOverview || json.org_overview || undefined;
 

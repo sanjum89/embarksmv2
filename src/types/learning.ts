@@ -42,6 +42,7 @@ export interface SkillTarget {
   progress: number; // 0–100
   dueDate?: string;
   skills?: SkillProficiencyTarget[];
+  locked?: boolean;
 }
 
 export type AssessmentType = "pre" | "post";

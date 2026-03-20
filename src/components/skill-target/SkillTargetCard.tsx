@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Target, BookOpen, MessageSquare, ClipboardCheck, ArrowRight, Clock } from "lucide-react";
+import { Target, BookOpen, MessageSquare, ClipboardCheck, ArrowRight, Clock, Lock, Sparkles } from "lucide-react";
 import type { SkillTarget, StepType } from "@/types/learning";
 import { proficiencyShort } from "@/types/learning";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 const stepTypeIcons: Record<string, React.ElementType> = {
   assessment: ClipboardCheck,
@@ -26,9 +27,11 @@ interface SkillTargetCardProps {
 }
 
 export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
+  const navigate = useNavigate();
   const completedSteps = target.steps.filter((s) => s.status === "completed" || s.status === "skipped").length;
   const totalSteps = target.steps.length;
   const [skillsDialogOpen, setSkillsDialogOpen] = useState(false);
+  const isLocked = target.locked === true;
 
   // Find next step (first in_progress or available)
   const nextStep = target.steps
@@ -38,6 +41,91 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
   const skills = target.skills || [];
   const visibleSkills = skills.slice(0, 3);
   const remainingCount = skills.length - 3;
+
+  if (isLocked) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.08, duration: 0.4, ease: "easeOut" }}
+      >
+        <div className="group block rounded-xl bg-card p-5 shadow-card border border-border/60 relative overflow-hidden">
+          {/* Locked overlay */}
+          <div className="absolute inset-0 bg-muted/30 backdrop-blur-[1px] z-10 pointer-events-none" />
+          
+          {/* Content (dimmed) */}
+          <div className="opacity-50">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent">
+                <Target className="h-3 w-3" />
+                {target.category}
+              </span>
+              <Lock className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <h4 className="font-display text-base font-semibold text-foreground mb-1.5">
+              {target.title}
+            </h4>
+            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+              {target.description}
+            </p>
+
+            {skills.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-1.5">
+                {visibleSkills.map((skill) => (
+                  <span
+                    key={skill.name}
+                    className="inline-flex items-center gap-1 rounded-md bg-primary/8 border border-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary"
+                  >
+                    {skill.name}
+                  </span>
+                ))}
+                {remainingCount > 0 && (
+                  <span className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                    +{remainingCount} more
+                  </span>
+                )}
+              </div>
+            )}
+
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              {target.steps.map((step) => {
+                const Icon = stepTypeIcons[step.type] || fallbackIcon;
+                return (
+                  <span
+                    key={step.id}
+                    className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium bg-secondary text-muted-foreground"
+                  >
+                    <Icon className="h-3 w-3" />
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Locked action buttons */}
+          <div className="relative z-20 flex gap-2 mt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1 text-xs"
+              onClick={() => navigate(`/skill-target/${target.id}`)}
+            >
+              <BookOpen className="h-3.5 w-3.5 mr-1.5" />
+              Preview
+            </Button>
+            <Button
+              size="sm"
+              className="flex-1 text-xs"
+              onClick={() => navigate("/chat/super-agent")}
+            >
+              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+              Unlock via Super Agent
+            </Button>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <>

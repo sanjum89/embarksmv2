@@ -121,6 +121,15 @@ function normalizeFromLegacy(acct: Account): NormalizedAccount {
     my360: {},
     reflections: [],
     workSignals: [],
+    architectureSources: [],
+    architectureSignalCounts: [],
+    namedEmployees: [],
+    peopleGraph: [],
+    signals: [],
+    showcaseCases: [],
+    explainability: [],
+    performanceAlerts: [],
+    recommendedCTAs: [],
   };
 }
 

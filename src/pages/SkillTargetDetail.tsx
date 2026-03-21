@@ -155,6 +155,7 @@ export default function SkillTargetDetail() {
             />
           )}
         </div>
+        </div>
       </div>
     );
   }

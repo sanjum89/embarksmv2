@@ -260,10 +260,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       setMessages(msgs);
       setStage((data as any).onboarding_stage || "welcome");
       const lastAssistant = [...msgs].reverse().find((m: ChatMessage) => m.role === "assistant");
-      if (lastAssistant) {
-        const { suggestions: s } = parseSuggestions(lastAssistant.content);
-        setSuggestions(s);
-      }
+      // Don't restore AI suggestions from saved conversation — contextual page pills take priority
     } else {
       const initialStage = isNewJoiner ? "welcome" : "general";
       setStage(initialStage);
@@ -406,7 +403,8 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       setIsExpanded(true);
       setCollapsedBlockIds(new Set());
     }
-    setSuggestions(newSugs);
+    // Only set AI suggestions if no contextual page pills exist — contextual pills take priority
+    // setSuggestions(newSugs); — disabled so page-aware contextual pills always show
 
     // Detect stage transitions
     const lower = clean.toLowerCase();

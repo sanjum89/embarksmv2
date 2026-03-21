@@ -310,8 +310,8 @@ export default function SuperAgentChat() {
         return;
       }
       nextStage = "pre-assessment";
-    } else if (stage === "pre-assessment" && lower.includes("click below")) {
-      nextStage = "pre-assessment"; // stay, but show CTA
+    } else if (stage === "pre-assessment") {
+      nextStage = "pre-assessment"; // stay, show CTA
     } else if (stage === "post-assessment") {
       // Immediately transition to post-completion to prevent loop
       nextStage = "post-completion";

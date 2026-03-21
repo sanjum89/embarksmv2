@@ -1,16 +1,11 @@
 import { useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  MessageSquare,
   X,
   Sparkles,
   Send,
   RotateCcw,
-  ArrowRight,
-  ClipboardList,
   Minimize2,
-  Maximize2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";

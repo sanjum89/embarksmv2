@@ -398,7 +398,7 @@ export default function SkillTargetBuilder() {
             </div>
           </ScrollArea>
         </div>
-        <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} />
+        <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} titlePlaceholder={titlePlaceholder} descPlaceholder={descPlaceholder} />
       </div>
     );
   }

@@ -58,8 +58,6 @@ export function AIChatWrapper() {
     setIsExpanded,
   } = useAgentOne();
 
-  const panelWidth = isExpanded ? 720 : 400;
-  const panelHeight = isExpanded ? 700 : 600;
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);

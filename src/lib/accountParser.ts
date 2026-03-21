@@ -570,7 +570,7 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
         steps: normalizedSteps,
         skills: normalizedSkills,
         progress: st.progress ?? 0,
-        locked: st.locked ?? (st.status === "locked"),
+        locked: st.locked === true || st.locked === "true" || st.status === "locked",
       };
     }),
     rolePlays: (json.rolePlays || []).map((rp: any) => ({

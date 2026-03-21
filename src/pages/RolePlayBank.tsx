@@ -79,7 +79,7 @@ export default function RolePlayBank() {
   }, [rolePlays, activeTab, difficulty, search, user.id]);
 
   // Auto-clear selectedTag if it's no longer available
-  useMemo(() => {
+  useEffect(() => {
     if (selectedTag && !allTags.includes(selectedTag)) {
       setSelectedTag(null);
     }

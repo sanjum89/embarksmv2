@@ -94,7 +94,7 @@ type GapFilter = "All" | "Gap" | "No gap";
 export default function My360() {
   const { user } = useUser();
   const { activeAccount, normalizedAccount } = useAccount();
-  const chatRef = useRef<AIChatWrapperHandle>(null);
+  const chatRef = useRef<any>(null);
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");

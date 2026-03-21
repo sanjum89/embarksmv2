@@ -63,7 +63,7 @@ function useOnboardingNudge(): NudgeState | null {
 
 export function OnboardingNudge() {
   const nudge = useOnboardingNudge();
-  const { setShowInlineAssessment, setIsOpen } = useAgentOne();
+  const { setShowInlineAssessment, setIsOpen, setIsExpanded } = useAgentOne();
   const [dismissed, setDismissed] = useState(false);
 
   if (!nudge) return null;

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, ArrowLeft, Sparkles, ClipboardList, RotateCcw } from "lucide-react";
+import { Send, ArrowLeft, ArrowRight, Sparkles, ClipboardList, RotateCcw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";

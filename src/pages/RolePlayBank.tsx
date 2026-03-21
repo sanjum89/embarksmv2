@@ -324,9 +324,16 @@ export default function RolePlayBank() {
                       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10">
                         <MessageSquare className="h-4.5 w-4.5 text-accent" />
                       </div>
-                      <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium capitalize", difficultyColors[rp.difficulty])}>
-                        {rp.difficulty}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {activeTab === "all" && rp.assignedTo?.includes(user.id) && (
+                          <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary">
+                            Assigned to you
+                          </span>
+                        )}
+                        <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium capitalize", difficultyColors[rp.difficulty])}>
+                          {rp.difficulty}
+                        </span>
+                      </div>
                     </div>
                     <h4 className="font-display text-sm font-semibold text-foreground mb-1.5 group-hover:text-accent transition-colors">
                       {rp.title}

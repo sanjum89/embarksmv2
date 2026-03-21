@@ -339,7 +339,7 @@ export default function SuperAgentChat() {
   }, [messages, isStreaming, stage, userContext]);
 
   const handleInlineAssessmentComplete = (score: number, answers: number[]) => {
-    setAssessmentCompleted(true);
+    setAssessmentCompletedLocal(true);
     const passed = score >= 80;
 
     // Unlock skill target RAT-ST-001

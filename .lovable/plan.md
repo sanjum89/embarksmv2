@@ -1,31 +1,34 @@
 
 
-## Expand "Investment Management Foundations" to 14 Chapters
+## Plan: Fix Locked Cards + Add Chapter Descriptions
 
-### Current State
-RAT-ST-001 has 6 steps. Need to expand to 14 with realistic Rathbones investment management content, mixing PDFs and videos.
+### Problem 1: Lock overlay not showing
+The DB has `locked: true` but the cards render unlocked (as shown in screenshot). The parser at line 573 does `locked: st.locked ?? (st.status === "locked")` — this should work, but the raw JSON `locked` value may be coming through as a string `"true"` from the JSONB query. Fix: explicitly coerce to boolean in the parser.
 
-### New 14-Chapter Structure
+### Problem 2: Missing chapter descriptions
+The 14 steps in RAT-ST-001 have no `description` field, so the parser defaults to `""`.
 
-| # | ID | Type | Title | Minutes |
-|---|-----|------|-------|---------|
-| 1 | RAT-ASM-001 | assessment | Investment Manager Baseline Assessment | 20 |
-| 2 | RAT-LM-001 | module (PDF) | Rathbones Proposition & Client Outcomes | 35 |
-| 3 | RAT-LM-002 | module (Video) | Understanding Client Risk Profiles and Objectives | 30 |
-| 4 | RAT-LM-003 | module (PDF) | Portfolio Alignment & Suitability Framework | 40 |
-| 5 | RAT-LM-004 | module (Video) | Asset Classes and Their Role in Client Portfolios | 25 |
-| 6 | RAT-LM-005 | module (PDF) | Investment Process: Research to Recommendation | 35 |
-| 7 | RAT-ASM-003 | assessment | Mid-Path Checkpoint: Portfolio & Suitability | 15 |
-| 8 | RAT-LM-006 | module (Video) | Market Context and Economic Indicators for IMs | 30 |
-| 9 | RAT-LM-007 | module (PDF) | Regulatory Conduct & Consumer Duty Obligations | 30 |
-| 10 | RAT-LM-008 | module (Video) | Documenting Investment Decisions and Rationale | 25 |
-| 11 | RAT-LM-009 | module (PDF) | Fee Structures, Costs, and Value Assessment | 20 |
-| 12 | RAT-RP-001 | rolePlay | Client Portfolio Review Conversation | 25 |
-| 13 | RAT-LM-010 | module (Video) | Handling Market Volatility Conversations with Clients | 25 |
-| 14 | RAT-ASM-002 | assessment | Final Readiness Assessment | 20 |
+### Changes
 
-**Mix**: 8 learning modules (4 PDF, 4 Video), 3 assessments, 1 role play
+**`src/lib/accountParser.ts`** (1 line)
+- Line 573: Change `locked: st.locked ?? (st.status === "locked")` to `locked: st.locked === true || st.locked === "true" || st.status === "locked"` — ensures boolean coercion regardless of JSON typing.
 
-### Technical Approach
-Single SQL UPDATE via the insert tool on the `accounts` table, replacing only the RAT-ST-001 entry in the `skillTargets` JSON array with the expanded 14-step version. The `assignedTo` stays `["RAT-E003", "RAT-E004", "RAT-E005"]` (Clara, Elliot, Sophie). All other skill targets remain unchanged.
+**Database migration** — Single SQL UPDATE to add realistic descriptions to all 14 steps of RAT-ST-001:
+
+| # | Title | Description |
+|---|-------|-------------|
+| 1 | Investment Manager Baseline Assessment | Evaluate your current understanding of investment management principles, portfolio concepts, and client-facing responsibilities. |
+| 2 | Rathbones Proposition & Client Outcomes | Explore the Rathbones value proposition, service tiers, and how investment managers deliver measurable client outcomes. |
+| 3 | Understanding Client Risk Profiles and Objectives | Learn how to assess client risk tolerance, map financial goals, and align investment strategies to individual circumstances. |
+| 4 | Portfolio Alignment & Suitability Framework | Understand Rathbones' suitability framework for matching portfolio composition to client mandates and regulatory requirements. |
+| 5 | Asset Classes and Their Role in Client Portfolios | Review equities, fixed income, alternatives, and multi-asset strategies within the context of discretionary portfolio management. |
+| 6 | Investment Process: Research to Recommendation | Trace the end-to-end investment process from research analysis through committee review to client recommendation. |
+| 7 | Mid-Path Checkpoint: Portfolio & Suitability | Confirm your grasp of portfolio construction principles and suitability obligations before advancing to advanced topics. |
+| 8 | Market Context and Economic Indicators for IMs | Interpret macroeconomic data, market cycles, and leading indicators that inform Rathbones investment positioning. |
+| 9 | Regulatory Conduct & Consumer Duty Obligations | Cover FCA conduct rules, Consumer Duty requirements, and the compliance framework governing investment manager behaviour. |
+| 10 | Documenting Investment Decisions and Rationale | Master the standards for recording investment rationale, client communications, and audit-ready decision logs. |
+| 11 | Fee Structures, Costs, and Value Assessment | Understand Rathbones fee models, cost disclosure obligations, and how to demonstrate value to clients under Consumer Duty. |
+| 12 | Client Portfolio Review Conversation | Practice conducting a structured portfolio review with a client, covering performance, risk, and forward-looking strategy. |
+| 13 | Handling Market Volatility Conversations with Clients | Develop techniques for reassuring clients during market downturns while maintaining confidence in the investment approach. |
+| 14 | Final Readiness Assessment | Comprehensive assessment covering all foundation topics to confirm readiness for live client portfolio responsibilities. |
 

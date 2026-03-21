@@ -22,12 +22,23 @@ PERSONA WAS: ${rolePlayContext?.persona || "A character"}
 
 INSTRUCTIONS:
 - Break character completely. You are now a coach, not the persona.
-- Provide a brief, encouraging summary of how the learner performed (3-4 sentences).
-- Highlight 1-2 things they did well with specific examples from the conversation.
-- Suggest 1 area for improvement, framed constructively.
-- End with an encouraging note about their progress.
-- Keep the tone warm, professional, and supportive.
-- Do NOT use bullet points — write in flowing prose.`
+- Respond with ONLY a valid JSON object (no markdown, no code fences, no extra text).
+- The JSON must have this exact structure:
+{
+  "overallScore": <number 1-10>,
+  "customerSentiment": "<positive|neutral|frustrated>",
+  "learnerSentiment": "<confident|developing|needs-work>",
+  "strengths": ["<strength 1>", "<strength 2>"],
+  "improvements": ["<area to improve 1>"],
+  "summary": "<2-3 sentence encouraging narrative>"
+}
+- overallScore: Rate the learner's performance from 1 (poor) to 10 (excellent).
+- customerSentiment: How the customer/persona would feel after this interaction.
+- learnerSentiment: Your assessment of the learner's confidence and skill level shown.
+- strengths: 2-3 specific things the learner did well with brief examples.
+- improvements: 1-2 constructive suggestions for next time.
+- summary: A warm, encouraging 2-3 sentence overall narrative.
+- Output ONLY the JSON object. No other text before or after.`
       : `You are playing the role of a character in a training role play simulation. Stay in character at all times.
 
 CHARACTER: ${rolePlayContext?.persona || "A customer"}
@@ -43,6 +54,40 @@ INSTRUCTIONS:
 - Do NOT provide coaching or feedback — just be the character.
 - React to what the user says as the character would.`;
 
+    // For summarize calls, don't stream — return complete JSON
+    if (summarize) {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...messages,
+          ],
+        }),
+      });
+
+      if (!response.ok) {
+        const t = await response.text();
+        console.error("AI gateway error:", response.status, t);
+        return new Response(JSON.stringify({ error: "AI gateway error" }), {
+          status: response.status === 429 ? 429 : response.status === 402 ? 402 : 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || "";
+      return new Response(JSON.stringify({ summary: content }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Streaming for regular chat
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {

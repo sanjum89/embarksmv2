@@ -1,13 +1,53 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Eye, EyeOff, Bot, User, Mic, MicOff, Volume2, VolumeX, MessageSquare, Phone, Loader2, Square, RotateCcw, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Send, Eye, EyeOff, Bot, User, Mic, MicOff, Volume2, VolumeX, MessageSquare, Phone, Loader2, Square, RotateCcw, CheckCircle2, Lightbulb, SmilePlus, TrendingUp, Frown, Meh, Smile, Shield, Zap } from "lucide-react";
 
 import { useRolePlays } from "@/contexts/RolePlayContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { streamRolePlayChat } from "@/lib/streamChat";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface StructuredFeedback {
+  overallScore: number;
+  customerSentiment: "positive" | "neutral" | "frustrated";
+  learnerSentiment: "confident" | "developing" | "needs-work";
+  strengths: string[];
+  improvements: string[];
+  summary: string;
+}
+
+function parseStructuredFeedback(raw: string): StructuredFeedback | null {
+  try {
+    // Strip potential markdown code fences
+    const cleaned = raw.replace(/^```json?\s*/i, "").replace(/\s*```$/i, "").trim();
+    const parsed = JSON.parse(cleaned);
+    if (parsed.overallScore && parsed.strengths && parsed.improvements) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+const sentimentConfig = {
+  positive: { icon: Smile, label: "Positive", color: "text-success" },
+  neutral: { icon: Meh, label: "Neutral", color: "text-warning" },
+  frustrated: { icon: Frown, label: "Frustrated", color: "text-destructive" },
+} as const;
+
+const learnerSentimentConfig = {
+  confident: { icon: Shield, label: "Confident", color: "text-success" },
+  developing: { icon: TrendingUp, label: "Developing", color: "text-warning" },
+  "needs-work": { icon: Zap, label: "Needs Work", color: "text-destructive" },
+} as const;
+
+function getScoreColor(score: number) {
+  if (score >= 7) return "bg-success/15 text-success border-success/30";
+  if (score >= 4) return "bg-warning/15 text-warning border-warning/30";
+  return "bg-destructive/15 text-destructive border-destructive/30";
+}
 
 interface ChatMessage {
   role: "user" | "ai";

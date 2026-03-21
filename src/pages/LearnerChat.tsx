@@ -10,6 +10,7 @@ import { RichContentBlock } from "@/components/chat/RichContentBlock";
 import { CollapsedBlockCard } from "@/components/chat/CollapsedBlockCard";
 import { SuperAgentCard } from "@/components/chat/SuperAgentCard";
 import { NudgeStack } from "@/components/chat/OnboardingNudge";
+import { AgentOneNudgeStack } from "@/components/chat/AgentOneNudgeStack";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -197,22 +198,19 @@ export default function LearnerChat() {
                     Hi {firstName}, let's grow together
                   </motion.h1>
 
-                  {/* Agent One Nudge Card */}
-                  <div className="mb-6" onClick={handleNudgeClick}>
-                    <SuperAgentCard hasUnread unreadCount={0} />
-                  </div>
-
-                  {/* Manager Nudge Stack */}
                   <div className="mb-6">
-                    <NudgeStack onChatAction={(prompt) => {
-                      if (prompt === "__ASSESSMENT__") {
+                    <AgentOneNudgeStack
+                      onAgentClick={handleNudgeClick}
+                      onChatAction={(prompt) => {
+                        if (prompt === "__ASSESSMENT__") {
+                          setChatActive(true);
+                          return;
+                        }
                         setChatActive(true);
-                        return;
-                      }
-                      setChatActive(true);
-                      setIsOpen(true);
-                      handleSend(prompt);
-                    }} />
+                        setIsOpen(true);
+                        handleSend(prompt);
+                      }}
+                    />
                   </div>
                   {/* Suggestion Cards Grid */}
                   <div className="grid grid-cols-3 gap-3 mb-6">

@@ -1,23 +1,54 @@
 
 
-## Plan: Add Home Navigation in Chat Page
+## Plan: Transform Agent One Nudge into Stacked Cards
 
-### Problem
-Once the chat activates (via nudge click or sending a message), the home state with suggestion cards is gone forever. The only escape is "New chat" which clears the conversation.
+### What's changing
 
-### Fix
+The current `OnboardingNudge` is a single strip showing one onboarding item. We'll transform it into a **stack of nudge cards** — each representing a manager-driven notification/action (e.g., "1:1 meeting scheduled", "Compliance training due", "Reflection requested"). Each card has a CTA that either navigates to a page, opens chat inline, or does both.
 
-**File: `src/pages/LearnerChat.tsx`**
+### Data layer
 
-1. **Decouple view state from message state**: Change `isActive` logic so it's driven purely by `chatActive` local state, not by `hasMessages`. This way the user can toggle back to home even when messages exist.
+**New file: `src/data/managerNudges.ts`**
 
-2. **Add a Home button** in the pinned Agent One header (next to "New chat"):
-   - A "Home" button that sets `chatActive = false`, returning to the home view with greeting + nudge card + suggestion cards
-   - The existing "New chat" button stays and does what it does (reset messages + go home)
+Define a `ManagerNudge` interface and mock array of 4-5 nudges, each with:
+- `id`, `title`, `subtitle`, `icon` (LucideIcon), `priority` (high/medium/low)
+- `ctaLabel`, `ctaAction`: either `{ type: "navigate", path: string }`, `{ type: "chat", prompt: string }`, or `{ type: "navigate-and-chat", path: string, prompt: string }`
+- `color` theme (accent color per card type)
+- `from` (manager name)
+- `dismissed` flag
 
-3. **Suggestion cards remain functional**: When the user is on the home view and has existing messages, clicking a suggestion card or the nudge card brings them back to chat view with the ongoing conversation.
+Example nudges:
+1. "1:1 Meeting with Marcus" → navigate to `/my-inbox` + open chat with context
+2. "Complete Compliance Training" → navigate to skill target page
+3. "Share Your Weekly Reflection" → open chat with reflection prompt
+4. "Skills Assessment Due" → trigger inline assessment in chat
+5. "Review Peer Feedback" → navigate to `/my-inbox`
+
+### UI component
+
+**Rewrite: `src/components/chat/OnboardingNudge.tsx`**
+
+- Rename conceptually to a "Nudge Stack" (keep filename for import compatibility)
+- Render **multiple stacked cards** instead of one strip:
+  - Each card is a compact row (icon, title, subtitle/from, CTA button, dismiss X)
+  - Cards are color-coded by priority/type (emerald for learning, blue for meetings, amber for tasks)
+  - Max 3 visible at once with a "+N more" indicator if more exist
+  - Cards can be individually dismissed (local state)
+  - Collapsed state shows a small pill "3 actions" to restore the stack
+- Smooth framer-motion stagger animations for entry/exit
+- The existing onboarding nudge (intro target, assessment, bridge) becomes one of the cards in the stack rather than the entire component
+
+### Integration
+
+**Update: `src/pages/LearnerChat.tsx`** and **`src/components/chat/AIChatWrapper.tsx`**
+- No import changes needed (same component name)
+- The nudge stack renders in the same footer position
+- When a nudge CTA triggers `navigate-and-chat`, it calls `setIsOpen(false)` + navigates, then the chat opens on the target page with the prompt pre-filled
+
+### Files changed
 
 | File | Change |
 |------|--------|
-| `src/pages/LearnerChat.tsx` | Decouple `isActive` from `hasMessages`; add "Home" button in chat header |
+| `src/data/managerNudges.ts` | New — nudge data model + 5 mock manager-driven nudges |
+| `src/components/chat/OnboardingNudge.tsx` | Rewrite — render stacked cards from both onboarding state + manager nudges, with per-card dismiss, color themes, CTA routing |
 

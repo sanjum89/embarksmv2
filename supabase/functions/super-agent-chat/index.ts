@@ -39,7 +39,7 @@ function buildSystemPrompt(stage: string, userContext: any): string {
     ? `\n\nASSIGNED SKILL TARGET: "${targetTitle}"\nModules: ${moduleSteps.map((s: any, i: number) => `${i + 1}. ${s.title}`).join(", ") || "N/A"}`
     : "";
 
-  const baseRules = `You are the Super Agent — a warm, concise AI assistant in the Cornerstone Learning Spaces platform for ${accountName || "the organization"}.
+  const baseRules = `You are Agent One — a warm, concise AI assistant in the Cornerstone Learning Spaces platform for ${accountName || "the organization"}.
 
 CONVERSATIONAL CONTINUITY (critical):
 - NEVER re-greet or re-introduce yourself after the first message. No "Hi ${firstName}!", "Hello!", "Hey there!" etc.

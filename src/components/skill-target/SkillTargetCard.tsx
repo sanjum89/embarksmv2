@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Target, BookOpen, MessageSquare, ClipboardCheck, ArrowRight, Clock, Lock } from "lucide-react";
+import { Target, BookOpen, MessageSquare, ClipboardCheck, ArrowRight, Clock, Lock, Eye } from "lucide-react";
 import type { SkillTarget, StepType } from "@/types/learning";
 import { proficiencyShort } from "@/types/learning";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";

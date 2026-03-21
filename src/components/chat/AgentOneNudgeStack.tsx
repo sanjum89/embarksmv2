@@ -186,10 +186,12 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
       )}
 
       {/* ── Main Agent One Card — click to toggle expand ── */}
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => hasNudges ? setExpanded(!expanded) : onAgentClick()}
         className={cn(
-          "group relative w-full rounded-2xl text-left overflow-hidden z-10",
+          "group relative w-full rounded-2xl text-left overflow-hidden z-10 cursor-pointer",
           "bg-primary text-primary-foreground",
           "shadow-[0_4px_24px_-4px_hsl(var(--primary)/0.35)] hover:shadow-[0_8px_32px_-4px_hsl(var(--primary)/0.5)]",
           "active:scale-[0.98] transition-shadow duration-300"
@@ -260,7 +262,55 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
             </div>
           ) : null}
         </div>
-      </button>
+      </div>
+
+      {/* ── Single cycling action card when collapsed ── */}
+      {!expanded && hasNudges && currentNudge && (() => {
+        const theme = themeMap[currentNudge.color_theme];
+        const Icon = typeIcons[currentNudge.type];
+        return (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentNudge.id}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.2 }}
+              className={cn(
+                "rounded-xl border px-3.5 py-3 mt-2 relative z-10",
+                theme.border, theme.bg
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <div className={cn("shrink-0 h-8 w-8 rounded-lg flex items-center justify-center", theme.icon)}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className={cn("text-[13px] font-semibold truncate block", theme.text)}>{currentNudge.title}</span>
+                  <span className={cn("text-[11px] truncate block", theme.sub)}>{currentNudge.subtitle}</span>
+                </div>
+                <button
+                  onClick={() => handleCTA(currentNudge)}
+                  className={cn(
+                    "shrink-0 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[11px] font-semibold text-white transition-colors",
+                    theme.cta, theme.ctaHover
+                  )}
+                >
+                  {currentNudge.cta_label}
+                  <ArrowRight className="h-3 w-3" />
+                </button>
+                <button
+                  onClick={() => dismiss(currentNudge.id)}
+                  className="shrink-0 text-white/30 hover:text-white/70 transition-colors"
+                  title="Dismiss"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        );
+      })()}
 
       {/* ── Expanded nudge cards list ── */}
       <AnimatePresence>

@@ -284,12 +284,12 @@ export default function SuperAgentChat() {
         nextStage = "post-assessment";
         // Send auto-message so the Super Agent responds with fresh-graduate encouragement
         const autoMsg: ChatMessage = { role: "user", content: "I'm ready to start my training — no assessment needed since I'm starting fresh!" };
-        const autoMsgs = [...prev, autoMsg];
-        setMessages(autoMsgs);
-        setStage("post-assessment");
-        // Stream with updated messages after a tick
-        setTimeout(() => streamResponse(autoMsgs), 50);
-        // Return early — we've handled the stage change ourselves
+        setMessages((currentMsgs) => {
+          const autoMsgs = [...currentMsgs, autoMsg];
+          setStage("post-assessment");
+          setTimeout(() => streamResponse(autoMsgs), 50);
+          return autoMsgs;
+        });
         setIsStreaming(false);
         return;
       }

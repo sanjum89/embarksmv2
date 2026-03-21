@@ -77,38 +77,52 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
   "rathbones": {
     label: "Rathbones",
     primary: "230 75% 20%",
-    accent: "22 75% 81%",
+    accent: "22 70% 55%",
     sidebar: "230 75% 14%",
-    swatch: ["hsl(230, 75%, 20%)", "hsl(22, 75%, 81%)"],
+    swatch: ["hsl(230, 75%, 20%)", "hsl(22, 70%, 55%)"],
   },
 };
 
 function deriveThemeVars(primary: string, accent: string, sidebar: string): Record<string, string> {
-  // Parse primary HSL to derive foregrounds
   const [pH] = primary.split(" ").map((v) => parseFloat(v));
-  const [aH] = accent.split(" ").map((v) => parseFloat(v));
-
-  // Parse accent lightness to determine if sidebar-primary-foreground should be light or dark
   const accentParts = accent.split(" ").map((v) => parseFloat(v));
-  const accentLightness = accentParts[2] ?? 50;
+  const [aH, aS, aL] = accentParts;
+  const accentLightness = aL ?? 50;
+
+  // If accent is too light (>65%), darken it for interactive elements
+  const vibrantAccent = accentLightness > 65
+    ? `${aH} ${aS}% 50%`
+    : accent;
+
   const sidebarPrimaryFg = accentLightness < 50 ? "0 0% 100%" : `${pH} 60% 12%`;
+  const vibrantAccentLightness = accentLightness > 65 ? 50 : accentLightness;
+  const accentFg = vibrantAccentLightness < 50 ? "0 0% 100%" : `${pH} 60% 12%`;
 
   return {
     "--primary": primary,
     "--primary-foreground": "45 100% 96%",
-    "--accent": accent,
-    "--accent-foreground": `${pH} 60% 12%`,
+    "--accent": vibrantAccent,
+    "--accent-foreground": accentFg,
     "--ring": primary,
-    "--warning": accent,
-    "--warning-foreground": `${pH} 60% 12%`,
+    "--warning": vibrantAccent,
+    "--warning-foreground": accentFg,
+    // Branded neutrals
+    "--secondary": `${pH} 15% 93%`,
+    "--secondary-foreground": `${pH} 40% 11%`,
+    "--muted": `${pH} 15% 93%`,
+    "--muted-foreground": `${pH} 10% 46%`,
+    "--border": `${pH} 15% 88%`,
+    "--input": `${pH} 15% 88%`,
+    "--surface-sunken": `${pH} 15% 95%`,
+    // Sidebar
     "--sidebar-background": sidebar,
     "--sidebar-foreground": `${pH} 20% 85%`,
-    "--sidebar-primary": accent,
+    "--sidebar-primary": vibrantAccent,
     "--sidebar-primary-foreground": sidebarPrimaryFg,
     "--sidebar-accent": `${pH} 40% 24%`,
     "--sidebar-accent-foreground": `${pH} 20% 92%`,
     "--sidebar-border": `${pH} 40% 22%`,
-    "--sidebar-ring": accent,
+    "--sidebar-ring": vibrantAccent,
     "--sidebar-muted": `${pH} 30% 32%`,
   };
 }
@@ -167,6 +181,15 @@ const NON_SIDEBAR_VARS = [
   "--accent",
   "--accent-foreground",
   "--ring",
+  "--warning",
+  "--warning-foreground",
+  "--secondary",
+  "--secondary-foreground",
+  "--muted",
+  "--muted-foreground",
+  "--border",
+  "--input",
+  "--surface-sunken",
 ];
 
 export function useBrandColors() {

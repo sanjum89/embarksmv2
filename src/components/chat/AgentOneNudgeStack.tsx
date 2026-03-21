@@ -232,30 +232,9 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
                 </span>
               )}
             </div>
-            {/* Show current nudge info when collapsed, or generic text */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentNudge?.id || "default"}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center gap-1.5"
-              >
-                {currentNudge && CurrentIcon && !expanded ? (
-                  <>
-                    <CurrentIcon className="h-3.5 w-3.5 text-primary-foreground/60 shrink-0" />
-                    <span className="text-[13px] text-primary-foreground/75 leading-snug truncate">
-                      {currentNudge.title}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-[13px] text-primary-foreground/75 leading-snug truncate">
-                    {expanded ? "Tap to collapse" : "Hey! I'm here to help you get started →"}
-                  </span>
-                )}
-              </motion.div>
-            </AnimatePresence>
+            <span className="text-[13px] text-primary-foreground/75 leading-snug truncate">
+              {expanded ? "Tap to collapse" : "Hey! I'm here to help you get started →"}
+            </span>
           </div>
 
           {/* Right cycling arrow or collapse indicator */}

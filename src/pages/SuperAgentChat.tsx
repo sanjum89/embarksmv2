@@ -11,7 +11,7 @@ import { getProfileData } from "@/lib/accountSelectors";
 import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AssessmentModal } from "@/components/chat/AssessmentModal";
+import { InlineAssessment } from "@/components/chat/InlineAssessment";
 import { cn } from "@/lib/utils";
 
 const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/super-agent-chat`;

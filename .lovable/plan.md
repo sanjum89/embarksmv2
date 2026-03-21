@@ -1,51 +1,85 @@
 
 
-## Plan: Stack Nudge Cards on Chat Home Page
+## Plan: Database-Driven Agent One Nudge Cards
 
-### Problem
-The nudge cards only appear as flat rows in the chat footer area. The user wants them visually stacked as cards on the **chat home page** — below the Agent One banner — creating a card-stack effect with depth.
+### Overview
 
-### Changes
+Replace hardcoded mock nudges with a database-backed `nudge_cards` table. Nudge cards are created by managers (or system events) and shown dynamically to target learners on the /chat page. The Agent One card becomes the "container" with an expand button that reveals the nudge cards below it.
 
-**File: `src/pages/LearnerChat.tsx`**
+### Database
 
-In the **Home State** section, render the manager nudge cards as a visual stack between the SuperAgentCard and the suggestion cards grid:
+**New table: `nudge_cards`**
 
-- Import `managerNudges` and the theme map
-- Render each nudge as a compact card with: colored icon, title, subtitle, CTA button, dismiss X
-- Cards are slightly overlapping/offset to create a "stacked" depth effect (e.g., each card slightly indented or with shadow layering)
-- Max 3 visible with "+N more" indicator
-- Clicking a CTA routes appropriately (navigate, chat, or navigate-and-chat)
-- Dismissable individually with local state
-- When a nudge triggers chat mode (`type: "chat"`), it activates the chat state and sends the prompt
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid | PK |
+| account_id | uuid | FK to accounts |
+| target_user_id | text | The learner who sees this card |
+| created_by | text | Manager/system who created it |
+| type | text | `kudos`, `meeting`, `learning_activity`, `reflection_request` |
+| title | text | Card headline |
+| subtitle | text | Card description |
+| color_theme | text | `blue`, `emerald`, `amber`, `violet`, `rose` |
+| cta_label | text | e.g. "View", "Continue", "Reflect" |
+| cta_action | jsonb | `{ type, path?, prompt? }` |
+| priority | text | `high`, `medium`, `low` |
+| metadata | jsonb | Extra data (e.g. skill_target_id, sender name) |
+| viewed | boolean | Default false — used for kudos confetti trigger |
+| created_at | timestamptz | |
 
-**File: `src/components/chat/OnboardingNudge.tsx`**
+Seed with 4-5 nudges for the Rathbones demo user (RAT-E001) matching the current mock data types.
 
-- Hide on `/chat` page since nudges are rendered inline on the home page there
-- Keep rendering in the floating `AIChatWrapper` on other pages as-is
+### Component Changes
 
-### Visual layout (home state)
+**`src/components/chat/AgentOneNudgeStack.tsx`**
+- Fetch nudge cards from DB filtered by `account_id` + `target_user_id`
+- Remove import of hardcoded `managerNudges`
+- **Collapsed state**: Agent One card with stacked depth layers behind it + expand button (ChevronDown)
+- **Expanded state**: Click expand → cards slide out below the Agent One card in a vertical list with stagger animation
+- Remove the "peek strip" cycling UI — replaced by expand/collapse only
+- **Kudos confetti**: When a card with `type === 'kudos'` is first viewed (`viewed === false`), fire a confetti burst animation, then mark `viewed = true` in DB
+- Color theme maps to card type: kudos=rose, meeting=blue, learning=emerald, reflection=violet
+- Dismiss is session-only (local state)
+
+**`src/data/managerNudges.ts`**
+- Keep as fallback types/interface definitions but remove the hardcoded array
+
+**`src/pages/LearnerChat.tsx`**
+- No major changes — already renders `AgentOneNudgeStack`; will pass account_id and user_id
+
+### Confetti Implementation
+
+Use `canvas-confetti` (lightweight library) or a simple CSS particle burst. On first render of a kudos card where `viewed === false`:
+1. Play confetti animation
+2. Update DB: `UPDATE nudge_cards SET viewed = true WHERE id = ?`
+
+### Visual Layout
+
 ```text
-┌─────────────────────────────┐
-│ Hi Clara, let's grow together│
-├─────────────────────────────┤
-│ ┌─── Agent One Card ──────┐ │
-│ └─────────────────────────┘ │
-│ ┌─── Nudge 1 (blue) ─────┐ │  ← stacked cards
-│ ├─── Nudge 2 (amber) ────┤ │     with color-coded
-│ ├─── Nudge 3 (violet) ───┤ │     borders/backgrounds
-│ └── +2 more ─────────────┘ │
-│                             │
-│ ┌─────┐ ┌─────┐ ┌─────┐   │
-│ │Card │ │Card │ │Card │   │  ← suggestion cards
-│ └─────┘ └─────┘ └─────┘   │
-└─────────────────────────────┘
+┌─────────────────────────────────┐
+│ [Sparkles] Agent One  Live  [▼] │  ← main card, expand button
+├─── stacked depth layers ────────┤
+└─────────────────────────────────┘
+
+  Click expand ▼
+
+┌─────────────────────────────────┐
+│ [Sparkles] Agent One  Live  [▲] │
+├─────────────────────────────────┤
+│ 🎉 Kudos from Marcus     [View]│  ← rose theme, confetti on first view
+│ 📅 1:1 Meeting Friday     [View]│  ← blue theme, CTA → inbox
+│ 📚 Continue AML Basics [Resume] │  ← emerald, CTA → skill target
+│ 💬 Weekly Reflection    [Write] │  ← violet, CTA → chat prompt
+└─────────────────────────────────┘
 ```
 
-### Files changed
+### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/pages/LearnerChat.tsx` | Add nudge stack section in home state between SuperAgentCard and suggestion grid; handle CTA actions + dismiss |
-| `src/components/chat/OnboardingNudge.tsx` | Hide on `/chat` route (return null) to avoid duplicate rendering |
+| Migration | Create `nudge_cards` table + seed data for RAT-E001 |
+| `src/components/chat/AgentOneNudgeStack.tsx` | Rewrite to fetch from DB, expand/collapse, kudos confetti |
+| `src/data/managerNudges.ts` | Keep types, remove hardcoded array |
+| `src/pages/LearnerChat.tsx` | Pass account_id + user_id to nudge stack |
+| `package.json` | Add `canvas-confetti` dependency |
 

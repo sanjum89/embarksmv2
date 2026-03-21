@@ -354,8 +354,6 @@ export default function LearnerChat() {
                 </div>
               </div>
 
-              {/* Onboarding Nudge */}
-              <OnboardingNudge />
 
               {/* Suggestion Pills */}
               {(() => {

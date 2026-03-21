@@ -107,7 +107,7 @@ EMPLOYEE: ${profileSummary}${lockedTargetInfo}${targetInfo}`;
     }
 
     case "post-completion":
-      return `${baseRules}\n\nStage: POST-COMPLETION — GENERAL HELPER\n${firstName} has completed their assessment and been given their learning path. Their skill target is "${targetTitle || "assigned training"}".\n\n- Do NOT re-discuss assessment scores or module skipping — that's done\n- Help with anything they ask about: their skill target, modules, career, reflections, etc.\n- If they seem unsure what to do next, suggest checking out their skill target\n- Be a helpful, encouraging companion for the rest of their journey`;
+      return `${baseRules}\n\nStage: POST-COMPLETION — GENERAL HELPER\nThe learner has completed their assessment and been given their learning path. Their skill target is "${targetTitle || "assigned training"}".\n\n- Do NOT re-discuss assessment scores or module skipping — that's done\n- Help with anything they ask about: their skill target, modules, career, reflections, etc.\n- If they seem unsure what to do next, suggest checking out their skill target\n- Be a helpful, encouraging companion for the rest of their journey`;
 
     default:
       return `${baseRules}\n\nHelp the learner with whatever they need.`;

@@ -1,35 +1,31 @@
 
 
-## Plan: Fix Nudge Stack Cycling & Move Send Button Inside Input
+## Plan: Add Cycling Arrows to Agent One Main Card
 
-### Two issues to fix
+### What to change
 
-**1. Cycling should NOT show nudge content on the main card**
+Add left and right chevron arrows on the right side of the main Agent One card. When clicked, they cycle through the nudge cards, updating the depth layer colors behind the stack. The main card text stays static ("Hey! I'm here to help you get started →") — the arrows just change which card is "on top" of the stack (affecting depth layer tints and which card appears first when expanded).
 
-Currently, when you click left/right arrows, the main Agent One card's subtitle text changes to show the current nudge's title and icon. The user wants the main card to always show summary text (e.g., "Hey! I'm here to help you get started") and the cycling should instead swap the visible depth layer / peek card underneath, or simply change which card opens first when expanded.
+### File: `src/components/chat/AgentOneNudgeStack.tsx`
 
-Change in `AgentOneNudgeStack.tsx`:
-- Remove the nudge title/icon display from the main card's subtitle area
-- Main card always shows the static summary text: "Hey! I'm here to help you get started →"
-- Keep the action count badge ("4 actions")
-- Remove the left/right chevron arrows from the main card (since cycling individual cards on the summary doesn't make sense)
-- The depth layers behind still show color hints from the top cards in the stack
+- Add a `div` with `ChevronLeft` and `ChevronRight` buttons on the right side of the main card content area (next to the ChevronUp icon area), visible when collapsed and `activeNudges.length > 1`
+- Wire buttons to existing `cycleLeft` / `cycleRight` handlers (already defined but unused)
+- `e.stopPropagation()` on both to prevent triggering expand/collapse
+- Show a small counter between arrows: `"1/4"` style indicator using `currentIndex + 1` / `activeNudges.length`
 
-**2. Send button inside the input field**
+### Layout
 
-Move the Send button inside the input's `relative` container as an absolutely positioned element on the right side, and remove the separate Sparkles icon div.
-
-Change in `LearnerChat.tsx` (both home-state and chat-state input bars):
-- Place the Send button inside the input wrapper with `absolute right-2 top-1/2 -translate-y-1/2`
-- Add `pr-10` to the input to make room for the button
-- Place the Sparkles icon as a left-side adornment inside the input (`absolute left-3`)
-- Add `pl-9` to the input for the Sparkles icon
-- Remove the external Sparkles div and external Send button
+```text
+┌─────────────────────────────────────────────────┐
+│ [✦] Agent One  LIVE  4 actions    [◀ 1/4 ▶]   │
+│      Hey! I'm here to help...                   │
+├═══════════════════════════════════════════════════┤ ← depth layer tint changes on cycle
+└─────────────────────────────────────────────────┘
+```
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/components/chat/AgentOneNudgeStack.tsx` | Remove cycling arrows and nudge preview from main card subtitle; always show static summary text |
-| `src/pages/LearnerChat.tsx` | Move Send button inside input field for both home and chat state input bars |
+| `src/components/chat/AgentOneNudgeStack.tsx` | Add cycling arrows with counter on right side of main card when collapsed |
 

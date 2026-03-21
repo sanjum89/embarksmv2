@@ -14,7 +14,6 @@ import { AgentOneNudgeStack } from "@/components/chat/AgentOneNudgeStack";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { cn } from "@/lib/utils";
 
 /* ─── Suggestion Card Illustrations ─── */
 const CardIllustration = ({ type }: { type: string }) => {

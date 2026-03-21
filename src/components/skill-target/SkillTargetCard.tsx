@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Target, BookOpen, MessageSquare, ClipboardCheck, ArrowRight, Clock, Lock } from "lucide-react";
+import { Target, BookOpen, MessageSquare, ClipboardCheck, ArrowRight, Clock, Lock, Eye } from "lucide-react";
 import type { SkillTarget, StepType } from "@/types/learning";
 import { proficiencyShort } from "@/types/learning";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
@@ -106,15 +106,25 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
             </div>
           </div>
 
-          {/* Prerequisite unlock hint */}
-          {prerequisite && (
-            <div className="relative z-20 mt-2 flex items-center gap-2 rounded-lg bg-secondary/80 px-3 py-2">
-              <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
-              <span className="text-xs text-muted-foreground">
-                Complete <strong className="text-foreground">{prerequisite.title}</strong> to unlock
-              </span>
-            </div>
-          )}
+          {/* Actions row */}
+          <div className="relative z-20 mt-2 flex items-center gap-2">
+            {/* Prerequisite unlock hint */}
+            {prerequisite && (
+              <div className="flex items-center gap-2 rounded-lg bg-secondary/80 px-3 py-2 flex-1 min-w-0">
+                <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
+                <span className="text-xs text-muted-foreground truncate">
+                  Complete <strong className="text-foreground">{prerequisite.title}</strong> to unlock
+                </span>
+              </div>
+            )}
+            <button
+              onClick={() => navigate(`/skill-target/${target.id}?preview=true`)}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card/80 px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-card transition-colors shrink-0"
+            >
+              <Eye className="h-3 w-3" />
+              Preview
+            </button>
+          </div>
         </div>
       </motion.div>
     );

@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Target, CalendarDays, BookOpen, ClipboardCheck, Drama } from "lucide-react";
+import { ArrowLeft, Target, CalendarDays, BookOpen, ClipboardCheck, Drama, Lock, Eye } from "lucide-react";
 import { proficiencyShort } from "@/types/learning";
 
 
@@ -16,6 +16,7 @@ import type { StepItem } from "@/types/learning";
 
 export default function SkillTargetDetail() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const { skillTargets } = useSkillTargets();
   const { styleTheme } = useTheme();
   const target = skillTargets.find((st) => st.id === id);
@@ -23,6 +24,7 @@ export default function SkillTargetDetail() {
   const [activeTab, setActiveTab] = useState<"conversation" | "chapters">("conversation");
 
   const isTraditional = styleTheme === "traditional";
+  const isPreview = searchParams.get("preview") === "true" && target?.locked;
 
   if (!target) {
     return (
@@ -41,7 +43,16 @@ export default function SkillTargetDetail() {
   // ── Traditional UI layout ──
   if (isTraditional) {
     return (
-      <div className="flex h-[calc(100vh-3.5rem)]">
+      <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+        {/* Preview banner */}
+        {isPreview && (
+          <div className="flex items-center gap-2 border-b border-primary/20 bg-primary/5 px-6 py-2.5">
+            <Eye className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-sm text-foreground font-medium">Preview Mode</span>
+            <span className="text-sm text-muted-foreground">— Complete the prerequisite to start this skill target</span>
+          </div>
+        )}
+        <div className="flex flex-1 min-h-0">
         {/* Left: Chat panel — full height */}
         <div className="flex-1 flex flex-col min-w-0 border-r border-border">
           {/* Title bar */}
@@ -144,6 +155,7 @@ export default function SkillTargetDetail() {
             />
           )}
         </div>
+        </div>
       </div>
     );
   }
@@ -152,6 +164,15 @@ export default function SkillTargetDetail() {
   return (
     <div className="flex flex-1 min-h-0 h-full overflow-hidden">
       <div className="flex-1 overflow-y-auto p-6 min-h-0">
+          {/* Preview banner */}
+          {isPreview && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5">
+              <Eye className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-sm text-foreground font-medium">Preview Mode</span>
+              <span className="text-sm text-muted-foreground">— Complete the prerequisite to start this skill target</span>
+            </div>
+          )}
+
           <Link
             to="/"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"

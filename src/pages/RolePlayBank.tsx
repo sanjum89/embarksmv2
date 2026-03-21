@@ -288,7 +288,7 @@ export default function RolePlayBank() {
                 className={cn(
                   "rounded-md px-3 py-1.5 text-xs font-medium capitalize transition-all",
                   difficulty === d
-                    ? "bg-card text-foreground shadow-sm"
+                    ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >

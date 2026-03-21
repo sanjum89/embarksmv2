@@ -35,6 +35,7 @@ import { AssessmentCreator } from "@/components/skill-target/AssessmentCreator";
 import type { StepItem, LearningModule, Assessment, RolePlay } from "@/types/learning";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { getRecommendationsForUser } from "@/lib/skillRecommendations";
 
 type ContentItem =
   | { kind: "module"; data: LearningModule }
@@ -45,10 +46,10 @@ type ChatMsg = { role: "assistant" | "user"; text: string; results?: ContentItem
 type LeftView = "chat" | "detail";
 type ContentFilter = "all" | "modules" | "assessments" | "roleplays";
 
-const WELCOME_MSG =
+const FALLBACK_WELCOME =
   "Describe the skill target you want to create and I'll find the right courses for you from our repo. You can also add your own content by clicking the upload button below.";
 
-const SUGGESTION_PILLS = [
+const FALLBACK_PILLS = [
   "Customer Onboarding",
   "De-escalation Techniques",
   "Apple L1 Support",
@@ -119,8 +120,83 @@ export default function SkillTargetBuilder() {
   const mockAssessments = normalizedAccount?.assessments?.length ? normalizedAccount.assessments : activeAccount?.data?.assessments ?? defaultAssessments;
   const mockRolePlayBank = normalizedAccount?.rolePlays?.length ? normalizedAccount.rolePlays : activeAccount?.data?.rolePlays ?? defaultRolePlayBank;
 
+  // ── Derive contextual data from account ──
+  const profileData = normalizedAccount?.profileData?.[user.id];
+  const { roleGaps, projectGaps } = useMemo(
+    () => getRecommendationsForUser(profileData),
+    [profileData]
+  );
+
+  const projects = useMemo(() => {
+    if (!normalizedAccount?.projectsById) return [];
+    return Object.values(normalizedAccount.projectsById);
+  }, [normalizedAccount?.projectsById]);
+
+  const employeeTitle = normalizedAccount?.employeesById?.[user.id]?.title;
+
+  // ── Context-aware suggestion pills ──
+  const suggestionPills = useMemo(() => {
+    const pills: string[] = [];
+    // 1. Skill gaps first
+    for (const gap of roleGaps) {
+      if (pills.length >= 8) break;
+      pills.push(gap.skill);
+    }
+    for (const gap of projectGaps) {
+      if (pills.length >= 8) break;
+      if (!pills.includes(gap.skill)) pills.push(gap.skill);
+    }
+    // 2. Project names / required skills
+    for (const proj of projects) {
+      if (pills.length >= 8) break;
+      if (proj.name && !pills.includes(proj.name)) pills.push(proj.name);
+    }
+    // 3. Top module topics from content library
+    for (const mod of mockLearningModules.slice(0, 6)) {
+      if (pills.length >= 8) break;
+      const t = (mod as any).title;
+      if (t && !pills.includes(t)) pills.push(t);
+    }
+    return pills.length > 0 ? pills : FALLBACK_PILLS;
+  }, [roleGaps, projectGaps, projects, mockLearningModules]);
+
+  // ── Context-aware welcome message ──
+  const welcomeMessage = useMemo(() => {
+    if (roleGaps.length > 0) {
+      const gapNames = roleGaps.slice(0, 3).map((g) => `**${g.skill}**`).join(", ");
+      return `Based on your profile, you have gaps in ${gapNames}. I can help you find the right courses — or search for anything below.`;
+    }
+    if (projects.length > 0) {
+      const projName = projects[0].name || "your current project";
+      return `You're assigned to **${projName}**. I can build a learning path for that — or search for any topic.`;
+    }
+    return FALLBACK_WELCOME;
+  }, [roleGaps, projects]);
+
+  // ── Context-aware placeholders ──
+  const inputPlaceholder = useMemo(() => {
+    const count = mockLearningModules.length + mockAssessments.length + mockRolePlayBank.length;
+    if (employeeTitle && count > 0) return `Search ${count} items for ${employeeTitle} or any topic...`;
+    if (count > 3) return `Search ${count} modules, assessments, role plays...`;
+    return "Search for modules, assessments, role plays...";
+  }, [mockLearningModules.length, mockAssessments.length, mockRolePlayBank.length, employeeTitle]);
+
+  const titlePlaceholder = useMemo(() => {
+    if (roleGaps.length > 0) return `e.g. ${roleGaps[0].skill} Mastery`;
+    if (projects.length > 0) return `e.g. ${projects[0].name || "Project"} Skills`;
+    return "e.g. Customer Support Fundamentals";
+  }, [roleGaps, projects]);
+
+  const descPlaceholder = useMemo(() => {
+    if (roleGaps.length > 0) {
+      const g = roleGaps[0];
+      return `e.g. Build ${g.skill} skills from ${g.currentLevel || "—"} to ${g.targetLevel} level`;
+    }
+    return "Describe what this skill target covers...";
+  }, [roleGaps]);
+
   // Left panel
-  const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", text: WELCOME_MSG }]);
+  const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", text: welcomeMessage }]);
   const [input, setInput] = useState("");
   const [leftView, setLeftView] = useState<LeftView>("chat");
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
@@ -322,7 +398,7 @@ export default function SkillTargetBuilder() {
             </div>
           </ScrollArea>
         </div>
-        <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} />
+        <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} titlePlaceholder={titlePlaceholder} descPlaceholder={descPlaceholder} />
       </div>
     );
   }
@@ -440,9 +516,9 @@ export default function SkillTargetBuilder() {
             {/* Suggestion pills — show after welcome, before user searches */}
             {!pillsUsed && messages.length === 1 && (
               <div className="ml-10">
-                <p className="text-xs text-muted-foreground mb-2">Popular topics:</p>
+                <p className="text-xs text-muted-foreground mb-2">Suggested topics:</p>
                 <div className="flex flex-wrap gap-2">
-                  {SUGGESTION_PILLS.map((pill) => (
+                  {suggestionPills.map((pill) => (
                     <button
                       key={pill}
                       onClick={() => handleSend(pill)}
@@ -491,7 +567,7 @@ export default function SkillTargetBuilder() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Search for modules, assessments, role plays..."
+                placeholder={inputPlaceholder}
                 className="pr-10 h-8 text-sm border-0 shadow-none focus-visible:ring-0"
                 disabled={isSearching}
               />
@@ -508,7 +584,7 @@ export default function SkillTargetBuilder() {
       </div>
 
       {/* Right: Builder */}
-      <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} />
+      <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} titlePlaceholder={titlePlaceholder} descPlaceholder={descPlaceholder} />
 
       {/* Upload Modal */}
       <UploadModal open={showUploadModal} onClose={() => setShowUploadModal(false)} addedIds={addedIds} onAdd={(items) => items.forEach((item) => addStep(item))} />
@@ -613,13 +689,15 @@ function UploadModal({ open, onClose, addedIds, onAdd }: { open: boolean; onClos
 
 /* ── Right panel component ── */
 function BuilderPanel({
-  title, setTitle, description, setDescription, steps, removeStep, moveStep, onCreate,
+  title, setTitle, description, setDescription, steps, removeStep, moveStep, onCreate, titlePlaceholder, descPlaceholder,
 }: {
   title: string; setTitle: (v: string) => void;
   description: string; setDescription: (v: string) => void;
   steps: StepItem[]; removeStep: (i: number) => void;
   moveStep: (from: number, to: number) => void;
   onCreate: () => void;
+  titlePlaceholder?: string;
+  descPlaceholder?: string;
 }) {
   return (
     <div className="w-[400px] flex-shrink-0 flex flex-col bg-background">
@@ -630,11 +708,11 @@ function BuilderPanel({
         <div className="p-5 space-y-5">
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Name</label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Apple L1 Customer Support" className="h-9 text-sm" />
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={titlePlaceholder || "e.g. Customer Support Fundamentals"} className="h-9 text-sm" />
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Description</label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe what this skill target covers..." className="text-sm min-h-[60px]" />
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={descPlaceholder || "Describe what this skill target covers..."} className="text-sm min-h-[60px]" />
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">

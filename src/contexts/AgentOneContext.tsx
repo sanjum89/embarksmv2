@@ -473,6 +473,10 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export const useAgentOne = () => useContext(AgentOneContext);
+export const useAgentOne = () => {
+  const ctx = useContext(AgentOneContext);
+  if (!ctx) throw new Error("useAgentOne must be used within AgentOneProvider");
+  return ctx;
+};
 export { parseSuggestions };
 export type { ChatMessage };

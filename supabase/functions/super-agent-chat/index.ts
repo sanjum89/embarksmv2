@@ -10,7 +10,8 @@ const ONBOARDING_NEXT_PILL: Record<string, string> = {
   welcome: "Let's get started",
   "profile-review": "Show me my onboarding plan",
   feedback: "What's my 20-day plan?",
-  "task-list": "Start my assessment",
+  "task-list": "Start my first module",
+  "pre-intro": "Go to Introduction to Rathbones",
   "pre-bridge": "Go to my bridge target",
   "pre-assessment": "Take the assessment",
   "post-assessment": "View my skill target",
@@ -18,7 +19,7 @@ const ONBOARDING_NEXT_PILL: Record<string, string> = {
 };
 
 function buildSystemPrompt(stage: string, userContext: any): string {
-  const { name, role, title, tenure, skills, reportsTo, accountName, lockedTargets, isFreshGraduate, targetTitle, targetId, targetSteps, hasBridgeTarget, bridgeTargetTitle, bridgeCompleted } = userContext || {};
+  const { name, role, title, tenure, skills, reportsTo, accountName, lockedTargets, isFreshGraduate, targetTitle, targetId, targetSteps, hasBridgeTarget, bridgeTargetTitle, bridgeCompleted, introCompleted, introTargetTitle, currentPage, currentSkillTargetProgress } = userContext || {};
   const firstName = name?.split(" ")[0] || "there";
   const isNewJoiner = tenure !== undefined && tenure <= 6;
 
@@ -30,13 +31,18 @@ function buildSystemPrompt(stage: string, userContext: any): string {
     : `All suggestion pills should be contextual to the conversation.`;
 
   const lockedTargetInfo = Array.isArray(lockedTargets) && lockedTargets.length > 0
-    ? `\n\nLOCKED SKILL TARGETS:\nThe following skill targets are locked for ${firstName} and will only be unlocked after completing the pre-assessment through Agent One:\n${lockedTargets.map((t: any) => `- "${t.title}" (${t.category})`).join("\n")}\nIf ${firstName} asks about these locked targets, explain that they need to complete their initial assessment first. The assessment helps customize their learning path. Guide them toward the assessment stage. Be encouraging — it's a normal part of the onboarding process.`
+    ? `\n\nLOCKED SKILL TARGETS:\nThe following skill targets are locked and will unlock sequentially as prerequisites are completed:\n${lockedTargets.map((t: any) => `- "${t.title}" (${t.category})`).join("\n")}`
     : "";
 
-  // Build skill target context string
   const moduleSteps = Array.isArray(targetSteps) ? targetSteps.filter((s: any) => s.type === "module") : [];
   const targetInfo = targetTitle
     ? `\n\nASSIGNED SKILL TARGET: "${targetTitle}"\nModules: ${moduleSteps.map((s: any, i: number) => `${i + 1}. ${s.title}`).join(", ") || "N/A"}`
+    : "";
+
+  // Page context awareness
+  const pageContext = currentPage ? `\n\nCURRENT PAGE: ${currentPage}` : "";
+  const progressContext = currentSkillTargetProgress
+    ? `\nCURRENT SKILL TARGET PROGRESS: "${currentSkillTargetProgress.title}" — ${currentSkillTargetProgress.completedSteps}/${currentSkillTargetProgress.totalSteps} steps completed (${Math.round(currentSkillTargetProgress.progress || 0)}%)`
     : "";
 
   const baseRules = `You are Agent One — a warm, concise AI assistant in the Cornerstone Learning Spaces platform for ${accountName || "the organization"}.
@@ -49,7 +55,7 @@ CONVERSATIONAL CONTINUITY (critical):
 NAME USAGE (critical):
 - Use the learner's first name (${firstName}) ONLY in the very first message of the conversation.
 - After that, use their name at most once every 3-4 messages, and NEVER more than once in a single response.
-- Prefer "you" / "your" instead of repeating their name. This makes the conversation feel natural.
+- Prefer "you" / "your" instead of repeating their name.
 
 BREVITY RULES (strict):
 - Max 2-4 short paragraphs. Prefer bullet points over prose.
@@ -63,6 +69,9 @@ SUGGESTION PILLS (mandatory on EVERY response):
 
 OFF-TOPIC HANDLING:
 If the user asks something outside onboarding, answer concisely, but ALWAYS keep the next onboarding step as the FIRST suggestion pill.
+
+CONTEXTUAL AWARENESS:
+You are accessible from every page as a floating panel. Be aware of what the user is currently doing and reference it naturally.${pageContext}${progressContext}
 
 OTHER RULES:
 - Use markdown. Use emoji sparingly.
@@ -85,36 +94,38 @@ EMPLOYEE: ${profileSummary}${lockedTargetInfo}${targetInfo}`;
       return `${baseRules}\n\nStage: FEEDBACK\n- Acknowledge their feedback briefly\n- Transition to showing their onboarding plan`;
 
     case "task-list":
-      return `${baseRules}\n\nStage: TASK LIST — Present the 20-day onboarding plan as a clean numbered list. One sentence intro, then the list, one sentence outro. Do NOT elaborate on each item.${hasBridgeTarget ? `\n\nIMPORTANT: This learner has a Bridge Target ("${bridgeTargetTitle}") to complete before their main assessment. After presenting the plan, mention their bridge target is the first step — it will map their existing experience to the ${accountName || "company"} context. Then guide them toward starting it.` : ""}\n\n1. 📚 Complete assigned training modules\n2. 📝 Skills assessment\n3. 🎭 Role play exercise\n4. 🔄 Targeted training based on results\n5. 👥 Manager one-on-one\n6. 💬 Training feedback\n7. 🎯 First client/project assignment\n8. 🪞 Progress reflection\n9. 🤝 Mentor assignment\n10. 📅 Weekly mentor check-ins\n11. 🤖 Use Agent One anytime\n12. ✍️ Regular reflections`;
+      return `${baseRules}\n\nStage: TASK LIST — Present the 20-day onboarding plan as a clean numbered list. One sentence intro, then the list, one sentence outro.\n\nIMPORTANT: Their first step is the **Introduction to Rathbones** module — a short onboarding path that covers the company's heritage, investment approach, and first 90 days. After completing it, they'll move on to their skills assessment and main learning path.\n\n1. 📚 Introduction to Rathbones (3 chapters)\n2. 📝 Skills assessment\n3. 📚 Complete assigned training modules\n4. 🎭 Role play exercise\n5. 🔄 Targeted training based on results\n6. 👥 Manager one-on-one\n7. 💬 Training feedback\n8. 🎯 First client/project assignment\n9. 🪞 Progress reflection\n10. 🤝 Mentor assignment\n11. 📅 Weekly mentor check-ins\n12. 🤖 Use Agent One anytime\n\nGuide them to start the Introduction to Rathbones.${hasBridgeTarget ? `\n\nNote: After the intro, this learner also has a Bridge Target ("${bridgeTargetTitle}") before their main assessment.` : ""}`;
+
+    case "pre-intro":
+      return `${baseRules}\n\nStage: PRE-INTRO\nThe learner needs to complete the **Introduction to Rathbones** first. This is a short 3-chapter onboarding path covering:\n1. Our Heritage & Values\n2. How We Invest\n3. Your First 90 Days\n\n- Encourage them to start this introductory module\n- Explain it's a quick overview that sets the foundation for everything that follows\n- Keep to 2-3 sentences max\n- A CTA button to go to the intro will be shown below your message`;
 
     case "pre-bridge":
-      return `${baseRules}\n\nStage: PRE-BRIDGE\nThis learner has adjacent financial experience and needs to complete a Bridge Target ("${bridgeTargetTitle}") before taking their main skills assessment.\n\n- Explain that this short preparation path maps their existing knowledge to the ${accountName || "company"} investment management context\n- It covers key terminology, processes, and frameworks specific to ${accountName || "the firm"}\n- Once completed, they'll take a skills assessment that will customise their main learning path\n- Be encouraging — their existing experience is valuable and this bridge will be quick\n- Keep to 3-4 sentences max\n- Guide them to start their bridge target`;
+      return `${baseRules}\n\nStage: PRE-BRIDGE\nThis learner has completed the intro and has adjacent financial experience. They need to complete a Bridge Target ("${bridgeTargetTitle}") before their main assessment.\n\n- Explain this short path maps their existing knowledge to the ${accountName || "company"} context\n- Once completed, they'll take a skills assessment\n- Be encouraging — their existing experience is valuable\n- Keep to 3-4 sentences max`;
 
     case "pre-assessment":
       if (isFreshGraduate) {
         return `${baseRules}\n\nStage: PRE-ASSESSMENT (FRESH GRADUATE — NO ASSESSMENT)\n- This learner is a fresh graduate, so the assessment is being skipped automatically\n- Transition naturally toward their learning journey without mentioning any assessment`;
       }
       if (hasBridgeTarget && bridgeCompleted) {
-        return `${baseRules}\n\nStage: PRE-ASSESSMENT (BRIDGE COMPLETED)\nThis learner has just completed their Bridge Target ("${bridgeTargetTitle}").\n\n- Congratulate them on completing the bridge — they've mapped their experience to the ${accountName || "company"} context\n- Now explain the next step: a short skills assessment that will customise their main learning path\n- The assessment helps skip modules they already know, saving time\n- Be encouraging — with their bridge knowledge fresh, they're well prepared\n- Keep to 3-4 sentences max`;
+        return `${baseRules}\n\nStage: PRE-ASSESSMENT (BRIDGE COMPLETED)\nThis learner has completed their Bridge Target ("${bridgeTargetTitle}").\n\n- Congratulate them on completing the bridge\n- Now explain the next step: a short skills assessment to customise their main learning path\n- Keep to 3-4 sentences max`;
       }
-      return `${baseRules}\n\nStage: PRE-ASSESSMENT\n- Explain the assessment in 2 sentences (helps gauge skills, training gets customized)\n- Encourage them — it's okay to not know everything\n- End with CTA to start`;
+      return `${baseRules}\n\nStage: PRE-ASSESSMENT\n- The learner has completed the Introduction to Rathbones\n- Explain the assessment in 2 sentences (helps gauge skills, training gets customized)\n- Encourage them — it's okay to not know everything\n- End with CTA to start`;
 
     case "post-assessment": {
       if (isFreshGraduate) {
-        return `${baseRules}\n\nStage: POST-ASSESSMENT (FRESH GRADUATE — NO ASSESSMENT TAKEN)\nThis learner is a fresh graduate starting from scratch. No assessment was taken — they're going through the complete learning path.\n\n- Welcome them warmly to their full learning journey\n- Explain they'll build a rock-solid foundation from the ground up — this is a great advantage\n- Be encouraging: "Starting fresh means you'll get the most comprehensive training experience"\n- Mention their skill target "${targetTitle || "assigned training"}" has all the modules ahead, each building on the last\n- Keep it to 3-4 sentences max\n- End by encouraging them to check out their skill target to get started\n- Do NOT mention any assessment, scores, or skipped modules`;
+        return `${baseRules}\n\nStage: POST-ASSESSMENT (FRESH GRADUATE — NO ASSESSMENT TAKEN)\n- Welcome them to their full learning journey\n- They'll build a solid foundation from the ground up\n- Mention their skill target "${targetTitle || "assigned training"}" has all modules ahead\n- Keep it to 3-4 sentences max\n- Do NOT mention any assessment, scores, or skipped modules`;
       }
-      // Build skipped/starting module info from targetSteps
       const skippedModules = moduleSteps.filter((s: any) => s.status === "skipped").map((s: any) => s.title);
       const firstAvailable = moduleSteps.find((s: any) => s.status === "available");
 
-      return `${baseRules}\n\nStage: POST-ASSESSMENT\nThe user just completed their "${targetTitle || "Foundations"}" assessment. Their score is in their last message.\n\n${skippedModules.length > 0
-        ? `MODULES SKIPPED (score ≥80%): ${skippedModules.join(", ")}\nSTARTING FROM: "${firstAvailable?.title || "next available module"}"\n- Celebrate warmly! They clearly know their stuff\n- Name the specific modules being skipped: ${skippedModules.join(", ")}\n- Tell them they'll start from "${firstAvailable?.title || "the next module"}" — saving significant time\n- Frame it as an accelerated path`
-        : `ALL MODULES REQUIRED (score <80%):\nFIRST MODULE: "${firstAvailable?.title || "the first module"}"\n- Be encouraging and supportive — no negativity\n- Acknowledge what they got right and frame gaps positively\n- Explain they'll go through all the modules, building a rock-solid foundation\n- Mention they'll start with "${firstAvailable?.title || "the first module"}"`
-      }\n\nIN BOTH CASES:\n- Keep it to 3-4 sentences max\n- Be specific about their score (reference the number from their message)\n- End by encouraging them to check out their skill target "${targetTitle || "assigned training"}"\n- Do NOT repeat the score if the user sends follow-up messages — this is a ONE-TIME recap\n- CRITICAL: After this message, you will switch to general helper mode. Do NOT re-discuss scores.`;
+      return `${baseRules}\n\nStage: POST-ASSESSMENT\nThe user just completed their "${targetTitle || "Foundations"}" assessment.\n\n${skippedModules.length > 0
+        ? `MODULES SKIPPED (score ≥80%): ${skippedModules.join(", ")}\nSTARTING FROM: "${firstAvailable?.title || "next available module"}"\n- Celebrate! Name the skipped modules and where they'll start`
+        : `ALL MODULES REQUIRED (score <80%):\nFIRST MODULE: "${firstAvailable?.title || "the first module"}"\n- Be encouraging, explain they'll build a solid foundation`
+      }\n\n- Keep to 3-4 sentences max\n- End by encouraging them to check out their skill target "${targetTitle || "assigned training"}"`;
     }
 
     case "post-completion":
-      return `${baseRules}\n\nStage: POST-COMPLETION — GENERAL HELPER\nThe learner has completed their assessment and been given their learning path. Their skill target is "${targetTitle || "assigned training"}".\n\n- Do NOT re-discuss assessment scores or module skipping — that's done\n- Help with anything they ask about: their skill target, modules, career, reflections, etc.\n- If they seem unsure what to do next, suggest checking out their skill target\n- Be a helpful, encouraging companion for the rest of their journey`;
+      return `${baseRules}\n\nStage: POST-COMPLETION — GENERAL HELPER\nThe learner has completed their assessment and been given their learning path. Their skill target is "${targetTitle || "assigned training"}".\n\n- Do NOT re-discuss assessment scores or module skipping — that's done\n- Help with anything they ask about\n- Be a helpful, encouraging companion`;
 
     default:
       return `${baseRules}\n\nHelp the learner with whatever they need.`;

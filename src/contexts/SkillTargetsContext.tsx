@@ -62,6 +62,31 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
     }
   }, [accountId, loading]);
 
+  // Auto-unlock targets when their prerequisite is completed
+  useEffect(() => {
+    if (loading) return;
+    const targets = perUserTargets[compositeKey];
+    if (!targets) return;
+
+    let changed = false;
+    const updated = targets.map(target => {
+      if (!target.locked || !target.prerequisiteId) return target;
+      const prereq = targets.find(t => t.id === target.prerequisiteId);
+      if (!prereq) return target;
+      const prereqDone = prereq.progress >= 100 || prereq.steps.every(s => s.status === "completed" || s.status === "skipped");
+      if (prereqDone) {
+        changed = true;
+        const steps = target.steps.map((s, i) => i === 0 ? { ...s, status: "available" as const } : s);
+        return { ...target, locked: false, steps };
+      }
+      return target;
+    });
+
+    if (changed) {
+      setPerUserTargets(prev => ({ ...prev, [compositeKey]: updated }));
+    }
+  }, [perUserTargets, compositeKey, loading]);
+
   const skillTargets = perUserTargets[compositeKey] ?? getBaseTargets();
 
   const addSkillTargets = useCallback((targets: SkillTarget[]) => {

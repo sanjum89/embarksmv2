@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { LoginPage } from "./LoginPage";
+import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUser } from "@/contexts/UserContext";
@@ -29,6 +30,7 @@ export function AppLayout() {
           <Outlet />
         </div>
       </main>
+      <AIChatWrapper />
     </div>
   );
 }

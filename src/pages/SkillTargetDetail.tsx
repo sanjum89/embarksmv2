@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Target, CalendarDays, BookOpen, ClipboardCheck, Drama } from "lucide-react";
 import { proficiencyShort } from "@/types/learning";
 
-import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
+
 import { StepTimeline } from "@/components/skill-target/StepTimeline";
 import { TraditionalActivitiesPanel } from "@/components/skill-target/TraditionalActivitiesPanel";
 import { TraditionalContentViewer } from "@/components/skill-target/TraditionalContentViewer";
@@ -274,16 +274,6 @@ export default function SkillTargetDetail() {
             <StepTimeline steps={target.steps} skillTargetId={target.id} />
           </motion.div>
       </div>
-
-      <AIChatWrapper
-        contextLabel={`Skill Target → ${target.title}`}
-        emptyStateMessage="I can help you understand this skill target and track your progress."
-        suggestedActions={[
-          { label: "Explain this skill" },
-          { label: "What should I focus on?" },
-          { label: "Show my progress" },
-        ]}
-      />
     </div>
   );
 }

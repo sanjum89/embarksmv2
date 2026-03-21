@@ -26,7 +26,7 @@ import {
   Legend,
 } from "recharts";
 
-import { AIChatWrapper, AIChatWrapperHandle } from "@/components/chat/AIChatWrapper";
+
 import { CareerTimeline } from "@/components/my360/CareerTimeline";
 import { ActionPlanView } from "@/components/my360/ActionPlanView";
 import { useUser } from "@/contexts/UserContext";
@@ -94,7 +94,7 @@ type GapFilter = "All" | "Gap" | "No gap";
 export default function My360() {
   const { user } = useUser();
   const { activeAccount, normalizedAccount } = useAccount();
-  const chatRef = useRef<AIChatWrapperHandle>(null);
+  const chatRef = useRef<any>(null);
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
@@ -703,16 +703,6 @@ export default function My360() {
           )}
       </div>
 
-      <AIChatWrapper
-        ref={chatRef}
-        contextLabel="My 360 → Profile"
-        emptyStateMessage="I can analyze your skills profile, identify gaps, and suggest growth paths."
-        suggestedActions={[
-          { label: "Analyze my skills" },
-          { label: "Career next steps" },
-          { label: "Skill gaps" },
-        ]}
-      />
     </div>
   );
 }

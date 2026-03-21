@@ -1,65 +1,291 @@
-import { useState, useRef, forwardRef, useImperativeHandle } from "react";
-import { MessageSquare, X } from "lucide-react";
-import { AIChatPanel, AIChatPanelHandle } from "./AIChatPanel";
-import { useTheme } from "@/contexts/ThemeContext";
+import { useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  MessageSquare,
+  X,
+  Sparkles,
+  Send,
+  RotateCcw,
+  ArrowRight,
+  ClipboardList,
+} from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";
+import { InlineAssessment } from "@/components/chat/InlineAssessment";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-interface AIChatWrapperProps {
-  contextLabel?: string;
-  suggestedActions?: { label: string }[];
-  emptyStateMessage?: string;
-}
-
-export interface AIChatWrapperHandle {
-  sendMessage: (prompt: string, mockResponse: string, actions?: { label: string }[]) => void;
-  clearMessages: () => void;
-}
-
-export const AIChatWrapper = forwardRef<AIChatWrapperHandle, AIChatWrapperProps>(
-  function AIChatWrapper({ contextLabel, suggestedActions, emptyStateMessage }, ref) {
-    const { styleTheme } = useTheme();
-    const [open, setOpen] = useState(false);
-    const chatRef = useRef<AIChatPanelHandle>(null);
-
-    useImperativeHandle(ref, () => ({
-      sendMessage: (prompt, mockResponse, actions) => {
-        chatRef.current?.sendMessage(prompt, mockResponse, actions);
-        if (styleTheme === "traditional") setOpen(true);
-      },
-      clearMessages: () => chatRef.current?.clearMessages(),
-    }));
-
-    if (styleTheme === "traditional") {
-      return (
-        <>
-          {/* Floating chat button */}
-          <button
-            onClick={() => setOpen(!open)}
-            className={cn(
-              "fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-all duration-200",
-              open
-                ? "bg-muted text-muted-foreground hover:bg-muted/80"
-                : "bg-primary text-primary-foreground hover:opacity-90"
-            )}
-          >
-            {open ? <X className="h-5 w-5" /> : <MessageSquare className="h-5 w-5" />}
-          </button>
-
-          {/* Floating chat panel */}
-          {open && (
-            <div className="fixed bottom-20 right-6 z-50 w-[360px] h-[520px] rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
-              <AIChatPanel ref={chatRef} contextLabel={contextLabel} suggestedActions={suggestedActions} emptyStateMessage={emptyStateMessage} />
-            </div>
-          )}
-        </>
-      );
-    }
-
-    // New UI: full sidebar panel
-    return (
-      <div className="w-[400px] shrink-0 border-l border-border h-full overflow-hidden">
-        <AIChatPanel ref={chatRef} contextLabel={contextLabel} suggestedActions={suggestedActions} emptyStateMessage={emptyStateMessage} />
+function ThinkingIndicator() {
+  return (
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex items-start gap-2 px-1 py-2">
+      <div className="shrink-0 h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center">
+        <Sparkles className="h-3 w-3 text-primary" />
       </div>
-    );
-  }
-);
+      <div className="flex items-center gap-2 pt-1">
+        <div className="flex gap-1">
+          {[0, 0.2, 0.4].map((d) => (
+            <motion.div key={d} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: d }} className="h-1.5 w-1.5 rounded-full bg-primary" />
+          ))}
+        </div>
+        <span className="text-[11px] italic text-muted-foreground">Thinking...</span>
+      </div>
+    </motion.div>
+  );
+}
+
+export function AIChatWrapper() {
+  const {
+    messages,
+    suggestions,
+    input,
+    setInput,
+    isStreaming,
+    stage,
+    isOpen,
+    setIsOpen,
+    handleSend,
+    handleReset,
+    showInlineAssessment,
+    setShowInlineAssessment,
+    assessmentCompleted,
+    handleInlineAssessmentComplete,
+    bridgeTarget,
+    hasBridgeTarget,
+    bridgeCompleted,
+    isSophie,
+    loaded,
+  } = useAgentOne();
+
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isStreaming]);
+
+  useEffect(() => {
+    if (isOpen) inputRef.current?.focus();
+  }, [isOpen]);
+
+  const showAssessmentCTA = stage === "pre-assessment";
+  const showIntroCTA = stage === "pre-intro";
+
+  return (
+    <>
+      {/* Floating chat button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "fixed bottom-6 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-all duration-200",
+          isOpen
+            ? "bg-muted text-muted-foreground hover:bg-muted/80"
+            : "bg-primary text-primary-foreground hover:opacity-90"
+        )}
+      >
+        {isOpen ? <X className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
+      </button>
+
+      {/* Floating chat panel */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-20 right-6 z-50 w-[400px] h-[600px] rounded-2xl border border-border bg-card shadow-xl overflow-hidden flex flex-col"
+          >
+            {/* Header */}
+            <div className="shrink-0 px-4 py-3 flex items-center gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
+              <motion.div
+                className="h-8 w-8 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center"
+                animate={{ rotate: [0, 3, -3, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <Sparkles className="h-4 w-4" />
+              </motion.div>
+              <div className="flex-1">
+                <h2 className="text-sm font-bold leading-tight">Agent One</h2>
+                <div className="flex items-center gap-1.5">
+                  <span className="relative flex h-1.5 w-1.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400" />
+                  </span>
+                  <p className="text-[10px] text-primary-foreground/75">Online now</p>
+                </div>
+              </div>
+              <button
+                onClick={handleReset}
+                disabled={isStreaming || messages.length === 0}
+                className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors"
+                title="Reset conversation"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto min-h-0">
+              <div className="px-4 py-4 space-y-3">
+                {!loaded && (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="flex gap-1">
+                      {[0, 0.2, 0.4].map((d) => (
+                        <motion.div key={d} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: d }} className="h-2 w-2 rounded-full bg-primary" />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <AnimatePresence>
+                  {messages.filter((m) => m.role !== "system").map((msg, i) => (
+                    <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+                      {msg.role === "user" ? (
+                        <div className="flex justify-end mb-1">
+                          <div className="rounded-2xl bg-primary text-primary-foreground px-3 py-2 text-[13px] max-w-[85%] shadow-sm">
+                            {msg.content}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-start gap-2">
+                          <div className="shrink-0 h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
+                            <Sparkles className="h-3 w-3 text-primary" />
+                          </div>
+                          <div className="bg-secondary/50 border border-border/50 rounded-2xl px-3.5 py-3 shadow-sm max-w-[85%]">
+                            <div className="prose prose-sm max-w-none text-foreground text-[13px] leading-relaxed [&_p]:mb-1.5 [&_ul]:mb-1.5 [&_li]:mb-0.5">
+                              <ReactMarkdown>{parseSuggestions(msg.content).clean}</ReactMarkdown>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </AnimatePresence>
+
+                {/* Intro CTA */}
+                {showIntroCTA && !isStreaming && (
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2 max-w-[90%] pl-8">
+                    <div className="bg-primary/5 border border-primary/15 rounded-xl px-3.5 py-3">
+                      <p className="text-[13px] font-medium text-foreground mb-1">📚 Your First Step</p>
+                      <p className="text-[12px] text-muted-foreground leading-relaxed">
+                        Start with <strong className="text-foreground">Introduction to Rathbones</strong> — a short onboarding path covering our heritage, investment philosophy, and what to expect.
+                      </p>
+                    </div>
+                    <Link
+                      to="/skill-target/RAT-ST-INTRO-001"
+                      onClick={() => setIsOpen(false)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
+                    >
+                      Go to Introduction
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </motion.div>
+                )}
+
+                {/* Bridge CTA */}
+                {stage === "pre-bridge" && !isStreaming && (
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2 max-w-[90%] pl-8">
+                    <div className="bg-primary/5 border border-primary/15 rounded-xl px-3.5 py-3">
+                      <p className="text-[13px] font-medium text-foreground mb-1">🌉 Bridge Target Unlocked</p>
+                      <p className="text-[12px] text-muted-foreground leading-relaxed">
+                        Your <strong className="text-foreground">{bridgeTarget?.title || "Domain Bridge"}</strong> is now available. Complete it to unlock your main assessment.
+                      </p>
+                    </div>
+                    <Link
+                      to="/skill-target/RAT-ST-BRIDGE-001"
+                      onClick={() => setIsOpen(false)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
+                    >
+                      Go to Bridge Target
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </motion.div>
+                )}
+
+                {/* Assessment CTA */}
+                {showAssessmentCTA && !isSophie && !isStreaming && !showInlineAssessment && !assessmentCompleted && !(hasBridgeTarget && !bridgeCompleted) && (
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2 max-w-[90%] pl-8">
+                    <div className="bg-primary/5 border border-primary/15 rounded-xl px-3.5 py-3">
+                      <p className="text-[13px] font-medium text-foreground mb-1">📋 Skills Assessment</p>
+                      <p className="text-[12px] text-muted-foreground leading-relaxed">
+                        This short assessment helps us customise your learning path — skipping modules you've already mastered.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowInlineAssessment(true)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
+                    >
+                      <ClipboardList className="h-3.5 w-3.5" />
+                      Start Assessment
+                    </button>
+                  </motion.div>
+                )}
+
+                {/* Inline Assessment */}
+                {showInlineAssessment && !assessmentCompleted && (
+                  <InlineAssessment onComplete={handleInlineAssessmentComplete} />
+                )}
+
+                {/* Post-assessment CTA */}
+                {assessmentCompleted && (stage === "post-assessment" || stage === "post-completion") && !isStreaming && (
+                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-center gap-2 pt-1 pl-8">
+                    <Link
+                      to="/skill-target/RAT-ST-001"
+                      onClick={() => setIsOpen(false)}
+                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all shadow-sm"
+                    >
+                      Go to Skill Target
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </motion.div>
+                )}
+
+                {/* Suggestion Pills */}
+                {suggestions.length > 0 && !isStreaming && (
+                  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-1.5 pt-1 pl-8">
+                    {suggestions.map((pill) => (
+                      <button key={pill} onClick={() => handleSend(pill)} className="rounded-full border border-primary/20 bg-card px-3 py-1 text-[11px] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]">
+                        {pill}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+
+                <AnimatePresence>{isStreaming && <ThinkingIndicator />}</AnimatePresence>
+                <div ref={chatEndRef} />
+              </div>
+            </div>
+
+            {/* Input */}
+            <div className="shrink-0 px-4 pb-4 pt-2 border-t border-border/50">
+              <div className="relative">
+                <Input
+                  ref={inputRef}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleSend(input); }}
+                  placeholder="Ask anything..."
+                  className="pr-10 h-10 rounded-xl border-border text-[13px] focus-visible:ring-primary/30"
+                  disabled={isStreaming}
+                />
+                <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
+                  <Button
+                    size="icon"
+                    variant={input.trim() ? "default" : "ghost"}
+                    className={cn("h-7 w-7 rounded-lg transition-all", input.trim() && "bg-primary text-primary-foreground shadow-sm")}
+                    onClick={() => handleSend(input)}
+                    disabled={!input.trim() || isStreaming}
+                  >
+                    <Send className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
+}

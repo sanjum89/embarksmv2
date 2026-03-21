@@ -1,20 +1,45 @@
 
 
-## Plan: Fix Suggestion Pills, Assessment Trigger & Reduce Name Repetition
+## Plan: Elliot's Bridge-First Super Agent Flow
 
-### Problems
-1. **Suggestion pills hidden after assessment** — Line 508 has `!assessmentCompleted` condition, hiding pills permanently once assessment is done
-2. **Assessment not triggering from pre-assessment stage** — The `showAssessmentCTA` check on line 400 requires the AI response to contain "assessment", but the stage transition detection on line 313 requires `lower.includes("click below")` which the AI may not say. The assessment CTA should show reliably when stage is `pre-assessment`.
-3. **Name overuse** — The system prompt says "Address user by first name" which causes every sentence to include the name
+### Context
+The Rathbones account has a "Rathbones Investment Domain Bridge" skill target (`RAT-ST-BRIDGE-001`) assigned only to Elliot (`RAT-E004`). Currently it's not locked, and the Super Agent doesn't know about it. Elliot should complete the bridge target first, then do the assessment to unlock the Foundations target.
 
 ### Changes
 
-**1. `src/pages/SuperAgentChat.tsx`**
-- **Fix suggestion pills**: Change line 508 condition from `!assessmentCompleted` to show pills in all stages. The post-assessment/post-completion stages already show the "Go to Skill Target" CTA separately, and pills should still appear alongside it for general conversation.
-- **Fix assessment CTA**: Simplify `showAssessmentCTA` — show it when `stage === "pre-assessment"` regardless of AI response content. Remove the `lower.includes("assessment")` dependency since the stage itself is sufficient.
-- **Remove stage transition for "click below"**: The `pre-assessment` → `pre-assessment` check on line 313 is unnecessary; remove it.
+**1. Lock the bridge target in the account JSON — DB migration**
+- Update the Rathbones account data to set `locked: true` on `RAT-ST-BRIDGE-001`
 
-**2. `supabase/functions/super-agent-chat/index.ts`**
-- **Reduce name usage**: Change the "Address user by first name" rule to: "Use the learner's first name only in the very first message of a conversation and sparingly thereafter — max once every 3-4 messages. Never use their name more than once in a single response."
-- Update stage-specific prompts to remove explicit `${firstName}` insertions where they cause repetitive naming (e.g., "Welcome ${firstName}", "Great work, ${firstName}!", etc.) — let the AI decide naturally when to use the name.
+**2. `src/pages/SuperAgentChat.tsx` — Elliot-specific flow**
+- Detect Elliot: check if user has the bridge target assigned (`RAT-ST-BRIDGE-001`)
+- Pass bridge target info into `userContext` (bridgeTargetId, bridgeTargetTitle, bridgeSteps, hasBridgeTarget)
+- **Stage transitions for Elliot**:
+  - `task-list` → `pre-bridge`: Instead of going to pre-assessment, unlock the bridge target and show a CTA to go to it
+  - After bridge is completed (all steps done), transition to `pre-assessment` stage where the normal assessment flow kicks in
+  - Assessment completion unlocks `RAT-ST-001` with skip logic as before
+- Derive `bridgeCompleted` from skill target state (check if all bridge steps are completed)
+- Show "Go to Bridge Target" CTA when stage is `pre-bridge` or when bridge is unlocked but not completed
+- Show assessment CTA only after bridge is completed
+- Update the post-assessment CTA link to point to the correct target (`RAT-ST-001`)
+
+**3. `supabase/functions/super-agent-chat/index.ts` — Bridge-aware prompts**
+- Add `pre-bridge` stage prompt: explains the bridge target is a short preparation path to map Elliot's adjacent financial experience to Rathbones IM context
+- Add `hasBridgeTarget` and `bridgeTargetTitle` to userContext handling
+- Update `task-list` stage to mention the bridge for users who have one
+- Update `post-assessment` to be aware that Elliot came through the bridge path
+
+**4. `src/pages/Dashboard.tsx` — Bridge target ordering for Elliot**
+- When sorting assigned targets, put the bridge target first for users who have it assigned
+- This ensures the bridge appears at the top of the skill targets page
+
+### Flow Summary
+```text
+Elliot's Super Agent Journey:
+welcome → profile-review → feedback → task-list
+  → pre-bridge (unlock bridge, CTA: "Go to Bridge Target")
+  → [Elliot completes bridge externally]
+  → pre-assessment (show assessment CTA)
+  → post-assessment (unlock RAT-ST-001 with skip logic)
+  → post-completion
+```
 

@@ -1,46 +1,42 @@
 
 
-## Plan: Make Default & Rathbones Themes as Pervasive as Teal & Coral
+## Plan: Match Rathbones Theme to Actual Brand Colors
 
-### Root Cause
+### The Rathbones Brand Palette (from website reference)
+- **Primary**: Deep navy blue — `230 75% 15%`
+- **Accent**: Soft peach/salmon pink — `12 55% 85%` (used for background tints, "Let's talk" button)
+- **Buttons**: Navy blue with white text (primary used as interactive color)
 
-Two issues make Default (Navy & Amber) and Rathbones feel less "themed" than Teal & Coral:
+### What Changes
 
-1. **Rathbones accent is too light** — `22 75% 81%` (pale peach, 81% lightness). When used as `--accent` for buttons, tabs, hover states, it's nearly invisible on white backgrounds. Teal & Coral works because its accent is `12 80% 55%` — vibrant and visible.
+The key difference from other themes: Rathbones uses its **primary** (navy) as the interactive/button color, while the **accent** (peach) is a soft background tint. Currently our system uses accent for interactive elements (tabs, buttons, active states). For Rathbones, those should use the navy primary instead.
 
-2. **Theme doesn't touch enough CSS variables** — `deriveThemeVars` only sets ~15 vars. It doesn't brand `--secondary`, `--muted`, `--border`, `--input`, or surface tokens. So cards, backgrounds, and borders remain neutral gray regardless of theme. The "NON_SIDEBAR_VARS" filter also excludes `--warning` and `--warning-foreground` from being applied.
+**File: `src/hooks/useBrandColors.ts`**
 
-### Changes
+1. **Update Rathbones preset values**:
+   - `primary`: `230 75% 15%` (deeper navy, closer to actual)
+   - `accent`: `12 55% 85%` (soft peach matching website)
+   - `sidebar`: `230 75% 10%`
 
-**1. Adjust Rathbones preset accent** (`src/hooks/useBrandColors.ts`)
+2. **Update `deriveThemeVars` to handle "primary-as-interactive" themes**:
+   - When accent lightness is very high (>75%), the theme is "primary-interactive" — meaning buttons, tabs, and active states should use `--primary` instead of accent
+   - Set `--accent` to the primary color (for interactive elements like tabs, buttons)
+   - Set `--accent-foreground` to white (since navy is dark)
+   - Use the light peach accent for surface tints: `--secondary`, `--muted`, `--surface-sunken` derived from the **accent hue** (peach) instead of primary hue
+   - `--secondary`: `{accentHue} 40% 93%` (peach-tinted neutral)
+   - `--surface-sunken`: `{accentHue} 40% 95%`
+   - `--border` and `--input`: `{accentHue} 25% 88%` (subtle peach-tinted borders)
+   - Sidebar primary also uses the navy primary
 
-Change accent from `22 75% 81%` (barely visible peach) to `22 70% 55%` (warm terracotta — visible on white, still distinctly Rathbones). Update swatch accordingly.
+3. **For non-Rathbones themes** (accent lightness <= 75%): behavior stays exactly as-is — no regressions.
 
-**2. Expand `deriveThemeVars` to set more variables** (`src/hooks/useBrandColors.ts`)
-
-Add these derived variables so the brand permeates the full page:
-- `--secondary`: `{primaryHue} 15% 93%` (subtly tinted neutral)
-- `--secondary-foreground`: `{primaryHue} 40% 11%`
-- `--muted`: `{primaryHue} 15% 93%`
-- `--muted-foreground`: `{primaryHue} 10% 46%`
-- `--border`: `{primaryHue} 15% 88%`
-- `--input`: `{primaryHue} 15% 88%`
-- `--surface-raised`: keep as-is (white)
-- `--surface-sunken`: `{primaryHue} 15% 95%`
-
-This tints all neutral surfaces (card borders, muted backgrounds, input borders, secondary buttons) with the brand hue — same way Teal & Coral naturally does because its teal hue is visually distinct from the default navy.
-
-**3. Add missing vars to NON_SIDEBAR_VARS filter** (`src/hooks/useBrandColors.ts`)
-
-Add `--warning`, `--warning-foreground`, `--secondary`, `--secondary-foreground`, `--muted`, `--muted-foreground`, `--border`, `--input`, `--surface-sunken` to the `NON_SIDEBAR_VARS` array so they're always applied regardless of super-light mode.
-
-**4. Handle light accents with a "vibrant accent" fallback** (`src/hooks/useBrandColors.ts`)
-
-In `deriveThemeVars`, if accent lightness > 65%, produce a darkened version (reduce lightness to ~50%) for `--accent` used on interactive elements. Store original light accent for decorative sidebar uses only. This ensures any theme with a pastel accent still produces visible buttons/tabs.
-
-### Files changed
+### Result
+- Tabs, buttons, active nav icons, hover states: deep navy
+- Card backgrounds, surface tints, secondary areas: soft peach warmth
+- Sidebar: deep navy with white/light text
+- Matches the actual Rathbones website aesthetic
 
 | File | Change |
 |------|--------|
-| `src/hooks/useBrandColors.ts` | Adjust Rathbones preset, expand `deriveThemeVars` with secondary/muted/border/input vars, fix NON_SIDEBAR_VARS filter, add light-accent darkening logic |
+| `src/hooks/useBrandColors.ts` | Update Rathbones preset colors; add "primary-as-interactive" logic in `deriveThemeVars` for very light accents (>75% lightness) |
 

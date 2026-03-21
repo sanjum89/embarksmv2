@@ -88,6 +88,11 @@ function deriveThemeVars(primary: string, accent: string, sidebar: string): Reco
   const [pH] = primary.split(" ").map((v) => parseFloat(v));
   const [aH] = accent.split(" ").map((v) => parseFloat(v));
 
+  // Parse accent lightness to determine if sidebar-primary-foreground should be light or dark
+  const accentParts = accent.split(" ").map((v) => parseFloat(v));
+  const accentLightness = accentParts[2] ?? 50;
+  const sidebarPrimaryFg = accentLightness < 50 ? "0 0% 100%" : `${pH} 60% 12%`;
+
   return {
     "--primary": primary,
     "--primary-foreground": "45 100% 96%",
@@ -99,7 +104,7 @@ function deriveThemeVars(primary: string, accent: string, sidebar: string): Reco
     "--sidebar-background": sidebar,
     "--sidebar-foreground": `${pH} 20% 85%`,
     "--sidebar-primary": accent,
-    "--sidebar-primary-foreground": `${pH} 60% 12%`,
+    "--sidebar-primary-foreground": sidebarPrimaryFg,
     "--sidebar-accent": `${pH} 40% 24%`,
     "--sidebar-accent-foreground": `${pH} 20% 92%`,
     "--sidebar-border": `${pH} 40% 22%`,

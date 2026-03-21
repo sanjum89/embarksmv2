@@ -208,7 +208,10 @@ export function useBrandColors() {
             if (prop === "--sidebar-primary") {
               root.style.setProperty(prop, primary);
             } else if (prop === "--sidebar-primary-foreground") {
-              root.style.setProperty(prop, val);
+              // Contrast against primary (used as sidebar-primary in super-light)
+              const pParts = primary.split(" ").map((v) => parseFloat(v));
+              const pLightness = pParts[2] ?? 50;
+              root.style.setProperty(prop, pLightness < 50 ? "0 0% 100%" : `${pParts[0]} 60% 12%`);
             } else if (prop === "--sidebar-accent") {
               // Derive a light-bg-friendly active highlight from the brand primary
               const [pH] = primary.split(" ").map((v) => parseFloat(v));

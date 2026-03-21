@@ -577,6 +577,72 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const contextualSuggestions = useMemo(() => {
     const path = location.pathname;
 
+    // --- Role Play Bank (list) ---
+    if (path === "/role-play-bank") {
+      const titles = rolePlays.slice(0, 2).map(rp => rp.title);
+      return [
+        titles[0] ? `Tell me about "${titles[0]}"` : "Which role play should I start with?",
+        "What's private practice mode?",
+        "Which role play should I try first?",
+      ];
+    }
+
+    // --- Active Role Play Session ---
+    const rpSessionMatch = path.match(/\/role-play-bank\/([^/]+)/);
+    if (rpSessionMatch) {
+      const rp = rolePlays.find(r => r.id === rpSessionMatch[1]);
+      if (rp) {
+        return [
+          `Prepare me for "${rp.title}"`,
+          "What's the persona like?",
+          `Tips for ${rp.difficulty} role plays`,
+        ];
+      }
+    }
+
+    // --- Skill Target inner pages: module, role-play, assessment ---
+    const moduleMatch = path.match(/\/skill-target\/([^/]+)\/module\/([^/]+)/);
+    if (moduleMatch && currentSkillTarget) {
+      const step = currentSkillTarget.steps.find(s => s.referenceId === moduleMatch[2] || s.id === moduleMatch[2]);
+      const stepTitle = step?.title || "this chapter";
+      return [
+        `Summarise ${stepTitle}`,
+        `Quiz me on ${stepTitle}`,
+        "What's next after this?",
+      ];
+    }
+
+    const rpInTargetMatch = path.match(/\/skill-target\/([^/]+)\/role-play\/([^/]+)/);
+    if (rpInTargetMatch) {
+      const rp = rolePlays.find(r => r.id === rpInTargetMatch[2]);
+      return [
+        rp ? `Tips for "${rp.title}"` : "Tips for this role play",
+        "What should I focus on?",
+        "How will I be evaluated?",
+      ];
+    }
+
+    const assessMatch = path.match(/\/skill-target\/([^/]+)\/assessment\/([^/]+)/);
+    if (assessMatch) {
+      return [
+        "How should I prepare?",
+        "What topics are covered?",
+        "Can I skip this?",
+      ];
+    }
+
+    // --- Skill Target detail (enhanced) ---
+    if (path.startsWith("/skill-target/") && currentSkillTarget) {
+      const currentStep = currentSkillTarget.steps.find(s => s.status === "available" || s.status === "in_progress");
+      const completedSteps = currentSkillTarget.steps.filter(s => s.status === "completed");
+      const lastCompleted = completedSteps[completedSteps.length - 1];
+      const pills: string[] = [];
+      if (currentStep) pills.push(`Help me with ${currentStep.title}`);
+      if (lastCompleted) pills.push(`Recap ${lastCompleted.title}`);
+      if (currentStep) pills.push(`Am I ready for ${currentStep.title}?`);
+      return pills.length > 0 ? pills : [`Summarise ${currentSkillTarget.title}`, "Am I on track?", "What's the next step?"];
+    }
+
     if (path === "/my-inbox") {
       const pills: string[] = [];
       const hasKudos = inboxNotifications.some((n) => n.type === "kudos");
@@ -592,14 +658,6 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       return ["What should I work on next?", "How am I progressing?", "Explain my skill targets"];
     }
 
-    if (path.startsWith("/skill-target/") && currentSkillTarget) {
-      return [
-        `Summarise ${currentSkillTarget.title}`,
-        "Am I on track?",
-        "What's the next step?",
-      ];
-    }
-
     if (path === "/my-360") {
       return ["Explain my skills gap", "What should I improve?", "How do I read this report?"];
     }
@@ -609,7 +667,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     }
 
     return ["What should I do next?", "Show my progress", "Help me with something"];
-  }, [location.pathname, currentSkillTarget]);
+  }, [location.pathname, currentSkillTarget, rolePlays]);
 
   return (
     <AgentOneContext.Provider value={{

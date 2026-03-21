@@ -260,10 +260,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       setMessages(msgs);
       setStage((data as any).onboarding_stage || "welcome");
       const lastAssistant = [...msgs].reverse().find((m: ChatMessage) => m.role === "assistant");
-      if (lastAssistant) {
-        const { suggestions: s } = parseSuggestions(lastAssistant.content);
-        setSuggestions(s);
-      }
+      // Don't restore AI suggestions from saved conversation — contextual page pills take priority
     } else {
       const initialStage = isNewJoiner ? "welcome" : "general";
       setStage(initialStage);

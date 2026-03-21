@@ -418,7 +418,7 @@ export default function My360() {
                   className={cn(
                     "rounded-lg px-4 py-1.5 text-sm font-medium transition-all",
                     activeTab === tab
-                      ? "bg-card text-foreground shadow-sm"
+                      ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
@@ -570,7 +570,7 @@ export default function My360() {
                           className={cn(
                             "rounded-md px-3 py-1 text-xs font-medium transition-all",
                             gapView === v
-                              ? "bg-card text-foreground shadow-sm"
+                              ? "bg-primary text-primary-foreground shadow-sm"
                               : "text-muted-foreground hover:text-foreground"
                           )}
                         >

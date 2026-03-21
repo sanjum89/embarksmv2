@@ -73,9 +73,9 @@ export function OnboardingNudge() {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="shrink-0 px-3 pt-1">
         <button
           onClick={() => setDismissed(false)}
-          className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2 py-0.5 text-[10px] font-medium text-primary hover:bg-primary/10 transition-colors"
+          className="flex items-center gap-1 rounded-full border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
         >
-          <BookOpen className="h-2.5 w-2.5" />
+          <BookOpen className="h-3 w-3" />
           Onboarding
         </button>
       </motion.div>

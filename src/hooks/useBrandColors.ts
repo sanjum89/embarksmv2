@@ -77,9 +77,9 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
   "rathbones": {
     label: "Rathbones",
     primary: "230 75% 20%",
-    accent: "22 75% 81%",
+    accent: "22 70% 55%",
     sidebar: "230 75% 14%",
-    swatch: ["hsl(230, 75%, 20%)", "hsl(22, 75%, 81%)"],
+    swatch: ["hsl(230, 75%, 20%)", "hsl(22, 70%, 55%)"],
   },
 };
 

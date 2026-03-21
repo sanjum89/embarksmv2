@@ -26,7 +26,7 @@ import {
   Legend,
 } from "recharts";
 
-import { AIChatWrapper, AIChatWrapperHandle } from "@/components/chat/AIChatWrapper";
+
 import { CareerTimeline } from "@/components/my360/CareerTimeline";
 import { ActionPlanView } from "@/components/my360/ActionPlanView";
 import { useUser } from "@/contexts/UserContext";

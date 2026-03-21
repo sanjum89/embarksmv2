@@ -187,6 +187,58 @@ export default function RolePlaySession() {
     }, 2000);
   };
 
+  const handleEndRolePlay = () => {
+    if (ended || isLoading) return;
+    setEnded(true);
+    setIsLoading(true);
+
+    const history = messages.map((m) => ({
+      role: m.role === "ai" ? "assistant" as const : "user" as const,
+      content: m.content,
+    }));
+
+    let summary = "";
+    streamRolePlayChat({
+      messages: [...history, { role: "user", content: "Please summarize and give me feedback on how I did." }],
+      rolePlayContext,
+      summarize: true,
+      onDelta: (chunk) => {
+        summary += chunk;
+        setEndSummary(summary);
+      },
+      onDone: () => {
+        setIsLoading(false);
+        // If launched from skill target, mark step complete and unlock next
+        if (skillTargetId && rid) {
+          updateSkillTarget(skillTargetId, (st) => {
+            const stepIndex = st.steps.findIndex((s) => s.referenceId === rid);
+            if (stepIndex === -1) return st;
+            const updatedSteps = st.steps.map((s, i) => {
+              if (i === stepIndex) return { ...s, status: "completed" as const };
+              if (i === stepIndex + 1 && s.status === "locked") return { ...s, status: "available" as const };
+              return s;
+            });
+            const completedCount = updatedSteps.filter((s) => s.status === "completed" || s.status === "skipped").length;
+            const progress = Math.round((completedCount / updatedSteps.length) * 100);
+            return { ...st, steps: updatedSteps, progress };
+          });
+        }
+      },
+      onError: (error) => {
+        setEndSummary(`Could not generate summary: ${error}`);
+        setIsLoading(false);
+      },
+    });
+  };
+
+  const handleRestart = () => {
+    setEnded(false);
+    setEndSummary("");
+    setMessages([]);
+    setStarted(false);
+    setChatInput("");
+  };
+
   return (
     <div>
       <div className="flex h-screen flex-col">

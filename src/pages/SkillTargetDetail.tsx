@@ -154,6 +154,15 @@ export default function SkillTargetDetail() {
   return (
     <div className="flex flex-1 min-h-0 h-full overflow-hidden">
       <div className="flex-1 overflow-y-auto p-6 min-h-0">
+          {/* Preview banner */}
+          {isPreview && (
+            <div className="mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2.5">
+              <Eye className="h-4 w-4 text-primary shrink-0" />
+              <span className="text-sm text-foreground font-medium">Preview Mode</span>
+              <span className="text-sm text-muted-foreground">— Complete the prerequisite to start this skill target</span>
+            </div>
+          )}
+
           <Link
             to="/"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"

@@ -222,6 +222,50 @@ export default function LearnerChat() {
                       </motion.button>
                     ))}
                   </div>
+
+                  {/* Input Bar — Home State */}
+                  <div className="w-full pb-8">
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          ref={inputRef}
+                          value={input}
+                          onChange={(e) => setInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && input.trim()) {
+                              setChatActive(true);
+                              setIsOpen(true);
+                              handleSend(input);
+                            }
+                          }}
+                          placeholder="Ask anything..."
+                          className="h-11 rounded-xl border-border text-[13px] focus-visible:ring-primary/30 pr-3"
+                          disabled={isStreaming}
+                        />
+                      </div>
+                      <div className="shrink-0 h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                      </div>
+                      <Button
+                        size="icon"
+                        variant={input.trim() ? "default" : "ghost"}
+                        className={cn(
+                          "h-9 w-9 rounded-xl transition-all shrink-0",
+                          input.trim() && "bg-primary text-primary-foreground shadow-sm"
+                        )}
+                        onClick={() => {
+                          if (input.trim()) {
+                            setChatActive(true);
+                            setIsOpen(true);
+                            handleSend(input);
+                          }
+                        }}
+                        disabled={!input.trim() || isStreaming}
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </motion.div>

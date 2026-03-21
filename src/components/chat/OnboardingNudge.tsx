@@ -118,7 +118,7 @@ export function OnboardingNudge() {
           {/* CTA */}
           {isAssessment ? (
             <button
-              onClick={() => setShowInlineAssessment(true)}
+              onClick={() => { setShowInlineAssessment(true); setIsExpanded(true); }}
               className="shrink-0 inline-flex items-center gap-1 rounded-md bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 text-[11px] font-medium text-white transition-colors"
             >
               {nudge.ctaLabel}

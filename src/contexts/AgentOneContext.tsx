@@ -7,6 +7,8 @@ import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { getProfileData } from "@/lib/accountSelectors";
 import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { inboxNotifications } from "@/data/inboxNotifications";
+import { proficiencyNumeric, type Proficiency } from "@/types/learning";
+import type { RichBlock } from "@/components/chat/RichContentBlock";
 
 const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/super-agent-chat`;
 
@@ -26,6 +28,27 @@ function parseSuggestions(text: string): { clean: string; suggestions: string[] 
     } catch { /* fall through */ }
   }
   return { clean: text, suggestions: [] };
+}
+
+// Parse :::RICH_BLOCK{...}::: markers from AI response text
+const RICH_BLOCK_RE = /:::RICH_BLOCK(\{[\s\S]*?\}):::/g;
+let richBlockIdCounter = 0;
+
+export function parseRichBlocks(text: string): { cleanText: string; blocks: RichBlock[] } {
+  const blocks: RichBlock[] = [];
+  const cleanText = text.replace(RICH_BLOCK_RE, (_, json) => {
+    try {
+      const parsed = JSON.parse(json);
+      blocks.push({
+        id: `rb-${++richBlockIdCounter}`,
+        type: parsed.type,
+        data: parsed.data,
+        cta: parsed.cta,
+      });
+    } catch { /* ignore malformed blocks */ }
+    return ""; // Remove from text
+  }).replace(/\n{3,}/g, "\n\n").trim();
+  return { cleanText, blocks };
 }
 
 interface AgentOneContextType {
@@ -49,6 +72,12 @@ interface AgentOneContextType {
   bridgeCompleted: boolean;
   isSophie: boolean;
   loaded: boolean;
+  // Rich block state
+  richBlocksMap: Record<string, RichBlock[]>; // messageIndex → blocks
+  collapsedBlockIds: Set<string>;
+  isExpanded: boolean;
+  toggleBlockCollapse: (blockId: string) => void;
+  setIsExpanded: (v: boolean) => void;
 }
 
 const AgentOneContext = createContext<AgentOneContextType>(null!);
@@ -69,6 +98,26 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showInlineAssessment, setShowInlineAssessment] = useState(false);
   const [assessmentCompletedLocal, setAssessmentCompletedLocal] = useState(false);
+  const [richBlocksMap, setRichBlocksMap] = useState<Record<string, RichBlock[]>>({});
+  const [collapsedBlockIds, setCollapsedBlockIds] = useState<Set<string>>(new Set());
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleBlockCollapse = useCallback((blockId: string) => {
+    setCollapsedBlockIds(prev => {
+      const next = new Set(prev);
+      if (next.has(blockId)) {
+        next.delete(blockId);
+        setIsExpanded(true);
+      } else {
+        next.add(blockId);
+        // Check if all blocks are collapsed
+        const allBlocks = Object.values(richBlocksMap).flat();
+        const allCollapsed = allBlocks.every(b => next.has(b.id));
+        if (allCollapsed) setIsExpanded(false);
+      }
+      return next;
+    });
+  }, [richBlocksMap]);
 
   const stageRef = useRef(stage);
   stageRef.current = stage;
@@ -119,6 +168,49 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     totalSteps: currentSkillTarget.steps.length,
   } : null;
 
+  // Build detailed skills data for rich blocks
+  const skillsDetailed = useMemo(() => {
+    const allSkills = [
+      ...(userProfile?.roleSkillsCurrent || []).map((s: any) => ({ ...s, category: "Role" })),
+      ...(userProfile?.projectSkillsCurrent || []).map((s: any) => ({ ...s, category: "Project" })),
+      ...(userProfile?.otherSkills || []).map((s: any) => ({ ...s, category: "Other" })),
+    ];
+    return allSkills.map((s: any) => ({
+      name: s.skill_name,
+      level: s.proficiency,
+      numeric: proficiencyNumeric[s.proficiency as Proficiency] || 40,
+      category: s.category,
+    }));
+  }, [userProfile]);
+
+  const skillTargetsSummary = useMemo(() =>
+    assignedTargets.map(st => ({
+      title: st.title,
+      progress: Math.round(st.progress || 0),
+      status: st.locked ? "locked" : st.progress >= 100 ? "completed" : "in_progress",
+      totalSteps: st.steps.length,
+      completedSteps: st.steps.filter(s => s.status === "completed" || s.status === "skipped").length,
+    })), [assignedTargets]);
+
+  const inboxSummary = useMemo(() =>
+    inboxNotifications.map(n => ({
+      title: n.title,
+      message: n.message,
+      type: n.type,
+      time: n.time,
+    })), []);
+
+  const skillGaps = useMemo(() => {
+    const current = userProfile?.roleSkillsCurrent || [];
+    const required = userProfile?.roleSkillsRequired || [];
+    return required.map((req: any) => {
+      const cur = current.find((c: any) => c.skill_name === req.skill_name);
+      const curNum = cur ? (proficiencyNumeric[cur.proficiency as Proficiency] || 0) : 0;
+      const reqNum = proficiencyNumeric[req.proficiency as Proficiency] || 0;
+      return { name: req.skill_name, current: cur?.proficiency || "None", required: req.proficiency, gap: reqNum - curNum };
+    }).filter((g: any) => g.gap > 0);
+  }, [userProfile]);
+
   const userContext = {
     name: user.name,
     role: user.role,
@@ -140,6 +232,10 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     introTargetTitle: introTarget?.title || null,
     currentPage,
     currentSkillTargetProgress,
+    skillsDetailed,
+    skillTargetsSummary,
+    inboxSummary,
+    skillGaps,
   };
 
   // Load persisted conversation
@@ -293,8 +389,20 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     }
 
     const { clean, suggestions: newSugs } = parseSuggestions(assistantSoFar);
-    if (clean !== assistantSoFar) {
-      addOrUpdateAssistant(clean);
+    // Parse rich blocks
+    const { cleanText: finalText, blocks } = parseRichBlocks(clean);
+    if (finalText !== assistantSoFar) {
+      addOrUpdateAssistant(finalText);
+    }
+    if (blocks.length > 0) {
+      // Find the message index (count of messages before this assistant msg)
+      setMessages(prev => {
+        const idx = prev.length - 1;
+        setRichBlocksMap(old => ({ ...old, [idx]: blocks }));
+        return prev;
+      });
+      setIsExpanded(true);
+      setCollapsedBlockIds(new Set());
     }
     setSuggestions(newSugs);
 
@@ -391,12 +499,19 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Auto-collapse if message doesn't look like a data query
+    const dataKeywords = ["show", "skills", "progress", "targets", "inbox", "chart", "table", "display", "view", "gap"];
+    const isDataQuery = dataKeywords.some(k => lower.includes(k));
+    if (!isDataQuery && isExpanded) {
+      setIsExpanded(false);
+    }
+
     const userMsg: ChatMessage = { role: "user", content: text };
     const allMsgs = [...messagesRef.current, userMsg];
     setMessages(allMsgs);
     setInput("");
     streamResponse(allMsgs);
-  }, [isStreaming, assessmentCompleted]);
+  }, [isStreaming, assessmentCompleted, isExpanded]);
 
   const handleInlineAssessmentComplete = (score: number, _answers: number[]) => {
     setAssessmentCompletedLocal(true);
@@ -441,6 +556,9 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setSuggestions([]);
     setShowInlineAssessment(false);
     setAssessmentCompletedLocal(false);
+    setRichBlocksMap({});
+    setCollapsedBlockIds(new Set());
+    setIsExpanded(false);
     const initialStage = isNewJoiner ? "welcome" : "general";
     setStage(initialStage);
     stageRef.current = initialStage;
@@ -508,6 +626,11 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       bridgeCompleted,
       isSophie,
       loaded,
+      richBlocksMap,
+      collapsedBlockIds,
+      isExpanded,
+      toggleBlockCollapse,
+      setIsExpanded,
     }}>
       {children}
     </AgentOneContext.Provider>

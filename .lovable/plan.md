@@ -1,53 +1,46 @@
 
 
-## Plan: Context-Aware Skill Target Builder
+## Plan: Make Default & Rathbones Themes as Pervasive as Teal & Coral
 
-### Problem
-The Create Skill Target page (`/create-skill-target`) uses hardcoded suggestion pills ("Customer Onboarding", "Apple L1 Support", etc.), a generic welcome message, and static placeholder text. None of this reflects the active account's data — roles, projects, skills, learning modules, or the user's profile.
+### Root Cause
 
-### Approach
-Derive all dynamic text from the active account's data: employee skills, role requirements, project requirements, skill gaps, and available learning modules. Fall back to generic defaults only when no account is loaded.
+Two issues make Default (Navy & Amber) and Rathbones feel less "themed" than Teal & Coral:
+
+1. **Rathbones accent is too light** — `22 75% 81%` (pale peach, 81% lightness). When used as `--accent` for buttons, tabs, hover states, it's nearly invisible on white backgrounds. Teal & Coral works because its accent is `12 80% 55%` — vibrant and visible.
+
+2. **Theme doesn't touch enough CSS variables** — `deriveThemeVars` only sets ~15 vars. It doesn't brand `--secondary`, `--muted`, `--border`, `--input`, or surface tokens. So cards, backgrounds, and borders remain neutral gray regardless of theme. The "NON_SIDEBAR_VARS" filter also excludes `--warning` and `--warning-foreground` from being applied.
 
 ### Changes
 
-**1. Replace hardcoded `SUGGESTION_PILLS` with account-derived pills** (`src/pages/SkillTargetBuilder.tsx`)
+**1. Adjust Rathbones preset accent** (`src/hooks/useBrandColors.ts`)
 
-Build pills dynamically using a `useMemo` that reads from:
-- **User's skill gaps** (from `getRecommendationsForUser`) — e.g. "Improve Client Onboarding", "Advanced Risk Management"
-- **Account projects** (`normalizedAccount.projectsById`) — e.g. project names or their required skills
-- **Account roles** (`normalizedAccount.rolesById`) — required skills from the user's role
-- **Available learning modules** — top module titles/topics from the account's content library
+Change accent from `22 75% 81%` (barely visible peach) to `22 70% 55%` (warm terracotta — visible on white, still distinctly Rathbones). Update swatch accordingly.
 
-Logic: skill gap names first (most relevant), then project-required skills not yet met, then top module categories. Limit to ~8 pills. Fall back to current hardcoded list if no account data.
+**2. Expand `deriveThemeVars` to set more variables** (`src/hooks/useBrandColors.ts`)
 
-**2. Make welcome message context-aware** (`src/pages/SkillTargetBuilder.tsx`)
+Add these derived variables so the brand permeates the full page:
+- `--secondary`: `{primaryHue} 15% 93%` (subtly tinted neutral)
+- `--secondary-foreground`: `{primaryHue} 40% 11%`
+- `--muted`: `{primaryHue} 15% 93%`
+- `--muted-foreground`: `{primaryHue} 10% 46%`
+- `--border`: `{primaryHue} 15% 88%`
+- `--input`: `{primaryHue} 15% 88%`
+- `--surface-raised`: keep as-is (white)
+- `--surface-sunken`: `{primaryHue} 15% 95%`
 
-Replace static `WELCOME_MSG` with a computed string:
-- If user has skill gaps: "Based on your profile, you have gaps in **{gap1}**, **{gap2}**. I can help you find the right courses — or search for anything below."
-- If user has projects: "You're assigned to **{project}**. I can build a learning path for that — or search for any topic."
-- Fallback: current generic message
+This tints all neutral surfaces (card borders, muted backgrounds, input borders, secondary buttons) with the brand hue — same way Teal & Coral naturally does because its teal hue is visually distinct from the default navy.
 
-**3. Make input placeholder context-aware** (`src/pages/SkillTargetBuilder.tsx`)
+**3. Add missing vars to NON_SIDEBAR_VARS filter** (`src/hooks/useBrandColors.ts`)
 
-Change the search input placeholder from static `"Search for modules, assessments, role plays..."` to something derived:
-- If account has modules: `"Search {moduleCount} modules, assessments, role plays..."`
-- If user has a role: `"Search courses for {roleName} or any topic..."`
+Add `--warning`, `--warning-foreground`, `--secondary`, `--secondary-foreground`, `--muted`, `--muted-foreground`, `--border`, `--input`, `--surface-sunken` to the `NON_SIDEBAR_VARS` array so they're always applied regardless of super-light mode.
 
-**4. Make builder panel placeholders context-aware** (`src/pages/SkillTargetBuilder.tsx`)
+**4. Handle light accents with a "vibrant accent" fallback** (`src/hooks/useBrandColors.ts`)
 
-- Title placeholder: `"e.g. {first skill gap name} Mastery"` instead of generic
-- Description placeholder: `"e.g. Build {skill} skills from {current} to {target} level"` instead of generic
+In `deriveThemeVars`, if accent lightness > 65%, produce a darkened version (reduce lightness to ~50%) for `--accent` used on interactive elements. Store original light accent for decorative sidebar uses only. This ensures any theme with a pastel accent still produces visible buttons/tabs.
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/pages/SkillTargetBuilder.tsx` | Replace `SUGGESTION_PILLS` constant with `useMemo` deriving pills from account data; compute contextual welcome message; update input and builder panel placeholders |
-
-### Data sources used
-- `normalizedAccount.projectsById` — project names & required skills
-- `normalizedAccount.rolesById` + employee's `roleId` — role skill requirements
-- `normalizedAccount.profileData[userId]` → `getRecommendationsForUser()` — skill gaps
-- `normalizedAccount.learningModules` — available content count/titles
-- `normalizedAccount.employeesById[userId]` — user's current skills & role
+| `src/hooks/useBrandColors.ts` | Adjust Rathbones preset, expand `deriveThemeVars` with secondary/muted/border/input vars, fix NON_SIDEBAR_VARS filter, add light-accent darkening logic |
 

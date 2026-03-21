@@ -91,9 +91,9 @@ export function OnboardingNudge() {
         initial={{ opacity: 0, y: 2 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 2 }}
-        className="shrink-0 border-t border-border/30"
+        className="shrink-0 border-t border-emerald-200/60 dark:border-emerald-800/40 bg-emerald-50/80 dark:bg-emerald-950/30"
       >
-        <div className="flex items-center gap-2 px-3 py-1.5 min-h-[32px]">
+        <div className="flex items-center gap-3 px-3 py-2.5 min-h-[40px]">
           {/* Icon */}
           <div className="shrink-0 h-5 w-5 rounded bg-primary/10 flex items-center justify-center">
             {isAssessment ? <ClipboardList className="h-2.5 w-2.5 text-primary" /> : <BookOpen className="h-2.5 w-2.5 text-primary" />}

@@ -201,88 +201,18 @@ export function AIChatWrapper() {
                   })}
                 </AnimatePresence>
 
-                {/* Intro CTA */}
-                {showIntroCTA && !isStreaming && (
-                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2 max-w-[90%] pl-8">
-                    <div className="bg-primary/5 border border-primary/15 rounded-xl px-3.5 py-3">
-                      <p className="text-[13px] font-medium text-foreground mb-1">📚 Your First Step</p>
-                      <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        Start with <strong className="text-foreground">Introduction to Rathbones</strong> — a short onboarding path covering our heritage, investment philosophy, and what to expect.
-                      </p>
-                    </div>
-                    <Link
-                      to="/skill-target/RAT-ST-INTRO-001"
-                      onClick={() => setIsOpen(false)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
-                    >
-                      Go to Introduction
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </motion.div>
-                )}
-
-                {/* Bridge CTA */}
-                {stage === "pre-bridge" && !isStreaming && (
-                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2 max-w-[90%] pl-8">
-                    <div className="bg-primary/5 border border-primary/15 rounded-xl px-3.5 py-3">
-                      <p className="text-[13px] font-medium text-foreground mb-1">🌉 Bridge Target Unlocked</p>
-                      <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        Your <strong className="text-foreground">{bridgeTarget?.title || "Domain Bridge"}</strong> is now available. Complete it to unlock your main assessment.
-                      </p>
-                    </div>
-                    <Link
-                      to="/skill-target/RAT-ST-BRIDGE-001"
-                      onClick={() => setIsOpen(false)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
-                    >
-                      Go to Bridge Target
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </motion.div>
-                )}
-
-                {/* Assessment CTA */}
-                {showAssessmentCTA && !isSophie && !isStreaming && !showInlineAssessment && !assessmentCompleted && !(hasBridgeTarget && !bridgeCompleted) && (
-                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2 max-w-[90%] pl-8">
-                    <div className="bg-primary/5 border border-primary/15 rounded-xl px-3.5 py-3">
-                      <p className="text-[13px] font-medium text-foreground mb-1">📋 Skills Assessment</p>
-                      <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        This short assessment helps us customise your learning path — skipping modules you've already mastered.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setShowInlineAssessment(true)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
-                    >
-                      <ClipboardList className="h-3.5 w-3.5" />
-                      Start Assessment
-                    </button>
-                  </motion.div>
-                )}
-
                 {/* Inline Assessment */}
                 {showInlineAssessment && !assessmentCompleted && (
                   <InlineAssessment onComplete={handleInlineAssessmentComplete} />
-                )}
-
-                {/* Post-assessment CTA */}
-                {assessmentCompleted && (stage === "post-assessment" || stage === "post-completion") && !isStreaming && (
-                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-center gap-2 pt-1 pl-8">
-                    <Link
-                      to="/skill-target/RAT-ST-001"
-                      onClick={() => setIsOpen(false)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all shadow-sm"
-                    >
-                      Go to Skill Target
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </motion.div>
                 )}
 
                 <AnimatePresence>{isStreaming && <ThinkingIndicator />}</AnimatePresence>
                 <div ref={chatEndRef} />
               </div>
             </div>
+
+            {/* Persistent onboarding nudge */}
+            <OnboardingNudge />
 
             {/* Floating Suggestion Pills above input */}
             {(() => {

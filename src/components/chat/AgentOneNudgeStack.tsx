@@ -206,16 +206,6 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
           transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
         />
         <div className="relative px-5 py-4 flex items-center gap-3">
-          {/* Left cycling arrow */}
-          {!expanded && hasNudges && activeNudges.length > 1 && (
-            <button
-              onClick={cycleLeft}
-              className="shrink-0 p-1 rounded-lg hover:bg-white/15 transition-colors text-primary-foreground/60 hover:text-primary-foreground"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-          )}
-
           {/* Icon */}
           <div className="shrink-0 relative">
             <motion.div

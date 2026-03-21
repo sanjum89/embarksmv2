@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Target, CalendarDays, BookOpen, ClipboardCheck, Drama } from "lucide-react";
 import { proficiencyShort } from "@/types/learning";
 
-import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
+
 import { StepTimeline } from "@/components/skill-target/StepTimeline";
 import { TraditionalActivitiesPanel } from "@/components/skill-target/TraditionalActivitiesPanel";
 import { TraditionalContentViewer } from "@/components/skill-target/TraditionalContentViewer";

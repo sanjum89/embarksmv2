@@ -70,7 +70,7 @@ OTHER RULES:
 EMPLOYEE: ${profileSummary}${lockedTargetInfo}${targetInfo}`;
 
   if (!isNewJoiner || stage === "general") {
-    return `${baseRules}\n\nMode: GENERAL ASSISTANT. Help ${firstName} with skills, career, training, or any work question. Be proactive with suggestions.`;
+    return `${baseRules}\n\nMode: GENERAL ASSISTANT. Help the learner with skills, career, training, or any work question. Be proactive with suggestions.`;
   }
 
   switch (stage) {

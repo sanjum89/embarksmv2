@@ -1,17 +1,26 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, Home } from "lucide-react";
+import { Send, Sparkles, Home, ArrowRight, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";
 import { InlineAssessment } from "@/components/chat/InlineAssessment";
 import { RichContentBlock } from "@/components/chat/RichContentBlock";
 import { CollapsedBlockCard } from "@/components/chat/CollapsedBlockCard";
-import { OnboardingNudge } from "@/components/chat/OnboardingNudge";
 import { SuperAgentCard } from "@/components/chat/SuperAgentCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { managerNudges, ManagerNudge } from "@/data/managerNudges";
+
+const nudgeThemeMap: Record<ManagerNudge["colorTheme"], { bg: string; border: string; icon: string; text: string; cta: string; ctaHover: string }> = {
+  blue:    { bg: "bg-blue-50/80 dark:bg-blue-950/30",   border: "border-blue-200/60 dark:border-blue-800/40",   icon: "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400",     text: "text-blue-900 dark:text-blue-100",   cta: "bg-blue-600",   ctaHover: "hover:bg-blue-700" },
+  emerald: { bg: "bg-emerald-50/80 dark:bg-emerald-950/30", border: "border-emerald-200/60 dark:border-emerald-800/40", icon: "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400", text: "text-emerald-900 dark:text-emerald-100", cta: "bg-emerald-600", ctaHover: "hover:bg-emerald-700" },
+  amber:   { bg: "bg-amber-50/80 dark:bg-amber-950/30",  border: "border-amber-200/60 dark:border-amber-800/40",  icon: "bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400",   text: "text-amber-900 dark:text-amber-100",  cta: "bg-amber-600",  ctaHover: "hover:bg-amber-700" },
+  violet:  { bg: "bg-violet-50/80 dark:bg-violet-950/30", border: "border-violet-200/60 dark:border-violet-800/40", icon: "bg-violet-100 dark:bg-violet-900/50 text-violet-600 dark:text-violet-400", text: "text-violet-900 dark:text-violet-100", cta: "bg-violet-600", ctaHover: "hover:bg-violet-700" },
+  rose:    { bg: "bg-rose-50/80 dark:bg-rose-950/30",    border: "border-rose-200/60 dark:border-rose-800/40",    icon: "bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400",      text: "text-rose-900 dark:text-rose-100",   cta: "bg-rose-600",   ctaHover: "hover:bg-rose-700" },
+};
 
 /* ─── Suggestion Card Illustrations ─── */
 const CardIllustration = ({ type }: { type: string }) => {

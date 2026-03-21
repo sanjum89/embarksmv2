@@ -11,6 +11,7 @@ const ONBOARDING_NEXT_PILL: Record<string, string> = {
   "profile-review": "Show me my onboarding plan",
   feedback: "What's my 20-day plan?",
   "task-list": "Start my assessment",
+  "pre-bridge": "Go to my bridge target",
   "pre-assessment": "Take the assessment",
   "post-assessment": "View my skill target",
   "post-completion": "Write a reflection",

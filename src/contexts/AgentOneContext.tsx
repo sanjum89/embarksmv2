@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useRef, useEffect, useCallback, useMemo, ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
@@ -6,6 +6,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { getProfileData } from "@/lib/accountSelectors";
 import { profileDataByUser as defaultProfileData } from "@/data/mock";
+import { inboxNotifications } from "@/data/inboxNotifications";
 
 const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/super-agent-chat`;
 

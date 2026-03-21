@@ -1,23 +1,42 @@
-## Plan: Dynamic Agent One with Rich Content & Expandable Panel
 
-### Status: ✅ Implemented
 
-### What was built
+## Plan: Non-Intrusive Onboarding Nudge + Fix Contextual Suggestion Pills
 
-1. **Rich Block System** — AI can emit `:::RICH_BLOCK{...}:::` markers in responses to render skills charts, skill targets tables, inbox cards, and progress summaries inline in the chat.
+### Changes
 
-2. **Expandable Panel** — Chat panel animates from 400×600px to 720×700px when rich content is shown, with auto-collapse on generic messages.
+**1. Fix contextual suggestion pills not updating on page change**
 
-3. **Full Data Pipeline** — AgentOneContext now passes complete skills (with proficiency levels), skill targets summary, inbox notifications, and skill gaps to the edge function.
+In `src/contexts/AgentOneContext.tsx`:
+- Add `useEffect` watching `location.pathname` that clears AI-returned `suggestions`, so contextual page-aware pills take priority on navigation
 
-4. **Rich Content Components** — `RichContentBlock.tsx` renders 4 block types with CSS-based charts, and `CollapsedBlockCard.tsx` shows compact clickable previews.
+**2. Replace inline onboarding CTAs with a persistent nudge strip**
+
+Create `src/components/chat/OnboardingNudge.tsx`:
+- Slim strip pinned between messages and suggestion pills (not a chat bubble)
+- Reads skill target progress from `SkillTargetsContext` in real-time
+- Shows: target title, mini progress bar, step count, "Continue →" CTA
+- Auto-advances through stages (Intro → Bridge → Assessment → Main targets → hidden)
+- Dismissible (collapses to small pill, re-expandable)
+- Distinct styling: accent border + subtle background
+
+**3. Remove inline onboarding CTAs from chat flow**
+
+In `src/components/chat/AIChatWrapper.tsx`:
+- Remove the 4 inline CTA blocks (Intro, Bridge, Assessment, Post-assessment)
+- Insert `<OnboardingNudge />` between messages scroll and floating pills
+- Keep inline assessment UI as-is
+
+**4. Expose nudge data from context**
+
+In `src/contexts/AgentOneContext.tsx`:
+- Compute `onboardingNudgeData` from existing stage/progress flags
+- Expose via context
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `supabase/functions/super-agent-chat/index.ts` | System prompt includes full skills/targets/inbox data + rich block emission instructions |
-| `src/contexts/AgentOneContext.tsx` | Passes detailed data, parses rich blocks, manages expanded/collapsed state |
-| `src/components/chat/RichContentBlock.tsx` | **New** — renders charts, tables, cards inline |
-| `src/components/chat/CollapsedBlockCard.tsx` | **New** — compact clickable card for collapsed blocks |
-| `src/components/chat/AIChatWrapper.tsx` | Expandable panel, rich block rendering, auto-collapse logic |
+| `src/components/chat/OnboardingNudge.tsx` | **New** — compact progress nudge strip |
+| `src/components/chat/AIChatWrapper.tsx` | Remove 4 inline CTA blocks; add nudge component |
+| `src/contexts/AgentOneContext.tsx` | Clear suggestions on route change; compute & expose nudge data |
+

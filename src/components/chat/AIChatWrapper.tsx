@@ -78,6 +78,8 @@ export function AIChatWrapper() {
   const panelWidth = isExpanded ? 720 : 400;
   const panelHeight = isExpanded ? 700 : 600;
 
+  if (isChatPage) return null;
+
   return (
     <>
       {/* Floating chat button */}

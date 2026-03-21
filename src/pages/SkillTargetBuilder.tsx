@@ -567,7 +567,7 @@ export default function SkillTargetBuilder() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                placeholder="Search for modules, assessments, role plays..."
+                placeholder={inputPlaceholder}
                 className="pr-10 h-8 text-sm border-0 shadow-none focus-visible:ring-0"
                 disabled={isSearching}
               />

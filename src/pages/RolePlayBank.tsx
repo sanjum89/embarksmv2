@@ -65,11 +65,25 @@ export default function RolePlayBank() {
   // Assignment tracking (local state)
   const [assignments, setAssignments] = useState<Record<string, string[]>>({});
 
+  // Derive tags from role plays filtered by tab, search, and difficulty (but NOT by selectedTag)
   const allTags = useMemo(() => {
+    const preTagFiltered = rolePlays.filter((rp) => {
+      if (activeTab === "assigned" && !rp.assignedTo?.includes(user.id)) return false;
+      if (difficulty !== "all" && rp.difficulty !== difficulty) return false;
+      if (search && !rp.title.toLowerCase().includes(search.toLowerCase()) && !rp.scenario.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    });
     const tags = new Set<string>();
-    rolePlays.forEach((rp) => (rp.tags || []).forEach((t) => tags.add(t)));
+    preTagFiltered.forEach((rp) => (rp.tags || []).forEach((t) => tags.add(t)));
     return Array.from(tags).sort();
-  }, [rolePlays]);
+  }, [rolePlays, activeTab, difficulty, search, user.id]);
+
+  // Auto-clear selectedTag if it's no longer available
+  useMemo(() => {
+    if (selectedTag && !allTags.includes(selectedTag)) {
+      setSelectedTag(null);
+    }
+  }, [allTags, selectedTag]);
 
   // Priority IDs for sorting the 5 original RPs to top
   const priorityIds = ["RAT-RP-101", "RAT-RP-102", "RAT-RP-103", "RAT-RP-104", "RAT-RP-105"];

@@ -248,7 +248,7 @@ export default function RolePlayBank() {
               className={cn(
                 "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
                 activeTab === "assigned"
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -259,7 +259,7 @@ export default function RolePlayBank() {
               className={cn(
                 "rounded-md px-4 py-1.5 text-sm font-medium transition-all",
                 activeTab === "all"
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >

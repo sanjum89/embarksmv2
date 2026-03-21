@@ -73,9 +73,9 @@ export function OnboardingNudge() {
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="shrink-0 px-3 pt-1">
         <button
           onClick={() => setDismissed(false)}
-          className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2 py-0.5 text-[10px] font-medium text-primary hover:bg-primary/10 transition-colors"
+          className="flex items-center gap-1 rounded-full border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 text-[11px] font-medium text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
         >
-          <BookOpen className="h-2.5 w-2.5" />
+          <BookOpen className="h-3 w-3" />
           Onboarding
         </button>
       </motion.div>
@@ -91,27 +91,27 @@ export function OnboardingNudge() {
         initial={{ opacity: 0, y: 2 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 2 }}
-        className="shrink-0 border-t border-border/30"
+        className="shrink-0 border-t border-emerald-200/60 dark:border-emerald-800/40 bg-emerald-50/80 dark:bg-emerald-950/30"
       >
-        <div className="flex items-center gap-2 px-3 py-1.5 min-h-[32px]">
+        <div className="flex items-center gap-3 px-3 py-2.5 min-h-[40px]">
           {/* Icon */}
-          <div className="shrink-0 h-5 w-5 rounded bg-primary/10 flex items-center justify-center">
-            {isAssessment ? <ClipboardList className="h-2.5 w-2.5 text-primary" /> : <BookOpen className="h-2.5 w-2.5 text-primary" />}
+          <div className="shrink-0 h-7 w-7 rounded-md bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+            {isAssessment ? <ClipboardList className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> : <BookOpen className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />}
           </div>
 
           {/* Title + progress inline */}
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <span className="text-[11px] font-medium text-foreground truncate">
+            <span className="text-[12px] font-medium text-emerald-900 dark:text-emerald-100 truncate">
               {nudge.title}
             </span>
             {showProgress && (
               <>
-                <Progress value={nudge.progress} className="h-1 w-12 shrink-0" />
-                <span className="text-[10px] text-muted-foreground shrink-0">{nudge.completedSteps}/{nudge.totalSteps}</span>
+                <Progress value={nudge.progress} className="h-1.5 w-16 shrink-0" />
+                <span className="text-[11px] text-emerald-700/70 dark:text-emerald-300/70 shrink-0">{nudge.completedSteps}/{nudge.totalSteps}</span>
               </>
             )}
             {!showProgress && !isAssessment && (
-              <span className="text-[10px] text-muted-foreground shrink-0">Up next</span>
+              <span className="text-[11px] text-emerald-700/70 dark:text-emerald-300/70 shrink-0">Up next</span>
             )}
           </div>
 
@@ -119,7 +119,7 @@ export function OnboardingNudge() {
           {isAssessment ? (
             <button
               onClick={() => setShowInlineAssessment(true)}
-              className="shrink-0 inline-flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+              className="shrink-0 inline-flex items-center gap-1 rounded-md bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 text-[11px] font-medium text-white transition-colors"
             >
               {nudge.ctaLabel}
             </button>
@@ -127,10 +127,10 @@ export function OnboardingNudge() {
             <Link
               to={nudge.ctaPath}
               onClick={() => setIsOpen(false)}
-              className="shrink-0 inline-flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+              className="shrink-0 inline-flex items-center gap-1 rounded-md bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 text-[11px] font-medium text-white transition-colors"
             >
               {nudge.ctaLabel}
-              <ArrowRight className="h-2.5 w-2.5" />
+              <ArrowRight className="h-3 w-3" />
             </Link>
           )}
 

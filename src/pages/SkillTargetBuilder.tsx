@@ -584,7 +584,7 @@ export default function SkillTargetBuilder() {
       </div>
 
       {/* Right: Builder */}
-      <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} />
+      <BuilderPanel title={title} setTitle={setTitle} description={description} setDescription={setDescription} steps={steps} removeStep={removeStep} moveStep={moveStep} onCreate={handleCreate} titlePlaceholder={titlePlaceholder} descPlaceholder={descPlaceholder} />
 
       {/* Upload Modal */}
       <UploadModal open={showUploadModal} onClose={() => setShowUploadModal(false)} addedIds={addedIds} onAdd={(items) => items.forEach((item) => addStep(item))} />

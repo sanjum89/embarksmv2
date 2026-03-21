@@ -201,6 +201,18 @@ export default function LearnerChat() {
                     <SuperAgentCard hasUnread unreadCount={0} />
                   </div>
 
+                  {/* Manager Nudge Stack */}
+                  <div className="mb-6">
+                    <NudgeStack onChatAction={(prompt) => {
+                      if (prompt === "__ASSESSMENT__") {
+                        setChatActive(true);
+                        return;
+                      }
+                      setChatActive(true);
+                      setIsOpen(true);
+                      handleSend(prompt);
+                    }} />
+                  </div>
                   {/* Suggestion Cards Grid */}
                   <div className="grid grid-cols-3 gap-3 mb-6">
                     {suggestionCards.map((card, i) => (

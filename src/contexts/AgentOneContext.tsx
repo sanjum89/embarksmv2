@@ -406,7 +406,8 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       setIsExpanded(true);
       setCollapsedBlockIds(new Set());
     }
-    setSuggestions(newSugs);
+    // Only set AI suggestions if no contextual page pills exist — contextual pills take priority
+    // setSuggestions(newSugs); — disabled so page-aware contextual pills always show
 
     // Detect stage transitions
     const lower = clean.toLowerCase();

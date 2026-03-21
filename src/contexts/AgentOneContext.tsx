@@ -7,6 +7,8 @@ import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { getProfileData } from "@/lib/accountSelectors";
 import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { inboxNotifications } from "@/data/inboxNotifications";
+import { proficiencyNumeric, type Proficiency } from "@/types/learning";
+import type { RichBlock } from "@/components/chat/RichContentBlock";
 
 const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/super-agent-chat`;
 

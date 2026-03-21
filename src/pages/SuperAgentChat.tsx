@@ -292,11 +292,35 @@ export default function SuperAgentChat() {
     streamResponse(allMsgs);
   }, [messages, isStreaming, stage, userContext]);
 
-  const handleAssessmentComplete = (score: number, passed: boolean) => {
-    setAssessmentOpen(false);
+  const handleInlineAssessmentComplete = (score: number, answers: number[]) => {
+    setAssessmentCompleted(true);
+    const passed = score >= 80;
+
+    // Unlock skill target RAT-ST-001
+    const target = skillTargets.find((st) => st.id === "RAT-ST-001");
+    if (target) {
+      updateSkillTarget("RAT-ST-001", (st) => {
+        const updatedSteps = st.steps.map((step) => {
+          // Mark baseline assessment as completed
+          if (step.id === "RAT-ASM-001") return { ...step, status: "completed" as const };
+          if (passed) {
+            // Skip first 3 modules, make module 4 available
+            if (["RAT-LM-001", "RAT-LM-002", "RAT-LM-003"].includes(step.id)) return { ...step, status: "skipped" as const };
+            if (step.id === "RAT-LM-004") return { ...step, status: "available" as const };
+          } else {
+            // Normal sequential — unlock first module
+            if (step.id === "RAT-LM-001") return { ...step, status: "available" as const };
+          }
+          return step;
+        });
+        return { ...st, locked: false, steps: updatedSteps };
+      });
+    }
+
+    // Send result to Super Agent for conversational feedback
     const resultMsg: ChatMessage = {
       role: "user",
-      content: `I just completed the assessment! I scored ${score}%.${passed ? " I passed!" : " I didn't pass yet."}`,
+      content: `I just completed the Investment Management Foundations assessment. I scored ${score}% (${Math.round(score / 10)} out of 10 correct).${passed ? " I passed and can skip the introductory modules!" : " I'll go through all the modules for a solid foundation."}`,
     };
     const allMsgs = [...messages, resultMsg];
     setMessages(allMsgs);

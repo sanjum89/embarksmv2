@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { useRolePlays } from "@/contexts/RolePlayContext";
 import { getProfileData } from "@/lib/accountSelectors";
 import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { inboxNotifications } from "@/data/inboxNotifications";

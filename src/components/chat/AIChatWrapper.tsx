@@ -37,6 +37,7 @@ function ThinkingIndicator() {
 }
 
 export function AIChatWrapper() {
+  const location = useLocation();
   const {
     messages,
     suggestions,
@@ -58,6 +59,9 @@ export function AIChatWrapper() {
     toggleBlockCollapse,
     setIsExpanded,
   } = useAgentOne();
+
+  // Hide floating chat on the /chat page (Agent One is rendered inline there)
+  const isChatPage = location.pathname === "/chat";
 
 
   const chatEndRef = useRef<HTMLDivElement>(null);

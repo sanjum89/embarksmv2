@@ -85,6 +85,11 @@ export default function SuperAgentChat() {
     .filter((st) => st.locked && st.assignedTo?.includes(user.id))
     .map((st) => ({ title: st.title, category: st.category }));
 
+  // Build skill target context for the AI
+  const assignedTargets = skillTargets.filter((st) => st.assignedTo?.includes(user.id));
+  const firstTarget = assignedTargets[0];
+  const targetSteps = firstTarget?.steps?.map((s) => ({ id: s.id, title: s.title, type: s.type, status: s.status })) || [];
+
   const userContext = {
     name: user.name,
     role: user.role,
@@ -95,6 +100,9 @@ export default function SuperAgentChat() {
     accountName: normalizedAccount?.branding?.name || activeAccount?.name,
     lockedTargets,
     isFreshGraduate: isSophie,
+    targetTitle: firstTarget?.title || null,
+    targetId: firstTarget?.id || null,
+    targetSteps,
   };
 
   // Load persisted conversation

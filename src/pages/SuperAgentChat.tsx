@@ -293,7 +293,7 @@ export default function SuperAgentChat() {
       nextStage = "feedback";
     } else if (stage === "feedback") {
       nextStage = "task-list";
-    } else if (stage === "task-list" && (lower.includes("assessment") || lower.includes("ready"))) {
+    } else if (stage === "task-list" && (lower.includes("assessment") || lower.includes("ready") || lower.includes("bridge"))) {
       if (isSophie) {
         // Sophie is a fresh graduate — skip assessment, auto-unlock full path
         const target = skillTargets.find((st) => st.id === "RAT-ST-001");
@@ -308,7 +308,6 @@ export default function SuperAgentChat() {
           });
         }
         nextStage = "post-assessment";
-        // Send auto-message so the Super Agent responds with fresh-graduate encouragement
         const autoMsg: ChatMessage = { role: "user", content: "I'm ready to start my training — no assessment needed since I'm starting fresh!" };
         setMessages((currentMsgs) => {
           const autoMsgs = [...currentMsgs, autoMsg];
@@ -319,11 +318,28 @@ export default function SuperAgentChat() {
         setIsStreaming(false);
         return;
       }
-      nextStage = "pre-assessment";
+      if (hasBridgeTarget && !bridgeCompleted) {
+        // Unlock bridge target for Elliot
+        if (!bridgeUnlocked) {
+          updateSkillTarget("RAT-ST-BRIDGE-001", (st) => {
+            const updatedSteps = st.steps.map((step, idx) => idx === 0 ? { ...step, status: "available" as const } : step);
+            return { ...st, locked: false, steps: updatedSteps };
+          });
+        }
+        nextStage = "pre-bridge";
+      } else {
+        nextStage = "pre-assessment";
+      }
+    } else if (stage === "pre-bridge") {
+      // Check if bridge completed — if so, move to pre-assessment
+      if (bridgeCompleted) {
+        nextStage = "pre-assessment";
+      } else {
+        nextStage = "pre-bridge"; // stay
+      }
     } else if (stage === "pre-assessment") {
       nextStage = "pre-assessment"; // stay, show CTA
     } else if (stage === "post-assessment") {
-      // Immediately transition to post-completion to prevent loop
       nextStage = "post-completion";
     }
 

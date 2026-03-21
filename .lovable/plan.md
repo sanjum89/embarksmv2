@@ -1,62 +1,35 @@
 
 
-## Plan: Refine Nudge Stack — Cycling, Click-to-Expand & Rich Color Themes
+## Plan: Fix Nudge Stack Cycling & Move Send Button Inside Input
 
-### File: `src/components/chat/AgentOneNudgeStack.tsx`
+### Two issues to fix
 
-**1. Cleaner depth layers**
-- Remove `inset-x` narrowing on depth layers — use `inset-x-0` with only vertical offset (`top-[6px]`, `top-[12px]`) so layers are full-width
-- Tint depth layers using the color of the next nudge cards in the stack (e.g., if card 2 is rose, layer 1 gets `bg-rose-800/60`)
+**1. Cycling should NOT show nudge content on the main card**
 
-**2. Click main card → toggle expand/collapse**
-- Main card click toggles `expanded` state instead of calling `onAgentClick`
-- Remove the separate chevron expand button — whole card is the toggle
-- Remove the animated `ChevronRight` arrow
+Currently, when you click left/right arrows, the main Agent One card's subtitle text changes to show the current nudge's title and icon. The user wants the main card to always show summary text (e.g., "Hey! I'm here to help you get started") and the cycling should instead swap the visible depth layer / peek card underneath, or simply change which card opens first when expanded.
 
-**3. Left/right cycling when collapsed**
-- Add `currentIndex` state to track which nudge is "featured"
-- Show current nudge's title + subtitle in the main card text area (replacing the static "Hey! I'm here to help..." text)
-- Add `ChevronLeft` / `ChevronRight` buttons flanking the content, visible when collapsed with multiple nudges
-- Cycling to an unviewed kudos card triggers confetti
+Change in `AgentOneNudgeStack.tsx`:
+- Remove the nudge title/icon display from the main card's subtitle area
+- Main card always shows the static summary text: "Hey! I'm here to help you get started →"
+- Keep the action count badge ("4 actions")
+- Remove the left/right chevron arrows from the main card (since cycling individual cards on the summary doesn't make sense)
+- The depth layers behind still show color hints from the top cards in the stack
 
-**4. Expanded cards — rich, distinct color themes**
-- Use deep saturated backgrounds per color so cards feel cohesive as a stack but clearly differentiated:
-  - rose: `bg-rose-900` / `text-rose-100` / CTA `bg-rose-500`
-  - blue: `bg-blue-900` / `text-blue-100` / CTA `bg-blue-500`
-  - emerald: `bg-emerald-900` / `text-emerald-100` / CTA `bg-emerald-500`
-  - violet: `bg-violet-900` / `text-violet-100` / CTA `bg-violet-500`
-- Same card shape (rounded-xl) with icon, title, subtitle, CTA button, dismiss X
-- Card body not clickable — only CTA button triggers action
+**2. Send button inside the input field**
 
-**5. CTA-only interaction**
-- Expanded card body has no onClick — only the CTA button triggers the action
+Move the Send button inside the input's `relative` container as an absolutely positioned element on the right side, and remove the separate Sparkles icon div.
 
-### Layout
-
-```text
-Collapsed (cycling):
-┌────────────────────────────────────────────┐
-│ [◀] [✦] Agent One  LIVE  4 actions  [▶]  │
-│      🎉 Kudos from Marcus                 │
-│      "Great work on the compliance..."     │
-├════════════════════════════════════════════┤ ← depth layer (full width, rose tint)
-├════════════════════════════════════════════┤ ← depth layer (full width, blue tint)
-└────────────────────────────────────────────┘
-
-Expanded (click card to toggle):
-┌────────────────────────────────────────────┐
-│ [✦] Agent One  LIVE  4 actions        [▲] │
-├────────────────────────────────────────────┤
-│ [rose-900]  ★ Kudos from Marcus   [View] ✕│
-│ [blue-900]  📅 1:1 with Marcus    [View] ✕│
-│ [emerald]   📚 AML Basics      [Resume] ✕│
-│ [violet]    💬 Reflection        [Write] ✕│
-└────────────────────────────────────────────┘
-```
+Change in `LearnerChat.tsx` (both home-state and chat-state input bars):
+- Place the Send button inside the input wrapper with `absolute right-2 top-1/2 -translate-y-1/2`
+- Add `pr-10` to the input to make room for the button
+- Place the Sparkles icon as a left-side adornment inside the input (`absolute left-3`)
+- Add `pl-9` to the input for the Sparkles icon
+- Remove the external Sparkles div and external Send button
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/components/chat/AgentOneNudgeStack.tsx` | Add `currentIndex` cycling with left/right arrows, click-to-expand on main card, deep saturated color themes for expanded cards, full-width depth layers with color hints |
+| `src/components/chat/AgentOneNudgeStack.tsx` | Remove cycling arrows and nudge preview from main card subtitle; always show static summary text |
+| `src/pages/LearnerChat.tsx` | Move Send button inside input field for both home and chat state input bars |
 

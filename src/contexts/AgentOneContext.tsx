@@ -646,8 +646,8 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     if (path === "/my-inbox") {
       const pills: string[] = [];
       const hasKudos = inboxNotifications.some((n) => n.type === "kudos");
-      const hasOneOnOne = inboxNotifications.some((n) => n.type === "one_on_one");
-      const hasReflection = inboxNotifications.some((n) => n.type === "reflection_request");
+      const hasOneOnOne = inboxNotifications.some((n) => n.type === "meeting");
+      const hasReflection = inboxNotifications.some((n) => n.type === "reflection");
       if (hasKudos) pills.push("What's a kudos?");
       if (hasOneOnOne) pills.push("Tell me about my 1:1 meeting");
       if (hasReflection) pills.push("How do I respond to a reflection?");

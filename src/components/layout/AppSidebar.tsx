@@ -19,6 +19,7 @@ import {
   UserRound,
   UsersRound,
   Layers,
+  Inbox,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
@@ -76,6 +77,7 @@ const navItems: NavItem[] = [
       { label: "Role Play", path: "/role-play-bank", icon: Drama },
     ],
   },
+  { label: "Inbox", path: "/my-inbox", icon: Inbox, roles: ["learner", "manager", "admin"] },
   { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "admin"] },
   { label: "Admin", path: "/admin", icon: Shield, roles: ["admin"] },
 ];

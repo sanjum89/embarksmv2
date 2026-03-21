@@ -55,7 +55,7 @@ function ThinkingIndicator() {
 export default function SuperAgentChat() {
   const { user } = useUser();
   const { normalizedAccount, activeAccount } = useAccount();
-  const { skillTargets } = useSkillTargets();
+  const { skillTargets, updateSkillTarget } = useSkillTargets();
   const navigate = useNavigate();
   const accountId = activeAccount?.id;
 
@@ -65,7 +65,8 @@ export default function SuperAgentChat() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [stage, setStage] = useState("welcome");
   const [loaded, setLoaded] = useState(false);
-  const [assessmentOpen, setAssessmentOpen] = useState(false);
+  const [showInlineAssessment, setShowInlineAssessment] = useState(false);
+  const [assessmentCompleted, setAssessmentCompleted] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);

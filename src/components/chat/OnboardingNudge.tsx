@@ -101,17 +101,17 @@ export function OnboardingNudge() {
 
           {/* Title + progress inline */}
           <div className="flex-1 min-w-0 flex items-center gap-2">
-            <span className="text-[11px] font-medium text-foreground truncate">
+            <span className="text-[12px] font-medium text-emerald-900 dark:text-emerald-100 truncate">
               {nudge.title}
             </span>
             {showProgress && (
               <>
-                <Progress value={nudge.progress} className="h-1 w-12 shrink-0" />
-                <span className="text-[10px] text-muted-foreground shrink-0">{nudge.completedSteps}/{nudge.totalSteps}</span>
+                <Progress value={nudge.progress} className="h-1.5 w-16 shrink-0" />
+                <span className="text-[11px] text-emerald-700/70 dark:text-emerald-300/70 shrink-0">{nudge.completedSteps}/{nudge.totalSteps}</span>
               </>
             )}
             {!showProgress && !isAssessment && (
-              <span className="text-[10px] text-muted-foreground shrink-0">Up next</span>
+              <span className="text-[11px] text-emerald-700/70 dark:text-emerald-300/70 shrink-0">Up next</span>
             )}
           </div>
 

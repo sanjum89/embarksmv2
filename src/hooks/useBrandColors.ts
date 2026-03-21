@@ -89,7 +89,47 @@ function deriveThemeVars(primary: string, accent: string, sidebar: string): Reco
   const [aH, aS, aL] = accentParts;
   const accentLightness = aL ?? 50;
 
-  // If accent is too light (>65%), darken it for interactive elements
+  // "Primary-as-interactive" mode: when accent is very light (>75%), 
+  // use primary for interactive elements and accent for surface tints
+  const isPrimaryInteractive = accentLightness > 75;
+
+  if (isPrimaryInteractive) {
+    // Primary (navy) used for buttons, tabs, active states
+    // Accent (peach) used for surface tints and backgrounds
+    const pParts = primary.split(" ").map((v) => parseFloat(v));
+    const pLightness = pParts[2] ?? 20;
+    const primaryFg = pLightness < 50 ? "0 0% 100%" : `${pH} 60% 12%`;
+
+    return {
+      "--primary": primary,
+      "--primary-foreground": primaryFg,
+      "--accent": primary,           // Interactive elements use primary
+      "--accent-foreground": primaryFg,
+      "--ring": primary,
+      "--warning": primary,
+      "--warning-foreground": primaryFg,
+      // Surface tints from accent (peach) hue
+      "--secondary": `${aH} 40% 93%`,
+      "--secondary-foreground": `${pH} 40% 11%`,
+      "--muted": `${aH} 40% 93%`,
+      "--muted-foreground": `${pH} 10% 46%`,
+      "--border": `${aH} 25% 88%`,
+      "--input": `${aH} 25% 88%`,
+      "--surface-sunken": `${aH} 40% 95%`,
+      // Sidebar
+      "--sidebar-background": sidebar,
+      "--sidebar-foreground": `${pH} 20% 85%`,
+      "--sidebar-primary": primary,
+      "--sidebar-primary-foreground": primaryFg,
+      "--sidebar-accent": `${pH} 40% 24%`,
+      "--sidebar-accent-foreground": `${pH} 20% 92%`,
+      "--sidebar-border": `${pH} 40% 22%`,
+      "--sidebar-ring": primary,
+      "--sidebar-muted": `${pH} 30% 32%`,
+    };
+  }
+
+  // Standard mode: accent used for interactive elements
   const vibrantAccent = accentLightness > 65
     ? `${aH} ${aS}% 50%`
     : accent;

@@ -487,11 +487,6 @@ export default function SuperAgentChat() {
         </div>
       </div>
 
-      <AssessmentModal
-        open={assessmentOpen}
-        onClose={() => setAssessmentOpen(false)}
-        onComplete={handleAssessmentComplete}
-      />
     </div>
   );
 }

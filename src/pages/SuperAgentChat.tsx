@@ -401,7 +401,7 @@ export default function SuperAgentChat() {
       });
     }
 
-    // Send result to Super Agent for conversational feedback
+    // Send result to Agent One for conversational feedback
     const resultMsg: ChatMessage = {
       role: "user",
       content: `I just completed the Investment Management Foundations assessment. I scored ${score}% (${Math.round(score / 10)} out of 10 correct).${passed ? " I passed and can skip the introductory modules!" : " I'll go through all the modules for a solid foundation."}`,

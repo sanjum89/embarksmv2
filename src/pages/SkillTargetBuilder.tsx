@@ -120,8 +120,83 @@ export default function SkillTargetBuilder() {
   const mockAssessments = normalizedAccount?.assessments?.length ? normalizedAccount.assessments : activeAccount?.data?.assessments ?? defaultAssessments;
   const mockRolePlayBank = normalizedAccount?.rolePlays?.length ? normalizedAccount.rolePlays : activeAccount?.data?.rolePlays ?? defaultRolePlayBank;
 
+  // ── Derive contextual data from account ──
+  const profileData = normalizedAccount?.profileData?.[user.id];
+  const { roleGaps, projectGaps } = useMemo(
+    () => getRecommendationsForUser(profileData),
+    [profileData]
+  );
+
+  const projects = useMemo(() => {
+    if (!normalizedAccount?.projectsById) return [];
+    return Object.values(normalizedAccount.projectsById);
+  }, [normalizedAccount?.projectsById]);
+
+  const employeeTitle = normalizedAccount?.employeesById?.[user.id]?.title;
+
+  // ── Context-aware suggestion pills ──
+  const suggestionPills = useMemo(() => {
+    const pills: string[] = [];
+    // 1. Skill gaps first
+    for (const gap of roleGaps) {
+      if (pills.length >= 8) break;
+      pills.push(gap.skill);
+    }
+    for (const gap of projectGaps) {
+      if (pills.length >= 8) break;
+      if (!pills.includes(gap.skill)) pills.push(gap.skill);
+    }
+    // 2. Project names / required skills
+    for (const proj of projects) {
+      if (pills.length >= 8) break;
+      if (proj.name && !pills.includes(proj.name)) pills.push(proj.name);
+    }
+    // 3. Top module topics from content library
+    for (const mod of mockLearningModules.slice(0, 6)) {
+      if (pills.length >= 8) break;
+      const t = (mod as any).title;
+      if (t && !pills.includes(t)) pills.push(t);
+    }
+    return pills.length > 0 ? pills : FALLBACK_PILLS;
+  }, [roleGaps, projectGaps, projects, mockLearningModules]);
+
+  // ── Context-aware welcome message ──
+  const welcomeMessage = useMemo(() => {
+    if (roleGaps.length > 0) {
+      const gapNames = roleGaps.slice(0, 3).map((g) => `**${g.skill}**`).join(", ");
+      return `Based on your profile, you have gaps in ${gapNames}. I can help you find the right courses — or search for anything below.`;
+    }
+    if (projects.length > 0) {
+      const projName = projects[0].name || "your current project";
+      return `You're assigned to **${projName}**. I can build a learning path for that — or search for any topic.`;
+    }
+    return FALLBACK_WELCOME;
+  }, [roleGaps, projects]);
+
+  // ── Context-aware placeholders ──
+  const inputPlaceholder = useMemo(() => {
+    const count = mockLearningModules.length + mockAssessments.length + mockRolePlayBank.length;
+    if (employeeTitle && count > 0) return `Search ${count} items for ${employeeTitle} or any topic...`;
+    if (count > 3) return `Search ${count} modules, assessments, role plays...`;
+    return "Search for modules, assessments, role plays...";
+  }, [mockLearningModules.length, mockAssessments.length, mockRolePlayBank.length, employeeTitle]);
+
+  const titlePlaceholder = useMemo(() => {
+    if (roleGaps.length > 0) return `e.g. ${roleGaps[0].skill} Mastery`;
+    if (projects.length > 0) return `e.g. ${projects[0].name || "Project"} Skills`;
+    return "e.g. Customer Support Fundamentals";
+  }, [roleGaps, projects]);
+
+  const descPlaceholder = useMemo(() => {
+    if (roleGaps.length > 0) {
+      const g = roleGaps[0];
+      return `e.g. Build ${g.skill} skills from ${g.currentLevel || "—"} to ${g.targetLevel} level`;
+    }
+    return "Describe what this skill target covers...";
+  }, [roleGaps]);
+
   // Left panel
-  const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", text: WELCOME_MSG }]);
+  const [messages, setMessages] = useState<ChatMsg[]>([{ role: "assistant", text: welcomeMessage }]);
   const [input, setInput] = useState("");
   const [leftView, setLeftView] = useState<LeftView>("chat");
   const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);

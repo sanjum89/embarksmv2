@@ -250,13 +250,22 @@ export default function LearnerChat() {
                         <p className="text-[10px] text-primary-foreground/75">Online now</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => { handleReset(); setChatActive(false); }}
-                      disabled={isStreaming || !hasMessages}
-                      className="text-[11px] text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors px-2 py-1 rounded-md hover:bg-white/10"
-                    >
-                      New chat
-                    </button>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setChatActive(false)}
+                        className="text-[11px] text-primary-foreground/60 hover:text-primary-foreground transition-colors px-2 py-1 rounded-md hover:bg-white/10 flex items-center gap-1"
+                      >
+                        <Home className="h-3 w-3" />
+                        Home
+                      </button>
+                      <button
+                        onClick={() => { handleReset(); setChatActive(false); }}
+                        disabled={isStreaming || !hasMessages}
+                        className="text-[11px] text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors px-2 py-1 rounded-md hover:bg-white/10"
+                      >
+                        New chat
+                      </button>
+                    </div>
                   </motion.div>
                 </div>
               </div>

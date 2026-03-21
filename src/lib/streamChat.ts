@@ -89,12 +89,14 @@ export async function streamChat({
 export async function streamRolePlayChat({
   messages,
   rolePlayContext,
+  summarize,
   onDelta,
   onDone,
   onError,
 }: {
   messages: Msg[];
   rolePlayContext: { persona: string; scenario: string; context: string };
+  summarize?: boolean;
   onDelta: (text: string) => void;
   onDone: () => void;
   onError?: (error: string) => void;

@@ -237,9 +237,28 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
             </span>
           </div>
 
-          {expanded && (
+          {/* Cycling arrows when collapsed, chevron-up when expanded */}
+          {expanded ? (
             <ChevronUp className="h-4 w-4 text-primary-foreground/60 shrink-0" />
-          )}
+          ) : hasNudges && activeNudges.length > 1 ? (
+            <div className="flex items-center gap-1 shrink-0 bg-white/10 rounded-lg px-1.5 py-1 border border-white/10">
+              <button
+                onClick={cycleLeft}
+                className="text-primary-foreground/60 hover:text-primary-foreground transition-colors"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </button>
+              <span className="text-[10px] font-semibold tabular-nums min-w-[20px] text-center text-primary-foreground/80">
+                {(currentIndex % activeNudges.length) + 1}/{activeNudges.length}
+              </span>
+              <button
+                onClick={cycleRight}
+                className="text-primary-foreground/60 hover:text-primary-foreground transition-colors"
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : null}
         </div>
       </button>
 

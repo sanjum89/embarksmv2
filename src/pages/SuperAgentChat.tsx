@@ -79,6 +79,7 @@ export default function SuperAgentChat() {
   const employee = normalizedAccount?.employeesById?.[user.id];
   const tenure = (employee as any)?.tenure;
   const isNewJoiner = tenure !== undefined && tenure <= 6;
+  const isSophie = user.id === "u14";
 
   const lockedTargets = skillTargets
     .filter((st) => st.locked && st.assignedTo?.includes(user.id))
@@ -93,6 +94,7 @@ export default function SuperAgentChat() {
     reportsTo: (employee as any)?.reportsTo || null,
     accountName: normalizedAccount?.branding?.name || activeAccount?.name,
     lockedTargets,
+    isFreshGraduate: isSophie,
   };
 
   // Load persisted conversation

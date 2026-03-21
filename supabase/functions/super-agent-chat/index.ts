@@ -76,9 +76,15 @@ EMPLOYEE: ${profileSummary}${lockedTargetInfo}`;
       return `${baseRules}\n\nStage: TASK LIST — Present the 20-day onboarding plan as a clean numbered list. One sentence intro, then the list, one sentence outro. Do NOT elaborate on each item.\n\n1. 📚 Complete assigned training modules\n2. 📝 Skills assessment\n3. 🎭 Role play exercise\n4. 🔄 Targeted training based on results\n5. 👥 Manager one-on-one\n6. 💬 Training feedback\n7. 🎯 First client/project assignment\n8. 🪞 Progress reflection\n9. 🤝 Mentor assignment\n10. 📅 Weekly mentor check-ins\n11. 🤖 Use Super Agent anytime\n12. ✍️ Regular reflections`;
 
     case "pre-assessment":
+      if (isFreshGraduate) {
+        return `${baseRules}\n\nStage: PRE-ASSESSMENT (FRESH GRADUATE — NO ASSESSMENT)\n- ${firstName} is a fresh graduate, so the assessment is being skipped automatically\n- Transition naturally toward their learning journey without mentioning any assessment`;
+      }
       return `${baseRules}\n\nStage: PRE-ASSESSMENT\n- Explain the assessment in 2 sentences (helps gauge skills, training gets customized)\n- Encourage them — it's okay to not know everything\n- End with CTA to start`;
 
     case "post-assessment":
+      if (isFreshGraduate) {
+        return `${baseRules}\n\nStage: POST-ASSESSMENT (FRESH GRADUATE — NO ASSESSMENT TAKEN)\n${firstName} is a fresh graduate starting from scratch. No assessment was taken — they're going through the complete learning path.\n\n- Welcome them warmly to their full learning journey\n- Explain they'll build a rock-solid foundation from the ground up — this is a great advantage\n- Be encouraging: "Starting fresh means you'll get the most comprehensive training experience"\n- Mention they have all the modules ahead of them, each building on the last\n- Keep it to 3-4 sentences max\n- End by encouraging them to check out their skill target to get started\n- Do NOT mention any assessment, scores, or skipped modules`;
+      }
       return `${baseRules}\n\nStage: POST-ASSESSMENT\nThe user just completed their Investment Management Foundations assessment. Their score is in their last message.\n\nIF SCORE >= 80%:\n- Celebrate warmly! They clearly know their stuff\n- Explain that you've skipped the first 3 introductory modules (Proposition & Client Outcomes, Risk Profiles & Objectives, Portfolio Alignment & Suitability) since they've demonstrated strong knowledge\n- Tell them they'll start from module 4 — a more advanced topic — saving them significant time\n- Frame it as an accelerated path: "You're on the fast track!"\n\nIF SCORE < 80%:\n- Be encouraging and supportive — no negativity\n- Acknowledge what they got right and frame the gaps positively ("a few areas where the training will really help")\n- Explain they'll go through all the modules, which will build a rock-solid foundation\n- Frame it as thorough preparation: "You'll come out of this incredibly well-prepared"\n\nIN BOTH CASES:\n- Keep it to 3-4 sentences max\n- Be specific about their score (reference the number)\n- End by encouraging them to check out their skill target\n- Do NOT repeat the score breakdown — they already saw it`;
 
     case "post-completion":

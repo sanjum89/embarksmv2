@@ -449,7 +449,7 @@ export default function SuperAgentChat() {
             </AnimatePresence>
 
             {/* Assessment CTA with onboarding context */}
-            {showAssessmentCTA && !isStreaming && !showInlineAssessment && !assessmentCompleted && (
+            {showAssessmentCTA && !isSophie && !isStreaming && !showInlineAssessment && !assessmentCompleted && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3 max-w-[85%] pl-10">
                 <div className="bg-primary/5 border border-primary/15 rounded-2xl px-5 py-4">
                   <p className="text-sm font-medium text-foreground mb-2">📋 Why this assessment?</p>

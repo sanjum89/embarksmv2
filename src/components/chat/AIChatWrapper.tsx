@@ -43,19 +43,13 @@ export function AIChatWrapper() {
     input,
     setInput,
     isStreaming,
-    stage,
     isOpen,
     setIsOpen,
     handleSend,
     handleReset,
     showInlineAssessment,
-    setShowInlineAssessment,
     assessmentCompleted,
     handleInlineAssessmentComplete,
-    bridgeTarget,
-    hasBridgeTarget,
-    bridgeCompleted,
-    isSophie,
     loaded,
     richBlocksMap,
     collapsedBlockIds,
@@ -63,20 +57,6 @@ export function AIChatWrapper() {
     toggleBlockCollapse,
     setIsExpanded,
   } = useAgentOne();
-
-  const chatEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isStreaming]);
-
-  useEffect(() => {
-    if (isOpen) inputRef.current?.focus();
-  }, [isOpen]);
-
-  const showAssessmentCTA = stage === "pre-assessment";
-  const showIntroCTA = stage === "pre-intro";
 
   const panelWidth = isExpanded ? 720 : 400;
   const panelHeight = isExpanded ? 700 : 600;

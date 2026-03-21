@@ -642,5 +642,5 @@ export const useAgentOne = () => {
   if (!ctx) throw new Error("useAgentOne must be used within AgentOneProvider");
   return ctx;
 };
-export { parseSuggestions };
+export { parseSuggestions, parseRichBlocks };
 export type { ChatMessage };

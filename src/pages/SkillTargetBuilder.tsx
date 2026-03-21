@@ -35,6 +35,7 @@ import { AssessmentCreator } from "@/components/skill-target/AssessmentCreator";
 import type { StepItem, LearningModule, Assessment, RolePlay } from "@/types/learning";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import { getRecommendationsForUser } from "@/lib/skillRecommendations";
 
 type ContentItem =
   | { kind: "module"; data: LearningModule }
@@ -45,10 +46,10 @@ type ChatMsg = { role: "assistant" | "user"; text: string; results?: ContentItem
 type LeftView = "chat" | "detail";
 type ContentFilter = "all" | "modules" | "assessments" | "roleplays";
 
-const WELCOME_MSG =
+const FALLBACK_WELCOME =
   "Describe the skill target you want to create and I'll find the right courses for you from our repo. You can also add your own content by clicking the upload button below.";
 
-const SUGGESTION_PILLS = [
+const FALLBACK_PILLS = [
   "Customer Onboarding",
   "De-escalation Techniques",
   "Apple L1 Support",

@@ -493,8 +493,27 @@ export default function SuperAgentChat() {
               ))}
             </AnimatePresence>
 
+            {/* Bridge CTA for Elliot */}
+            {(stage === "pre-bridge") && !isStreaming && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3 max-w-[85%] pl-10">
+                <div className="bg-primary/5 border border-primary/15 rounded-2xl px-5 py-4">
+                  <p className="text-sm font-medium text-foreground mb-2">🌉 Bridge Target Unlocked</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Your <strong className="text-foreground">{bridgeTarget?.title || "Domain Bridge"}</strong> is now available. This short path maps your existing experience to the Rathbones investment context. Once completed, you'll take a skills assessment to customise your main learning path.
+                  </p>
+                </div>
+                <Link
+                  to={`/skill-target/RAT-ST-BRIDGE-001`}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
+                >
+                  Go to Bridge Target
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </motion.div>
+            )}
+
             {/* Assessment CTA with onboarding context */}
-            {showAssessmentCTA && !isSophie && !isStreaming && !showInlineAssessment && !assessmentCompleted && (
+            {showAssessmentCTA && !isSophie && !isStreaming && !showInlineAssessment && !assessmentCompleted && !(hasBridgeTarget && !bridgeCompleted) && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3 max-w-[85%] pl-10">
                 <div className="bg-primary/5 border border-primary/15 rounded-2xl px-5 py-4">
                   <p className="text-sm font-medium text-foreground mb-2">📋 Why this assessment?</p>

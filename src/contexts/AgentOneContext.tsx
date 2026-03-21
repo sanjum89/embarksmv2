@@ -566,6 +566,11 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setLoaded(true), 100);
   };
 
+  // Clear AI-returned suggestions on page navigation so contextual pills take priority
+  useEffect(() => {
+    setSuggestions([]);
+  }, [location.pathname]);
+
   // Contextual page-aware suggestion pills
   const contextualSuggestions = useMemo(() => {
     const path = location.pathname;

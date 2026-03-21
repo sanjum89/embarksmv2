@@ -17,6 +17,7 @@ import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";
 import { InlineAssessment } from "@/components/chat/InlineAssessment";
 import { RichContentBlock } from "@/components/chat/RichContentBlock";
 import { CollapsedBlockCard } from "@/components/chat/CollapsedBlockCard";
+import { OnboardingNudge } from "@/components/chat/OnboardingNudge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

@@ -98,6 +98,26 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showInlineAssessment, setShowInlineAssessment] = useState(false);
   const [assessmentCompletedLocal, setAssessmentCompletedLocal] = useState(false);
+  const [richBlocksMap, setRichBlocksMap] = useState<Record<string, RichBlock[]>>({});
+  const [collapsedBlockIds, setCollapsedBlockIds] = useState<Set<string>>(new Set());
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleBlockCollapse = useCallback((blockId: string) => {
+    setCollapsedBlockIds(prev => {
+      const next = new Set(prev);
+      if (next.has(blockId)) {
+        next.delete(blockId);
+        setIsExpanded(true);
+      } else {
+        next.add(blockId);
+        // Check if all blocks are collapsed
+        const allBlocks = Object.values(richBlocksMap).flat();
+        const allCollapsed = allBlocks.every(b => next.has(b.id));
+        if (allCollapsed) setIsExpanded(false);
+      }
+      return next;
+    });
+  }, [richBlocksMap]);
 
   const stageRef = useRef(stage);
   stageRef.current = stage;

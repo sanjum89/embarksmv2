@@ -43,6 +43,7 @@ export interface SkillTarget {
   dueDate?: string;
   skills?: SkillProficiencyTarget[];
   locked?: boolean;
+  prerequisiteId?: string;
 }
 
 export type AssessmentType = "pre" | "post";

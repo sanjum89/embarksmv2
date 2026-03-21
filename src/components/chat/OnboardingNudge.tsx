@@ -95,8 +95,8 @@ export function OnboardingNudge() {
       >
         <div className="flex items-center gap-3 px-3 py-2.5 min-h-[40px]">
           {/* Icon */}
-          <div className="shrink-0 h-5 w-5 rounded bg-primary/10 flex items-center justify-center">
-            {isAssessment ? <ClipboardList className="h-2.5 w-2.5 text-primary" /> : <BookOpen className="h-2.5 w-2.5 text-primary" />}
+          <div className="shrink-0 h-7 w-7 rounded-md bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+            {isAssessment ? <ClipboardList className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> : <BookOpen className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />}
           </div>
 
           {/* Title + progress inline */}

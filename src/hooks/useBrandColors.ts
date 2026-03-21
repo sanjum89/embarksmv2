@@ -181,6 +181,15 @@ const NON_SIDEBAR_VARS = [
   "--accent",
   "--accent-foreground",
   "--ring",
+  "--warning",
+  "--warning-foreground",
+  "--secondary",
+  "--secondary-foreground",
+  "--muted",
+  "--muted-foreground",
+  "--border",
+  "--input",
+  "--surface-sunken",
 ];
 
 export function useBrandColors() {

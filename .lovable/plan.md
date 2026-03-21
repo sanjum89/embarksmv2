@@ -1,54 +1,51 @@
 
 
-## Plan: Transform Agent One Nudge into Stacked Cards
+## Plan: Stack Nudge Cards on Chat Home Page
 
-### What's changing
+### Problem
+The nudge cards only appear as flat rows in the chat footer area. The user wants them visually stacked as cards on the **chat home page** — below the Agent One banner — creating a card-stack effect with depth.
 
-The current `OnboardingNudge` is a single strip showing one onboarding item. We'll transform it into a **stack of nudge cards** — each representing a manager-driven notification/action (e.g., "1:1 meeting scheduled", "Compliance training due", "Reflection requested"). Each card has a CTA that either navigates to a page, opens chat inline, or does both.
+### Changes
 
-### Data layer
+**File: `src/pages/LearnerChat.tsx`**
 
-**New file: `src/data/managerNudges.ts`**
+In the **Home State** section, render the manager nudge cards as a visual stack between the SuperAgentCard and the suggestion cards grid:
 
-Define a `ManagerNudge` interface and mock array of 4-5 nudges, each with:
-- `id`, `title`, `subtitle`, `icon` (LucideIcon), `priority` (high/medium/low)
-- `ctaLabel`, `ctaAction`: either `{ type: "navigate", path: string }`, `{ type: "chat", prompt: string }`, or `{ type: "navigate-and-chat", path: string, prompt: string }`
-- `color` theme (accent color per card type)
-- `from` (manager name)
-- `dismissed` flag
+- Import `managerNudges` and the theme map
+- Render each nudge as a compact card with: colored icon, title, subtitle, CTA button, dismiss X
+- Cards are slightly overlapping/offset to create a "stacked" depth effect (e.g., each card slightly indented or with shadow layering)
+- Max 3 visible with "+N more" indicator
+- Clicking a CTA routes appropriately (navigate, chat, or navigate-and-chat)
+- Dismissable individually with local state
+- When a nudge triggers chat mode (`type: "chat"`), it activates the chat state and sends the prompt
 
-Example nudges:
-1. "1:1 Meeting with Marcus" → navigate to `/my-inbox` + open chat with context
-2. "Complete Compliance Training" → navigate to skill target page
-3. "Share Your Weekly Reflection" → open chat with reflection prompt
-4. "Skills Assessment Due" → trigger inline assessment in chat
-5. "Review Peer Feedback" → navigate to `/my-inbox`
+**File: `src/components/chat/OnboardingNudge.tsx`**
 
-### UI component
+- Hide on `/chat` page since nudges are rendered inline on the home page there
+- Keep rendering in the floating `AIChatWrapper` on other pages as-is
 
-**Rewrite: `src/components/chat/OnboardingNudge.tsx`**
-
-- Rename conceptually to a "Nudge Stack" (keep filename for import compatibility)
-- Render **multiple stacked cards** instead of one strip:
-  - Each card is a compact row (icon, title, subtitle/from, CTA button, dismiss X)
-  - Cards are color-coded by priority/type (emerald for learning, blue for meetings, amber for tasks)
-  - Max 3 visible at once with a "+N more" indicator if more exist
-  - Cards can be individually dismissed (local state)
-  - Collapsed state shows a small pill "3 actions" to restore the stack
-- Smooth framer-motion stagger animations for entry/exit
-- The existing onboarding nudge (intro target, assessment, bridge) becomes one of the cards in the stack rather than the entire component
-
-### Integration
-
-**Update: `src/pages/LearnerChat.tsx`** and **`src/components/chat/AIChatWrapper.tsx`**
-- No import changes needed (same component name)
-- The nudge stack renders in the same footer position
-- When a nudge CTA triggers `navigate-and-chat`, it calls `setIsOpen(false)` + navigates, then the chat opens on the target page with the prompt pre-filled
+### Visual layout (home state)
+```text
+┌─────────────────────────────┐
+│ Hi Clara, let's grow together│
+├─────────────────────────────┤
+│ ┌─── Agent One Card ──────┐ │
+│ └─────────────────────────┘ │
+│ ┌─── Nudge 1 (blue) ─────┐ │  ← stacked cards
+│ ├─── Nudge 2 (amber) ────┤ │     with color-coded
+│ ├─── Nudge 3 (violet) ───┤ │     borders/backgrounds
+│ └── +2 more ─────────────┘ │
+│                             │
+│ ┌─────┐ ┌─────┐ ┌─────┐   │
+│ │Card │ │Card │ │Card │   │  ← suggestion cards
+│ └─────┘ └─────┘ └─────┘   │
+└─────────────────────────────┘
+```
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/data/managerNudges.ts` | New — nudge data model + 5 mock manager-driven nudges |
-| `src/components/chat/OnboardingNudge.tsx` | Rewrite — render stacked cards from both onboarding state + manager nudges, with per-card dismiss, color themes, CTA routing |
+| `src/pages/LearnerChat.tsx` | Add nudge stack section in home state between SuperAgentCard and suggestion grid; handle CTA actions + dismiss |
+| `src/components/chat/OnboardingNudge.tsx` | Hide on `/chat` route (return null) to avoid duplicate rendering |
 

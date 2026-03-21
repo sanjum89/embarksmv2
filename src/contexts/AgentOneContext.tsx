@@ -30,6 +30,27 @@ function parseSuggestions(text: string): { clean: string; suggestions: string[] 
   return { clean: text, suggestions: [] };
 }
 
+// Parse :::RICH_BLOCK{...}::: markers from AI response text
+const RICH_BLOCK_RE = /:::RICH_BLOCK(\{[\s\S]*?\}):::/g;
+let richBlockIdCounter = 0;
+
+export function parseRichBlocks(text: string): { cleanText: string; blocks: RichBlock[] } {
+  const blocks: RichBlock[] = [];
+  const cleanText = text.replace(RICH_BLOCK_RE, (_, json) => {
+    try {
+      const parsed = JSON.parse(json);
+      blocks.push({
+        id: `rb-${++richBlockIdCounter}`,
+        type: parsed.type,
+        data: parsed.data,
+        cta: parsed.cta,
+      });
+    } catch { /* ignore malformed blocks */ }
+    return ""; // Remove from text
+  }).replace(/\n{3,}/g, "\n\n").trim();
+  return { cleanText, blocks };
+}
+
 interface AgentOneContextType {
   messages: ChatMessage[];
   suggestions: string[];

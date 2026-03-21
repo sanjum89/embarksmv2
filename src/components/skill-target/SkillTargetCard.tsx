@@ -119,7 +119,7 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
               onClick={() => navigate("/chat/super-agent")}
             >
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-              Unlock via Super Agent
+              Unlock via Agent One
             </Button>
           </div>
         </div>

@@ -1,41 +1,24 @@
 
 
-## Plan: Deep Contextual Suggestion Pills
+## Plan: Make Onboarding Nudge More Prominent
 
-### Problem
-Suggestion pills only have shallow page-level awareness. They don't reflect what's actually on screen — e.g. which role play is selected, which chapter the learner is on, or what filters are active.
+### Changes to `src/components/chat/OnboardingNudge.tsx`
 
-### Approach
-Make `contextualSuggestions` in `AgentOneContext` consume richer page-level data by reading URL params and cross-referencing with `RolePlayContext` and `SkillTargetsContext`.
+**Increase size and add colored background:**
+- Bump inner padding from `px-3 py-1.5 min-h-[32px]` → `px-3 py-2.5 min-h-[40px]`
+- Add a soft tinted background: `bg-emerald-50/80 dark:bg-emerald-950/30` with `border-emerald-200/60 dark:border-emerald-800/40` top border
+- Icon container: `h-5 w-5` → `h-7 w-7 rounded-md`, icon size `h-2.5 w-2.5` → `h-3.5 w-3.5`, use emerald color (`text-emerald-600 bg-emerald-100`)
+- Title text: `text-[11px]` → `text-[12px]`, color `text-emerald-900 dark:text-emerald-100`
+- Progress bar: `h-1 w-12` → `h-1.5 w-16`, step count `text-[10px]` → `text-[11px]`
+- CTA button: `px-2 py-0.5 text-[10px]` → `px-2.5 py-1 text-[11px]`, use `bg-emerald-600 hover:bg-emerald-700 text-white`
+- "Up next" label: `text-[10px]` → `text-[11px]`
+- Dismissed pill: also use emerald tint (`border-emerald-300 bg-emerald-50 text-emerald-700`)
 
-### Changes
-
-**1. Import RolePlayContext into AgentOneContext** (`src/contexts/AgentOneContext.tsx`)
-- Import `useRolePlays` to access role play data
-- Expand the `contextualSuggestions` memo to handle these route patterns:
-
-| Route | Suggestions logic |
-|-------|------------------|
-| `/role-play-bank` | Pills based on available role plays — e.g. "Tell me about client objection handling", "Which role play should I start with?", "What's private practice mode?" |
-| `/role-play-bank/:rid` | Read `rid` from URL, find the role play → pills specific to that scenario: "Prepare me for {title}", "What's the persona like?", "Tips for {difficulty} role plays" |
-| `/skill-target/:id` (existing, enhanced) | Find current step (first `available` or `in_progress`), reference completed steps: "Help me with {currentStep.title}", "Recap {lastCompletedStep.title}", "Am I ready for {currentStep.title}?" |
-| `/skill-target/:id/module/:mid` | Find the specific module step → "Summarise this chapter", "Quiz me on {step.title}", "What's next after this?" |
-| `/skill-target/:id/role-play/:rid` | Find the role play → "Tips for this role play", "What should I focus on?", "How will I be evaluated?" |
-| `/skill-target/:id/assessment/:aid` | "How should I prepare?", "What topics are covered?", "Can I skip this?" |
-
-**2. Add dependency data to the memo** (`src/contexts/AgentOneContext.tsx`)
-- Add `rolePlays` from `useRolePlays()` to the memo deps
-- Parse additional URL segments (`:rid`, `:mid`, `:aid`) using regex on `location.pathname`
-- Find the current/next step within a skill target for step-aware pills
+This keeps it subtle enough not to distract during active chat but visually distinct from the neutral gray surroundings.
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/contexts/AgentOneContext.tsx` | Import `useRolePlays`; expand `contextualSuggestions` memo with route-specific logic for role play bank, role play sessions, skill target inner pages (modules, assessments, role plays) |
-
-### Technical notes
-- No new components needed — this is purely a data/logic change in the existing memo
-- `useRolePlays` is already available in the provider tree above `AgentOneProvider`
-- URL parsing uses the same regex pattern already used for `currentSkillTargetId`
+| `src/components/chat/OnboardingNudge.tsx` | Increase sizing, add emerald-tinted background and border |
 

@@ -417,72 +417,130 @@ export default function RolePlaySession() {
               )}
             </div>
 
-            {/* Input area */}
-            <div className="border-t border-border p-4">
-              {mode === "chat" ? (
-                <div className="mx-auto max-w-2xl flex gap-2">
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                    placeholder="Type your response..."
-                    className="flex-1 rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
-                    disabled={isLoading}
-                  />
-                  <button
-                    onClick={handleSend}
-                    disabled={isLoading}
-                    className="flex h-10 w-10 items-center justify-center rounded-lg gradient-accent text-accent-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
-                  >
-                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                  </button>
-                </div>
-              ) : (
-                /* Voice controls */
-                <div className="mx-auto max-w-2xl flex items-center justify-center gap-6">
-                  {/* Speaker toggle */}
-                  <button
-                    onClick={() => setIsSpeakerMuted(!isSpeakerMuted)}
-                    className={cn(
-                      "flex h-10 w-10 items-center justify-center rounded-full transition-all",
-                      isSpeakerMuted
-                        ? "bg-destructive/10 text-destructive"
-                        : "bg-secondary text-muted-foreground hover:text-foreground"
+            {/* End summary card */}
+            {ended && endSummary && (
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="border-t border-border p-6"
+              >
+                <div className="mx-auto max-w-2xl">
+                  <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                    <div className="flex items-center gap-2 mb-3">
+                      <CheckCircle2 className="h-5 w-5 text-success" />
+                      <h3 className="text-sm font-semibold text-foreground">Session Complete</h3>
+                    </div>
+                    <div className="prose prose-sm text-sm text-muted-foreground max-w-none">
+                      <ReactMarkdown>{endSummary}</ReactMarkdown>
+                    </div>
+                    {isLoading && (
+                      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                        <Loader2 className="h-3 w-3 animate-spin" /> Generating feedback…
+                      </div>
                     )}
-                    title={isSpeakerMuted ? "Unmute speaker" : "Mute speaker"}
-                  >
-                    {isSpeakerMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className={cn("h-5 w-5", aiSpeaking && "animate-pulse text-accent")} />}
-                  </button>
-
-                  {/* Mic button */}
-                  <button
-                    onClick={handleMicToggle}
-                    disabled={aiSpeaking || isLoading}
-                    className={cn(
-                      "relative flex h-16 w-16 items-center justify-center rounded-full transition-all",
-                      isRecording
-                        ? "gradient-accent text-accent-foreground scale-110"
-                        : aiSpeaking || isLoading
-                        ? "bg-secondary text-muted-foreground opacity-50 cursor-not-allowed"
-                        : "bg-secondary text-foreground hover:bg-accent/20 hover:text-accent"
-                    )}
-                  >
-                    {isRecording ? <MicOff className="h-7 w-7" /> : <Mic className="h-7 w-7" />}
-                    {isRecording && (
-                      <span className="absolute inset-0 rounded-full border-2 border-accent animate-ping" />
-                    )}
-                  </button>
-
-                  {/* Status label */}
-                  <div className="w-10 text-center">
-                    <span className="text-[10px] font-medium text-muted-foreground">
-                      {isRecording ? "Listening…" : aiSpeaking ? "Speaking…" : isLoading ? "Thinking…" : "Ready"}
-                    </span>
                   </div>
+                  {!isLoading && (
+                    <div className="flex items-center justify-between mt-4">
+                      <button
+                        onClick={handleRestart}
+                        className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" /> Try Again
+                      </button>
+                      <button
+                        onClick={() => navigate(skillTargetId ? `/skill-target/${skillTargetId}` : "/role-play-bank")}
+                        className="rounded-lg gradient-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90 transition-opacity"
+                      >
+                        {skillTargetId ? "Back to Skill Target" : "Back to Role Play Bank"}
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </motion.div>
+            )}
+
+            {/* Input area */}
+            {!ended && (
+              <div className="border-t border-border p-4">
+                {mode === "chat" ? (
+                  <div className="mx-auto max-w-2xl flex gap-2">
+                    <input
+                      type="text"
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                      placeholder="Type your response..."
+                      className="flex-1 rounded-lg border border-border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+                      disabled={isLoading}
+                    />
+                    <button
+                      onClick={handleEndRolePlay}
+                      disabled={isLoading || messages.length < 2}
+                      className="flex h-10 items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-3 text-xs font-medium text-destructive hover:bg-destructive/20 transition-colors disabled:opacity-40"
+                      title="End Role Play"
+                    >
+                      <Square className="h-3.5 w-3.5" /> End
+                    </button>
+                    <button
+                      onClick={handleSend}
+                      disabled={isLoading}
+                      className="flex h-10 w-10 items-center justify-center rounded-lg gradient-accent text-accent-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+                    >
+                      {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </button>
+                  </div>
+                ) : (
+                  /* Voice controls */
+                  <div className="mx-auto max-w-2xl flex items-center justify-center gap-6">
+                    {/* Speaker toggle */}
+                    <button
+                      onClick={() => setIsSpeakerMuted(!isSpeakerMuted)}
+                      className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-full transition-all",
+                        isSpeakerMuted
+                          ? "bg-destructive/10 text-destructive"
+                          : "bg-secondary text-muted-foreground hover:text-foreground"
+                      )}
+                      title={isSpeakerMuted ? "Unmute speaker" : "Mute speaker"}
+                    >
+                      {isSpeakerMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className={cn("h-5 w-5", aiSpeaking && "animate-pulse text-accent")} />}
+                    </button>
+
+                    {/* Mic button */}
+                    <button
+                      onClick={handleMicToggle}
+                      disabled={aiSpeaking || isLoading}
+                      className={cn(
+                        "relative flex h-16 w-16 items-center justify-center rounded-full transition-all",
+                        isRecording
+                          ? "gradient-accent text-accent-foreground scale-110"
+                          : aiSpeaking || isLoading
+                          ? "bg-secondary text-muted-foreground opacity-50 cursor-not-allowed"
+                          : "bg-secondary text-foreground hover:bg-accent/20 hover:text-accent"
+                      )}
+                    >
+                      {isRecording ? <MicOff className="h-7 w-7" /> : <Mic className="h-7 w-7" />}
+                      {isRecording && (
+                        <span className="absolute inset-0 rounded-full border-2 border-accent animate-ping" />
+                      )}
+                    </button>
+
+                    {/* End button for voice */}
+                    <button
+                      onClick={handleEndRolePlay}
+                      disabled={isLoading || messages.length < 2}
+                      className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-full transition-all",
+                        "bg-destructive/10 text-destructive hover:bg-destructive/20 disabled:opacity-40"
+                      )}
+                      title="End Role Play"
+                    >
+                      <Square className="h-5 w-5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>

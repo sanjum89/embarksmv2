@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Target, CalendarDays, BookOpen, ClipboardCheck, Drama } from "lucide-react";
 import { proficiencyShort } from "@/types/learning";

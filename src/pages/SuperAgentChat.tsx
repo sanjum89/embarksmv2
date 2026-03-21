@@ -11,7 +11,7 @@ import { getProfileData } from "@/lib/accountSelectors";
 import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { AssessmentModal } from "@/components/chat/AssessmentModal";
+import { InlineAssessment } from "@/components/chat/InlineAssessment";
 import { cn } from "@/lib/utils";
 
 const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/super-agent-chat`;
@@ -55,7 +55,7 @@ function ThinkingIndicator() {
 export default function SuperAgentChat() {
   const { user } = useUser();
   const { normalizedAccount, activeAccount } = useAccount();
-  const { skillTargets } = useSkillTargets();
+  const { skillTargets, updateSkillTarget } = useSkillTargets();
   const navigate = useNavigate();
   const accountId = activeAccount?.id;
 
@@ -65,7 +65,8 @@ export default function SuperAgentChat() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [stage, setStage] = useState("welcome");
   const [loaded, setLoaded] = useState(false);
-  const [assessmentOpen, setAssessmentOpen] = useState(false);
+  const [showInlineAssessment, setShowInlineAssessment] = useState(false);
+  const [assessmentCompleted, setAssessmentCompleted] = useState(false);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -291,11 +292,35 @@ export default function SuperAgentChat() {
     streamResponse(allMsgs);
   }, [messages, isStreaming, stage, userContext]);
 
-  const handleAssessmentComplete = (score: number, passed: boolean) => {
-    setAssessmentOpen(false);
+  const handleInlineAssessmentComplete = (score: number, answers: number[]) => {
+    setAssessmentCompleted(true);
+    const passed = score >= 80;
+
+    // Unlock skill target RAT-ST-001
+    const target = skillTargets.find((st) => st.id === "RAT-ST-001");
+    if (target) {
+      updateSkillTarget("RAT-ST-001", (st) => {
+        const updatedSteps = st.steps.map((step) => {
+          // Mark baseline assessment as completed
+          if (step.id === "RAT-ASM-001") return { ...step, status: "completed" as const };
+          if (passed) {
+            // Skip first 3 modules, make module 4 available
+            if (["RAT-LM-001", "RAT-LM-002", "RAT-LM-003"].includes(step.id)) return { ...step, status: "skipped" as const };
+            if (step.id === "RAT-LM-004") return { ...step, status: "available" as const };
+          } else {
+            // Normal sequential — unlock first module
+            if (step.id === "RAT-LM-001") return { ...step, status: "available" as const };
+          }
+          return step;
+        });
+        return { ...st, locked: false, steps: updatedSteps };
+      });
+    }
+
+    // Send result to Super Agent for conversational feedback
     const resultMsg: ChatMessage = {
       role: "user",
-      content: `I just completed the assessment! I scored ${score}%.${passed ? " I passed!" : " I didn't pass yet."}`,
+      content: `I just completed the Investment Management Foundations assessment. I scored ${score}% (${Math.round(score / 10)} out of 10 correct).${passed ? " I passed and can skip the introductory modules!" : " I'll go through all the modules for a solid foundation."}`,
     };
     const allMsgs = [...messages, resultMsg];
     setMessages(allMsgs);
@@ -312,6 +337,8 @@ export default function SuperAgentChat() {
       .eq("user_id", user.id);
     setMessages([]);
     setSuggestions([]);
+    setShowInlineAssessment(false);
+    setAssessmentCompleted(false);
     const initialStage = isNewJoiner ? "welcome" : "general";
     setStage(initialStage);
     setLoaded(false);
@@ -326,9 +353,8 @@ export default function SuperAgentChat() {
   const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
   const showAssessmentCTA = stage === "pre-assessment" && lastAssistantMsg?.content?.toLowerCase().includes("assessment");
 
-  // Check for skill target CTA
-  const showSkillTargetCTA = stage === "post-assessment" && lastAssistantMsg?.content?.toLowerCase().includes("skill target");
-  const firstTarget = skillTargets[0];
+  // Remove unused firstTarget ref
+  const showSkillTargetCTA = false; // CTA now in InlineAssessment result card
 
   return (
     <div className="flex flex-1 h-full min-h-0 overflow-hidden">
@@ -396,7 +422,7 @@ export default function SuperAgentChat() {
             </AnimatePresence>
 
             {/* Assessment CTA with onboarding context */}
-            {showAssessmentCTA && !isStreaming && (
+            {showAssessmentCTA && !isStreaming && !showInlineAssessment && !assessmentCompleted && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3 max-w-[85%] pl-10">
                 <div className="bg-primary/5 border border-primary/15 rounded-2xl px-5 py-4">
                   <p className="text-sm font-medium text-foreground mb-2">📋 Why this assessment?</p>
@@ -405,7 +431,7 @@ export default function SuperAgentChat() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setAssessmentOpen(true)}
+                  onClick={() => setShowInlineAssessment(true)}
                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
                 >
                   <ClipboardList className="h-4 w-4" />
@@ -414,16 +440,9 @@ export default function SuperAgentChat() {
               </motion.div>
             )}
 
-            {/* Skill Target CTA */}
-            {showSkillTargetCTA && !isStreaming && firstTarget && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
-                <Link
-                  to={`/skill-target/${firstTarget.id}`}
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all"
-                >
-                  View Your Skill Target →
-                </Link>
-              </motion.div>
+            {/* Inline Assessment */}
+            {showInlineAssessment && !assessmentCompleted && (
+              <InlineAssessment onComplete={handleInlineAssessmentComplete} />
             )}
 
             {/* Suggestion Pills */}
@@ -469,11 +488,6 @@ export default function SuperAgentChat() {
         </div>
       </div>
 
-      <AssessmentModal
-        open={assessmentOpen}
-        onClose={() => setAssessmentOpen(false)}
-        onComplete={handleAssessmentComplete}
-      />
     </div>
   );
 }

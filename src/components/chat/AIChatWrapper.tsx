@@ -1,22 +1,18 @@
 import { useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  MessageSquare,
   X,
   Sparkles,
   Send,
   RotateCcw,
-  ArrowRight,
-  ClipboardList,
   Minimize2,
-  Maximize2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";
 import { InlineAssessment } from "@/components/chat/InlineAssessment";
 import { RichContentBlock } from "@/components/chat/RichContentBlock";
 import { CollapsedBlockCard } from "@/components/chat/CollapsedBlockCard";
+import { OnboardingNudge } from "@/components/chat/OnboardingNudge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -47,19 +43,13 @@ export function AIChatWrapper() {
     input,
     setInput,
     isStreaming,
-    stage,
     isOpen,
     setIsOpen,
     handleSend,
     handleReset,
     showInlineAssessment,
-    setShowInlineAssessment,
     assessmentCompleted,
     handleInlineAssessmentComplete,
-    bridgeTarget,
-    hasBridgeTarget,
-    bridgeCompleted,
-    isSophie,
     loaded,
     richBlocksMap,
     collapsedBlockIds,
@@ -67,6 +57,7 @@ export function AIChatWrapper() {
     toggleBlockCollapse,
     setIsExpanded,
   } = useAgentOne();
+
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -78,9 +69,6 @@ export function AIChatWrapper() {
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
   }, [isOpen]);
-
-  const showAssessmentCTA = stage === "pre-assessment";
-  const showIntroCTA = stage === "pre-intro";
 
   const panelWidth = isExpanded ? 720 : 400;
   const panelHeight = isExpanded ? 700 : 600;
@@ -200,88 +188,18 @@ export function AIChatWrapper() {
                   })}
                 </AnimatePresence>
 
-                {/* Intro CTA */}
-                {showIntroCTA && !isStreaming && (
-                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2 max-w-[90%] pl-8">
-                    <div className="bg-primary/5 border border-primary/15 rounded-xl px-3.5 py-3">
-                      <p className="text-[13px] font-medium text-foreground mb-1">📚 Your First Step</p>
-                      <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        Start with <strong className="text-foreground">Introduction to Rathbones</strong> — a short onboarding path covering our heritage, investment philosophy, and what to expect.
-                      </p>
-                    </div>
-                    <Link
-                      to="/skill-target/RAT-ST-INTRO-001"
-                      onClick={() => setIsOpen(false)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
-                    >
-                      Go to Introduction
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </motion.div>
-                )}
-
-                {/* Bridge CTA */}
-                {stage === "pre-bridge" && !isStreaming && (
-                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2 max-w-[90%] pl-8">
-                    <div className="bg-primary/5 border border-primary/15 rounded-xl px-3.5 py-3">
-                      <p className="text-[13px] font-medium text-foreground mb-1">🌉 Bridge Target Unlocked</p>
-                      <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        Your <strong className="text-foreground">{bridgeTarget?.title || "Domain Bridge"}</strong> is now available. Complete it to unlock your main assessment.
-                      </p>
-                    </div>
-                    <Link
-                      to="/skill-target/RAT-ST-BRIDGE-001"
-                      onClick={() => setIsOpen(false)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
-                    >
-                      Go to Bridge Target
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </motion.div>
-                )}
-
-                {/* Assessment CTA */}
-                {showAssessmentCTA && !isSophie && !isStreaming && !showInlineAssessment && !assessmentCompleted && !(hasBridgeTarget && !bridgeCompleted) && (
-                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2 max-w-[90%] pl-8">
-                    <div className="bg-primary/5 border border-primary/15 rounded-xl px-3.5 py-3">
-                      <p className="text-[13px] font-medium text-foreground mb-1">📋 Skills Assessment</p>
-                      <p className="text-[12px] text-muted-foreground leading-relaxed">
-                        This short assessment helps us customise your learning path — skipping modules you've already mastered.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setShowInlineAssessment(true)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
-                    >
-                      <ClipboardList className="h-3.5 w-3.5" />
-                      Start Assessment
-                    </button>
-                  </motion.div>
-                )}
-
                 {/* Inline Assessment */}
                 {showInlineAssessment && !assessmentCompleted && (
                   <InlineAssessment onComplete={handleInlineAssessmentComplete} />
-                )}
-
-                {/* Post-assessment CTA */}
-                {assessmentCompleted && (stage === "post-assessment" || stage === "post-completion") && !isStreaming && (
-                  <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-center gap-2 pt-1 pl-8">
-                    <Link
-                      to="/skill-target/RAT-ST-001"
-                      onClick={() => setIsOpen(false)}
-                      className="inline-flex items-center gap-2 rounded-xl bg-primary px-3.5 py-2 text-[13px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all shadow-sm"
-                    >
-                      Go to Skill Target
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </motion.div>
                 )}
 
                 <AnimatePresence>{isStreaming && <ThinkingIndicator />}</AnimatePresence>
                 <div ref={chatEndRef} />
               </div>
             </div>
+
+            {/* Persistent onboarding nudge */}
+            <OnboardingNudge />
 
             {/* Floating Suggestion Pills above input */}
             {(() => {

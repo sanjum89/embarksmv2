@@ -93,6 +93,12 @@ export default function SuperAgentChat() {
     .filter((st) => st.locked && st.assignedTo?.includes(user.id))
     .map((st) => ({ title: st.title, category: st.category }));
 
+  // Bridge target detection for Elliot-like users
+  const bridgeTarget = skillTargets.find((st) => st.id === "RAT-ST-BRIDGE-001" && st.assignedTo?.includes(user.id));
+  const hasBridgeTarget = !!bridgeTarget;
+  const bridgeCompleted = bridgeTarget ? bridgeTarget.steps.every((s) => s.status === "completed") : false;
+  const bridgeUnlocked = bridgeTarget ? !bridgeTarget.locked : false;
+
   // Build skill target context for the AI
   const assignedTargets = skillTargets.filter((st) => st.assignedTo?.includes(user.id));
   const firstTarget = assignedTargets[0];
@@ -111,6 +117,10 @@ export default function SuperAgentChat() {
     targetTitle: firstTarget?.title || null,
     targetId: firstTarget?.id || null,
     targetSteps,
+    hasBridgeTarget,
+    bridgeTargetId: bridgeTarget?.id || null,
+    bridgeTargetTitle: bridgeTarget?.title || null,
+    bridgeCompleted,
   };
 
   // Load persisted conversation

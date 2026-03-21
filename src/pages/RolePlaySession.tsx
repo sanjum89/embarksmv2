@@ -469,29 +469,162 @@ export default function RolePlaySession() {
               )}
             </div>
 
-            {/* End summary card */}
-            {ended && endSummary && (
+            {/* Loading state while generating feedback */}
+            {ended && !endSummary && isLoading && (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="border-t border-border p-6"
               >
                 <div className="mx-auto max-w-2xl">
-                  <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-                    <div className="flex items-center gap-2 mb-3">
-                      <CheckCircle2 className="h-5 w-5 text-success" />
-                      <h3 className="text-sm font-semibold text-foreground">Session Complete</h3>
-                    </div>
-                    <div className="prose prose-sm text-sm text-muted-foreground max-w-none">
-                      <ReactMarkdown>{endSummary}</ReactMarkdown>
-                    </div>
-                    {isLoading && (
-                      <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                        <Loader2 className="h-3 w-3 animate-spin" /> Generating feedback…
+                  <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+                    <div className="flex flex-col items-center gap-4 py-6">
+                      <div className="relative">
+                        <div className="h-12 w-12 rounded-full gradient-accent flex items-center justify-center">
+                          <Loader2 className="h-6 w-6 text-accent-foreground animate-spin" />
+                        </div>
+                        <span className="absolute inset-0 rounded-full border-2 border-accent/30 animate-ping" />
                       </div>
-                    )}
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-foreground">Analysing your session…</p>
+                        <p className="text-xs text-muted-foreground mt-1">Generating personalised feedback</p>
+                      </div>
+                      <div className="w-full max-w-sm space-y-3 mt-2">
+                        <Skeleton className="h-3 w-full" />
+                        <Skeleton className="h-3 w-4/5" />
+                        <Skeleton className="h-3 w-3/5" />
+                      </div>
+                    </div>
                   </div>
-                  {!isLoading && (
+                </div>
+              </motion.div>
+            )}
+
+            {/* End summary card */}
+            {ended && endSummary && (() => {
+              const feedback = parseStructuredFeedback(endSummary);
+              if (feedback) {
+                const CustIcon = sentimentConfig[feedback.customerSentiment]?.icon || Meh;
+                const custConf = sentimentConfig[feedback.customerSentiment] || sentimentConfig.neutral;
+                const LearnIcon = learnerSentimentConfig[feedback.learnerSentiment]?.icon || TrendingUp;
+                const learnConf = learnerSentimentConfig[feedback.learnerSentiment] || learnerSentimentConfig.developing;
+
+                return (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="border-t border-border p-6 overflow-y-auto"
+                  >
+                    <div className="mx-auto max-w-2xl space-y-4">
+                      {/* Header with score */}
+                      <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-5 w-5 text-success" />
+                            <h3 className="text-sm font-semibold text-foreground">Session Complete</h3>
+                          </div>
+                          <div className={cn("rounded-full border px-3 py-1 text-sm font-bold", getScoreColor(feedback.overallScore))}>
+                            {feedback.overallScore}/10
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Sentiment row */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-xl border border-border bg-card p-4">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Customer Sentiment</p>
+                          <div className="flex items-center gap-2">
+                            <CustIcon className={cn("h-5 w-5", custConf.color)} />
+                            <span className={cn("text-sm font-medium", custConf.color)}>{custConf.label}</span>
+                          </div>
+                        </div>
+                        <div className="rounded-xl border border-border bg-card p-4">
+                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Your Performance</p>
+                          <div className="flex items-center gap-2">
+                            <LearnIcon className={cn("h-5 w-5", learnConf.color)} />
+                            <span className={cn("text-sm font-medium", learnConf.color)}>{learnConf.label}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Strengths */}
+                      {feedback.strengths.length > 0 && (
+                        <div className="rounded-xl border border-success/20 bg-success/5 p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <CheckCircle2 className="h-4 w-4 text-success" />
+                            <p className="text-xs font-semibold text-foreground">What You Did Well</p>
+                          </div>
+                          <ul className="space-y-2">
+                            {feedback.strengths.map((s, i) => (
+                              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-success shrink-0" />
+                                {s}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Improvements */}
+                      {feedback.improvements.length > 0 && (
+                        <div className="rounded-xl border border-warning/20 bg-warning/5 p-4">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Lightbulb className="h-4 w-4 text-warning" />
+                            <p className="text-xs font-semibold text-foreground">Areas to Improve</p>
+                          </div>
+                          <ul className="space-y-2">
+                            {feedback.improvements.map((s, i) => (
+                              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                                <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-warning shrink-0" />
+                                {s}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Summary narrative */}
+                      <div className="rounded-xl border border-border bg-card p-4">
+                        <p className="text-sm text-muted-foreground leading-relaxed">{feedback.summary}</p>
+                      </div>
+
+                      {/* CTAs */}
+                      <div className="flex items-center justify-between">
+                        <button
+                          onClick={handleRestart}
+                          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <RotateCcw className="h-3.5 w-3.5" /> Try Again
+                        </button>
+                        <button
+                          onClick={() => navigate(skillTargetId ? `/skill-target/${skillTargetId}` : "/role-play-bank")}
+                          className="rounded-lg gradient-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90 transition-opacity"
+                        >
+                          {skillTargetId ? "Back to Skill Target" : "Back to Role Play Bank"}
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              }
+
+              // Fallback: plain markdown for non-JSON responses
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="border-t border-border p-6"
+                >
+                  <div className="mx-auto max-w-2xl">
+                    <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                      <div className="flex items-center gap-2 mb-3">
+                        <CheckCircle2 className="h-5 w-5 text-success" />
+                        <h3 className="text-sm font-semibold text-foreground">Session Complete</h3>
+                      </div>
+                      <div className="prose prose-sm text-sm text-muted-foreground max-w-none">
+                        <ReactMarkdown>{endSummary}</ReactMarkdown>
+                      </div>
+                    </div>
                     <div className="flex items-center justify-between mt-4">
                       <button
                         onClick={handleRestart}
@@ -506,10 +639,10 @@ export default function RolePlaySession() {
                         {skillTargetId ? "Back to Skill Target" : "Back to Role Play Bank"}
                       </button>
                     </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
+                  </div>
+                </motion.div>
+              );
+            })()}
 
             {/* Input area */}
             {!ended && (

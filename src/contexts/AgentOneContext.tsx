@@ -448,10 +448,49 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setLoaded(true), 100);
   };
 
+  // Contextual page-aware suggestion pills
+  const contextualSuggestions = useMemo(() => {
+    const path = location.pathname;
+
+    if (path === "/my-inbox") {
+      const pills: string[] = [];
+      const hasKudos = inboxNotifications.some((n) => n.type === "kudos");
+      const hasOneOnOne = inboxNotifications.some((n) => n.type === "one_on_one");
+      const hasReflection = inboxNotifications.some((n) => n.type === "reflection_request");
+      if (hasKudos) pills.push("What's a kudos?");
+      if (hasOneOnOne) pills.push("Tell me about my 1:1 meeting");
+      if (hasReflection) pills.push("How do I respond to a reflection?");
+      return pills;
+    }
+
+    if (path === "/dashboard") {
+      return ["What should I work on next?", "How am I progressing?", "Explain my skill targets"];
+    }
+
+    if (path.startsWith("/skill-target/") && currentSkillTarget) {
+      return [
+        `Summarise ${currentSkillTarget.title}`,
+        "Am I on track?",
+        "What's the next step?",
+      ];
+    }
+
+    if (path === "/my-360") {
+      return ["Explain my skills gap", "What should I improve?", "How do I read this report?"];
+    }
+
+    if (path === "/manager") {
+      return ["How is my team doing?", "Who needs attention?", "Suggest a team action"];
+    }
+
+    return ["What should I do next?", "Show my progress", "Help me with something"];
+  }, [location.pathname, currentSkillTarget]);
+
   return (
     <AgentOneContext.Provider value={{
       messages,
       suggestions,
+      contextualSuggestions,
       input,
       setInput,
       isStreaming,

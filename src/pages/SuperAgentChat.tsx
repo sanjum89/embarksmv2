@@ -357,12 +357,24 @@ export default function SuperAgentChat() {
 
   const handleSend = useCallback((text: string) => {
     if (!text.trim() || isStreaming) return;
+
+    // Intercept assessment-related pills/messages in pre-assessment stage
+    const lower = text.toLowerCase();
+    const isAssessmentTrigger = lower.includes("assessment") || lower.includes("take the") || lower.includes("start my");
+    if (stage === "pre-assessment" && !assessmentCompleted && isAssessmentTrigger) {
+      const userMsg: ChatMessage = { role: "user", content: text };
+      setMessages(prev => [...prev, userMsg]);
+      setInput("");
+      setShowInlineAssessment(true);
+      return;
+    }
+
     const userMsg: ChatMessage = { role: "user", content: text };
     const allMsgs = [...messages, userMsg];
     setMessages(allMsgs);
     setInput("");
     streamResponse(allMsgs);
-  }, [messages, isStreaming, stage, userContext]);
+  }, [messages, isStreaming, stage, userContext, assessmentCompleted]);
 
   const handleInlineAssessmentComplete = (score: number, answers: number[]) => {
     setAssessmentCompletedLocal(true);

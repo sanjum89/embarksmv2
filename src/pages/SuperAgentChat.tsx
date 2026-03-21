@@ -505,7 +505,7 @@ export default function SuperAgentChat() {
             )}
 
             {/* Suggestion Pills (hidden after assessment) */}
-            {suggestions.length > 0 && !isStreaming && !assessmentCompleted && (
+            {suggestions.length > 0 && !isStreaming && (
               <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-2 pt-1 pl-10">
                 {suggestions.map((pill) => (
                   <button key={pill} onClick={() => handleSend(pill)} className="group/pill rounded-full border border-primary/20 bg-card px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]">

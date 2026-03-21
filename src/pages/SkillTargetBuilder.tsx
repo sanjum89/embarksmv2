@@ -516,9 +516,9 @@ export default function SkillTargetBuilder() {
             {/* Suggestion pills — show after welcome, before user searches */}
             {!pillsUsed && messages.length === 1 && (
               <div className="ml-10">
-                <p className="text-xs text-muted-foreground mb-2">Popular topics:</p>
+                <p className="text-xs text-muted-foreground mb-2">Suggested topics:</p>
                 <div className="flex flex-wrap gap-2">
-                  {SUGGESTION_PILLS.map((pill) => (
+                  {suggestionPills.map((pill) => (
                     <button
                       key={pill}
                       onClick={() => handleSend(pill)}

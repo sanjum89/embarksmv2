@@ -237,20 +237,9 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
             </span>
           </div>
 
-          {/* Right cycling arrow or collapse indicator */}
-          <div className="shrink-0 flex items-center gap-1">
-            {!expanded && hasNudges && activeNudges.length > 1 && (
-              <button
-                onClick={cycleRight}
-                className="p-1 rounded-lg hover:bg-white/15 transition-colors text-primary-foreground/60 hover:text-primary-foreground"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            )}
-            {expanded && (
-              <ChevronUp className="h-4 w-4 text-primary-foreground/60" />
-            )}
-          </div>
+          {expanded && (
+            <ChevronUp className="h-4 w-4 text-primary-foreground/60 shrink-0" />
+          )}
         </div>
       </button>
 

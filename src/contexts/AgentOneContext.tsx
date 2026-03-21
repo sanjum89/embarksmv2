@@ -623,6 +623,11 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       bridgeCompleted,
       isSophie,
       loaded,
+      richBlocksMap,
+      collapsedBlockIds,
+      isExpanded,
+      toggleBlockCollapse,
+      setIsExpanded,
     }}>
       {children}
     </AgentOneContext.Provider>

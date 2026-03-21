@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Eye, EyeOff, Bot, User, Mic, MicOff, Volume2, VolumeX, MessageSquare, Phone, Loader2 } from "lucide-react";
+import { ArrowLeft, Send, Eye, EyeOff, Bot, User, Mic, MicOff, Volume2, VolumeX, MessageSquare, Phone, Loader2, Square, RotateCcw, CheckCircle2 } from "lucide-react";
 
 import { useRolePlays } from "@/contexts/RolePlayContext";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { streamRolePlayChat } from "@/lib/streamChat";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
 
 interface ChatMessage {
   role: "user" | "ai";

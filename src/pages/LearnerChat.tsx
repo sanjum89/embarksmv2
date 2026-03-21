@@ -138,6 +138,7 @@ export default function LearnerChat() {
   } = useAgentOne();
 
   const [chatActive, setChatActive] = useState(false);
+  const [dismissedNudgeIds] = useState<Set<string>>(new Set());
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 

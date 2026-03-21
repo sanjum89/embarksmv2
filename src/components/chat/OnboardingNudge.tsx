@@ -16,17 +16,22 @@ const themeMap: Record<ManagerNudge["colorTheme"], { bg: string; border: string;
   rose:    { bg: "bg-rose-50/80 dark:bg-rose-950/30",    border: "border-rose-200/60 dark:border-rose-800/40",    icon: "bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400",      text: "text-rose-900 dark:text-rose-100",   cta: "bg-rose-600",   ctaHover: "hover:bg-rose-700" },
 };
 
+export { themeMap as nudgeThemeMap };
+
 export function OnboardingNudge() {
-  const navigate = useNavigate();
   const location = useLocation();
-  const { setShowInlineAssessment, setIsExpanded, setIsOpen } = useAgentOne();
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
-  const [collapsed, setCollapsed] = useState(false);
 
   // On chat page, nudges render inline in the home state — skip here
-  if (isOnChatPage) return null;
+  if (location.pathname === "/chat") return null;
 
-  const activeNudges = managerNudges.filter((n) => !dismissedIds.has(n.id));
+  return <NudgeStack />;
+}
+
+export function NudgeStack({ onChatAction }: { onChatAction?: (prompt: string) => void }) {
+  const navigate = useNavigate();
+  const { setShowInlineAssessment, setIsExpanded, setIsOpen, handleSend } = useAgentOne();
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [collapsed, setCollapsed] = useState(false);
 
   const activeNudges = managerNudges.filter((n) => !dismissedIds.has(n.id));
 
@@ -42,21 +47,25 @@ export function OnboardingNudge() {
       if (ctaAction.prompt === "__ASSESSMENT__") {
         setShowInlineAssessment(true);
         setIsExpanded(true);
+        onChatAction?.("__ASSESSMENT__");
       } else {
-        // handled externally — parent will pick up the prompt
+        if (onChatAction) {
+          onChatAction(ctaAction.prompt);
+        } else {
+          handleSend(ctaAction.prompt);
+        }
       }
     } else if (ctaAction.type === "navigate") {
-      if (isOnChatPage) setIsOpen(false);
+      setIsOpen(false);
       navigate(ctaAction.path);
     } else if (ctaAction.type === "navigate-and-chat") {
       navigate(ctaAction.path);
     }
   };
 
-  // Collapsed pill
   if (collapsed) {
     return (
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="shrink-0 px-3 pt-1 pb-1">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <button
           onClick={() => setCollapsed(false)}
           className="flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary hover:bg-primary/10 transition-colors"
@@ -73,7 +82,7 @@ export function OnboardingNudge() {
   const hiddenCount = activeNudges.length - visibleNudges.length;
 
   return (
-    <div className="shrink-0">
+    <div className="space-y-0 rounded-xl border border-border overflow-hidden shadow-sm">
       <AnimatePresence mode="popLayout">
         {visibleNudges.map((nudge, i) => {
           const theme = themeMap[nudge.colorTheme];
@@ -83,46 +92,27 @@ export function OnboardingNudge() {
               key={nudge.id}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, x: -40, height: 0, marginBottom: 0 }}
+              exit={{ opacity: 0, x: -40, height: 0 }}
               transition={{ duration: 0.25, delay: i * 0.04 }}
               layout
-              className={cn("border-t", theme.border, theme.bg)}
+              className={cn(i > 0 && "border-t", theme.border, theme.bg)}
             >
-              <div className="flex items-center gap-3 px-3 py-2 min-h-[40px]">
-                {/* Icon */}
+              <div className="flex items-center gap-3 px-3 py-2.5 min-h-[44px]">
                 <div className={cn("shrink-0 h-7 w-7 rounded-md flex items-center justify-center", theme.icon)}>
                   <Icon className="h-3.5 w-3.5" />
                 </div>
-
-                {/* Text */}
                 <div className="flex-1 min-w-0">
-                  <span className={cn("text-[12px] font-medium truncate block", theme.text)}>
-                    {nudge.title}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground truncate block">
-                    {nudge.subtitle}
-                  </span>
+                  <span className={cn("text-[12px] font-medium truncate block", theme.text)}>{nudge.title}</span>
+                  <span className="text-[10px] text-muted-foreground truncate block">{nudge.subtitle}</span>
                 </div>
-
-                {/* CTA */}
                 <button
                   onClick={() => handleCTA(nudge)}
-                  className={cn(
-                    "shrink-0 inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium text-white transition-colors",
-                    theme.cta,
-                    theme.ctaHover
-                  )}
+                  className={cn("shrink-0 inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium text-white transition-colors", theme.cta, theme.ctaHover)}
                 >
                   {nudge.ctaLabel}
                   <ArrowRight className="h-3 w-3" />
                 </button>
-
-                {/* Dismiss */}
-                <button
-                  onClick={() => dismiss(nudge.id)}
-                  className="shrink-0 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-                  title="Dismiss"
-                >
+                <button onClick={() => dismiss(nudge.id)} className="shrink-0 text-muted-foreground/40 hover:text-muted-foreground transition-colors" title="Dismiss">
                   <X className="h-3 w-3" />
                 </button>
               </div>
@@ -131,15 +121,10 @@ export function OnboardingNudge() {
         })}
       </AnimatePresence>
 
-      {/* Overflow + collapse controls */}
-      <div className="flex items-center gap-2 px-3 py-1">
-        {hiddenCount > 0 && (
-          <span className="text-[10px] text-muted-foreground">+{hiddenCount} more</span>
-        )}
-        <button
-          onClick={() => setCollapsed(true)}
-          className="ml-auto text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
-        >
+      {/* Footer */}
+      <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border-t border-border/50">
+        {hiddenCount > 0 && <span className="text-[10px] text-muted-foreground">+{hiddenCount} more</span>}
+        <button onClick={() => setCollapsed(true)} className="ml-auto text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">
           Minimize
         </button>
       </div>

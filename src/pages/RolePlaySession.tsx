@@ -24,7 +24,9 @@ const difficultyColors = {
 
 export default function RolePlaySession() {
   const { rid, id: skillTargetId } = useParams();
+  const navigate = useNavigate();
   const { getRolePlay } = useRolePlays();
+  const { skillTargets, updateSkillTarget } = useSkillTargets();
   const foundRolePlay = getRolePlay(rid || "");
 
   // Generate fallback role play from skill target step data when not in mock bank

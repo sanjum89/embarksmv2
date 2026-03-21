@@ -52,7 +52,8 @@ export default function RolePlaySession() {
   const [started, setStarted] = useState(false);
   const [mode, setMode] = useState<SessionMode>("chat");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [ended, setEnded] = useState(false);
+  const [endSummary, setEndSummary] = useState("");
   // Voice mode state
   const [isRecording, setIsRecording] = useState(false);
   const [isSpeakerMuted, setIsSpeakerMuted] = useState(false);

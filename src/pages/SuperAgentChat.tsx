@@ -421,7 +421,7 @@ export default function SuperAgentChat() {
             </AnimatePresence>
 
             {/* Assessment CTA with onboarding context */}
-            {showAssessmentCTA && !isStreaming && (
+            {showAssessmentCTA && !isStreaming && !showInlineAssessment && !assessmentCompleted && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3 max-w-[85%] pl-10">
                 <div className="bg-primary/5 border border-primary/15 rounded-2xl px-5 py-4">
                   <p className="text-sm font-medium text-foreground mb-2">📋 Why this assessment?</p>
@@ -430,7 +430,7 @@ export default function SuperAgentChat() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setAssessmentOpen(true)}
+                  onClick={() => setShowInlineAssessment(true)}
                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
                 >
                   <ClipboardList className="h-4 w-4" />
@@ -439,16 +439,9 @@ export default function SuperAgentChat() {
               </motion.div>
             )}
 
-            {/* Skill Target CTA */}
-            {showSkillTargetCTA && !isStreaming && firstTarget && (
-              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
-                <Link
-                  to={`/skill-target/${firstTarget.id}`}
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all"
-                >
-                  View Your Skill Target →
-                </Link>
-              </motion.div>
+            {/* Inline Assessment */}
+            {showInlineAssessment && !assessmentCompleted && (
+              <InlineAssessment onComplete={handleInlineAssessmentComplete} />
             )}
 
             {/* Suggestion Pills */}

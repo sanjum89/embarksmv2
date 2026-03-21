@@ -18,7 +18,7 @@ const ONBOARDING_NEXT_PILL: Record<string, string> = {
 };
 
 function buildSystemPrompt(stage: string, userContext: any): string {
-  const { name, role, title, tenure, skills, reportsTo, accountName, lockedTargets, isFreshGraduate, targetTitle, targetId, targetSteps } = userContext || {};
+  const { name, role, title, tenure, skills, reportsTo, accountName, lockedTargets, isFreshGraduate, targetTitle, targetId, targetSteps, hasBridgeTarget, bridgeTargetTitle, bridgeCompleted } = userContext || {};
   const firstName = name?.split(" ")[0] || "there";
   const isNewJoiner = tenure !== undefined && tenure <= 6;
 

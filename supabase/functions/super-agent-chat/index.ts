@@ -30,7 +30,7 @@ function buildSystemPrompt(stage: string, userContext: any): string {
     : `All suggestion pills should be contextual to the conversation.`;
 
   const lockedTargetInfo = Array.isArray(lockedTargets) && lockedTargets.length > 0
-    ? `\n\nLOCKED SKILL TARGETS:\nThe following skill targets are locked for ${firstName} and will only be unlocked after completing the pre-assessment through the Super Agent:\n${lockedTargets.map((t: any) => `- "${t.title}" (${t.category})`).join("\n")}\nIf ${firstName} asks about these locked targets, explain that they need to complete their initial assessment first. The assessment helps customize their learning path. Guide them toward the assessment stage. Be encouraging — it's a normal part of the onboarding process.`
+    ? `\n\nLOCKED SKILL TARGETS:\nThe following skill targets are locked for ${firstName} and will only be unlocked after completing the pre-assessment through Agent One:\n${lockedTargets.map((t: any) => `- "${t.title}" (${t.category})`).join("\n")}\nIf ${firstName} asks about these locked targets, explain that they need to complete their initial assessment first. The assessment helps customize their learning path. Guide them toward the assessment stage. Be encouraging — it's a normal part of the onboarding process.`
     : "";
 
   // Build skill target context string

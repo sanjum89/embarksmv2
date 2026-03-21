@@ -64,7 +64,7 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
   // Fetch nudge cards from DB
   useEffect(() => {
     if (!activeAccount?.id) return;
-    const userId = user?.employeeId || "RAT-E001";
+    const userId = user?.id || "RAT-E001";
 
     supabase
       .from("nudge_cards")

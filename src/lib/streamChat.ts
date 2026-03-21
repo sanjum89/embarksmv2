@@ -108,7 +108,7 @@ export async function streamRolePlayChat({
         "Content-Type": "application/json",
         Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ messages, rolePlayContext }),
+      body: JSON.stringify({ messages, rolePlayContext, ...(summarize && { summarize: true }) }),
     });
 
     if (!resp.ok || !resp.body) {

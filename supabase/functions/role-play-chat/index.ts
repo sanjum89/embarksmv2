@@ -10,11 +10,25 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages, rolePlayContext } = await req.json();
+    const { messages, rolePlayContext, summarize } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are playing the role of a character in a training role play simulation. Stay in character at all times.
+    const systemPrompt = summarize
+      ? `You are now a supportive learning coach providing feedback on a role play session that just ended.
+
+SCENARIO WAS: ${rolePlayContext?.scenario || "A general conversation"}
+PERSONA WAS: ${rolePlayContext?.persona || "A character"}
+
+INSTRUCTIONS:
+- Break character completely. You are now a coach, not the persona.
+- Provide a brief, encouraging summary of how the learner performed (3-4 sentences).
+- Highlight 1-2 things they did well with specific examples from the conversation.
+- Suggest 1 area for improvement, framed constructively.
+- End with an encouraging note about their progress.
+- Keep the tone warm, professional, and supportive.
+- Do NOT use bullet points — write in flowing prose.`
+      : `You are playing the role of a character in a training role play simulation. Stay in character at all times.
 
 CHARACTER: ${rolePlayContext?.persona || "A customer"}
 SCENARIO: ${rolePlayContext?.scenario || "A general conversation"}

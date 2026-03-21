@@ -1,46 +1,9 @@
 import { motion } from "framer-motion";
-import { Inbox, Calendar, Star, MessageSquare } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
+import { inboxNotifications, notificationTypeStyles } from "@/data/inboxNotifications";
 
 export default function MyInbox() {
   const { user } = useUser();
-
-  const notifications = [
-    {
-      id: "n1",
-      type: "one_on_one" as const,
-      icon: Calendar,
-      title: "1:1 Meeting Scheduled",
-      message: "Your manager has scheduled a 1:1 for Friday at 2pm to discuss your onboarding progress.",
-      time: "2 hours ago",
-      read: false,
-    },
-    {
-      id: "n2",
-      type: "kudos" as const,
-      icon: Star,
-      title: "Kudos Received! 🌟",
-      message: "Great job completing the Introduction to Rathbones ahead of schedule. Keep up the momentum!",
-      from: "Marcus Wellington",
-      time: "Yesterday",
-      read: false,
-    },
-    {
-      id: "n3",
-      type: "reflection_request" as const,
-      icon: MessageSquare,
-      title: "Reflection Requested",
-      message: "Your manager would like to hear how your first week is going. Share your thoughts on what's working and any challenges you're facing.",
-      time: "2 days ago",
-      read: true,
-    },
-  ];
-
-  const typeStyles = {
-    one_on_one: "bg-info/10 text-info border-info/20",
-    kudos: "bg-accent/10 text-accent border-accent/20",
-    reflection_request: "bg-primary/10 text-primary border-primary/20",
-  };
 
   return (
     <div className="flex-1 overflow-y-auto p-6">
@@ -57,7 +20,7 @@ export default function MyInbox() {
       </motion.div>
 
       <div className="space-y-3 max-w-2xl">
-        {notifications.map((item, i) => {
+        {inboxNotifications.map((item, i) => {
           const Icon = item.icon;
           return (
             <motion.div
@@ -68,7 +31,7 @@ export default function MyInbox() {
               className={`rounded-xl bg-card border border-border/60 p-4 shadow-card transition-all hover:shadow-card-hover ${!item.read ? "border-l-2 border-l-primary" : ""}`}
             >
               <div className="flex items-start gap-3">
-                <div className={`shrink-0 h-9 w-9 rounded-lg flex items-center justify-center ${typeStyles[item.type]}`}>
+                <div className={`shrink-0 h-9 w-9 rounded-lg flex items-center justify-center ${notificationTypeStyles[item.type]}`}>
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -77,7 +40,7 @@ export default function MyInbox() {
                     <span className="text-[11px] text-muted-foreground shrink-0">{item.time}</span>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">{item.message}</p>
-                  {"from" in item && item.from && (
+                  {item.from && (
                     <p className="text-xs text-muted-foreground mt-1.5">From: <strong className="text-foreground">{item.from}</strong></p>
                   )}
                 </div>

@@ -39,6 +39,7 @@ export function AIChatWrapper() {
   const {
     messages,
     suggestions,
+    contextualSuggestions,
     input,
     setInput,
     isStreaming,
@@ -242,21 +243,27 @@ export function AIChatWrapper() {
                   </motion.div>
                 )}
 
-                {/* Suggestion Pills */}
-                {suggestions.length > 0 && !isStreaming && (
-                  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-1.5 pt-1 pl-8">
-                    {suggestions.map((pill) => (
+                <AnimatePresence>{isStreaming && <ThinkingIndicator />}</AnimatePresence>
+                <div ref={chatEndRef} />
+              </div>
+            </div>
+
+            {/* Floating Suggestion Pills above input */}
+            {(() => {
+              const activePills = suggestions.length > 0 ? suggestions : contextualSuggestions;
+              return activePills.length > 0 && !isStreaming ? (
+                <div className="shrink-0 px-4 pt-2 pb-0 relative">
+                  <div className="absolute -top-6 left-0 right-0 h-6 bg-gradient-to-t from-card to-transparent pointer-events-none" />
+                  <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-1.5">
+                    {activePills.map((pill) => (
                       <button key={pill} onClick={() => handleSend(pill)} className="rounded-full border border-primary/20 bg-card px-3 py-1 text-[11px] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]">
                         {pill}
                       </button>
                     ))}
                   </motion.div>
-                )}
-
-                <AnimatePresence>{isStreaming && <ThinkingIndicator />}</AnimatePresence>
-                <div ref={chatEndRef} />
-              </div>
-            </div>
+                </div>
+              ) : null;
+            })()}
 
             {/* Input */}
             <div className="shrink-0 px-4 pb-4 pt-2 border-t border-border/50">

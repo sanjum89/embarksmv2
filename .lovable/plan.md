@@ -1,31 +1,51 @@
 
 
-## Plan: Add Cycling Arrows to Agent One Main Card
+## Plan: Fix Cycling — Replace `<button>` with `<div>` and Show Single Action Card Below Summary
 
-### What to change
+### Root cause
 
-Add left and right chevron arrows on the right side of the main Agent One card. When clicked, they cycle through the nudge cards, updating the depth layer colors behind the stack. The main card text stays static ("Hey! I'm here to help you get started →") — the arrows just change which card is "on top" of the stack (affecting depth layer tints and which card appears first when expanded).
+The outer main card is a `<button>` (line 189). Nested `<button>` elements inside a parent `<button>` have broken event propagation in browsers — `e.stopPropagation()` on the inner cycling arrows doesn't prevent the parent button's click from firing. So every arrow click also triggers `setExpanded(!expanded)`.
 
-### File: `src/components/chat/AgentOneNudgeStack.tsx`
+### Two fixes needed
 
-- Add a `div` with `ChevronLeft` and `ChevronRight` buttons on the right side of the main card content area (next to the ChevronUp icon area), visible when collapsed and `activeNudges.length > 1`
-- Wire buttons to existing `cycleLeft` / `cycleRight` handlers (already defined but unused)
-- `e.stopPropagation()` on both to prevent triggering expand/collapse
-- Show a small counter between arrows: `"1/4"` style indicator using `currentIndex + 1` / `activeNudges.length`
+**1. Change outer `<button>` to `<div role="button">`**
+- Line 189: `<button>` → `<div role="button" tabIndex={0} className="cursor-pointer ...">`
+- Line 263: `</button>` → `</div>`
+- This lets inner cycling buttons properly stop propagation
+
+**2. Show ONE action card below the summary card (not expanded list)**
+- When collapsed, render the current nudge card (based on `currentIndex`) directly below the summary card as a single visible action card
+- Clicking left/right arrows cycles which single card is shown
+- Clicking the summary card body still toggles the full expanded list of all cards
+- This gives the "card cycling" feel the user wants
 
 ### Layout
 
 ```text
-┌─────────────────────────────────────────────────┐
-│ [✦] Agent One  LIVE  4 actions    [◀ 1/4 ▶]   │
-│      Hey! I'm here to help...                   │
-├═══════════════════════════════════════════════════┤ ← depth layer tint changes on cycle
-└─────────────────────────────────────────────────┘
+Collapsed (shows 1 action card at a time, arrows cycle it):
+┌─────────────────────────────────────────┐
+│ [✦] Agent One  LIVE  4 actions [◀1/4▶] │  ← summary (click expands all)
+│      Hey! I'm here to help...           │
+└─────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ [rose] ★ Kudos from Marcus    [View] ✕  │  ← single cycling card
+└─────────────────────────────────────────┘
+
+After clicking right arrow:
+┌─────────────────────────────────────────┐
+│ [✦] Agent One  LIVE  4 actions [◀2/4▶] │
+└─────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│ [blue] 📅 1:1 with Marcus     [View] ✕  │  ← next card
+└─────────────────────────────────────────┘
 ```
 
-### Files changed
+### File: `src/components/chat/AgentOneNudgeStack.tsx`
 
-| File | Change |
-|------|--------|
-| `src/components/chat/AgentOneNudgeStack.tsx` | Add cycling arrows with counter on right side of main card when collapsed |
+| Change | Detail |
+|--------|--------|
+| Line 189 | `<button>` → `<div role="button" tabIndex={0}>` with `cursor-pointer` |
+| Line 263 | `</button>` → `</div>` |
+| After main card (line 263) | Add a single action card rendering `currentNudge` when collapsed and `hasNudges`, using the same themed card markup from the expanded list |
+| Depth layers | Keep existing depth layers behind the action card for the stacked look |
 

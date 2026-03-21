@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import type { SkillTarget } from "@/types/learning";
 import { mockSkillTargets } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 
 interface SkillTargetsContextType {
   skillTargets: SkillTarget[];
@@ -15,10 +16,16 @@ const SkillTargetsContext = createContext<SkillTargetsContextType>({
   updateSkillTarget: () => {},
 });
 
+/**
+ * Per-user skill target state.
+ * Each user gets their own independent copy of skill targets so that
+ * progress / unlock state is fully isolated between profiles.
+ */
 export function SkillTargetsProvider({ children }: { children: ReactNode }) {
   const { normalizedAccount, activeAccount, loading } = useAccount();
+  const { user } = useUser();
 
-  const getInitialTargets = () => {
+  const getBaseTargets = useCallback((): SkillTarget[] => {
     if (Array.isArray(normalizedAccount?.skillTargets) && normalizedAccount.skillTargets.length) {
       return normalizedAccount.skillTargets;
     }
@@ -26,25 +33,50 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
       return activeAccount.data.skillTargets;
     }
     return mockSkillTargets;
-  };
+  }, [normalizedAccount, activeAccount]);
 
-  const [skillTargets, setSkillTargets] = useState<SkillTarget[]>(getInitialTargets);
+  // Map of userId → their own skill targets state
+  const [perUserTargets, setPerUserTargets] = useState<Record<string, SkillTarget[]>>({});
 
+  const accountId = activeAccount?.id ?? "__default";
+  const userId = user.id;
+  const compositeKey = `${accountId}::${userId}`;
+
+  // When account or user list changes, seed any user that doesn't have state yet
   useEffect(() => {
-    if (!loading) {
-      setSkillTargets(getInitialTargets());
+    if (loading) return;
+    setPerUserTargets((prev) => {
+      if (prev[compositeKey]) return prev; // already seeded
+      // Deep clone so each user gets independent objects
+      const base = getBaseTargets();
+      const cloned = JSON.parse(JSON.stringify(base)) as SkillTarget[];
+      return { ...prev, [compositeKey]: cloned };
+    });
+  }, [compositeKey, loading, getBaseTargets]);
+
+  // Reset per-user map when account switches (different account = fresh slate)
+  const accountIdRef = useState(accountId)[0];
+  useEffect(() => {
+    if (!loading && accountId !== accountIdRef) {
+      // Account actually changed — handled by compositeKey seeding above
     }
-  }, [activeAccount?.id, normalizedAccount?.id, loading]);
+  }, [accountId, loading]);
 
-  const addSkillTargets = (targets: SkillTarget[]) => {
-    setSkillTargets((prev) => [...prev, ...targets]);
-  };
+  const skillTargets = perUserTargets[compositeKey] ?? getBaseTargets();
 
-  const updateSkillTarget = (id: string, updater: (target: SkillTarget) => SkillTarget) => {
-    setSkillTargets((prev) =>
-      prev.map((st) => (st.id === id ? updater(st) : st))
-    );
-  };
+  const addSkillTargets = useCallback((targets: SkillTarget[]) => {
+    setPerUserTargets((prev) => ({
+      ...prev,
+      [compositeKey]: [...(prev[compositeKey] ?? []), ...targets],
+    }));
+  }, [compositeKey]);
+
+  const updateSkillTarget = useCallback((id: string, updater: (target: SkillTarget) => SkillTarget) => {
+    setPerUserTargets((prev) => ({
+      ...prev,
+      [compositeKey]: (prev[compositeKey] ?? []).map((st) => (st.id === id ? updater(st) : st)),
+    }));
+  }, [compositeKey]);
 
   return (
     <SkillTargetsContext.Provider value={{ skillTargets, addSkillTargets, updateSkillTarget }}>

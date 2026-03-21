@@ -168,6 +168,49 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     totalSteps: currentSkillTarget.steps.length,
   } : null;
 
+  // Build detailed skills data for rich blocks
+  const skillsDetailed = useMemo(() => {
+    const allSkills = [
+      ...(userProfile?.roleSkillsCurrent || []).map((s: any) => ({ ...s, category: "Role" })),
+      ...(userProfile?.projectSkillsCurrent || []).map((s: any) => ({ ...s, category: "Project" })),
+      ...(userProfile?.otherSkills || []).map((s: any) => ({ ...s, category: "Other" })),
+    ];
+    return allSkills.map((s: any) => ({
+      name: s.skill_name,
+      level: s.proficiency,
+      numeric: proficiencyNumeric[s.proficiency as Proficiency] || 40,
+      category: s.category,
+    }));
+  }, [userProfile]);
+
+  const skillTargetsSummary = useMemo(() =>
+    assignedTargets.map(st => ({
+      title: st.title,
+      progress: Math.round(st.progress || 0),
+      status: st.locked ? "locked" : st.progress >= 100 ? "completed" : "in_progress",
+      totalSteps: st.steps.length,
+      completedSteps: st.steps.filter(s => s.status === "completed" || s.status === "skipped").length,
+    })), [assignedTargets]);
+
+  const inboxSummary = useMemo(() =>
+    inboxNotifications.map(n => ({
+      title: n.title,
+      message: n.message,
+      type: n.type,
+      time: n.time,
+    })), []);
+
+  const skillGaps = useMemo(() => {
+    const current = userProfile?.roleSkillsCurrent || [];
+    const required = userProfile?.roleSkillsRequired || [];
+    return required.map((req: any) => {
+      const cur = current.find((c: any) => c.skill_name === req.skill_name);
+      const curNum = cur ? (proficiencyNumeric[cur.proficiency as Proficiency] || 0) : 0;
+      const reqNum = proficiencyNumeric[req.proficiency as Proficiency] || 0;
+      return { name: req.skill_name, current: cur?.proficiency || "None", required: req.proficiency, gap: reqNum - curNum };
+    }).filter((g: any) => g.gap > 0);
+  }, [userProfile]);
+
   const userContext = {
     name: user.name,
     role: user.role,
@@ -189,6 +232,10 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     introTargetTitle: introTarget?.title || null,
     currentPage,
     currentSkillTargetProgress,
+    skillsDetailed,
+    skillTargetsSummary,
+    inboxSummary,
+    skillGaps,
   };
 
   // Load persisted conversation

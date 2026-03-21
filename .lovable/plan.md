@@ -1,44 +1,41 @@
 
 
-## Plan: Declutter Agent One Bottom Area
+## Plan: Deep Contextual Suggestion Pills
 
 ### Problem
-The nudge strip, suggestion pills, and input bar are stacked vertically taking up too much space — the bottom half of the chat feels cramped, especially on smaller panels.
+Suggestion pills only have shallow page-level awareness. They don't reflect what's actually on screen — e.g. which role play is selected, which chapter the learner is on, or what filters are active.
+
+### Approach
+Make `contextualSuggestions` in `AgentOneContext` consume richer page-level data by reading URL params and cross-referencing with `RolePlayContext` and `SkillTargetsContext`.
 
 ### Changes
 
-**1. Make OnboardingNudge ultra-compact — single horizontal row**
+**1. Import RolePlayContext into AgentOneContext** (`src/contexts/AgentOneContext.tsx`)
+- Import `useRolePlays` to access role play data
+- Expand the `contextualSuggestions` memo to handle these route patterns:
 
-Redesign `src/components/chat/OnboardingNudge.tsx`:
-- Default (not dismissed): Single row layout — icon + title + inline mini progress bar + CTA button, all on one line. No stacked layout, no separate CTA row. Think: `[📚 Introduction to Rathbones ████░░ 1/3  Continue →]`
-- Height: ~32px instead of current ~80px
-- Remove the large padded card wrapper, use a slim divider-style strip with a subtle top border only
-- Dismissed: stays as the small pill (already compact)
-- Assessment variant: same single row `[📋 Skills Assessment — Helps customise path  Take Assessment]`
+| Route | Suggestions logic |
+|-------|------------------|
+| `/role-play-bank` | Pills based on available role plays — e.g. "Tell me about client objection handling", "Which role play should I start with?", "What's private practice mode?" |
+| `/role-play-bank/:rid` | Read `rid` from URL, find the role play → pills specific to that scenario: "Prepare me for {title}", "What's the persona like?", "Tips for {difficulty} role plays" |
+| `/skill-target/:id` (existing, enhanced) | Find current step (first `available` or `in_progress`), reference completed steps: "Help me with {currentStep.title}", "Recap {lastCompletedStep.title}", "Am I ready for {currentStep.title}?" |
+| `/skill-target/:id/module/:mid` | Find the specific module step → "Summarise this chapter", "Quiz me on {step.title}", "What's next after this?" |
+| `/skill-target/:id/role-play/:rid` | Find the role play → "Tips for this role play", "What should I focus on?", "How will I be evaluated?" |
+| `/skill-target/:id/assessment/:aid` | "How should I prepare?", "What topics are covered?", "Can I skip this?" |
 
-**2. Tighten suggestion pills spacing**
-
-In `src/components/chat/AIChatWrapper.tsx`:
-- Reduce padding: `px-4 pt-2` → `px-3 pt-1.5`
-- Reduce pill gap: `gap-1.5` → `gap-1`
-- Limit to max 3 visible pills (truncate with "+N" if more) to prevent wrapping to multiple rows
-- Remove the gradient overlay div (saves 24px of visual space)
-
-**3. Reduce input bar padding**
-
-In `src/components/chat/AIChatWrapper.tsx`:
-- Input wrapper: `px-4 pb-4 pt-2` → `px-3 pb-3 pt-1.5`
-- Remove border-t (the nudge/pills already visually separate); or keep as very subtle `border-border/30`
-
-**4. Combine nudge + pills into one visual zone**
-
-- Remove margin between nudge and pills — they share a single compact footer zone
-- Nudge sits directly above pills with no gap, both above input
+**2. Add dependency data to the memo** (`src/contexts/AgentOneContext.tsx`)
+- Add `rolePlays` from `useRolePlays()` to the memo deps
+- Parse additional URL segments (`:rid`, `:mid`, `:aid`) using regex on `location.pathname`
+- Find the current/next step within a skill target for step-aware pills
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/components/chat/OnboardingNudge.tsx` | Redesign to single-row compact strip (~32px) |
-| `src/components/chat/AIChatWrapper.tsx` | Tighten pills spacing, limit to 3 pills, reduce input padding, remove gradient overlay |
+| `src/contexts/AgentOneContext.tsx` | Import `useRolePlays`; expand `contextualSuggestions` memo with route-specific logic for role play bank, role play sessions, skill target inner pages (modules, assessments, role plays) |
+
+### Technical notes
+- No new components needed — this is purely a data/logic change in the existing memo
+- `useRolePlays` is already available in the provider tree above `AgentOneProvider`
+- URL parsing uses the same regex pattern already used for `currentSkillTargetId`
 

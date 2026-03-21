@@ -1,53 +1,20 @@
 
 
-## Plan: Enhanced Role Play Summary with Loading State & Structured Feedback Cards
+## Plan: Fix Suggestion Pills, Assessment Trigger & Reduce Name Repetition
 
 ### Problems
-1. No visual indication that a summary is being generated after clicking "End Role Play" — the input just disappears
-2. The summary is a wall of plain text with no structure, hard to scan
+1. **Suggestion pills hidden after assessment** — Line 508 has `!assessmentCompleted` condition, hiding pills permanently once assessment is done
+2. **Assessment not triggering from pre-assessment stage** — The `showAssessmentCTA` check on line 400 requires the AI response to contain "assessment", but the stage transition detection on line 313 requires `lower.includes("click below")` which the AI may not say. The assessment CTA should show reliably when stage is `pre-assessment`.
+3. **Name overuse** — The system prompt says "Address user by first name" which causes every sentence to include the name
 
 ### Changes
 
-**1. Edge Function: `supabase/functions/role-play-chat/index.ts`**
-- Update the `summarize` system prompt to request a **structured JSON response** with fields:
-  - `overallScore` (1-10)
-  - `customerSentiment` ("positive" | "neutral" | "frustrated")
-  - `learnerSentiment` ("confident" | "developing" | "needs-work")
-  - `strengths` (array of 2-3 short bullet strings)
-  - `improvements` (array of 1-2 short bullet strings)
-  - `summary` (2-3 sentence overall narrative)
-- Disable streaming for the summarize call (or parse the full streamed result as JSON at the end)
+**1. `src/pages/SuperAgentChat.tsx`**
+- **Fix suggestion pills**: Change line 508 condition from `!assessmentCompleted` to show pills in all stages. The post-assessment/post-completion stages already show the "Go to Skill Target" CTA separately, and pills should still appear alongside it for general conversation.
+- **Fix assessment CTA**: Simplify `showAssessmentCTA` — show it when `stage === "pre-assessment"` regardless of AI response content. Remove the `lower.includes("assessment")` dependency since the stage itself is sufficient.
+- **Remove stage transition for "click below"**: The `pre-assessment` → `pre-assessment` check on line 313 is unnecessary; remove it.
 
-**2. `src/pages/RolePlaySession.tsx`**
-- **Loading state**: When `ended && !endSummary`, show a dedicated "Generating Feedback" card with a spinner animation, pulsing skeleton lines, and text like "Analysing your session..."
-- **Structured summary card**: Replace the plain markdown block with a designed card layout:
-  - **Header**: "Session Complete" with overall score badge (color-coded: green ≥7, amber 4-6, red <3)
-  - **Sentiment row**: Two small cards side-by-side — "Customer Sentiment" with emoji/icon and "Your Performance" with emoji/icon
-  - **Strengths section**: Green-bordered card with CheckCircle icons and bullet points
-  - **Areas to Improve section**: Amber-bordered card with lightbulb icons and bullet points  
-  - **Summary narrative**: Brief paragraph at the bottom
-- Parse `endSummary` as JSON; if parsing fails, fall back to rendering as markdown (backward compatibility)
-- Keep the "Try Again" and "Back to..." CTAs unchanged
-
-**3. `src/lib/streamChat.ts`**
-- For the summarize call, collect the full response and return it as a complete string (no partial deltas needed since we parse JSON at the end)
-- Alternatively, keep streaming but only call the final `setEndSummary` once the stream completes with the full JSON
-
-### Visual structure of the new summary card
-```text
-┌─────────────────────────────────────────┐
-│ ✅ Session Complete          Score: 8/10│
-├─────────────────────────────────────────┤
-│ 😊 Customer: Positive  │ 💪 You: Confident │
-├─────────────────────────────────────────┤
-│ ✅ What You Did Well                    │
-│  • Maintained calm, reassuring tone     │
-│  • Acknowledged client's concerns       │
-├─────────────────────────────────────────┤
-│ 💡 Areas to Improve                     │
-│  • Use the client's name more often     │
-├─────────────────────────────────────────┤
-│ Overall: You showed natural empathy...  │
-└─────────────────────────────────────────┘
-```
+**2. `supabase/functions/super-agent-chat/index.ts`**
+- **Reduce name usage**: Change the "Address user by first name" rule to: "Use the learner's first name only in the very first message of a conversation and sparingly thereafter — max once every 3-4 messages. Never use their name more than once in a single response."
+- Update stage-specific prompts to remove explicit `${firstName}` insertions where they cause repetitive naming (e.g., "Welcome ${firstName}", "Great work, ${firstName}!", etc.) — let the AI decide naturally when to use the name.
 

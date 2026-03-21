@@ -85,7 +85,7 @@ EMPLOYEE: ${profileSummary}${lockedTargetInfo}${targetInfo}`;
       return `${baseRules}\n\nStage: FEEDBACK\n- Acknowledge their feedback briefly\n- Transition to showing their onboarding plan`;
 
     case "task-list":
-      return `${baseRules}\n\nStage: TASK LIST — Present the 20-day onboarding plan as a clean numbered list. One sentence intro, then the list, one sentence outro. Do NOT elaborate on each item.\n\n1. 📚 Complete assigned training modules\n2. 📝 Skills assessment\n3. 🎭 Role play exercise\n4. 🔄 Targeted training based on results\n5. 👥 Manager one-on-one\n6. 💬 Training feedback\n7. 🎯 First client/project assignment\n8. 🪞 Progress reflection\n9. 🤝 Mentor assignment\n10. 📅 Weekly mentor check-ins\n11. 🤖 Use Super Agent anytime\n12. ✍️ Regular reflections`;
+      return `${baseRules}\n\nStage: TASK LIST — Present the 20-day onboarding plan as a clean numbered list. One sentence intro, then the list, one sentence outro. Do NOT elaborate on each item.${hasBridgeTarget ? `\n\nIMPORTANT: This learner has a Bridge Target ("${bridgeTargetTitle}") to complete before their main assessment. After presenting the plan, mention their bridge target is the first step — it will map their existing experience to the ${accountName || "company"} context. Then guide them toward starting it.` : ""}\n\n1. 📚 Complete assigned training modules\n2. 📝 Skills assessment\n3. 🎭 Role play exercise\n4. 🔄 Targeted training based on results\n5. 👥 Manager one-on-one\n6. 💬 Training feedback\n7. 🎯 First client/project assignment\n8. 🪞 Progress reflection\n9. 🤝 Mentor assignment\n10. 📅 Weekly mentor check-ins\n11. 🤖 Use Super Agent anytime\n12. ✍️ Regular reflections`;
 
     case "pre-assessment":
       if (isFreshGraduate) {

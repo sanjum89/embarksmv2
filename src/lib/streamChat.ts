@@ -89,12 +89,14 @@ export async function streamChat({
 export async function streamRolePlayChat({
   messages,
   rolePlayContext,
+  summarize,
   onDelta,
   onDone,
   onError,
 }: {
   messages: Msg[];
   rolePlayContext: { persona: string; scenario: string; context: string };
+  summarize?: boolean;
   onDelta: (text: string) => void;
   onDone: () => void;
   onError?: (error: string) => void;
@@ -106,7 +108,7 @@ export async function streamRolePlayChat({
         "Content-Type": "application/json",
         Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ messages, rolePlayContext }),
+      body: JSON.stringify({ messages, rolePlayContext, ...(summarize && { summarize: true }) }),
     });
 
     if (!resp.ok || !resp.body) {

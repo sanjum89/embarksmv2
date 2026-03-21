@@ -9,10 +9,14 @@ import {
   RotateCcw,
   ArrowRight,
   ClipboardList,
+  Minimize2,
+  Maximize2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";
 import { InlineAssessment } from "@/components/chat/InlineAssessment";
+import { RichContentBlock } from "@/components/chat/RichContentBlock";
+import { CollapsedBlockCard } from "@/components/chat/CollapsedBlockCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -57,6 +61,11 @@ export function AIChatWrapper() {
     bridgeCompleted,
     isSophie,
     loaded,
+    richBlocksMap,
+    collapsedBlockIds,
+    isExpanded,
+    toggleBlockCollapse,
+    setIsExpanded,
   } = useAgentOne();
 
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -72,6 +81,9 @@ export function AIChatWrapper() {
 
   const showAssessmentCTA = stage === "pre-assessment";
   const showIntroCTA = stage === "pre-intro";
+
+  const panelWidth = isExpanded ? 720 : 400;
+  const panelHeight = isExpanded ? 700 : 600;
 
   return (
     <>
@@ -93,10 +105,11 @@ export function AIChatWrapper() {
         {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
+            animate={{ opacity: 1, y: 0, scale: 1, width: panelWidth, height: panelHeight }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-20 right-6 z-50 w-[400px] h-[600px] rounded-2xl border border-border bg-card shadow-xl overflow-hidden flex flex-col"
+            transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+            className="fixed bottom-20 right-6 z-50 rounded-2xl border border-border bg-card shadow-xl overflow-hidden flex flex-col"
+            style={{ maxWidth: "calc(100vw - 48px)", maxHeight: "calc(100vh - 120px)" }}
           >
             {/* Header */}
             <div className="shrink-0 px-4 py-3 flex items-center gap-3 bg-gradient-to-r from-primary to-primary/80 text-primary-foreground">
@@ -117,6 +130,15 @@ export function AIChatWrapper() {
                   <p className="text-[10px] text-primary-foreground/75">Online now</p>
                 </div>
               </div>
+              {isExpanded && (
+                <button
+                  onClick={() => setIsExpanded(false)}
+                  className="text-primary-foreground/60 hover:text-primary-foreground transition-colors"
+                  title="Collapse panel"
+                >
+                  <Minimize2 className="h-3.5 w-3.5" />
+                </button>
+              )}
               <button
                 onClick={handleReset}
                 disabled={isStreaming || messages.length === 0}
@@ -141,28 +163,41 @@ export function AIChatWrapper() {
                 )}
 
                 <AnimatePresence>
-                  {messages.filter((m) => m.role !== "system").map((msg, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-                      {msg.role === "user" ? (
-                        <div className="flex justify-end mb-1">
-                          <div className="rounded-2xl bg-primary text-primary-foreground px-3 py-2 text-[13px] max-w-[85%] shadow-sm">
-                            {msg.content}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-start gap-2">
-                          <div className="shrink-0 h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
-                            <Sparkles className="h-3 w-3 text-primary" />
-                          </div>
-                          <div className="bg-secondary/50 border border-border/50 rounded-2xl px-3.5 py-3 shadow-sm max-w-[85%]">
-                            <div className="prose prose-sm max-w-none text-foreground text-[13px] leading-relaxed [&_p]:mb-1.5 [&_ul]:mb-1.5 [&_li]:mb-0.5">
-                              <ReactMarkdown>{parseSuggestions(msg.content).clean}</ReactMarkdown>
+                  {messages.filter((m) => m.role !== "system").map((msg, i) => {
+                    const msgBlocks = richBlocksMap[i] || [];
+                    return (
+                      <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+                        {msg.role === "user" ? (
+                          <div className="flex justify-end mb-1">
+                            <div className="rounded-2xl bg-primary text-primary-foreground px-3 py-2 text-[13px] max-w-[85%] shadow-sm">
+                              {msg.content}
                             </div>
                           </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
+                        ) : (
+                          <div className="flex items-start gap-2">
+                            <div className="shrink-0 h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
+                              <Sparkles className="h-3 w-3 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="bg-secondary/50 border border-border/50 rounded-2xl px-3.5 py-3 shadow-sm max-w-[95%]">
+                                <div className="prose prose-sm max-w-none text-foreground text-[13px] leading-relaxed [&_p]:mb-1.5 [&_ul]:mb-1.5 [&_li]:mb-0.5">
+                                  <ReactMarkdown>{parseSuggestions(msg.content).clean}</ReactMarkdown>
+                                </div>
+                              </div>
+                              {/* Rich blocks for this message */}
+                              {msgBlocks.map((block) =>
+                                collapsedBlockIds.has(block.id) ? (
+                                  <CollapsedBlockCard key={block.id} block={block} onExpand={() => toggleBlockCollapse(block.id)} />
+                                ) : (
+                                  <RichContentBlock key={block.id} block={block} onCollapse={() => toggleBlockCollapse(block.id)} />
+                                )
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                 </AnimatePresence>
 
                 {/* Intro CTA */}

@@ -93,6 +93,12 @@ export default function SuperAgentChat() {
     .filter((st) => st.locked && st.assignedTo?.includes(user.id))
     .map((st) => ({ title: st.title, category: st.category }));
 
+  // Bridge target detection for Elliot-like users
+  const bridgeTarget = skillTargets.find((st) => st.id === "RAT-ST-BRIDGE-001" && st.assignedTo?.includes(user.id));
+  const hasBridgeTarget = !!bridgeTarget;
+  const bridgeCompleted = bridgeTarget ? bridgeTarget.steps.every((s) => s.status === "completed") : false;
+  const bridgeUnlocked = bridgeTarget ? !bridgeTarget.locked : false;
+
   // Build skill target context for the AI
   const assignedTargets = skillTargets.filter((st) => st.assignedTo?.includes(user.id));
   const firstTarget = assignedTargets[0];
@@ -111,6 +117,10 @@ export default function SuperAgentChat() {
     targetTitle: firstTarget?.title || null,
     targetId: firstTarget?.id || null,
     targetSteps,
+    hasBridgeTarget,
+    bridgeTargetId: bridgeTarget?.id || null,
+    bridgeTargetTitle: bridgeTarget?.title || null,
+    bridgeCompleted,
   };
 
   // Load persisted conversation
@@ -283,7 +293,7 @@ export default function SuperAgentChat() {
       nextStage = "feedback";
     } else if (stage === "feedback") {
       nextStage = "task-list";
-    } else if (stage === "task-list" && (lower.includes("assessment") || lower.includes("ready"))) {
+    } else if (stage === "task-list" && (lower.includes("assessment") || lower.includes("ready") || lower.includes("bridge"))) {
       if (isSophie) {
         // Sophie is a fresh graduate — skip assessment, auto-unlock full path
         const target = skillTargets.find((st) => st.id === "RAT-ST-001");
@@ -298,7 +308,6 @@ export default function SuperAgentChat() {
           });
         }
         nextStage = "post-assessment";
-        // Send auto-message so the Super Agent responds with fresh-graduate encouragement
         const autoMsg: ChatMessage = { role: "user", content: "I'm ready to start my training — no assessment needed since I'm starting fresh!" };
         setMessages((currentMsgs) => {
           const autoMsgs = [...currentMsgs, autoMsg];
@@ -309,11 +318,28 @@ export default function SuperAgentChat() {
         setIsStreaming(false);
         return;
       }
-      nextStage = "pre-assessment";
+      if (hasBridgeTarget && !bridgeCompleted) {
+        // Unlock bridge target for Elliot
+        if (!bridgeUnlocked) {
+          updateSkillTarget("RAT-ST-BRIDGE-001", (st) => {
+            const updatedSteps = st.steps.map((step, idx) => idx === 0 ? { ...step, status: "available" as const } : step);
+            return { ...st, locked: false, steps: updatedSteps };
+          });
+        }
+        nextStage = "pre-bridge";
+      } else {
+        nextStage = "pre-assessment";
+      }
+    } else if (stage === "pre-bridge") {
+      // Check if bridge completed — if so, move to pre-assessment
+      if (bridgeCompleted) {
+        nextStage = "pre-assessment";
+      } else {
+        nextStage = "pre-bridge"; // stay
+      }
     } else if (stage === "pre-assessment") {
       nextStage = "pre-assessment"; // stay, show CTA
     } else if (stage === "post-assessment") {
-      // Immediately transition to post-completion to prevent loop
       nextStage = "post-completion";
     }
 
@@ -467,8 +493,27 @@ export default function SuperAgentChat() {
               ))}
             </AnimatePresence>
 
+            {/* Bridge CTA for Elliot */}
+            {(stage === "pre-bridge") && !isStreaming && (
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3 max-w-[85%] pl-10">
+                <div className="bg-primary/5 border border-primary/15 rounded-2xl px-5 py-4">
+                  <p className="text-sm font-medium text-foreground mb-2">🌉 Bridge Target Unlocked</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Your <strong className="text-foreground">{bridgeTarget?.title || "Domain Bridge"}</strong> is now available. This short path maps your existing experience to the Rathbones investment context. Once completed, you'll take a skills assessment to customise your main learning path.
+                  </p>
+                </div>
+                <Link
+                  to={`/skill-target/RAT-ST-BRIDGE-001`}
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all w-fit"
+                >
+                  Go to Bridge Target
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </motion.div>
+            )}
+
             {/* Assessment CTA with onboarding context */}
-            {showAssessmentCTA && !isSophie && !isStreaming && !showInlineAssessment && !assessmentCompleted && (
+            {showAssessmentCTA && !isSophie && !isStreaming && !showInlineAssessment && !assessmentCompleted && !(hasBridgeTarget && !bridgeCompleted) && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3 max-w-[85%] pl-10">
                 <div className="bg-primary/5 border border-primary/15 rounded-2xl px-5 py-4">
                   <p className="text-sm font-medium text-foreground mb-2">📋 Why this assessment?</p>

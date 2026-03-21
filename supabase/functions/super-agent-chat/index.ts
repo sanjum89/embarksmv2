@@ -11,13 +11,14 @@ const ONBOARDING_NEXT_PILL: Record<string, string> = {
   "profile-review": "Show me my onboarding plan",
   feedback: "What's my 20-day plan?",
   "task-list": "Start my assessment",
+  "pre-bridge": "Go to my bridge target",
   "pre-assessment": "Take the assessment",
   "post-assessment": "View my skill target",
   "post-completion": "Write a reflection",
 };
 
 function buildSystemPrompt(stage: string, userContext: any): string {
-  const { name, role, title, tenure, skills, reportsTo, accountName, lockedTargets, isFreshGraduate, targetTitle, targetId, targetSteps } = userContext || {};
+  const { name, role, title, tenure, skills, reportsTo, accountName, lockedTargets, isFreshGraduate, targetTitle, targetId, targetSteps, hasBridgeTarget, bridgeTargetTitle, bridgeCompleted } = userContext || {};
   const firstName = name?.split(" ")[0] || "there";
   const isNewJoiner = tenure !== undefined && tenure <= 6;
 
@@ -84,11 +85,17 @@ EMPLOYEE: ${profileSummary}${lockedTargetInfo}${targetInfo}`;
       return `${baseRules}\n\nStage: FEEDBACK\n- Acknowledge their feedback briefly\n- Transition to showing their onboarding plan`;
 
     case "task-list":
-      return `${baseRules}\n\nStage: TASK LIST — Present the 20-day onboarding plan as a clean numbered list. One sentence intro, then the list, one sentence outro. Do NOT elaborate on each item.\n\n1. 📚 Complete assigned training modules\n2. 📝 Skills assessment\n3. 🎭 Role play exercise\n4. 🔄 Targeted training based on results\n5. 👥 Manager one-on-one\n6. 💬 Training feedback\n7. 🎯 First client/project assignment\n8. 🪞 Progress reflection\n9. 🤝 Mentor assignment\n10. 📅 Weekly mentor check-ins\n11. 🤖 Use Super Agent anytime\n12. ✍️ Regular reflections`;
+      return `${baseRules}\n\nStage: TASK LIST — Present the 20-day onboarding plan as a clean numbered list. One sentence intro, then the list, one sentence outro. Do NOT elaborate on each item.${hasBridgeTarget ? `\n\nIMPORTANT: This learner has a Bridge Target ("${bridgeTargetTitle}") to complete before their main assessment. After presenting the plan, mention their bridge target is the first step — it will map their existing experience to the ${accountName || "company"} context. Then guide them toward starting it.` : ""}\n\n1. 📚 Complete assigned training modules\n2. 📝 Skills assessment\n3. 🎭 Role play exercise\n4. 🔄 Targeted training based on results\n5. 👥 Manager one-on-one\n6. 💬 Training feedback\n7. 🎯 First client/project assignment\n8. 🪞 Progress reflection\n9. 🤝 Mentor assignment\n10. 📅 Weekly mentor check-ins\n11. 🤖 Use Super Agent anytime\n12. ✍️ Regular reflections`;
+
+    case "pre-bridge":
+      return `${baseRules}\n\nStage: PRE-BRIDGE\nThis learner has adjacent financial experience and needs to complete a Bridge Target ("${bridgeTargetTitle}") before taking their main skills assessment.\n\n- Explain that this short preparation path maps their existing knowledge to the ${accountName || "company"} investment management context\n- It covers key terminology, processes, and frameworks specific to ${accountName || "the firm"}\n- Once completed, they'll take a skills assessment that will customise their main learning path\n- Be encouraging — their existing experience is valuable and this bridge will be quick\n- Keep to 3-4 sentences max\n- Guide them to start their bridge target`;
 
     case "pre-assessment":
       if (isFreshGraduate) {
-        return `${baseRules}\n\nStage: PRE-ASSESSMENT (FRESH GRADUATE — NO ASSESSMENT)\n- ${firstName} is a fresh graduate, so the assessment is being skipped automatically\n- Transition naturally toward their learning journey without mentioning any assessment`;
+        return `${baseRules}\n\nStage: PRE-ASSESSMENT (FRESH GRADUATE — NO ASSESSMENT)\n- This learner is a fresh graduate, so the assessment is being skipped automatically\n- Transition naturally toward their learning journey without mentioning any assessment`;
+      }
+      if (hasBridgeTarget && bridgeCompleted) {
+        return `${baseRules}\n\nStage: PRE-ASSESSMENT (BRIDGE COMPLETED)\nThis learner has just completed their Bridge Target ("${bridgeTargetTitle}").\n\n- Congratulate them on completing the bridge — they've mapped their experience to the ${accountName || "company"} context\n- Now explain the next step: a short skills assessment that will customise their main learning path\n- The assessment helps skip modules they already know, saving time\n- Be encouraging — with their bridge knowledge fresh, they're well prepared\n- Keep to 3-4 sentences max`;
       }
       return `${baseRules}\n\nStage: PRE-ASSESSMENT\n- Explain the assessment in 2 sentences (helps gauge skills, training gets customized)\n- Encourage them — it's okay to not know everything\n- End with CTA to start`;
 

@@ -36,6 +36,12 @@ export default function Dashboard() {
 
   const targets = useMemo(() => {
     const assigned = mockSkillTargets.filter((st) => st.assignedTo?.includes(user.id));
+    // Sort bridge target first
+    assigned.sort((a, b) => {
+      if (a.id === "RAT-ST-BRIDGE-001") return -1;
+      if (b.id === "RAT-ST-BRIDGE-001") return 1;
+      return 0;
+    });
     switch (activeFilter) {
       case "in_progress":
         return assigned.filter((st) => st.progress > 0 && st.progress < 100);

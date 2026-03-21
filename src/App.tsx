@@ -9,6 +9,7 @@ import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SkillTargetsProvider } from "@/contexts/SkillTargetsContext";
 import { RolePlayProvider } from "@/contexts/RolePlayContext";
+import { AgentOneProvider } from "@/contexts/AgentOneContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import SkillTargetBuilder from "./pages/SkillTargetBuilder";
@@ -21,7 +22,6 @@ import TeamInsights from "./pages/TeamInsights";
 import My360 from "./pages/My360";
 import ManagerView from "./pages/ManagerView";
 import LearnerChat from "./pages/LearnerChat";
-import SuperAgentChat from "./pages/SuperAgentChat";
 
 import ManagerSkillTargets from "./pages/ManagerSkillTargets";
 import ManagerSkillTargetDetail from "./pages/ManagerSkillTargetDetail";
@@ -45,11 +45,11 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <AgentOneProvider>
           <Routes>
             <Route element={<AppLayout />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/chat" element={<LearnerChat />} />
-              <Route path="/chat/super-agent" element={<SuperAgentChat />} />
               
               <Route path="/create-skill-target" element={<SkillTargetBuilder />} />
               <Route path="/skill-target/:id" element={<SkillTargetDetail />} />
@@ -69,6 +69,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </AgentOneProvider>
         </BrowserRouter>
       </TooltipProvider>
       </SidebarProvider>

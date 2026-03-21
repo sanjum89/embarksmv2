@@ -90,7 +90,7 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
           })));
         }
       });
-  }, [activeAccount?.id, user?.employeeId]);
+  }, [activeAccount?.id, user?.id]);
 
   const activeNudges = nudges.filter((n) => !dismissedIds.has(n.id));
   const hasNudges = activeNudges.length > 0;

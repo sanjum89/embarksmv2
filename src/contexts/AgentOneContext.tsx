@@ -556,6 +556,9 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setSuggestions([]);
     setShowInlineAssessment(false);
     setAssessmentCompletedLocal(false);
+    setRichBlocksMap({});
+    setCollapsedBlockIds(new Set());
+    setIsExpanded(false);
     const initialStage = isNewJoiner ? "welcome" : "general";
     setStage(initialStage);
     stageRef.current = initialStage;

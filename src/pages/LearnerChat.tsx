@@ -10,6 +10,7 @@ import { RichContentBlock } from "@/components/chat/RichContentBlock";
 import { CollapsedBlockCard } from "@/components/chat/CollapsedBlockCard";
 import { SuperAgentCard } from "@/components/chat/SuperAgentCard";
 import { NudgeStack } from "@/components/chat/OnboardingNudge";
+import { AgentOneNudgeStack } from "@/components/chat/AgentOneNudgeStack";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

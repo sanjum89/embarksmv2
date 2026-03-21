@@ -16,6 +16,7 @@ import type { StepItem } from "@/types/learning";
 
 export default function SkillTargetDetail() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const { skillTargets } = useSkillTargets();
   const { styleTheme } = useTheme();
   const target = skillTargets.find((st) => st.id === id);
@@ -23,6 +24,7 @@ export default function SkillTargetDetail() {
   const [activeTab, setActiveTab] = useState<"conversation" | "chapters">("conversation");
 
   const isTraditional = styleTheme === "traditional";
+  const isPreview = searchParams.get("preview") === "true" && target?.locked;
 
   if (!target) {
     return (

@@ -206,16 +206,6 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
           transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
         />
         <div className="relative px-5 py-4 flex items-center gap-3">
-          {/* Left cycling arrow */}
-          {!expanded && hasNudges && activeNudges.length > 1 && (
-            <button
-              onClick={cycleLeft}
-              className="shrink-0 p-1 rounded-lg hover:bg-white/15 transition-colors text-primary-foreground/60 hover:text-primary-foreground"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-          )}
-
           {/* Icon */}
           <div className="shrink-0 relative">
             <motion.div
@@ -242,46 +232,14 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
                 </span>
               )}
             </div>
-            {/* Show current nudge info when collapsed, or generic text */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentNudge?.id || "default"}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.2 }}
-                className="flex items-center gap-1.5"
-              >
-                {currentNudge && CurrentIcon && !expanded ? (
-                  <>
-                    <CurrentIcon className="h-3.5 w-3.5 text-primary-foreground/60 shrink-0" />
-                    <span className="text-[13px] text-primary-foreground/75 leading-snug truncate">
-                      {currentNudge.title}
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-[13px] text-primary-foreground/75 leading-snug truncate">
-                    {expanded ? "Tap to collapse" : "Hey! I'm here to help you get started →"}
-                  </span>
-                )}
-              </motion.div>
-            </AnimatePresence>
+            <span className="text-[13px] text-primary-foreground/75 leading-snug truncate">
+              {expanded ? "Tap to collapse" : "Hey! I'm here to help you get started →"}
+            </span>
           </div>
 
-          {/* Right cycling arrow or collapse indicator */}
-          <div className="shrink-0 flex items-center gap-1">
-            {!expanded && hasNudges && activeNudges.length > 1 && (
-              <button
-                onClick={cycleRight}
-                className="p-1 rounded-lg hover:bg-white/15 transition-colors text-primary-foreground/60 hover:text-primary-foreground"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            )}
-            {expanded && (
-              <ChevronUp className="h-4 w-4 text-primary-foreground/60" />
-            )}
-          </div>
+          {expanded && (
+            <ChevronUp className="h-4 w-4 text-primary-foreground/60 shrink-0" />
+          )}
         </div>
       </button>
 

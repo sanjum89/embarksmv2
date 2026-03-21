@@ -225,33 +225,29 @@ export default function LearnerChat() {
 
                   {/* Input Bar — Home State */}
                   <div className="w-full pb-8">
-                    <div className="flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <Input
-                          ref={inputRef}
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && input.trim()) {
-                              setChatActive(true);
-                              setIsOpen(true);
-                              handleSend(input);
-                            }
-                          }}
-                          placeholder="Ask anything..."
-                          className="h-11 rounded-xl border-border text-[13px] focus-visible:ring-primary/30 pr-3"
-                          disabled={isStreaming}
-                        />
-                      </div>
-                      <div className="shrink-0 h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <Sparkles className="h-4 w-4 text-primary" />
-                      </div>
+                    <div className="relative w-full">
+                      <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary pointer-events-none" />
+                      <Input
+                        ref={inputRef}
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && input.trim()) {
+                            setChatActive(true);
+                            setIsOpen(true);
+                            handleSend(input);
+                          }
+                        }}
+                        placeholder="Ask anything..."
+                        className="h-11 rounded-xl border-border text-[13px] focus-visible:ring-primary/30 pl-9 pr-11"
+                        disabled={isStreaming}
+                      />
                       <Button
                         size="icon"
-                        variant={input.trim() ? "default" : "ghost"}
+                        variant="ghost"
                         className={cn(
-                          "h-9 w-9 rounded-xl transition-all shrink-0",
-                          input.trim() && "bg-primary text-primary-foreground shadow-sm"
+                          "absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg transition-all",
+                          input.trim() && "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                         )}
                         onClick={() => {
                           if (input.trim()) {
@@ -409,29 +405,25 @@ export default function LearnerChat() {
                 ) : null;
               })()}
 
-              {/* Input Bar — Sparkles icon outside input, next to send */}
+              {/* Input Bar — Send inside input */}
               <div className="shrink-0 max-w-[720px] mx-auto w-full px-4 pb-4 pt-2">
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <Input
-                      ref={inputRef}
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") handleSend(input); }}
-                      placeholder="Ask anything..."
-                      className="h-11 rounded-xl border-border text-[13px] focus-visible:ring-primary/30 pr-3"
-                      disabled={isStreaming}
-                    />
-                  </div>
-                  <div className="shrink-0 h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="h-4 w-4 text-primary" />
-                  </div>
+                <div className="relative w-full">
+                  <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary pointer-events-none" />
+                  <Input
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleSend(input); }}
+                    placeholder="Ask anything..."
+                    className="h-11 rounded-xl border-border text-[13px] focus-visible:ring-primary/30 pl-9 pr-11"
+                    disabled={isStreaming}
+                  />
                   <Button
                     size="icon"
-                    variant={input.trim() ? "default" : "ghost"}
+                    variant="ghost"
                     className={cn(
-                      "h-9 w-9 rounded-xl transition-all shrink-0",
-                      input.trim() && "bg-primary text-primary-foreground shadow-sm"
+                      "absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg transition-all",
+                      input.trim() && "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
                     )}
                     onClick={() => handleSend(input)}
                     disabled={!input.trim() || isStreaming}

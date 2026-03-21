@@ -384,7 +384,7 @@ export default function SuperAgentChat() {
     setMessages([]);
     setSuggestions([]);
     setShowInlineAssessment(false);
-    setAssessmentCompleted(false);
+    setAssessmentCompletedLocal(false);
     const initialStage = isNewJoiner ? "welcome" : "general";
     setStage(initialStage);
     setLoaded(false);

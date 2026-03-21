@@ -268,6 +268,31 @@ export default function SuperAgentChat() {
     } else if (stage === "feedback") {
       nextStage = "task-list";
     } else if (stage === "task-list" && (lower.includes("assessment") || lower.includes("ready"))) {
+      if (isSophie) {
+        // Sophie is a fresh graduate — skip assessment, auto-unlock full path
+        const target = skillTargets.find((st) => st.id === "RAT-ST-001");
+        if (target) {
+          updateSkillTarget("RAT-ST-001", (st) => {
+            const updatedSteps = st.steps.map((step) => {
+              if (step.id === "RAT-ASM-001") return { ...step, status: "completed" as const };
+              if (step.id === "RAT-LM-001") return { ...step, status: "available" as const };
+              return step;
+            });
+            return { ...st, locked: false, steps: updatedSteps };
+          });
+        }
+        nextStage = "post-assessment";
+        // Send auto-message so the Super Agent responds with fresh-graduate encouragement
+        const autoMsg: ChatMessage = { role: "user", content: "I'm ready to start my training — no assessment needed since I'm starting fresh!" };
+        const autoMsgs = [...prev, autoMsg];
+        setMessages(autoMsgs);
+        setStage("post-assessment");
+        // Stream with updated messages after a tick
+        setTimeout(() => streamResponse(autoMsgs), 50);
+        // Return early — we've handled the stage change ourselves
+        setIsStreaming(false);
+        return;
+      }
       nextStage = "pre-assessment";
     } else if (stage === "pre-assessment" && lower.includes("click below")) {
       nextStage = "pre-assessment"; // stay, but show CTA

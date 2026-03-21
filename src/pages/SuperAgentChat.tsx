@@ -66,7 +66,15 @@ export default function SuperAgentChat() {
   const [stage, setStage] = useState("welcome");
   const [loaded, setLoaded] = useState(false);
   const [showInlineAssessment, setShowInlineAssessment] = useState(false);
-  const [assessmentCompleted, setAssessmentCompleted] = useState(false);
+  const [assessmentCompletedLocal, setAssessmentCompletedLocal] = useState(false);
+
+  // Derive assessment completion from skill target state so it persists across navigation
+  const assessmentCompleted = assessmentCompletedLocal || (() => {
+    const target = skillTargets.find((st) => st.id === "RAT-ST-001");
+    if (!target) return false;
+    const baselineStep = target.steps.find((s) => s.id === "RAT-ASM-001");
+    return baselineStep?.status === "completed";
+  })();
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -331,7 +339,7 @@ export default function SuperAgentChat() {
   }, [messages, isStreaming, stage, userContext]);
 
   const handleInlineAssessmentComplete = (score: number, answers: number[]) => {
-    setAssessmentCompleted(true);
+    setAssessmentCompletedLocal(true);
     const passed = score >= 80;
 
     // Unlock skill target RAT-ST-001
@@ -376,7 +384,7 @@ export default function SuperAgentChat() {
     setMessages([]);
     setSuggestions([]);
     setShowInlineAssessment(false);
-    setAssessmentCompleted(false);
+    setAssessmentCompletedLocal(false);
     const initialStage = isNewJoiner ? "welcome" : "general";
     setStage(initialStage);
     setLoaded(false);

@@ -353,9 +353,8 @@ export default function SuperAgentChat() {
   const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
   const showAssessmentCTA = stage === "pre-assessment" && lastAssistantMsg?.content?.toLowerCase().includes("assessment");
 
-  // Check for skill target CTA
-  const showSkillTargetCTA = stage === "post-assessment" && lastAssistantMsg?.content?.toLowerCase().includes("skill target");
-  const firstTarget = skillTargets[0];
+  // Remove unused firstTarget ref
+  const showSkillTargetCTA = false; // CTA now in InlineAssessment result card
 
   return (
     <div className="flex flex-1 h-full min-h-0 overflow-hidden">

@@ -87,6 +87,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();
   const { normalizedAccount, activeAccount } = useAccount();
   const { skillTargets, updateSkillTarget } = useSkillTargets();
+  const { rolePlays } = useRolePlays();
   const location = useLocation();
   const accountId = activeAccount?.id;
 

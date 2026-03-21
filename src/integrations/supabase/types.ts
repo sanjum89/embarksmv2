@@ -50,6 +50,65 @@ export type Database = {
         }
         Relationships: []
       }
+      nudge_cards: {
+        Row: {
+          account_id: string
+          color_theme: string
+          created_at: string
+          created_by: string
+          cta_action: Json
+          cta_label: string
+          id: string
+          metadata: Json | null
+          priority: string
+          subtitle: string
+          target_user_id: string
+          title: string
+          type: string
+          viewed: boolean
+        }
+        Insert: {
+          account_id: string
+          color_theme?: string
+          created_at?: string
+          created_by?: string
+          cta_action?: Json
+          cta_label?: string
+          id?: string
+          metadata?: Json | null
+          priority?: string
+          subtitle?: string
+          target_user_id: string
+          title: string
+          type: string
+          viewed?: boolean
+        }
+        Update: {
+          account_id?: string
+          color_theme?: string
+          created_at?: string
+          created_by?: string
+          cta_action?: Json
+          cta_label?: string
+          id?: string
+          metadata?: Json | null
+          priority?: string
+          subtitle?: string
+          target_user_id?: string
+          title?: string
+          type?: string
+          viewed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nudge_cards_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       super_agent_conversations: {
         Row: {
           account_id: string

@@ -60,6 +60,7 @@ const App = () => (
               <Route path="/role-play-bank" element={<RolePlayBank />} />
               <Route path="/role-play-bank/:rid" element={<RolePlaySession />} />
               <Route path="/my-360" element={<My360 />} />
+              <Route path="/my-inbox" element={<MyInbox />} />
               <Route path="/team-insights" element={<TeamInsights />} />
               <Route path="/manager" element={<ManagerView />} />
               <Route path="/manager/role-play" element={<RolePlayBank />} />

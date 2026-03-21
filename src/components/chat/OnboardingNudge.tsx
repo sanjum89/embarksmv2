@@ -20,7 +20,7 @@ interface NudgeState {
 
 function useOnboardingNudge(): NudgeState | null {
   const { skillTargets } = useSkillTargets();
-  const { stage, assessmentCompleted, hasBridgeTarget, bridgeCompleted, isSophie, setShowInlineAssessment } = useAgentOne();
+  const { stage, assessmentCompleted, hasBridgeTarget, bridgeCompleted, isSophie } = useAgentOne();
   const { user } = useUser();
 
   const introTarget = skillTargets.find(st => st.id === "RAT-ST-INTRO-001" && st.assignedTo?.includes(user.id));
@@ -33,68 +33,28 @@ function useOnboardingNudge(): NudgeState | null {
     return { progress: t.steps.length ? Math.round((completed / t.steps.length) * 100) : 0, completed, total: t.steps.length };
   };
 
-  // Intro not complete
   if (introTarget) {
     const introDone = introTarget.progress >= 100 || introTarget.steps.every(s => s.status === "completed" || s.status === "skipped");
     if (!introDone) {
       const p = getProgress(introTarget);
-      return {
-        type: "intro",
-        targetId: introTarget.id,
-        title: introTarget.title,
-        progress: p.progress,
-        completedSteps: p.completed,
-        totalSteps: p.total,
-        ctaPath: `/skill-target/${introTarget.id}`,
-        ctaLabel: p.completed > 0 ? "Continue" : "Start",
-      };
+      return { type: "intro", targetId: introTarget.id, title: introTarget.title, progress: p.progress, completedSteps: p.completed, totalSteps: p.total, ctaPath: `/skill-target/${introTarget.id}`, ctaLabel: p.completed > 0 ? "Continue" : "Start" };
     }
   }
 
-  // Bridge needed
   if (hasBridgeTarget && bridgeTarget && !bridgeCompleted) {
     const p = getProgress(bridgeTarget);
-    return {
-      type: "bridge",
-      targetId: bridgeTarget.id,
-      title: bridgeTarget.title,
-      progress: p.progress,
-      completedSteps: p.completed,
-      totalSteps: p.total,
-      ctaPath: `/skill-target/${bridgeTarget.id}`,
-      ctaLabel: p.completed > 0 ? "Continue" : "Start",
-    };
+    return { type: "bridge", targetId: bridgeTarget.id, title: bridgeTarget.title, progress: p.progress, completedSteps: p.completed, totalSteps: p.total, ctaPath: `/skill-target/${bridgeTarget.id}`, ctaLabel: p.completed > 0 ? "Continue" : "Start" };
   }
 
-  // Assessment needed (not Sophie, not completed)
   if (!isSophie && !assessmentCompleted && (stage === "pre-assessment" || stage === "task-list")) {
-    return {
-      type: "assessment",
-      targetId: "assessment",
-      title: "Skills Assessment",
-      progress: 0,
-      completedSteps: 0,
-      totalSteps: 1,
-      ctaPath: "",
-      ctaLabel: "Take Assessment",
-    };
+    return { type: "assessment", targetId: "assessment", title: "Skills Assessment", progress: 0, completedSteps: 0, totalSteps: 1, ctaPath: "", ctaLabel: "Take Assessment" };
   }
 
-  // Main target in progress
   if (mainTarget && !mainTarget.locked) {
     const mainDone = mainTarget.progress >= 100 || mainTarget.steps.every(s => s.status === "completed" || s.status === "skipped");
     if (!mainDone) {
       const p = getProgress(mainTarget);
-      return {
-        type: "main",
-        targetId: mainTarget.id,
-        title: mainTarget.title,
-        progress: p.progress,
-        completedSteps: p.completed,
-        totalSteps: p.total,
-        ctaPath: `/skill-target/${mainTarget.id}`,
-        ctaLabel: p.completed > 0 ? "Continue" : "Start",
-      };
+      return { type: "main", targetId: mainTarget.id, title: mainTarget.title, progress: p.progress, completedSteps: p.completed, totalSteps: p.total, ctaPath: `/skill-target/${mainTarget.id}`, ctaLabel: p.completed > 0 ? "Continue" : "Start" };
     }
   }
 
@@ -110,16 +70,12 @@ export function OnboardingNudge() {
 
   if (dismissed) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="shrink-0 px-4 pt-1"
-      >
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="shrink-0 px-3 pt-1">
         <button
           onClick={() => setDismissed(false)}
-          className="flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-[10px] font-medium text-primary hover:bg-primary/10 transition-colors"
+          className="flex items-center gap-1 rounded-full border border-primary/20 bg-primary/5 px-2 py-0.5 text-[10px] font-medium text-primary hover:bg-primary/10 transition-colors"
         >
-          <BookOpen className="h-3 w-3" />
+          <BookOpen className="h-2.5 w-2.5" />
           Onboarding
         </button>
       </motion.div>
@@ -132,69 +88,60 @@ export function OnboardingNudge() {
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, y: 4 }}
+        initial={{ opacity: 0, y: 2 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 4 }}
-        className="shrink-0 mx-4 mt-1"
+        exit={{ opacity: 0, y: 2 }}
+        className="shrink-0 border-t border-border/30"
       >
-        <div className="rounded-xl border border-primary/15 bg-primary/[0.04] px-3 py-2.5 relative">
+        <div className="flex items-center gap-2 px-3 py-1.5 min-h-[32px]">
+          {/* Icon */}
+          <div className="shrink-0 h-5 w-5 rounded bg-primary/10 flex items-center justify-center">
+            {isAssessment ? <ClipboardList className="h-2.5 w-2.5 text-primary" /> : <BookOpen className="h-2.5 w-2.5 text-primary" />}
+          </div>
+
+          {/* Title + progress inline */}
+          <div className="flex-1 min-w-0 flex items-center gap-2">
+            <span className="text-[11px] font-medium text-foreground truncate">
+              {nudge.title}
+            </span>
+            {showProgress && (
+              <>
+                <Progress value={nudge.progress} className="h-1 w-12 shrink-0" />
+                <span className="text-[10px] text-muted-foreground shrink-0">{nudge.completedSteps}/{nudge.totalSteps}</span>
+              </>
+            )}
+            {!showProgress && !isAssessment && (
+              <span className="text-[10px] text-muted-foreground shrink-0">Up next</span>
+            )}
+          </div>
+
+          {/* CTA */}
+          {isAssessment ? (
+            <button
+              onClick={() => setShowInlineAssessment(true)}
+              className="shrink-0 inline-flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              {nudge.ctaLabel}
+            </button>
+          ) : (
+            <Link
+              to={nudge.ctaPath}
+              onClick={() => setIsOpen(false)}
+              className="shrink-0 inline-flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              {nudge.ctaLabel}
+              <ArrowRight className="h-2.5 w-2.5" />
+            </Link>
+          )}
+
           {/* Dismiss */}
           <button
             onClick={() => setDismissed(true)}
-            className="absolute top-2 right-2 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+            className="shrink-0 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
             title="Minimize"
           >
             <ChevronUp className="h-3 w-3" />
           </button>
-
-          <div className="flex items-center gap-2 pr-5">
-            <div className="shrink-0 h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
-              {isAssessment ? (
-                <ClipboardList className="h-3 w-3 text-primary" />
-              ) : (
-                <BookOpen className="h-3 w-3 text-primary" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-[11px] font-medium text-foreground truncate">{nudge.title}</p>
-              {showProgress ? (
-                <div className="flex items-center gap-2 mt-1">
-                  <Progress value={nudge.progress} className="h-1 flex-1" />
-                  <span className="text-[10px] text-muted-foreground whitespace-nowrap">
-                    {nudge.completedSteps}/{nudge.totalSteps}
-                  </span>
-                </div>
-              ) : (
-                <p className="text-[10px] text-muted-foreground mt-0.5">
-                  {isAssessment
-                    ? "Helps customise your learning path"
-                    : "Up next in your onboarding"}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* CTA */}
-          <div className="mt-2">
-            {isAssessment ? (
-              <button
-                onClick={() => setShowInlineAssessment(true)}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all"
-              >
-                <ClipboardList className="h-3 w-3" />
-                {nudge.ctaLabel}
-              </button>
-            ) : (
-              <Link
-                to={nudge.ctaPath}
-                onClick={() => setIsOpen(false)}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[11px] font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all"
-              >
-                {nudge.ctaLabel}
-                <ArrowRight className="h-3 w-3" />
-              </Link>
-            )}
-          </div>
         </div>
       </motion.div>
     </AnimatePresence>

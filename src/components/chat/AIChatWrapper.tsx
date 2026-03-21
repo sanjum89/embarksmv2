@@ -223,7 +223,7 @@ export function AIChatWrapper() {
             })()}
 
             {/* Input */}
-            <div className="shrink-0 px-4 pb-4 pt-2 border-t border-border/50">
+            <div className="shrink-0 px-3 pb-3 pt-1.5 border-t border-border/30">
               <div className="relative">
                 <Input
                   ref={inputRef}

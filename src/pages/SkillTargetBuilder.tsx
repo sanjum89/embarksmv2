@@ -689,13 +689,15 @@ function UploadModal({ open, onClose, addedIds, onAdd }: { open: boolean; onClos
 
 /* ── Right panel component ── */
 function BuilderPanel({
-  title, setTitle, description, setDescription, steps, removeStep, moveStep, onCreate,
+  title, setTitle, description, setDescription, steps, removeStep, moveStep, onCreate, titlePlaceholder, descPlaceholder,
 }: {
   title: string; setTitle: (v: string) => void;
   description: string; setDescription: (v: string) => void;
   steps: StepItem[]; removeStep: (i: number) => void;
   moveStep: (from: number, to: number) => void;
   onCreate: () => void;
+  titlePlaceholder?: string;
+  descPlaceholder?: string;
 }) {
   return (
     <div className="w-[400px] flex-shrink-0 flex flex-col bg-background">
@@ -706,11 +708,11 @@ function BuilderPanel({
         <div className="p-5 space-y-5">
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Name</label>
-            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Apple L1 Customer Support" className="h-9 text-sm" />
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={titlePlaceholder || "e.g. Customer Support Fundamentals"} className="h-9 text-sm" />
           </div>
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Description</label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe what this skill target covers..." className="text-sm min-h-[60px]" />
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder={descPlaceholder || "Describe what this skill target covers..."} className="text-sm min-h-[60px]" />
           </div>
           <div>
             <div className="flex items-center justify-between mb-2">

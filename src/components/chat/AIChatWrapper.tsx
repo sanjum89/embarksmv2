@@ -61,6 +61,20 @@ export function AIChatWrapper() {
   const panelWidth = isExpanded ? 720 : 400;
   const panelHeight = isExpanded ? 700 : 600;
 
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isStreaming]);
+
+  useEffect(() => {
+    if (isOpen) inputRef.current?.focus();
+  }, [isOpen]);
+
+  const panelWidth = isExpanded ? 720 : 400;
+  const panelHeight = isExpanded ? 700 : 600;
+
   return (
     <>
       {/* Floating chat button */}

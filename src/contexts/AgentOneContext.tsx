@@ -31,6 +31,7 @@ function parseSuggestions(text: string): { clean: string; suggestions: string[] 
 interface AgentOneContextType {
   messages: ChatMessage[];
   suggestions: string[];
+  contextualSuggestions: string[];
   input: string;
   setInput: (v: string) => void;
   isStreaming: boolean;

@@ -337,6 +337,8 @@ export default function SuperAgentChat() {
       .eq("user_id", user.id);
     setMessages([]);
     setSuggestions([]);
+    setShowInlineAssessment(false);
+    setAssessmentCompleted(false);
     const initialStage = isNewJoiner ? "welcome" : "general";
     setStage(initialStage);
     setLoaded(false);

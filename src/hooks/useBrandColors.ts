@@ -194,11 +194,26 @@ export function useBrandColors() {
       });
 
       // Only apply sidebar vars when NOT in super-light mode (inline styles override CSS classes)
+      // Exception: always apply sidebar-primary so active nav icons reflect the brand
       const isSuperLight = superLight && styleTheme !== "traditional" && theme !== "dark";
       Object.entries(vars).forEach(([prop, val]) => {
         if (SIDEBAR_VARS.includes(prop)) {
           if (isSuperLight) {
-            root.style.removeProperty(prop);
+            // In super-light, apply only the primary icon color + derive a light-friendly accent
+            if (prop === "--sidebar-primary") {
+              root.style.setProperty(prop, primary);
+            } else if (prop === "--sidebar-primary-foreground") {
+              root.style.setProperty(prop, val);
+            } else if (prop === "--sidebar-accent") {
+              // Derive a light-bg-friendly active highlight from the brand primary
+              const [pH] = primary.split(" ").map((v) => parseFloat(v));
+              root.style.setProperty(prop, `${pH} 40% 95%`);
+            } else if (prop === "--sidebar-accent-foreground") {
+              const [pH] = primary.split(" ").map((v) => parseFloat(v));
+              root.style.setProperty(prop, `${pH} 60% 20%`);
+            } else {
+              root.style.removeProperty(prop);
+            }
           } else {
             root.style.setProperty(prop, val);
           }

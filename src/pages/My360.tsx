@@ -703,16 +703,6 @@ export default function My360() {
           )}
       </div>
 
-      <AIChatWrapper
-        ref={chatRef}
-        contextLabel="My 360 → Profile"
-        emptyStateMessage="I can analyze your skills profile, identify gaps, and suggest growth paths."
-        suggestedActions={[
-          { label: "Analyze my skills" },
-          { label: "Career next steps" },
-          { label: "Skill gaps" },
-        ]}
-      />
     </div>
   );
 }

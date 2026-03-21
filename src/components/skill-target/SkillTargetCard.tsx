@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Target, BookOpen, MessageSquare, ClipboardCheck, ArrowRight, Clock, Lock, Sparkles } from "lucide-react";
+import { Target, BookOpen, MessageSquare, ClipboardCheck, ArrowRight, Clock, Lock } from "lucide-react";
 import type { SkillTarget, StepType } from "@/types/learning";
 import { proficiencyShort } from "@/types/learning";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { cn } from "@/lib/utils";
 import {
   Dialog,
@@ -11,7 +12,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 
 const stepTypeIcons: Record<string, React.ElementType> = {
   assessment: ClipboardCheck,
@@ -28,6 +28,7 @@ interface SkillTargetCardProps {
 
 export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
   const navigate = useNavigate();
+  const { skillTargets } = useSkillTargets();
   const completedSteps = target.steps.filter((s) => s.status === "completed" || s.status === "skipped").length;
   const totalSteps = target.steps.length;
   const [skillsDialogOpen, setSkillsDialogOpen] = useState(false);
@@ -41,6 +42,9 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
   const skills = target.skills || [];
   const visibleSkills = skills.slice(0, 3);
   const remainingCount = skills.length - 3;
+
+  // Find prerequisite target for unlock hint
+  const prerequisite = target.prerequisiteId ? skillTargets.find(st => st.id === target.prerequisiteId) : null;
 
   if (isLocked) {
     return (
@@ -102,26 +106,15 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
             </div>
           </div>
 
-          {/* Locked action buttons */}
-          <div className="relative z-20 flex gap-2 mt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 text-xs"
-              onClick={() => navigate(`/skill-target/${target.id}`)}
-            >
-              <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-              Preview
-            </Button>
-            <Button
-              size="sm"
-              className="flex-1 text-xs"
-              onClick={() => navigate("/chat/super-agent")}
-            >
-              <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-              Unlock via Agent One
-            </Button>
-          </div>
+          {/* Prerequisite unlock hint */}
+          {prerequisite && (
+            <div className="relative z-20 mt-2 flex items-center gap-2 rounded-lg bg-secondary/80 px-3 py-2">
+              <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
+              <span className="text-xs text-muted-foreground">
+                Complete <strong className="text-foreground">{prerequisite.title}</strong> to unlock
+              </span>
+            </div>
+          )}
         </div>
       </motion.div>
     );

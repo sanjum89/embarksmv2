@@ -274,16 +274,6 @@ export default function SkillTargetDetail() {
             <StepTimeline steps={target.steps} skillTargetId={target.id} />
           </motion.div>
       </div>
-
-      <AIChatWrapper
-        contextLabel={`Skill Target → ${target.title}`}
-        emptyStateMessage="I can help you understand this skill target and track your progress."
-        suggestedActions={[
-          { label: "Explain this skill" },
-          { label: "What should I focus on?" },
-          { label: "Show my progress" },
-        ]}
-      />
     </div>
   );
 }

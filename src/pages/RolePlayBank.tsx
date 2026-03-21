@@ -71,13 +71,27 @@ export default function RolePlayBank() {
     return Array.from(tags).sort();
   }, [rolePlays]);
 
+  // Priority IDs for sorting the 5 original RPs to top
+  const priorityIds = ["RAT-RP-101", "RAT-RP-102", "RAT-RP-103", "RAT-RP-104", "RAT-RP-105"];
+
   const filtered = useMemo(() => {
-    return rolePlays.filter((rp) => {
+    const results = rolePlays.filter((rp) => {
       if (activeTab === "assigned" && !rp.assignedTo?.includes(user.id)) return false;
       if (difficulty !== "all" && rp.difficulty !== difficulty) return false;
       if (selectedTag && !(rp.tags || []).includes(selectedTag)) return false;
       if (search && !rp.title.toLowerCase().includes(search.toLowerCase()) && !rp.scenario.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
+    });
+    // Sort: priority IDs first (in order), then assigned, then rest
+    return results.sort((a, b) => {
+      const aPri = priorityIds.indexOf(a.id);
+      const bPri = priorityIds.indexOf(b.id);
+      if (aPri !== -1 && bPri !== -1) return aPri - bPri;
+      if (aPri !== -1) return -1;
+      if (bPri !== -1) return 1;
+      const aAssigned = a.assignedTo?.includes(user.id) ? 1 : 0;
+      const bAssigned = b.assignedTo?.includes(user.id) ? 1 : 0;
+      return bAssigned - aAssigned;
     });
   }, [search, difficulty, selectedTag, rolePlays, activeTab, user.id]);
 

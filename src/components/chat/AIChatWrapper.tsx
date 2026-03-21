@@ -39,6 +39,7 @@ export function AIChatWrapper() {
   const {
     messages,
     suggestions,
+    contextualSuggestions,
     input,
     setInput,
     isStreaming,

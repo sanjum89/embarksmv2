@@ -209,7 +209,7 @@ export default function Dashboard() {
                   className={cn(
                     "rounded-md px-3.5 py-1.5 text-xs font-medium transition-all duration-200",
                     activeFilter === f.value
-                      ? "bg-card text-foreground shadow-sm"
+                      ? "bg-primary text-primary-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >

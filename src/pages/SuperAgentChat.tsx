@@ -397,7 +397,7 @@ export default function SuperAgentChat() {
 
   // Check for assessment CTA in last message
   const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
-  const showAssessmentCTA = stage === "pre-assessment" && lastAssistantMsg?.content?.toLowerCase().includes("assessment");
+  const showAssessmentCTA = stage === "pre-assessment";
 
   // Remove unused firstTarget ref
   const showSkillTargetCTA = false; // CTA now in InlineAssessment result card

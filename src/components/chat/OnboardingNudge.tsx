@@ -119,7 +119,7 @@ export function OnboardingNudge() {
           {isAssessment ? (
             <button
               onClick={() => setShowInlineAssessment(true)}
-              className="shrink-0 inline-flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+              className="shrink-0 inline-flex items-center gap-1 rounded-md bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 text-[11px] font-medium text-white transition-colors"
             >
               {nudge.ctaLabel}
             </button>
@@ -127,10 +127,10 @@ export function OnboardingNudge() {
             <Link
               to={nudge.ctaPath}
               onClick={() => setIsOpen(false)}
-              className="shrink-0 inline-flex items-center gap-1 rounded-md bg-primary px-2 py-0.5 text-[10px] font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+              className="shrink-0 inline-flex items-center gap-1 rounded-md bg-emerald-600 hover:bg-emerald-700 px-2.5 py-1 text-[11px] font-medium text-white transition-colors"
             >
               {nudge.ctaLabel}
-              <ArrowRight className="h-2.5 w-2.5" />
+              <ArrowRight className="h-3 w-3" />
             </Link>
           )}
 

@@ -69,7 +69,7 @@ export function SuperAgentCard({ hasUnread = true, unreadCount = 0, lastMessage 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <h3 className="text-[15px] font-bold leading-tight">
-              Agent One
+              Super Agent
             </h3>
             <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
               Live

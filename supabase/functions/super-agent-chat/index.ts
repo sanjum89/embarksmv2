@@ -30,7 +30,7 @@ function buildSystemPrompt(stage: string, userContext: any): string {
     : `All suggestion pills should be contextual to the conversation.`;
 
   const lockedTargetInfo = Array.isArray(lockedTargets) && lockedTargets.length > 0
-    ? `\n\nLOCKED SKILL TARGETS:\nThe following skill targets are locked for ${firstName} and will only be unlocked after completing the pre-assessment through Agent One:\n${lockedTargets.map((t: any) => `- "${t.title}" (${t.category})`).join("\n")}\nIf ${firstName} asks about these locked targets, explain that they need to complete their initial assessment first. The assessment helps customize their learning path. Guide them toward the assessment stage. Be encouraging — it's a normal part of the onboarding process.`
+    ? `\n\nLOCKED SKILL TARGETS:\nThe following skill targets are locked for ${firstName} and will only be unlocked after completing the pre-assessment through the Super Agent:\n${lockedTargets.map((t: any) => `- "${t.title}" (${t.category})`).join("\n")}\nIf ${firstName} asks about these locked targets, explain that they need to complete their initial assessment first. The assessment helps customize their learning path. Guide them toward the assessment stage. Be encouraging — it's a normal part of the onboarding process.`
     : "";
 
   // Build skill target context string
@@ -39,7 +39,7 @@ function buildSystemPrompt(stage: string, userContext: any): string {
     ? `\n\nASSIGNED SKILL TARGET: "${targetTitle}"\nModules: ${moduleSteps.map((s: any, i: number) => `${i + 1}. ${s.title}`).join(", ") || "N/A"}`
     : "";
 
-  const baseRules = `You are Agent One — a warm, concise AI assistant in the Cornerstone Learning Spaces platform for ${accountName || "the organization"}.
+  const baseRules = `You are the Super Agent — a warm, concise AI assistant in the Cornerstone Learning Spaces platform for ${accountName || "the organization"}.
 
 CONVERSATIONAL CONTINUITY (critical):
 - NEVER re-greet or re-introduce yourself after the first message. No "Hi ${firstName}!", "Hello!", "Hey there!" etc.
@@ -85,7 +85,7 @@ EMPLOYEE: ${profileSummary}${lockedTargetInfo}${targetInfo}`;
       return `${baseRules}\n\nStage: FEEDBACK\n- Acknowledge their feedback briefly\n- Transition to showing their onboarding plan`;
 
     case "task-list":
-      return `${baseRules}\n\nStage: TASK LIST — Present the 20-day onboarding plan as a clean numbered list. One sentence intro, then the list, one sentence outro. Do NOT elaborate on each item.${hasBridgeTarget ? `\n\nIMPORTANT: This learner has a Bridge Target ("${bridgeTargetTitle}") to complete before their main assessment. After presenting the plan, mention their bridge target is the first step — it will map their existing experience to the ${accountName || "company"} context. Then guide them toward starting it.` : ""}\n\n1. 📚 Complete assigned training modules\n2. 📝 Skills assessment\n3. 🎭 Role play exercise\n4. 🔄 Targeted training based on results\n5. 👥 Manager one-on-one\n6. 💬 Training feedback\n7. 🎯 First client/project assignment\n8. 🪞 Progress reflection\n9. 🤝 Mentor assignment\n10. 📅 Weekly mentor check-ins\n11. 🤖 Use Agent One anytime\n12. ✍️ Regular reflections`;
+      return `${baseRules}\n\nStage: TASK LIST — Present the 20-day onboarding plan as a clean numbered list. One sentence intro, then the list, one sentence outro. Do NOT elaborate on each item.${hasBridgeTarget ? `\n\nIMPORTANT: This learner has a Bridge Target ("${bridgeTargetTitle}") to complete before their main assessment. After presenting the plan, mention their bridge target is the first step — it will map their existing experience to the ${accountName || "company"} context. Then guide them toward starting it.` : ""}\n\n1. 📚 Complete assigned training modules\n2. 📝 Skills assessment\n3. 🎭 Role play exercise\n4. 🔄 Targeted training based on results\n5. 👥 Manager one-on-one\n6. 💬 Training feedback\n7. 🎯 First client/project assignment\n8. 🪞 Progress reflection\n9. 🤝 Mentor assignment\n10. 📅 Weekly mentor check-ins\n11. 🤖 Use Super Agent anytime\n12. ✍️ Regular reflections`;
 
     case "pre-bridge":
       return `${baseRules}\n\nStage: PRE-BRIDGE\nThis learner has adjacent financial experience and needs to complete a Bridge Target ("${bridgeTargetTitle}") before taking their main skills assessment.\n\n- Explain that this short preparation path maps their existing knowledge to the ${accountName || "company"} investment management context\n- It covers key terminology, processes, and frameworks specific to ${accountName || "the firm"}\n- Once completed, they'll take a skills assessment that will customise their main learning path\n- Be encouraging — their existing experience is valuable and this bridge will be quick\n- Keep to 3-4 sentences max\n- Guide them to start their bridge target`;

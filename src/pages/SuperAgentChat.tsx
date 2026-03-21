@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, ArrowLeft, Sparkles, ClipboardList, RotateCcw } from "lucide-react";
+import { Send, ArrowLeft, ArrowRight, Sparkles, ClipboardList, RotateCcw } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
@@ -483,8 +483,21 @@ export default function SuperAgentChat() {
               <InlineAssessment onComplete={handleInlineAssessmentComplete} />
             )}
 
-            {/* Suggestion Pills */}
-            {suggestions.length > 0 && !isStreaming && (
+            {/* Post-assessment CTA: Go to Skill Target */}
+            {assessmentCompleted && (stage === "post-assessment" || stage === "post-completion") && !isStreaming && (
+              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap items-center gap-3 pt-2 pl-10">
+                <Link
+                  to="/skill-target/RAT-ST-001"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:opacity-90 active:scale-[0.97] transition-all shadow-sm"
+                >
+                  Go to Skill Target
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </motion.div>
+            )}
+
+            {/* Suggestion Pills (hidden after assessment) */}
+            {suggestions.length > 0 && !isStreaming && !assessmentCompleted && (
               <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-2 pt-1 pl-10">
                 {suggestions.map((pill) => (
                   <button key={pill} onClick={() => handleSend(pill)} className="group/pill rounded-full border border-primary/20 bg-card px-3.5 py-1.5 text-xs font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]">

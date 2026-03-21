@@ -134,7 +134,7 @@ export default function LearnerChat() {
 
   const firstName = user.name.split(" ")[0];
   const hasMessages = messages.filter((m) => m.role !== "system").length > 0;
-  const isActive = chatActive || hasMessages;
+  const isActive = chatActive;
 
   // Auto-open Agent One when on this page
   useEffect(() => {

@@ -75,7 +75,7 @@ EMPLOYEE: ${profileSummary}${lockedTargetInfo}${targetInfo}`;
 
   switch (stage) {
     case "welcome":
-      return `${baseRules}\n\nStage: WELCOME (first interaction)\n- Welcome ${firstName} to ${accountName || "the team"} warmly\n- Show a brief profile summary (role, title, skills)\n- Ask if info looks correct\n- Keep it to 3-4 lines max`;
+      return `${baseRules}\n\nStage: WELCOME (first interaction)\n- Welcome the learner to ${accountName || "the team"} warmly (use their name here since it's the first message)\n- Show a brief profile summary (role, title, skills)\n- Ask if info looks correct\n- Keep it to 3-4 lines max`;
 
     case "profile-review":
       return `${baseRules}\n\nStage: PROFILE REVIEW\n- Ask how onboarding is going so far\n- Reassure you're here to help\n- Transition toward their onboarding plan`;

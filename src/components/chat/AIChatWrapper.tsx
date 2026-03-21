@@ -1,4 +1,5 @@
 import { useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -36,6 +37,7 @@ function ThinkingIndicator() {
 }
 
 export function AIChatWrapper() {
+  const location = useLocation();
   const {
     messages,
     suggestions,
@@ -58,6 +60,9 @@ export function AIChatWrapper() {
     setIsExpanded,
   } = useAgentOne();
 
+  // Hide floating chat on the /chat page (Agent One is rendered inline there)
+  const isChatPage = location.pathname === "/chat";
+
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -72,6 +77,8 @@ export function AIChatWrapper() {
 
   const panelWidth = isExpanded ? 720 : 400;
   const panelHeight = isExpanded ? 700 : 600;
+
+  if (isChatPage) return null;
 
   return (
     <>

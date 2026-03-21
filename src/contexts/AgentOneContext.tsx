@@ -499,12 +499,19 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Auto-collapse if message doesn't look like a data query
+    const dataKeywords = ["show", "skills", "progress", "targets", "inbox", "chart", "table", "display", "view", "gap"];
+    const isDataQuery = dataKeywords.some(k => lower.includes(k));
+    if (!isDataQuery && isExpanded) {
+      setIsExpanded(false);
+    }
+
     const userMsg: ChatMessage = { role: "user", content: text };
     const allMsgs = [...messagesRef.current, userMsg];
     setMessages(allMsgs);
     setInput("");
     streamResponse(allMsgs);
-  }, [isStreaming, assessmentCompleted]);
+  }, [isStreaming, assessmentCompleted, isExpanded]);
 
   const handleInlineAssessmentComplete = (score: number, _answers: number[]) => {
     setAssessmentCompletedLocal(true);

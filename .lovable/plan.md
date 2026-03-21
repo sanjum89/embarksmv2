@@ -1,24 +1,53 @@
 
 
-## Plan: Make Onboarding Nudge More Prominent
+## Plan: Context-Aware Skill Target Builder
 
-### Changes to `src/components/chat/OnboardingNudge.tsx`
+### Problem
+The Create Skill Target page (`/create-skill-target`) uses hardcoded suggestion pills ("Customer Onboarding", "Apple L1 Support", etc.), a generic welcome message, and static placeholder text. None of this reflects the active account's data — roles, projects, skills, learning modules, or the user's profile.
 
-**Increase size and add colored background:**
-- Bump inner padding from `px-3 py-1.5 min-h-[32px]` → `px-3 py-2.5 min-h-[40px]`
-- Add a soft tinted background: `bg-emerald-50/80 dark:bg-emerald-950/30` with `border-emerald-200/60 dark:border-emerald-800/40` top border
-- Icon container: `h-5 w-5` → `h-7 w-7 rounded-md`, icon size `h-2.5 w-2.5` → `h-3.5 w-3.5`, use emerald color (`text-emerald-600 bg-emerald-100`)
-- Title text: `text-[11px]` → `text-[12px]`, color `text-emerald-900 dark:text-emerald-100`
-- Progress bar: `h-1 w-12` → `h-1.5 w-16`, step count `text-[10px]` → `text-[11px]`
-- CTA button: `px-2 py-0.5 text-[10px]` → `px-2.5 py-1 text-[11px]`, use `bg-emerald-600 hover:bg-emerald-700 text-white`
-- "Up next" label: `text-[10px]` → `text-[11px]`
-- Dismissed pill: also use emerald tint (`border-emerald-300 bg-emerald-50 text-emerald-700`)
+### Approach
+Derive all dynamic text from the active account's data: employee skills, role requirements, project requirements, skill gaps, and available learning modules. Fall back to generic defaults only when no account is loaded.
 
-This keeps it subtle enough not to distract during active chat but visually distinct from the neutral gray surroundings.
+### Changes
+
+**1. Replace hardcoded `SUGGESTION_PILLS` with account-derived pills** (`src/pages/SkillTargetBuilder.tsx`)
+
+Build pills dynamically using a `useMemo` that reads from:
+- **User's skill gaps** (from `getRecommendationsForUser`) — e.g. "Improve Client Onboarding", "Advanced Risk Management"
+- **Account projects** (`normalizedAccount.projectsById`) — e.g. project names or their required skills
+- **Account roles** (`normalizedAccount.rolesById`) — required skills from the user's role
+- **Available learning modules** — top module titles/topics from the account's content library
+
+Logic: skill gap names first (most relevant), then project-required skills not yet met, then top module categories. Limit to ~8 pills. Fall back to current hardcoded list if no account data.
+
+**2. Make welcome message context-aware** (`src/pages/SkillTargetBuilder.tsx`)
+
+Replace static `WELCOME_MSG` with a computed string:
+- If user has skill gaps: "Based on your profile, you have gaps in **{gap1}**, **{gap2}**. I can help you find the right courses — or search for anything below."
+- If user has projects: "You're assigned to **{project}**. I can build a learning path for that — or search for any topic."
+- Fallback: current generic message
+
+**3. Make input placeholder context-aware** (`src/pages/SkillTargetBuilder.tsx`)
+
+Change the search input placeholder from static `"Search for modules, assessments, role plays..."` to something derived:
+- If account has modules: `"Search {moduleCount} modules, assessments, role plays..."`
+- If user has a role: `"Search courses for {roleName} or any topic..."`
+
+**4. Make builder panel placeholders context-aware** (`src/pages/SkillTargetBuilder.tsx`)
+
+- Title placeholder: `"e.g. {first skill gap name} Mastery"` instead of generic
+- Description placeholder: `"e.g. Build {skill} skills from {current} to {target} level"` instead of generic
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/components/chat/OnboardingNudge.tsx` | Increase sizing, add emerald-tinted background and border |
+| `src/pages/SkillTargetBuilder.tsx` | Replace `SUGGESTION_PILLS` constant with `useMemo` deriving pills from account data; compute contextual welcome message; update input and builder panel placeholders |
+
+### Data sources used
+- `normalizedAccount.projectsById` — project names & required skills
+- `normalizedAccount.rolesById` + employee's `roleId` — role skill requirements
+- `normalizedAccount.profileData[userId]` → `getRecommendationsForUser()` — skill gaps
+- `normalizedAccount.learningModules` — available content count/titles
+- `normalizedAccount.employeesById[userId]` — user's current skills & role
 

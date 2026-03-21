@@ -389,8 +389,20 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     }
 
     const { clean, suggestions: newSugs } = parseSuggestions(assistantSoFar);
-    if (clean !== assistantSoFar) {
-      addOrUpdateAssistant(clean);
+    // Parse rich blocks
+    const { cleanText: finalText, blocks } = parseRichBlocks(clean);
+    if (finalText !== assistantSoFar) {
+      addOrUpdateAssistant(finalText);
+    }
+    if (blocks.length > 0) {
+      // Find the message index (count of messages before this assistant msg)
+      setMessages(prev => {
+        const idx = prev.length - 1;
+        setRichBlocksMap(old => ({ ...old, [idx]: blocks }));
+        return prev;
+      });
+      setIsExpanded(true);
+      setCollapsedBlockIds(new Set());
     }
     setSuggestions(newSugs);
 

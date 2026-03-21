@@ -23,7 +23,10 @@ export function OnboardingNudge() {
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [collapsed, setCollapsed] = useState(false);
 
-  const isOnChatPage = location.pathname === "/chat";
+  // On chat page, nudges render inline in the home state — skip here
+  if (isOnChatPage) return null;
+
+  const activeNudges = managerNudges.filter((n) => !dismissedIds.has(n.id));
 
   const activeNudges = managerNudges.filter((n) => !dismissedIds.has(n.id));
 

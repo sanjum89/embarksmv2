@@ -43,7 +43,16 @@ export default function SkillTargetDetail() {
   // ── Traditional UI layout ──
   if (isTraditional) {
     return (
-      <div className="flex h-[calc(100vh-3.5rem)]">
+      <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+        {/* Preview banner */}
+        {isPreview && (
+          <div className="flex items-center gap-2 border-b border-primary/20 bg-primary/5 px-6 py-2.5">
+            <Eye className="h-4 w-4 text-primary shrink-0" />
+            <span className="text-sm text-foreground font-medium">Preview Mode</span>
+            <span className="text-sm text-muted-foreground">— Complete the prerequisite to start this skill target</span>
+          </div>
+        )}
+        <div className="flex flex-1 min-h-0">
         {/* Left: Chat panel — full height */}
         <div className="flex-1 flex flex-col min-w-0 border-r border-border">
           {/* Title bar */}

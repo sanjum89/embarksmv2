@@ -79,6 +79,7 @@ export default function SuperAgentChat() {
   const employee = normalizedAccount?.employeesById?.[user.id];
   const tenure = (employee as any)?.tenure;
   const isNewJoiner = tenure !== undefined && tenure <= 6;
+  const isSophie = user.id === "u14";
 
   const lockedTargets = skillTargets
     .filter((st) => st.locked && st.assignedTo?.includes(user.id))
@@ -93,6 +94,7 @@ export default function SuperAgentChat() {
     reportsTo: (employee as any)?.reportsTo || null,
     accountName: normalizedAccount?.branding?.name || activeAccount?.name,
     lockedTargets,
+    isFreshGraduate: isSophie,
   };
 
   // Load persisted conversation
@@ -266,6 +268,31 @@ export default function SuperAgentChat() {
     } else if (stage === "feedback") {
       nextStage = "task-list";
     } else if (stage === "task-list" && (lower.includes("assessment") || lower.includes("ready"))) {
+      if (isSophie) {
+        // Sophie is a fresh graduate — skip assessment, auto-unlock full path
+        const target = skillTargets.find((st) => st.id === "RAT-ST-001");
+        if (target) {
+          updateSkillTarget("RAT-ST-001", (st) => {
+            const updatedSteps = st.steps.map((step) => {
+              if (step.id === "RAT-ASM-001") return { ...step, status: "completed" as const };
+              if (step.id === "RAT-LM-001") return { ...step, status: "available" as const };
+              return step;
+            });
+            return { ...st, locked: false, steps: updatedSteps };
+          });
+        }
+        nextStage = "post-assessment";
+        // Send auto-message so the Super Agent responds with fresh-graduate encouragement
+        const autoMsg: ChatMessage = { role: "user", content: "I'm ready to start my training — no assessment needed since I'm starting fresh!" };
+        setMessages((currentMsgs) => {
+          const autoMsgs = [...currentMsgs, autoMsg];
+          setStage("post-assessment");
+          setTimeout(() => streamResponse(autoMsgs), 50);
+          return autoMsgs;
+        });
+        setIsStreaming(false);
+        return;
+      }
       nextStage = "pre-assessment";
     } else if (stage === "pre-assessment" && lower.includes("click below")) {
       nextStage = "pre-assessment"; // stay, but show CTA
@@ -422,7 +449,7 @@ export default function SuperAgentChat() {
             </AnimatePresence>
 
             {/* Assessment CTA with onboarding context */}
-            {showAssessmentCTA && !isStreaming && !showInlineAssessment && !assessmentCompleted && (
+            {showAssessmentCTA && !isSophie && !isStreaming && !showInlineAssessment && !assessmentCompleted && (
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3 max-w-[85%] pl-10">
                 <div className="bg-primary/5 border border-primary/15 rounded-2xl px-5 py-4">
                   <p className="text-sm font-medium text-foreground mb-2">📋 Why this assessment?</p>

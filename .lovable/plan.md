@@ -1,72 +1,88 @@
 
 
-## Plan: Fix DB Constraints + Add Initial-State Bootstrap
+## Plan: Fix Manager vs Learner Category Cards + CTA Wiring
 
-### Root Cause
+### Root Causes
 
-Every notification insert is failing with `nudge_cards_color_theme_check` constraint violation. The DB only allows `blue, emerald, amber, violet, rose`, but the code sends `sky, mint, peach, sand, lilac`. There's also a `type` check constraint allowing only `kudos, meeting, learning_activity, reflection_request`, but events insert types like `onboarding_midpoint_reached`, `assessment_passed`, etc. This is why **zero** seeded notifications exist for any user.
+**Bug 1 — Same content for both audiences**: The `groupByCategory()` function correctly applies audience-aware labels (manager gets "New Hires!", learner gets "Your onboarding journey is ready"). The labels are working. BUT both Julian and Clara may be getting the same DB notifications because `audience_type` filtering is not applied in the fetch query. Julian's query fetches all `nudge_cards` where `target_user_id = Julian's ID`, which should only return manager cards. This part is likely correct since bootstrap seeds target the right user. The real issue is the `audienceType` detection — if Julian has direct reports in `hierarchyMap`, he gets `role: "manager"` correctly. Need to verify the actual DB data.
 
-Additionally, only the built-in Cornerstone Demo account has `demoMode: true`. The Rathbones account (the active demo) never triggers seeding at all.
+**Bug 2 — CTA clicks do nothing**: The `handleCategoryClick` calls `resolveCtaTarget(cta.type)` which hardcodes paths. For `open_action_center` it returns `{ path: "/inbox" }`, ignoring the `/team-dashboard` path stored in the DB's `cta_action`. For `open_agentone_chat` it returns `{ path: "/chat", prompt: metadata?.prompt }` but `metadata.prompt` is undefined because the prompt is never stored in `cta_action`.
 
-### Changes
+**Bug 3 — No prompt in learner onboarding CTA**: The trigger for `onboarding_assigned` sets `ctaType: "open_agentone_chat"` but no `ctaPath` or prompt. The `generateNotifications` function builds `cta_action: { type, path, employeeIds }` — it never includes `prompt`. So learner card clicks resolve to `open_agentone_chat` with no prompt.
 
-**1. Database migration — relax check constraints** (migration)
+### Changes (3 files)
 
-Drop and recreate the `color_theme` and `type` check constraints to accept the full set of values the system uses:
+**1. `src/components/chat/AgentOneNudgeStack.tsx`** — Fix `handleCategoryClick` (lines 115-127)
 
-- `color_theme`: add `sky`, `mint`, `lavender`, `peach`, `lilac`, `sand` (keep existing `blue`, `emerald`, `amber`, `violet`, `rose`)
-- `type`: drop the constraint entirely (event types are open-ended and validated in application code)
+Use the card's explicit `path`/`prompt` from `primaryCta` first, only fall back to `resolveCtaTarget` when neither exists:
 
-**2. Add new bootstrap event types** (`src/types/agentOneActions.ts`)
+```typescript
+const handleCategoryClick = useCallback(
+  (card: CategoryCard) => {
+    const cta = card.primaryCta;
+    // Use explicit prompt/path from the category card's CTA
+    if (cta.prompt) {
+      onChatAction(cta.prompt);
+    } else if (cta.path) {
+      navigate(cta.path);
+    } else {
+      // Fallback to resolveCtaTarget
+      const target = resolveCtaTarget(cta.type);
+      if (target.prompt) onChatAction(target.prompt);
+      else if (target.path) navigate(target.path);
+    }
+  },
+  [navigate, onChatAction]
+);
+```
 
-Add two new event types to the `EventType` union:
-- `onboarding_assigned` — fired when learners have onboarding/skill targets
-- `manager_new_hires_present` — fired when manager has new hire direct reports
+**2. `src/lib/agentOneTriggers.ts`** — Fix CTA data stored in nudge_cards
 
-Map both to `onboarding_progress` category in `EVENT_CATEGORY_MAP`.
+a. Add a `prompt` field to the `cta_action` JSON written to DB (line 464):
+```typescript
+cta_action: { 
+  type: o.ctaType, 
+  path: o.ctaPath, 
+  prompt: o.metadata?.ctaPrompt,
+  employeeIds: ... 
+}
+```
 
-**3. Add bootstrap trigger processing** (`src/lib/agentOneTriggers.ts`)
+b. Add `ctaPrompt` to the `onboarding_assigned` trigger output metadata (line 67-84):
+```
+metadata: { employeeName: learnerName, ctaPrompt: "I'm ready to start my onboarding journey. What should I do first?" }
+```
 
-Add cases for the two new event types in `processEvent()`:
+**3. `src/lib/agentOneActions.ts`** — Make `groupByCategory` use audience-aware CTA overrides
 
-- `manager_new_hires_present`: creates a manager notification with title "New Hires!" and count-based subtitle, CTA to team dashboard
-- `onboarding_assigned`: creates a learner notification with title "Your onboarding journey is ready", CTA to open Agent One chat
+The `groupByCategory` function currently takes the first item's `cta_action` as the category's primary CTA. Add audience-aware CTA defaults so manager onboarding always gets `open_action_center` → `/team-dashboard` and learner onboarding always gets `open_agentone_chat` with a prompt, regardless of what the first DB item happens to contain:
 
-**4. Add initial-state bootstrap logic** (`src/data/agentOneSeeds.ts`)
-
-Add a new exported function `bootstrapInitialNotifications(accountId, account)` that:
-
-- Finds all managers with new-hire direct reports → emits `manager_new_hires_present` for each
-- Finds all learners marked as new hires with assigned skill targets → emits `onboarding_assigned` for each
-- Uses a distinct `grouping_key` pattern (e.g., `{accountId}:bootstrap:manager:{managerId}`) for idempotency
-- Checks for existing bootstrap nudge_cards before emitting to stay idempotent
-- Runs through the existing `emitEvent()` pipeline
-
-**5. Trigger bootstrap for all accounts** (`src/contexts/AccountContext.tsx`)
-
-After building normalized cache, call `bootstrapInitialNotifications()` for every account (not just `demoMode` ones). This ensures Rathbones and any uploaded account gets initial-state cards.
-
-Keep the existing `seedDemoNotifications()` call for `demoMode` accounts (those get additional milestone/flag events on top of the bootstrap).
-
-**6. Clean up stale pending events** (`src/data/agentOneSeeds.ts`)
-
-The existing seed function's idempotency check looks for `source_event_id IS NOT NULL` nudge_cards, but those never exist because inserts fail. The stale pending events get cleared and re-seeded in a loop. After fixing the DB constraints, the existing idempotency logic will work correctly. No code change needed here beyond the constraint fix.
+```typescript
+// After building card from first item's cta_action, override with audience-aware defaults
+const ctaOverrides: Record<AudienceKey, Partial<Record<ActionCategory, { type: CTAType; path?: string; prompt?: string }>>> = {
+  manager: {
+    onboarding_progress: { type: "open_action_center", path: "/team-dashboard" },
+  },
+  learner: {
+    onboarding_progress: { type: "open_agentone_chat", prompt: "I'm ready to start my onboarding journey." },
+    reflection_request: { type: "open_agentone_chat", prompt: "My manager has requested a reflection..." },
+  },
+};
+const override = ctaOverrides[audienceType]?.[cat];
+if (override) { primaryCta = override; }
+```
 
 ### Expected Result
 
-- Julian immediately sees "New Hires!" category card (3 new hires)
-- Clara, Elliot, Sophie each see "Your onboarding journey is ready" card
-- Later event-driven notifications (milestones, flags, reflections) layer on top
-- Helena/Rathbones continues working with legacy cards
-- No duplicate cards on reload
+- Julian sees "New Hires!" with subtitle "You have 3 new hires. Click to view their progress." → click navigates to `/team-dashboard`
+- Clara sees "Your onboarding journey is ready" → click calls `onChatAction` with onboarding prompt
+- No shared content between manager and learner views
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| Migration SQL | Drop/recreate `color_theme` check, drop `type` check |
-| `src/types/agentOneActions.ts` | Add `onboarding_assigned`, `manager_new_hires_present` to `EventType` and `EVENT_CATEGORY_MAP` |
-| `src/lib/agentOneTriggers.ts` | Add `processEvent` cases for the two new event types |
-| `src/data/agentOneSeeds.ts` | Add `bootstrapInitialNotifications()` function |
-| `src/contexts/AccountContext.tsx` | Call `bootstrapInitialNotifications()` for all accounts |
+| `src/components/chat/AgentOneNudgeStack.tsx` | Fix `handleCategoryClick` to use explicit path/prompt first |
+| `src/lib/agentOneTriggers.ts` | Include `prompt` in `cta_action` JSON, add `ctaPrompt` to onboarding metadata |
+| `src/lib/agentOneActions.ts` | Add audience-aware CTA overrides in `groupByCategory` |
 

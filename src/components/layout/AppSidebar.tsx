@@ -580,7 +580,7 @@ export function AppSidebar() {
           {expanded ? (
             <div className="flex bg-sidebar-accent/50 rounded-full p-0.5">
               <button
-                onClick={() => { setViewMode("me"); setRole("learner"); navigate("/"); }}
+                onClick={() => { setViewMode("me"); setRole("learner"); navigate("/chat"); }}
                 className={cn(
                   "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
                   viewMode === "me"

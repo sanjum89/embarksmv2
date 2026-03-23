@@ -260,8 +260,11 @@ export function groupByCategory(
   const cards: CategoryCard[] = [];
 
   // Audience-aware CTA overrides
-  const ctaOverrides: Record<AudienceKey, Partial<Record<ActionCategory, { type: CTAType; path?: string; prompt?: string }>>> = {
+  const ctaOverrides: Partial<Record<AudienceKey, Partial<Record<ActionCategory, { type: CTAType; path?: string; prompt?: string }>>>> = {
     manager: {
+      onboarding_progress: { type: "open_action_center", path: "/team-dashboard" },
+    },
+    admin: {
       onboarding_progress: { type: "open_action_center", path: "/team-dashboard" },
     },
     learner: {

@@ -92,6 +92,17 @@ export default function AssessmentPage() {
         100
     );
 
+    // Emit assessment event
+    if (activeAccount?.id && normalizedAccount && aid) {
+      emitAssessmentCompleted(
+        user.id,
+        aid,
+        finalScore,
+        activeAccount.id,
+        normalizedAccount
+      ).catch(console.error);
+    }
+
     updateSkillTarget(skillTargetId, (target) => {
       const steps = [...target.steps].sort((a, b) => a.order - b.order);
       const updatedSteps = target.steps.map((step) => {

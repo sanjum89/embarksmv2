@@ -151,3 +151,219 @@ export function getCategoryColor(category: ActionCategory): PastelColorToken {
 export function getCategoryIcon(category: ActionCategory): string {
   return CATEGORY_ICON_MAP[category] || "Bell";
 }
+
+/* ─── Category-First Stacked Card Helpers ─── */
+
+export interface CategoryCard {
+  category: ActionCategory;
+  count: number;
+  title: string;
+  subtitle: string;
+  colorToken: PastelColorToken;
+  icon: string;
+  primaryCta: { type: CTAType; path?: string; prompt?: string };
+  items: AgentOneNotification[];
+}
+
+const MANAGER_CATEGORY_PRIORITY: ActionCategory[] = [
+  "onboarding_progress",
+  "one_on_one_recommended",
+  "promotion_development",
+  "recognition_kudos",
+  "reflection_request",
+  "mentor_action",
+];
+
+const LEARNER_CATEGORY_PRIORITY: ActionCategory[] = [
+  "onboarding_progress",
+  "reflection_request",
+  "recognition_kudos",
+  "promotion_development",
+  "one_on_one_recommended",
+  "mentor_action",
+];
+
+type AudienceKey = "manager" | "learner";
+
+const MANAGER_LABELS: Record<ActionCategory, { title: string; subtitle: (n: number) => string }> = {
+  onboarding_progress: {
+    title: "New Hires!",
+    subtitle: (n) => `You have ${n} new hire${n !== 1 ? "s" : ""}. Click to view their progress.`,
+  },
+  reflection_request: {
+    title: "Reflections posted!",
+    subtitle: (n) => `${n} of your team members have shared reflections. Check them out.`,
+  },
+  one_on_one_recommended: {
+    title: "Actions required!",
+    subtitle: (n) => `${n} team member${n !== 1 ? "s" : ""} need${n === 1 ? "s" : ""} immediate attention.`,
+  },
+  recognition_kudos: {
+    title: "Recognition",
+    subtitle: (n) => `${n} recognition item${n !== 1 ? "s" : ""} to review.`,
+  },
+  promotion_development: {
+    title: "Promotion & Development",
+    subtitle: (n) => `${n} team member${n !== 1 ? "s" : ""} flagged for development.`,
+  },
+  mentor_action: {
+    title: "Mentoring",
+    subtitle: (n) => `${n} mentoring action${n !== 1 ? "s" : ""} pending.`,
+  },
+};
+
+const LEARNER_LABELS: Record<ActionCategory, { title: string; subtitle: (n: number) => string }> = {
+  onboarding_progress: {
+    title: "Your onboarding journey is ready",
+    subtitle: () => "You've been assigned an onboarding journey. Click to begin.",
+  },
+  reflection_request: {
+    title: "Reflection requested",
+    subtitle: () => "Your manager has asked you to share how onboarding is going.",
+  },
+  recognition_kudos: {
+    title: "Kudos received!",
+    subtitle: () => "You've received recognition from your team.",
+  },
+  promotion_development: {
+    title: "Development plan",
+    subtitle: () => "A development plan has been created for you.",
+  },
+  one_on_one_recommended: {
+    title: "1:1 scheduled",
+    subtitle: () => "You have a one-on-one meeting coming up.",
+  },
+  mentor_action: {
+    title: "Mentor assigned",
+    subtitle: () => "You've been paired with a mentor.",
+  },
+};
+
+/**
+ * Group notifications by category and apply audience-aware labels.
+ */
+export function groupByCategory(
+  notifications: AgentOneNotification[],
+  audienceType: AudienceKey
+): CategoryCard[] {
+  const map = new Map<ActionCategory, AgentOneNotification[]>();
+
+  for (const n of notifications) {
+    const cat = n.category;
+    if (!map.has(cat)) map.set(cat, []);
+    map.get(cat)!.push(n);
+  }
+
+  const labels = audienceType === "manager" ? MANAGER_LABELS : LEARNER_LABELS;
+  const priority = audienceType === "manager" ? MANAGER_CATEGORY_PRIORITY : LEARNER_CATEGORY_PRIORITY;
+
+  const cards: CategoryCard[] = [];
+
+  for (const [cat, items] of map) {
+    const label = labels[cat];
+    if (!label) continue;
+
+    const firstCta = items[0].cta_action;
+
+    cards.push({
+      category: cat,
+      count: items.length,
+      title: label.title,
+      subtitle: label.subtitle(items.length),
+      colorToken: CATEGORY_COLOR_MAP[cat] || "sky",
+      icon: CATEGORY_ICON_MAP[cat] || "Bell",
+      primaryCta: {
+        type: firstCta.type,
+        path: firstCta.path,
+        prompt: firstCta.prompt,
+      },
+      items,
+    });
+  }
+
+  // Sort by priority array
+  cards.sort((a, b) => {
+    const ia = priority.indexOf(a.category);
+    const ib = priority.indexOf(b.category);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+
+  return cards;
+}
+
+/**
+ * Build a personalized summary line for the top summary card.
+ */
+export function buildPersonalizedSummary(
+  userName: string,
+  categoryCards: CategoryCard[],
+  audienceType: AudienceKey
+): string {
+  if (categoryCards.length === 0) return `Hey ${userName}, you're all caught up!`;
+
+  const totalCount = categoryCards.reduce((s, c) => s + c.count, 0);
+
+  if (audienceType === "manager") {
+    const parts: string[] = [];
+    for (const c of categoryCards) {
+      switch (c.category) {
+        case "onboarding_progress":
+          parts.push("new hires");
+          break;
+        case "reflection_request":
+          parts.push("reflections from your team");
+          break;
+        case "one_on_one_recommended":
+          parts.push("critical action items");
+          break;
+        case "recognition_kudos":
+          parts.push("recognition updates");
+          break;
+        case "promotion_development":
+          parts.push("development actions");
+          break;
+        case "mentor_action":
+          parts.push("mentoring tasks");
+          break;
+      }
+    }
+
+    if (parts.length === 0) return `Hey ${userName}, you have ${totalCount} updates`;
+    if (parts.length === 1) return `Hey ${userName}, you have ${parts[0]}`;
+    const last = parts.pop()!;
+    return `Hey ${userName}, you have ${parts.join(", ")}, and ${last}`;
+  }
+
+  // Learner
+  const parts: string[] = [];
+  for (const c of categoryCards) {
+    switch (c.category) {
+      case "onboarding_progress":
+        parts.push("an onboarding journey");
+        break;
+      case "reflection_request":
+        parts.push("reflections assigned to you");
+        break;
+      case "recognition_kudos":
+        parts.push("kudos from your team");
+        break;
+      case "promotion_development":
+        parts.push("a development plan");
+        break;
+      case "one_on_one_recommended":
+        parts.push("a scheduled 1:1");
+        break;
+      case "mentor_action":
+        parts.push("a mentor pairing");
+        break;
+    }
+  }
+
+  const hasOnboarding = categoryCards.some((c) => c.category === "onboarding_progress");
+  const greeting = hasOnboarding ? `Welcome onboard, ${userName}!` : `Hey ${userName},`;
+
+  if (parts.length === 0) return `${greeting} You have ${totalCount} updates`;
+  if (parts.length === 1) return `${greeting} You have ${parts[0]}`;
+  const last = parts.pop()!;
+  return `${greeting} You have ${parts.join(", ")}, and ${last}`;
+}

@@ -5,6 +5,8 @@ import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
+import { useAgentOne } from "@/contexts/AgentOneContext";
+import { AgentOneNudgeStack } from "@/components/chat/AgentOneNudgeStack";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";

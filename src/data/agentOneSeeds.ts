@@ -5,6 +5,85 @@ import { supabase } from "@/integrations/supabase/client";
 import { emitEvent } from "@/lib/agentOneEventEmitter";
 
 /**
+ * Bootstrap initial-state notifications from current account data.
+ * Creates onboarding cards for managers (new hires) and learners (assigned targets).
+ * Idempotent: checks for existing bootstrap nudge_cards before emitting.
+ */
+export async function bootstrapInitialNotifications(
+  accountId: string,
+  account: NormalizedAccount
+): Promise<void> {
+  // Check if bootstrap cards already exist for this account
+  const { data: existingBootstrap } = await supabase
+    .from("nudge_cards")
+    .select("id")
+    .eq("account_id", accountId)
+    .like("grouping_key", `${accountId}:bootstrap:%`)
+    .limit(1);
+
+  if (existingBootstrap && existingBootstrap.length > 0) {
+    console.log("[AgentOne Bootstrap] Bootstrap cards already exist, skipping");
+    return;
+  }
+
+  console.log("[AgentOne Bootstrap] Deriving initial-state notifications for account:", accountId);
+
+  const users = Object.values(account.usersById);
+  const employees = account.employeesById;
+  const hierarchy = account.hierarchyMap;
+
+  // Find managers with new-hire direct reports
+  const managers = users.filter(u => u.role === "manager" || u.role === "admin");
+  for (const mgr of managers) {
+    const directReportIds = hierarchy[mgr.id] || [];
+    // Identify new hires: employees in newHires list OR those with skill targets assigned
+    const newHireSet = new Set((account.newHires || []).map(nh => nh.user?.id || (nh as any).employeeId));
+    const newHireDirectReports = directReportIds.filter(id =>
+      newHireSet.has(id) || (account.skillTargets || []).some(
+        (st: any) => st.assignedTo === id || st.employeeId === id
+      )
+    );
+
+    if (newHireDirectReports.length > 0) {
+      await emitEvent({
+        account_id: accountId,
+        event_type: "manager_new_hires_present",
+        category: "onboarding_progress",
+        source_employee_id: "system",
+        target_employee_id: mgr.id,
+        related_employee_ids: newHireDirectReports,
+        payload: { count: newHireDirectReports.length },
+      }, account);
+    }
+  }
+
+  // Find learners who are new hires with assigned skill targets
+  const newHireSet2 = new Set((account.newHires || []).map(nh => nh.user?.id || (nh as any).employeeId));
+  const learners = users.filter(u => u.role === "learner" || (!u.role && !managers.some(m => m.id === u.id)));
+
+  for (const learner of learners) {
+    const isNewHire = newHireSet2.has(learner.id);
+    const hasTargets = (account.skillTargets || []).some(
+      (st: any) => st.assignedTo === learner.id || st.employeeId === learner.id
+    );
+
+    if (isNewHire || hasTargets) {
+      await emitEvent({
+        account_id: accountId,
+        event_type: "onboarding_assigned",
+        category: "onboarding_progress",
+        source_employee_id: "system",
+        target_employee_id: learner.id,
+        related_employee_ids: [],
+        payload: {},
+      }, account);
+    }
+  }
+
+  console.log("[AgentOne Bootstrap] Initial-state notifications seeded successfully");
+}
+
+/**
  * Seed demo notifications for accounts with demo_mode enabled.
  * Reads stable employee IDs from account data's demoScenarios config.
  * Idempotent: skips if processed events AND matching nudge_cards exist.
@@ -26,6 +105,7 @@ export async function seedDemoNotifications(
     .select("id")
     .eq("account_id", accountId)
     .not("source_event_id", "is", null)
+    .not("grouping_key", "like", `${accountId}:bootstrap:%`)
     .limit(1);
 
   if (existingCards && existingCards.length > 0) {

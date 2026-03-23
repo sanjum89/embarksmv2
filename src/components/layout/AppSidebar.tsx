@@ -106,14 +106,15 @@ export function AppSidebar() {
     setTimeout(() => {
       loginUser(userId);
       const u = availableUsers.find((x) => x.id === userId);
-      if (u?.canManage && viewMode === "team") {
+      if (u?.canManage) {
         const loginTeamRole = u.role === "admin" ? "admin" : "manager";
         setRole(loginTeamRole);
-        navigate("/manager");
+        setViewMode("team");
+        navigate("/chat");
       } else {
         setRole("learner");
         setViewMode("me");
-        navigate("/");
+        navigate("/chat");
       }
       setSwitchingProfile(false);
     }, 1000);

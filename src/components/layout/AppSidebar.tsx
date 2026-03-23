@@ -80,7 +80,7 @@ const navItems: NavItem[] = [
   },
   { label: "Action Centre", path: "/my-inbox", icon: Inbox, roles: ["learner", "manager", "admin"] },
   { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "admin"] },
-  { label: "Admin", path: "/admin", icon: Shield, roles: ["admin"] },
+  { label: "Admin", path: "/admin", icon: Shield, roles: ["admin", "manager"] },
 ];
 
 export function AppSidebar() {
@@ -97,7 +97,7 @@ export function AppSidebar() {
   const baseRole = availableUsers.find((u) => u.id === user.id)?.role ?? user.role;
   const teamRole = baseRole === "admin" ? "admin" : "manager";
 
-  const [viewMode, setViewMode] = useState<"me" | "team">("me");
+  const [viewMode, setViewMode] = useState<"me" | "team">(() => user.canManage ? "team" : "me");
   const [switchingProfile, setSwitchingProfile] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 
@@ -106,14 +106,15 @@ export function AppSidebar() {
     setTimeout(() => {
       loginUser(userId);
       const u = availableUsers.find((x) => x.id === userId);
-      if (u?.canManage && viewMode === "team") {
+      if (u?.canManage) {
         const loginTeamRole = u.role === "admin" ? "admin" : "manager";
         setRole(loginTeamRole);
-        navigate("/manager");
+        setViewMode("team");
+        navigate("/chat");
       } else {
         setRole("learner");
         setViewMode("me");
-        navigate("/");
+        navigate("/chat");
       }
       setSwitchingProfile(false);
     }, 1000);
@@ -129,17 +130,18 @@ export function AppSidebar() {
     if (!item.roles.includes(effectiveRole)) return false;
     // Hide Learning Spaces in team/manager mode
     if (item.label === "Learning Spaces" && viewMode === "team") return false;
-    // Hide learner New Chat in team mode (it has no children and path=/chat)
-    if (item.path === "/chat" && viewMode === "team") return false;
-    
-    // Hide manager New Chat in me mode
+    // Hide manager New Chat group in me mode
     if (item.path === "/manager" && viewMode === "me") return false;
     return true;
   }).sort((a, b) => {
-    // In team mode, put Admin first
+    // In team mode, put Chat first then Admin
     if (viewMode === "team") {
-      if (a.label === "Admin") return -1;
-      if (b.label === "Admin") return 1;
+      const order = (item: NavItem) => {
+        if (item.path === "/chat") return 0;
+        if (item.label === "Admin") return 1;
+        return 2;
+      };
+      return order(a) - order(b);
     }
     return 0;
   });
@@ -175,7 +177,7 @@ export function AppSidebar() {
               <div className="px-4 pt-4 pb-2">
                 <div className="flex bg-muted rounded-full p-0.5">
                   <button
-                    onClick={() => { setViewMode("me"); setRole("learner"); navigate("/"); }}
+                    onClick={() => { setViewMode("me"); setRole("learner"); navigate("/chat"); }}
                     className={cn(
                       "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
                       viewMode === "me"
@@ -187,7 +189,7 @@ export function AppSidebar() {
                     Me
                   </button>
                   <button
-                    onClick={() => { setViewMode("team"); setRole(teamRole); navigate("/manager"); }}
+                    onClick={() => { setViewMode("team"); setRole(teamRole); navigate("/chat"); }}
                     className={cn(
                       "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
                       viewMode === "team"
@@ -206,8 +208,8 @@ export function AppSidebar() {
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => {
-                        if (viewMode === "me") { setViewMode("team"); setRole(teamRole); navigate("/manager"); }
-                        else { setViewMode("me"); setRole("learner"); navigate("/"); }
+                        if (viewMode === "me") { setViewMode("team"); setRole(teamRole); navigate("/chat"); }
+                        else { setViewMode("me"); setRole("learner"); navigate("/chat"); }
                       }}
                       className={cn(
                         "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
@@ -456,7 +458,7 @@ export function AppSidebar() {
                         setSwitchingProfile(true);
                         setTimeout(() => {
                           switchUser(u.id);
-                          if (u.canManage && viewMode === "team") { const switchTeamRole = u.role === "admin" ? "admin" : "manager"; setRole(switchTeamRole); navigate("/manager"); }
+                          if (u.canManage && viewMode === "team") { const switchTeamRole = u.role === "admin" ? "admin" : "manager"; setRole(switchTeamRole); navigate("/chat"); }
                           else { setRole("learner"); setViewMode("me"); navigate("/chat"); }
                           setSwitchingProfile(false);
                         }, 1000);
@@ -578,7 +580,7 @@ export function AppSidebar() {
           {expanded ? (
             <div className="flex bg-sidebar-accent/50 rounded-full p-0.5">
               <button
-                onClick={() => { setViewMode("me"); setRole("learner"); navigate("/"); }}
+                onClick={() => { setViewMode("me"); setRole("learner"); navigate("/chat"); }}
                 className={cn(
                   "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
                   viewMode === "me"
@@ -590,7 +592,7 @@ export function AppSidebar() {
                 Me
               </button>
               <button
-                onClick={() => { setViewMode("team"); setRole(teamRole); navigate("/manager"); }}
+                onClick={() => { setViewMode("team"); setRole(teamRole); navigate("/chat"); }}
                 className={cn(
                   "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
                   viewMode === "team"
@@ -607,8 +609,8 @@ export function AppSidebar() {
               <TooltipTrigger asChild>
                 <button
                   onClick={() => {
-                    if (viewMode === "me") { setViewMode("team"); setRole(teamRole); navigate("/manager"); }
-                    else { setViewMode("me"); setRole("learner"); navigate("/"); }
+                    if (viewMode === "me") { setViewMode("team"); setRole(teamRole); navigate("/chat"); }
+                    else { setViewMode("me"); setRole("learner"); navigate("/chat"); }
                   }}
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-full transition-colors",

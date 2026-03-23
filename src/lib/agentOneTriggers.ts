@@ -373,7 +373,19 @@ export async function generateNotifications(
   account: NormalizedAccount
 ): Promise<void> {
   const outputs = processEvent(event, account);
-  if (outputs.length === 0) return;
+
+  console.log(`[AgentOne] processEvent "${event.event_type}" → ${outputs.length} notification(s)`);
+
+  if (outputs.length === 0) {
+    // Mark event processed even with no outputs (no recipients matched)
+    if (event.id) {
+      await supabase
+        .from("agent_one_events")
+        .update({ status: "processed", updated_at: new Date().toISOString() } as any)
+        .eq("id", event.id);
+    }
+    return;
+  }
 
   const eventId = event.id;
 
@@ -386,7 +398,7 @@ export async function generateNotifications(
       .limit(1);
 
     if (existing && existing.length > 0) {
-      // Already processed
+      console.log(`[AgentOne] Notifications already exist for event ${eventId}, skipping`);
       return;
     }
   }
@@ -412,12 +424,21 @@ export async function generateNotifications(
     created_by: event.source_employee_id || "system",
   }));
 
-  const { error: insertError } = await supabase
-    .from("nudge_cards")
-    .insert(rows as any[]);
+  console.log(`[AgentOne] Inserting ${rows.length} nudge_card(s) for event "${event.event_type}"`, rows.map(r => ({ title: r.title, target: r.target_user_id })));
 
-  if (insertError) {
-    console.error("[AgentOne] Failed to insert notifications:", insertError);
+  try {
+    const { error: insertError } = await supabase
+      .from("nudge_cards")
+      .insert(rows as any[]);
+
+    if (insertError) {
+      console.error("[AgentOne] Failed to insert notifications:", insertError);
+      return;
+    }
+
+    console.log(`[AgentOne] Successfully inserted ${rows.length} nudge_card(s)`);
+  } catch (err) {
+    console.error("[AgentOne] Exception inserting notifications:", err);
     return;
   }
 
@@ -425,7 +446,7 @@ export async function generateNotifications(
   if (eventId) {
     await supabase
       .from("agent_one_events")
-      .update({ status: "processed", updated_at: new Date().toISOString() })
+      .update({ status: "processed", updated_at: new Date().toISOString() } as any)
       .eq("id", eventId);
   }
 }

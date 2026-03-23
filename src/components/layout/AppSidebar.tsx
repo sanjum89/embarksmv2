@@ -52,7 +52,7 @@ const navItems: NavItem[] = [
     label: "New Chat",
     path: "/chat",
     icon: MessageSquare,
-    roles: ["learner"],
+    roles: ["learner", "manager", "admin"],
   },
   {
     label: "New Chat",
@@ -77,7 +77,7 @@ const navItems: NavItem[] = [
       { label: "Role Play", path: "/role-play-bank", icon: Drama },
     ],
   },
-  { label: "Inbox", path: "/my-inbox", icon: Inbox, roles: ["learner", "manager", "admin"] },
+  { label: "Action Centre", path: "/my-inbox", icon: Inbox, roles: ["learner", "manager", "admin"] },
   { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "admin"] },
   { label: "Admin", path: "/admin", icon: Shield, roles: ["admin"] },
 ];
@@ -456,7 +456,7 @@ export function AppSidebar() {
                         setTimeout(() => {
                           switchUser(u.id);
                           if (u.canManage && viewMode === "team") { const switchTeamRole = u.role === "admin" ? "admin" : "manager"; setRole(switchTeamRole); navigate("/manager"); }
-                          else { setRole("learner"); setViewMode("me"); navigate("/"); }
+                          else { setRole("learner"); setViewMode("me"); navigate("/chat"); }
                           setSwitchingProfile(false);
                         }, 1000);
                       }}
@@ -787,7 +787,7 @@ export function AppSidebar() {
                     setTimeout(() => {
                       switchUser(u.id);
                       if (u.canManage && viewMode === "team") { const switchTeamRole = u.role === "admin" ? "admin" : "manager"; setRole(switchTeamRole); navigate("/manager"); }
-                      else { setRole("learner"); setViewMode("me"); navigate("/"); }
+                      else { setRole("learner"); setViewMode("me"); navigate("/chat"); }
                       setSwitchingProfile(false);
                     }, 1000);
                   }}

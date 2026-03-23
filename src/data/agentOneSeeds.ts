@@ -1,21 +1,272 @@
 /* ─── Agent One Demo Notification Seeder ─── */
 import type { NormalizedAccount } from "@/types/account-v2";
 import type { DemoScenarios } from "@/types/agentOneActions";
+import type { Json } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { emitEvent } from "@/lib/agentOneEventEmitter";
 
+/* ────────────────────────────────────────────────
+ * Hardcoded demo persona card definitions
+ * These are the EXACT initial cards for each persona.
+ * No derivation, no inference — deterministic seeding only.
+ * ──────────────────────────────────────────────── */
+
+interface DemoCard {
+  category: string;
+  audience_type: string;
+  type: string;
+  title: string;
+  subtitle: string;
+  color_theme: string;
+  cta_label: string;
+  cta_action: Json;
+  priority: string;
+}
+
+const LEARNER_ONBOARDING_CARDS: DemoCard[] = [
+  {
+    category: "onboarding_progress",
+    audience_type: "learner",
+    type: "demo_onboarding",
+    title: "Your onboarding journey is ready",
+    subtitle: "You've been assigned an onboarding journey. Click to begin.",
+    color_theme: "sky",
+    cta_label: "Start",
+    cta_action: { type: "open_agentone_chat", prompt: "I'm ready to start my onboarding journey. What should I do first?" },
+    priority: "medium",
+  },
+  {
+    category: "reflection_request",
+    audience_type: "learner",
+    type: "demo_reflection_request",
+    title: "Your manager has requested a reflection",
+    subtitle: "Share how your onboarding experience has been going so far.",
+    color_theme: "lavender",
+    cta_label: "Start Reflection",
+    cta_action: { type: "open_agentone_chat", prompt: "Your manager has requested a reflection to understand how your onboarding experience has been so far. How are you feeling today?" },
+    priority: "medium",
+  },
+];
+
+/**
+ * Build the per-persona demo card map for a given account.
+ * Employee IDs come from the account's demoScenarios config.
+ */
+function buildDemoCardMap(scenarios: DemoScenarios): Record<string, DemoCard[]> {
+  const {
+    onboardingLearnerEmployeeId,   // Clara
+    risingStarEmployeeId,          // Elliot (or mapped)
+    underperformerEmployeeId,      // Theo
+    promotionCandidateEmployeeId,  // Sophie (or mapped)
+    managerEmployeeId,             // Julian
+    adminEmployeeId,               // Helena
+  } = scenarios;
+
+  const map: Record<string, DemoCard[]> = {};
+
+  // ── Julian (manager) ──
+  map[managerEmployeeId] = [
+    {
+      category: "onboarding_progress",
+      audience_type: "manager",
+      type: "demo_new_hires",
+      title: "New Hires!",
+      subtitle: "You have 3 new hires. Click to view their progress.",
+      color_theme: "sky",
+      cta_label: "View",
+      cta_action: { type: "open_action_center", path: "/team-dashboard" },
+      priority: "high",
+    },
+    {
+      category: "reflection_request",
+      audience_type: "manager",
+      type: "demo_reflections",
+      title: "Reflections posted!",
+      subtitle: "5 of your team members have shared their reflections. Check them out.",
+      color_theme: "lavender",
+      cta_label: "Review",
+      cta_action: { type: "open_action_center", path: "/team-dashboard" },
+      priority: "medium",
+    },
+    {
+      category: "one_on_one_recommended",
+      audience_type: "manager",
+      type: "demo_actions",
+      title: "Actions Required!",
+      subtitle: "1 team member needs immediate attention.",
+      color_theme: "peach",
+      cta_label: "View",
+      cta_action: { type: "open_action_center", path: "/team-dashboard" },
+      priority: "high",
+    },
+  ];
+
+  // ── Clara (learner — onboarding) ──
+  map[onboardingLearnerEmployeeId] = [...LEARNER_ONBOARDING_CARDS];
+
+  // ── Elliot (learner — same as Clara) ──
+  if (risingStarEmployeeId && risingStarEmployeeId !== onboardingLearnerEmployeeId) {
+    map[risingStarEmployeeId] = [...LEARNER_ONBOARDING_CARDS];
+  }
+
+  // ── Sophie (learner — same as Clara) ──
+  if (promotionCandidateEmployeeId && promotionCandidateEmployeeId !== onboardingLearnerEmployeeId) {
+    map[promotionCandidateEmployeeId] = [...LEARNER_ONBOARDING_CARDS];
+  }
+
+  // ── Helena (admin) ──
+  map[adminEmployeeId] = [
+    {
+      category: "onboarding_progress",
+      audience_type: "admin",
+      type: "demo_admin_onboarding",
+      title: "Organisation onboarding overview",
+      subtitle: "You have 3 new hires in onboarding across the organisation. View their progress.",
+      color_theme: "sky",
+      cta_label: "View",
+      cta_action: { type: "open_action_center", path: "/admin" },
+      priority: "medium",
+    },
+    {
+      category: "recognition_kudos",
+      audience_type: "admin",
+      type: "demo_admin_engagement",
+      title: "Team engagement highlights",
+      subtitle: "Several team members have been flagged for strong performance.",
+      color_theme: "mint",
+      cta_label: "View",
+      cta_action: { type: "open_action_center", path: "/admin" },
+      priority: "medium",
+    },
+    {
+      category: "one_on_one_recommended",
+      audience_type: "admin",
+      type: "demo_admin_performance",
+      title: "Performance attention needed",
+      subtitle: "1 team member has been flagged for attention. Review recommended actions.",
+      color_theme: "peach",
+      cta_label: "View",
+      cta_action: { type: "open_action_center", path: "/admin" },
+      priority: "medium",
+    },
+  ];
+
+  // ── Theo (underperformer — support cards) ──
+  if (underperformerEmployeeId) {
+    map[underperformerEmployeeId] = [
+      {
+        category: "one_on_one_recommended",
+        audience_type: "learner",
+        type: "demo_check_in",
+        title: "Your manager wants to check in",
+        subtitle: "Julian has requested a one-on-one to discuss your development and support.",
+        color_theme: "peach",
+        cta_label: "View",
+        cta_action: { type: "open_agentone_chat", prompt: "My manager Julian has requested a one-on-one to discuss my development. What should I prepare?" },
+        priority: "medium",
+      },
+      {
+        category: "promotion_development",
+        audience_type: "learner",
+        type: "demo_dev_plan",
+        title: "A development plan has been created for you",
+        subtitle: "A personalised development plan has been prepared. Let's review your next steps.",
+        color_theme: "sand",
+        cta_label: "View",
+        cta_action: { type: "open_agentone_chat", prompt: "A development plan has been created for me. Can you walk me through the next steps?" },
+        priority: "medium",
+      },
+    ];
+  }
+
+  return map;
+}
+
 /**
  * Bootstrap initial-state notifications from current account data.
- * Creates onboarding cards for managers (new hires) and learners (assigned targets).
- * Idempotent: checks for existing bootstrap nudge_cards before emitting.
+ * For Rathbones demo personas: uses exact hardcoded card definitions.
+ * For other accounts: falls back to generic derivation (non-demo personas only).
+ * Idempotent: checks per-card grouping_key before inserting.
  */
 export async function bootstrapInitialNotifications(
   accountId: string,
   account: NormalizedAccount
 ): Promise<void> {
-  console.log("[AgentOne Bootstrap] Deriving initial-state notifications for account:", accountId);
+  console.log("[AgentOne Bootstrap] Seeding initial-state notifications for account:", accountId);
 
-  // Helper: check if a specific bootstrap card already exists
+  const scenarios = (account as any).demoScenarios as DemoScenarios | undefined;
+
+  if (scenarios) {
+    // ── Hardcoded demo persona path ──
+    await seedDemoPersonaCards(accountId, scenarios, account);
+    return;
+  }
+
+  // ── Generic fallback for non-demo accounts ──
+  await seedGenericBootstrap(accountId, account);
+}
+
+/**
+ * Seed exact per-persona demo cards. No derivation.
+ */
+async function seedDemoPersonaCards(
+  accountId: string,
+  scenarios: DemoScenarios,
+  account: NormalizedAccount
+): Promise<void> {
+  const cardMap = buildDemoCardMap(scenarios);
+  const validate = (id: string) => !!account.employeesById[id];
+
+  for (const [employeeId, cards] of Object.entries(cardMap)) {
+    if (!validate(employeeId)) {
+      console.warn(`[AgentOne Bootstrap] Employee ${employeeId} not found in account, skipping`);
+      continue;
+    }
+
+    for (const card of cards) {
+      const groupingKey = `${accountId}:demo:${employeeId}:${card.category}`;
+
+      // Idempotency: check if this exact card already exists
+      const { data: existing } = await supabase
+        .from("nudge_cards")
+        .select("id")
+        .eq("account_id", accountId)
+        .eq("grouping_key", groupingKey)
+        .limit(1);
+
+      if (existing && existing.length > 0) continue;
+
+      await supabase.from("nudge_cards").insert([{
+        account_id: accountId,
+        target_user_id: employeeId,
+        audience_type: card.audience_type,
+        category: card.category,
+        grouping_key: groupingKey,
+        type: card.type,
+        title: card.title,
+        subtitle: card.subtitle,
+        color_theme: card.color_theme,
+        cta_label: card.cta_label,
+        cta_action: card.cta_action,
+        priority: card.priority,
+        metadata: { bootstrap: true },
+        viewed: false,
+        created_by: "system",
+      }]);
+    }
+  }
+
+  console.log("[AgentOne Bootstrap] Demo persona cards seeded successfully");
+}
+
+/**
+ * Generic bootstrap for non-demo accounts (unchanged legacy logic).
+ * Only runs when no demoScenarios config exists.
+ */
+async function seedGenericBootstrap(
+  accountId: string,
+  account: NormalizedAccount
+): Promise<void> {
   const bootstrapCardExists = async (groupingKey: string): Promise<boolean> => {
     const { data } = await supabase
       .from("nudge_cards")
@@ -27,21 +278,15 @@ export async function bootstrapInitialNotifications(
   };
 
   const users = Object.values(account.usersById);
-  const employees = account.employeesById;
   const hierarchy = account.hierarchyMap;
 
-  // Find managers with new-hire direct reports
-  const managers = users.filter(u => u.role === "manager" || u.role === "admin");
+  // Manager cards
+  const managers = users.filter(u => u.role === "manager");
   for (const mgr of managers) {
     const directReportIds = hierarchy[mgr.id] || [];
     const newHireSet = new Set((account.newHires || []).map(nh => nh.user?.id || (nh as any).employeeId));
-    const newHireDirectReports = directReportIds.filter(id =>
-      newHireSet.has(id) || (account.skillTargets || []).some(
-        (st: any) => st.assignedTo === id || st.employeeId === id
-      )
-    );
+    const newHireDirectReports = directReportIds.filter(id => newHireSet.has(id));
 
-    // Card 1: New Hires onboarding card (via event pipeline)
     if (newHireDirectReports.length > 0) {
       const onboardingKey = `${accountId}:bootstrap:manager:onboarding:${mgr.id}`;
       if (!(await bootstrapCardExists(onboardingKey))) {
@@ -57,7 +302,6 @@ export async function bootstrapInitialNotifications(
       }
     }
 
-    // Card 2: Reflections posted (direct insert)
     const reflectionsKey = `${accountId}:bootstrap:manager:reflections:${mgr.id}`;
     if (!(await bootstrapCardExists(reflectionsKey))) {
       const reflectionCount = Math.min(directReportIds.length, 5);
@@ -80,7 +324,6 @@ export async function bootstrapInitialNotifications(
       });
     }
 
-    // Card 3: Actions required (direct insert)
     const actionsKey = `${accountId}:bootstrap:manager:actions:${mgr.id}`;
     if (!(await bootstrapCardExists(actionsKey))) {
       await supabase.from("nudge_cards").insert({
@@ -103,7 +346,7 @@ export async function bootstrapInitialNotifications(
     }
   }
 
-  // Find learners who are new hires with assigned skill targets
+  // Learner cards
   const newHireSet2 = new Set((account.newHires || []).map(nh => nh.user?.id || (nh as any).employeeId));
   const learners = users.filter(u => u.role === "learner" || (!u.role && !managers.some(m => m.id === u.id)));
 
@@ -114,7 +357,6 @@ export async function bootstrapInitialNotifications(
     );
 
     if (isNewHire || hasTargets) {
-      // Card 1: Onboarding journey (via event pipeline)
       const onboardingKey = `${accountId}:bootstrap:learner:onboarding:${learner.id}`;
       if (!(await bootstrapCardExists(onboardingKey))) {
         await emitEvent({
@@ -128,7 +370,6 @@ export async function bootstrapInitialNotifications(
         }, account);
       }
 
-      // Card 2: Reflection request from manager (direct insert)
       const reflectionKey = `${accountId}:bootstrap:learner:reflection:${learner.id}`;
       if (!(await bootstrapCardExists(reflectionKey))) {
         await supabase.from("nudge_cards").insert({
@@ -142,7 +383,7 @@ export async function bootstrapInitialNotifications(
           subtitle: "Share how your onboarding experience has been going so far.",
           color_theme: "lavender",
           cta_label: "Start Reflection",
-          cta_action: { type: "open_agentone_chat", prompt: "My manager has requested a reflection to hear about my onboarding experience. How are you finding things so far?" },
+          cta_action: { type: "open_agentone_chat", prompt: "Your manager has requested a reflection to understand how your onboarding experience has been so far. How are you feeling today?" },
           priority: "medium",
           metadata: {},
           viewed: false,
@@ -152,14 +393,13 @@ export async function bootstrapInitialNotifications(
     }
   }
 
-  console.log("[AgentOne Bootstrap] Initial-state notifications seeded successfully");
+  console.log("[AgentOne Bootstrap] Generic bootstrap notifications seeded successfully");
 }
 
 /**
  * Seed demo notifications for accounts with demo_mode enabled.
- * Reads stable employee IDs from account data's demoScenarios config.
- * Idempotent: skips if processed events AND matching nudge_cards exist.
- * Recovers from partial failures by clearing stale pending events.
+ * These are EVENT-DRIVEN milestone/flag cards (not initial state).
+ * Kept separate from bootstrap — runs after initial cards are seeded.
  */
 export async function seedDemoNotifications(
   accountId: string,
@@ -171,12 +411,13 @@ export async function seedDemoNotifications(
     return;
   }
 
-  // Check for existing nudge_cards from agent one events (not legacy cards)
+  // Check for existing event-generated nudge_cards
   const { data: existingCards } = await supabase
     .from("nudge_cards")
     .select("id")
     .eq("account_id", accountId)
     .not("source_event_id", "is", null)
+    .not("grouping_key", "like", `${accountId}:demo:%`)
     .not("grouping_key", "like", `${accountId}:bootstrap:%`)
     .limit(1);
 
@@ -185,7 +426,7 @@ export async function seedDemoNotifications(
     return;
   }
 
-  // Check for stale pending events (events created but notifications never generated)
+  // Check for stale pending events
   const { data: pendingEvents } = await supabase
     .from("agent_one_events")
     .select("id")
@@ -202,7 +443,7 @@ export async function seedDemoNotifications(
       .eq("status", "pending");
   }
 
-  // Check for already-processed events with nudge_cards
+  // Check for already-processed events
   const { data: processedEvents } = await supabase
     .from("agent_one_events")
     .select("id")
@@ -233,7 +474,6 @@ export async function seedDemoNotifications(
 
   console.log("[AgentOne Seed] Seeding demo events for account:", accountId);
 
-  // 1. Clara: onboarding midpoint reached
   await emitEvent({
     account_id: accountId,
     event_type: "onboarding_midpoint_reached",
@@ -244,7 +484,6 @@ export async function seedDemoNotifications(
     payload: {},
   }, account);
 
-  // 2. Clara: assessment completed with good score
   await emitEvent({
     account_id: accountId,
     event_type: "assessment_passed",
@@ -256,7 +495,6 @@ export async function seedDemoNotifications(
     payload: { score: 92, passed: true },
   }, account);
 
-  // 3. Rising star flagged
   if (validate(risingStarEmployeeId)) {
     await emitEvent({
       account_id: accountId,
@@ -269,7 +507,6 @@ export async function seedDemoNotifications(
     }, account);
   }
 
-  // 4. Underperformance flagged (creates 1:1 + mentor cards)
   if (validate(underperformerEmployeeId)) {
     await emitEvent({
       account_id: accountId,
@@ -282,7 +519,6 @@ export async function seedDemoNotifications(
     }, account);
   }
 
-  // 5. Promotion candidate flagged
   if (validate(promotionCandidateEmployeeId)) {
     await emitEvent({
       account_id: accountId,
@@ -295,7 +531,6 @@ export async function seedDemoNotifications(
     }, account);
   }
 
-  // 6. Bulk reflection request for selected team members
   const validReflectionTargets = reflectionTargetEmployeeIds.filter(validate);
   if (validReflectionTargets.length > 0) {
     await emitEvent({
@@ -309,7 +544,6 @@ export async function seedDemoNotifications(
     }, account);
   }
 
-  // 7. Admin summary notifications
   if (validate(adminEmployeeId)) {
     await emitEvent({
       account_id: accountId,

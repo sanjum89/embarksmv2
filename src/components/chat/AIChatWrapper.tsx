@@ -115,15 +115,25 @@ export function AIChatWrapper() {
               >
                 <Sparkles className="h-4 w-4" />
               </motion.div>
-              <div className="flex-1">
-                <h2 className="text-sm font-bold leading-tight">Agent One</h2>
-                <div className="flex items-center gap-1.5">
-                  <span className="relative flex h-1.5 w-1.5">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
-                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400" />
-                  </span>
-                  <p className="text-[10px] text-primary-foreground/75">Online now</p>
+              <div className="flex-1 flex items-center gap-2">
+                <div>
+                  <h2 className="text-sm font-bold leading-tight">Agent One</h2>
+                  <div className="flex items-center gap-1.5">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400" />
+                    </span>
+                    <p className="text-[10px] text-primary-foreground/75">Online now</p>
+                  </div>
                 </div>
+                <button
+                  onClick={handleReset}
+                  disabled={isStreaming || messages.length === 0}
+                  className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors"
+                  title="Reset conversation"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                </button>
               </div>
               {isExpanded && (
                 <button
@@ -135,12 +145,11 @@ export function AIChatWrapper() {
                 </button>
               )}
               <button
-                onClick={handleReset}
-                disabled={isStreaming || messages.length === 0}
-                className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors"
-                title="Reset conversation"
+                onClick={() => setIsOpen(false)}
+                className="text-primary-foreground/60 hover:text-primary-foreground transition-colors"
+                title="Close panel"
               >
-                <RotateCcw className="h-3.5 w-3.5" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 

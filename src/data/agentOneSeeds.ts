@@ -62,7 +62,7 @@ export async function bootstrapInitialNotifications(
   const learners = users.filter(u => u.role === "learner" || (!u.role && !managers.some(m => m.id === u.id)));
 
   for (const learner of learners) {
-    const isNewHire = newHireSet.has(learner.id);
+    const isNewHire = newHireSet2.has(learner.id);
     const hasTargets = (account.skillTargets || []).some(
       (st: any) => st.assignedTo === learner.id || st.employeeId === learner.id
     );

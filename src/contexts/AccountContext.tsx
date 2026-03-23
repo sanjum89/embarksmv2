@@ -233,6 +233,16 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     setNormalizedCache(cache);
     setAccounts(accts);
 
+    // Seed demo notifications for demo-enabled accounts (fire-and-forget)
+    for (const acct of accts) {
+      const norm = cache[acct.id];
+      if (norm?.demoMode) {
+        seedDemoNotifications(acct.id, norm).catch((err) =>
+          console.error("[AgentOne] Seed error:", err)
+        );
+      }
+    }
+
     const savedId = localStorage.getItem("activeAccountId");
     if (savedId && accts.some((a) => a.id === savedId)) {
       setActiveAccountId(savedId);

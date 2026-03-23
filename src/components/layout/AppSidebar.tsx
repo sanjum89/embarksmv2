@@ -80,7 +80,7 @@ const navItems: NavItem[] = [
   },
   { label: "Action Centre", path: "/my-inbox", icon: Inbox, roles: ["learner", "manager", "admin"] },
   { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "admin"] },
-  { label: "Admin", path: "/admin", icon: Shield, roles: ["admin"] },
+  { label: "Admin", path: "/admin", icon: Shield, roles: ["admin", "manager"] },
 ];
 
 export function AppSidebar() {

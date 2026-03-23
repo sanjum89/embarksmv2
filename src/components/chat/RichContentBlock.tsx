@@ -61,18 +61,29 @@ function SkillTargetsTable({ data, cta }: { data: any; cta?: RichBlock["cta"] })
         Skill Targets
       </div>
       <div className="space-y-2">
-        {targets.map((t: any) => (
-          <div key={t.title} className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2">
-            <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-medium text-foreground truncate">{t.title}</p>
-              <p className="text-[10px] text-muted-foreground">{t.completedSteps}/{t.totalSteps} steps</p>
+        {targets.map((t: any) => {
+          const content = (
+            <>
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-medium text-foreground truncate">{t.title}</p>
+                <p className="text-[10px] text-muted-foreground">{t.completedSteps}/{t.totalSteps} steps</p>
+              </div>
+              <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden shrink-0">
+                <div className="h-full bg-primary rounded-full" style={{ width: `${t.progress}%` }} />
+              </div>
+              <span className="text-[11px] font-semibold text-foreground w-10 text-right">{Math.round(t.progress)}%</span>
+            </>
+          );
+          return t.id ? (
+            <Link key={t.id} to={`/skill-target/${t.id}`} className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2 hover:bg-muted transition-colors">
+              {content}
+            </Link>
+          ) : (
+            <div key={t.title} className="flex items-center gap-3 bg-muted/50 rounded-lg px-3 py-2">
+              {content}
             </div>
-            <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden shrink-0">
-              <div className="h-full bg-primary rounded-full" style={{ width: `${t.progress}%` }} />
-            </div>
-            <span className="text-[11px] font-semibold text-foreground w-10 text-right">{Math.round(t.progress)}%</span>
-          </div>
-        ))}
+          );
+        })}
       </div>
       {cta && (
         <Link to={cta.path} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary hover:underline mt-1">

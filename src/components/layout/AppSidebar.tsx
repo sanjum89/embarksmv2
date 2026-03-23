@@ -130,17 +130,18 @@ export function AppSidebar() {
     if (!item.roles.includes(effectiveRole)) return false;
     // Hide Learning Spaces in team/manager mode
     if (item.label === "Learning Spaces" && viewMode === "team") return false;
-    // Hide learner New Chat in team mode (it has no children and path=/chat)
-    if (item.path === "/chat" && viewMode === "team") return false;
-    
-    // Hide manager New Chat in me mode
+    // Hide manager New Chat group in me mode
     if (item.path === "/manager" && viewMode === "me") return false;
     return true;
   }).sort((a, b) => {
-    // In team mode, put Admin first
+    // In team mode, put Chat first then Admin
     if (viewMode === "team") {
-      if (a.label === "Admin") return -1;
-      if (b.label === "Admin") return 1;
+      const order = (item: NavItem) => {
+        if (item.path === "/chat") return 0;
+        if (item.label === "Admin") return 1;
+        return 2;
+      };
+      return order(a) - order(b);
     }
     return 0;
   });

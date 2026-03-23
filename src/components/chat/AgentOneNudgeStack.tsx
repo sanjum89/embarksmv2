@@ -65,6 +65,7 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
       .select("*")
       .eq("account_id", activeAccount.id)
       .eq("target_user_id", userId)
+      .eq("audience_type", audienceType)
       .order("priority", { ascending: true })
       .order("created_at", { ascending: false })
       .then(({ data }) => {

@@ -89,7 +89,7 @@ export default function MyInbox() {
       >
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl font-bold text-foreground">My Inbox</h1>
+            <h1 className="font-display text-2xl font-bold text-foreground">Action Centre</h1>
             {unreadCount > 0 && (
               <Badge className="rounded-full text-xs">{unreadCount} unread</Badge>
             )}

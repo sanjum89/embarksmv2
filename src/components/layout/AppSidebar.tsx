@@ -787,7 +787,7 @@ export function AppSidebar() {
                     setTimeout(() => {
                       switchUser(u.id);
                       if (u.canManage && viewMode === "team") { const switchTeamRole = u.role === "admin" ? "admin" : "manager"; setRole(switchTeamRole); navigate("/manager"); }
-                      else { setRole("learner"); setViewMode("me"); navigate("/"); }
+                      else { setRole("learner"); setViewMode("me"); navigate("/chat"); }
                       setSwitchingProfile(false);
                     }, 1000);
                   }}

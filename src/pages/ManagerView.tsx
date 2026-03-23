@@ -5,6 +5,8 @@ import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
+import { useAgentOne } from "@/contexts/AgentOneContext";
+import { AgentOneNudgeStack } from "@/components/chat/AgentOneNudgeStack";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -167,6 +169,7 @@ export default function ManagerView() {
   const { user } = useUser();
   const { skillTargets } = useSkillTargets();
   const { normalizedAccount, activeAccount } = useAccount();
+  const { setIsOpen: setAgentOpen, handleSend: agentSend } = useAgentOne();
 
   // Use account-aware data — no demo fallback for uploaded accounts
   const mockNewHires = normalizedAccount?.newHires || activeAccount?.data?.newHires || [];
@@ -252,6 +255,13 @@ export default function ManagerView() {
                 <h1 className="font-display text-[28px] font-bold text-foreground mb-8">
                   Hi {firstName}, let's dive in
                 </h1>
+
+                <div className="mb-6">
+                  <AgentOneNudgeStack
+                    onAgentClick={() => setAgentOpen(true)}
+                    onChatAction={(prompt) => { setAgentOpen(true); agentSend(prompt); }}
+                  />
+                </div>
 
                 <div className="grid grid-cols-3 gap-3 mb-6">
                   {suggestionCards.map((card, i) => (

@@ -1,28 +1,32 @@
 
 
-## Plan: Fix Skill Targets Block CTAs and Links
+## Correction: Use Employee IDs in `demoScenarios`
 
-### Problem
-The "Skill Targets" rich block in Agent One chat has:
-1. "View Dashboard" CTA linking to `/dashboard` — should say "View Skill Targets" and link to `/` (the dashboard/skill targets page)
-2. Individual skill target rows are not clickable — they should link to `/skill-target/:id`
+### What changes
 
-### Changes
+In `src/lib/accountDefaults.ts`, the `demoScenarios` map added to the default account data blob will use keys that explicitly reference **employee IDs**, not user IDs.
 
-**1. `supabase/functions/super-agent-chat/index.ts`**
-- Update the skill_targets_table prompt to include an `id` field in target data
-- Change default CTA from `{"label":"View Dashboard","path":"/dashboard"}` to `{"label":"View Skill Targets","path":"/"}`
-- Also update inbox CTA label from "Go to Inbox" to "Go to Action Centre" (matching earlier rename)
+**Updated `demoScenarios` definition:**
 
-**2. `src/components/chat/RichContentBlock.tsx`**
-- Make each skill target row a clickable `<Link>` to `/skill-target/${t.id}` when `t.id` is present
-- Keep fallback as non-clickable div when no id
-- Update bottom CTA — it already renders dynamically from the block data, so the AI prompt fix handles this
+```typescript
+demoScenarios: {
+  onboardingLearnerEmployeeId: "u12",        // Clara Whitfield
+  risingStarEmployeeId: "u13",               // Elliot Hargreaves
+  underperformerEmployeeId: "u14",            // Sophie Langford
+  promotionCandidateEmployeeId: "u6",         // Maya Thompson
+  managerEmployeeId: "u1",                    // Alex Rivera
+  adminEmployeeId: "u11",                     // Sarah Chen
+  reflectionTargetEmployeeIds: ["u6", "u8", "u10"]
+}
+```
 
-### Files changed
+Key naming uses `EmployeeId` suffix to make it unambiguous that these reference `employeesById` keys, not auth user IDs.
 
-| File | Change |
-|------|--------|
-| `supabase/functions/super-agent-chat/index.ts` | Add `id` to target data schema, fix CTA label/path, fix inbox CTA label |
-| `src/components/chat/RichContentBlock.tsx` | Make individual target rows link to `/skill-target/:id` |
+### Impact on other files from the approved plan
+
+- **`src/data/agentOneSeeds.ts`** — reads `demoScenarios.onboardingLearnerEmployeeId` etc. to look up employees from `account.employeesById[id]`, then resolves the manager via `account.hierarchyMap`
+- **`src/lib/agentOneTriggers.ts`** — event fields use `sourceEmployeeId` / `targetEmployeeId` (already correct in the plan)
+- **`src/types/agentOneActions.ts`** — the `DemoScenarios` interface uses `...EmployeeId` field names
+
+Everything else in the approved plan remains unchanged.
 

@@ -1,57 +1,46 @@
 
 
-## Plan: Fix Skills Data Discrepancy Between Agent One and My 360
+## Plan: Add Team Dashboard for All Managers
 
-### Problem
+Create a new "Team Dashboard" page accessible to all managers in Team mode. It reuses the admin panel components (People Graph, Learning & Skills, Work Signals, Reflections) but scopes data to the logged-in manager's reporting tree instead of the entire organization.
 
-The `profileDataGenerator.ts` builds `roleSkillsCurrent` from ALL employee skills (not just role-relevant ones). This causes:
-- **My 360** "Core Skills" shows every skill the employee has, not just role-related ones
-- **Agent One** combines role + project + other skills, leading to duplicates (skills appear in both `roleSkillsCurrent` and `otherSkills`)
-- **"Other Skills"** section appears empty or underpopulated because the role skills set already consumed everything
+### New file: `src/pages/TeamDashboard.tsx`
 
-### Root Cause
+- Tabbed layout matching Admin Dashboard style (Overview, People Graph, Learning & Skills, Work Signals, Reflections)
+- Accept `normalizedAccount` from context, but filter all data through the manager's reporting subtree
+- Create a scoped copy of the account where `employeesById`, `namedEmployees`, `peopleGraph`, `signals`, `reflections`, `workSignals`, and `orgOverview` only contain employees in the manager's subtree
+- Pass this filtered account to existing panel components: `OrgOverviewPanel`, `PeopleGraphPanel`, `LearningSkillsPanel`, `WorkSignalsPanel`, `ReflectionsPanel`
+- Header shows: "Team Dashboard — {manager name}'s Team ({count} members)"
 
-In `profileDataGenerator.ts` lines 27-31:
-```typescript
-// Currently: ALL employee skills go into roleSkillsCurrent
-const roleSkillsCurrent = employeeSkills.map(s => ({ ... }));
-```
+### New helper: `src/lib/accountSelectors.ts`
 
-Should be: only employee skills that match role requirements go into `roleSkillsCurrent`.
+- Add `getScopedAccount(account, managerId)` function that:
+  1. Gets all recursive reports via `getTeamMembers` (already exists in `accountHierarchy.ts`)
+  2. Filters `employeesById` to only those IDs
+  3. Filters `namedEmployees`, `peopleGraph`, `signals`, `reflections` by employee IDs
+  4. Re-derives `orgOverview` and `learningAndSkills` from the scoped employee set
+  5. Returns a new `NormalizedAccount` with scoped data
 
-### Fix
+### Navigation: `src/components/layout/AppSidebar.tsx`
 
-**File: `src/lib/profileDataGenerator.ts`**
+- Add "Team Dashboard" nav item under the manager group children (between "Team Insights" and existing items), with `BarChart3` or `Shield` icon
+- Path: `/team-dashboard`
+- Visible in team mode for `manager` and `admin` roles
 
-1. **`roleSkillsCurrent`** — filter to only include skills whose name matches a role requirement
-2. **`otherSkills`** — filter to exclude skills in role requirements AND project requirements (currently only excludes role)
-3. This ensures three non-overlapping skill buckets: Role, Project, Other
+### Routing: `src/App.tsx`
 
-```text
-Before (Helena with 10 skills, 6 role-required):
-  roleSkillsCurrent: [all 10 skills]     ← wrong
-  otherSkills: [4 non-role skills]        ← correct count but duplicated
-  
-After:
-  roleSkillsCurrent: [6 role skills only] ← only matching role reqs
-  otherSkills: [remaining skills not in role OR project reqs]
-```
+- Add route: `/team-dashboard` → `TeamDashboard`
 
-**Changes:**
-| Line | Change |
-|------|--------|
-| 27-31 | Filter `roleSkillsCurrent` to only skills matching `roleSkillsRequired` names, with fallback proficiency |
-| 66-73 | Update `otherSkills` to exclude both role AND project required skill names |
+### Existing panels — no changes needed
 
-### No changes needed
-
-- `AgentOneContext.tsx` — combining all three categories is correct once the buckets are non-overlapping
-- `My360.tsx` — already reads from profileData correctly
-- `accountParser.ts` — handles explicit JSON profile data which is assumed correct as-is
+`OrgOverviewPanel`, `PeopleGraphPanel`, `LearningSkillsPanel`, `WorkSignalsPanel`, `ReflectionsPanel` already accept an `account` prop. By passing a scoped account, they render correctly without modification.
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/lib/profileDataGenerator.ts` | Fix roleSkillsCurrent to only include role-matching skills; fix otherSkills to exclude both role and project skills |
+| `src/pages/TeamDashboard.tsx` | New page — tabbed team dashboard scoped to manager's reports |
+| `src/lib/accountSelectors.ts` | Add `getScopedAccount()` helper |
+| `src/components/layout/AppSidebar.tsx` | Add "Team Dashboard" to manager nav group |
+| `src/App.tsx` | Add `/team-dashboard` route |
 

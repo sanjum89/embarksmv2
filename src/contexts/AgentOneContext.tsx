@@ -243,6 +243,10 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   // Load persisted conversation
   useEffect(() => {
     if (!accountId) return;
+    setLoaded(false);
+    setMessages([]);
+    setRichBlocksMap({});
+    setSuggestions([]);
     loadConversation();
   }, [accountId, user.id]);
 

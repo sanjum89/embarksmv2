@@ -254,8 +254,8 @@ export function groupByCategory(
     map.get(cat)!.push(n);
   }
 
-  const labels = audienceType === "manager" ? MANAGER_LABELS : LEARNER_LABELS;
-  const priority = audienceType === "manager" ? MANAGER_CATEGORY_PRIORITY : LEARNER_CATEGORY_PRIORITY;
+  const labels = audienceType === "learner" ? LEARNER_LABELS : MANAGER_LABELS;
+  const priority = audienceType === "learner" ? LEARNER_CATEGORY_PRIORITY : MANAGER_CATEGORY_PRIORITY;
 
   const cards: CategoryCard[] = [];
 

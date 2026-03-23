@@ -52,7 +52,7 @@ const navItems: NavItem[] = [
     label: "New Chat",
     path: "/chat",
     icon: MessageSquare,
-    roles: ["learner"],
+    roles: ["learner", "manager", "admin"],
   },
   {
     label: "New Chat",

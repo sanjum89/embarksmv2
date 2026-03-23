@@ -509,45 +509,56 @@ export default function My360() {
                       </button>
                     </div>
                   </div>
-                  <div className="space-y-2 overflow-x-auto">
+                  <div className="overflow-x-auto">
                     {filteredGapRows.length === 0 ? (
                       <p className="text-xs text-muted-foreground py-2">
                         {gapFilter === "Gap" ? "No gaps found — all skills meet or exceed requirements." : "No matching skills."}
                       </p>
                     ) : (
-                      filteredGapRows.map((row) => (
-                        <div key={row.skill} className="flex items-center gap-1.5 text-xs">
-                          <span className={cn(
-                            "inline-flex items-center rounded-full border pl-3 pr-1 py-1 font-medium gap-1.5 min-w-0",
-                            row.hasGap
-                              ? "border-border text-foreground"
-                              : "border-success/30 text-foreground"
-                          )}>
-                            <span className="truncate max-w-[140px]">{row.skill}</span>
+                      <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 gap-y-2 items-center">
+                        {filteredGapRows.map((row) => (
+                          <React.Fragment key={row.skill}>
+                            {/* Skill name pill */}
+                            <span className={cn(
+                              "inline-flex items-center rounded-full border pl-3 pr-1.5 py-1 text-xs font-medium gap-1.5 w-full min-w-0",
+                              row.hasGap
+                                ? "border-border text-foreground"
+                                : "border-success/30 text-foreground"
+                            )}>
+                              <span className="truncate">{row.skill}</span>
+                              <span className={cn(
+                                "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0 ml-auto",
+                                row.hasGap ? "bg-accent/15 text-accent" : "bg-success/15 text-success"
+                              )}>
+                                {row.level}
+                              </span>
+                            </span>
+
+                            {/* Arrow */}
+                            <span className="text-muted-foreground text-[10px] shrink-0 text-center">{">>"}</span>
+
+                            {/* Target badge */}
                             <span className={cn(
                               "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
-                              row.hasGap ? "bg-accent/15 text-accent" : "bg-success/15 text-success"
+                              !row.hasGap ? "bg-success/15 text-success" : row.gapLevel === "High gap" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"
                             )}>
-                              {row.level}
+                              {!row.hasGap ? "✓" : row.target}
                             </span>
-                          </span>
-                          <span className="text-muted-foreground text-[10px] shrink-0">{">>"}</span>
-                          <span className={cn(
-                            "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
-                            !row.hasGap ? "bg-success/15 text-success" : row.gapLevel === "High gap" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"
-                          )}>
-                            {!row.hasGap ? "✓" : row.target}
-                          </span>
-                          {row.hasGap && (
-                            <span className={cn(
-                              "rounded-full px-2 py-0.5 text-[10px] font-medium",
-                              row.gapLevel === "High gap" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"
-                            )}>
-                              {row.gapLevel}
+
+                            {/* Gap label (fixed-width column) */}
+                            <span className="w-[72px]">
+                              {row.hasGap ? (
+                                <span className={cn(
+                                  "rounded-full px-2 py-0.5 text-[10px] font-medium whitespace-nowrap",
+                                  row.gapLevel === "High gap" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"
+                                )}>
+                                  {row.gapLevel}
+                                </span>
+                              ) : null}
                             </span>
-                          )}
-                        </div>
-                      ))
+                          </React.Fragment>
+                        ))}
+                      </div>
                     )}
                   </div>
                 </motion.div>

@@ -183,7 +183,7 @@ const LEARNER_CATEGORY_PRIORITY: ActionCategory[] = [
   "mentor_action",
 ];
 
-type AudienceKey = "manager" | "learner";
+export type AudienceKey = "manager" | "learner" | "admin";
 
 const MANAGER_LABELS: Record<ActionCategory, { title: string; subtitle: (n: number) => string }> = {
   onboarding_progress: {
@@ -254,14 +254,17 @@ export function groupByCategory(
     map.get(cat)!.push(n);
   }
 
-  const labels = audienceType === "manager" ? MANAGER_LABELS : LEARNER_LABELS;
-  const priority = audienceType === "manager" ? MANAGER_CATEGORY_PRIORITY : LEARNER_CATEGORY_PRIORITY;
+  const labels = audienceType === "learner" ? LEARNER_LABELS : MANAGER_LABELS;
+  const priority = audienceType === "learner" ? LEARNER_CATEGORY_PRIORITY : MANAGER_CATEGORY_PRIORITY;
 
   const cards: CategoryCard[] = [];
 
   // Audience-aware CTA overrides
-  const ctaOverrides: Record<AudienceKey, Partial<Record<ActionCategory, { type: CTAType; path?: string; prompt?: string }>>> = {
+  const ctaOverrides: Partial<Record<AudienceKey, Partial<Record<ActionCategory, { type: CTAType; path?: string; prompt?: string }>>>> = {
     manager: {
+      onboarding_progress: { type: "open_action_center", path: "/team-dashboard" },
+    },
+    admin: {
       onboarding_progress: { type: "open_action_center", path: "/team-dashboard" },
     },
     learner: {
@@ -321,7 +324,7 @@ export function buildPersonalizedSummary(
 
   const totalCount = categoryCards.reduce((s, c) => s + c.count, 0);
 
-  if (audienceType === "manager") {
+  if (audienceType === "manager" || audienceType === "admin") {
     const parts: string[] = [];
     for (const c of categoryCards) {
       switch (c.category) {

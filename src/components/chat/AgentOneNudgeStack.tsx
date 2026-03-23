@@ -52,7 +52,7 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
   const [expanded, setExpanded] = useState(false);
   const [highlightIndex, setHighlightIndex] = useState(0);
 
-  const audienceType = user?.role === "manager" ? "manager" : "learner";
+  const audienceType = user?.role === "admin" ? "admin" : user?.role === "manager" ? "manager" : "learner";
   const userName = user?.name?.split(" ")[0] || "there";
 
   // Fetch nudge cards and group by category
@@ -65,6 +65,7 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
       .select("*")
       .eq("account_id", activeAccount.id)
       .eq("target_user_id", userId)
+      .eq("audience_type", audienceType)
       .order("priority", { ascending: true })
       .order("created_at", { ascending: false })
       .then(({ data }) => {

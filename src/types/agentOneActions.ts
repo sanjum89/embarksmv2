@@ -13,6 +13,8 @@ export type ActionCategory =
 export type EventType =
   | "onboarding_started"
   | "onboarding_midpoint_reached"
+  | "onboarding_assigned"
+  | "manager_new_hires_present"
   | "assessment_completed"
   | "assessment_passed"
   | "role_play_completed"

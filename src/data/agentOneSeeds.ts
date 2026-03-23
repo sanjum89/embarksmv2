@@ -1,6 +1,7 @@
 /* ─── Agent One Demo Notification Seeder ─── */
 import type { NormalizedAccount } from "@/types/account-v2";
 import type { DemoScenarios } from "@/types/agentOneActions";
+import type { Json } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { emitEvent } from "@/lib/agentOneEventEmitter";
 

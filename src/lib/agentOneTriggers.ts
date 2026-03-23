@@ -41,6 +41,50 @@ export function processEvent(event: AgentOneEvent, account: NormalizedAccount): 
   const managerId = targetEmpId ? resolveManager(targetEmpId, account) : null;
 
   switch (event.event_type) {
+    case "manager_new_hires_present": {
+      const newHireIds = (event.related_employee_ids || []) as string[];
+      const count = newHireIds.length;
+      const recipientId = event.target_employee_id || "";
+      if (recipientId) {
+        outputs.push({
+          recipientUserId: recipientId,
+          recipientEmployeeId: recipientId,
+          audienceType: resolveAudienceForEmployee(recipientId, account),
+          category: "onboarding_progress",
+          title: "New Hires!",
+          subtitle: `You have ${count} new hire${count !== 1 ? "s" : ""}. Click to view their progress.`,
+          ctaLabel: "View Progress",
+          ctaType: "open_action_center",
+          ctaPath: "/team-dashboard",
+          priority: "high",
+          groupingKey: `${event.account_id}:bootstrap:manager:${recipientId}`,
+          metadata: { employeeIds: newHireIds, count },
+        });
+      }
+      break;
+    }
+
+    case "onboarding_assigned": {
+      const learnerId = event.target_employee_id || "";
+      const learnerName = learnerId ? account.employeesById[learnerId]?.name || learnerId : "";
+      if (learnerId) {
+        outputs.push({
+          recipientUserId: learnerId,
+          recipientEmployeeId: learnerId,
+          audienceType: "learner",
+          category: "onboarding_progress",
+          title: "Your onboarding journey is ready",
+          subtitle: "You've been assigned an onboarding journey. Click to begin.",
+          ctaLabel: "Start Journey",
+          ctaType: "open_agentone_chat",
+          priority: "high",
+          groupingKey: `${event.account_id}:bootstrap:learner:${learnerId}`,
+          metadata: { employeeName: learnerName },
+        });
+      }
+      break;
+    }
+
     case "onboarding_midpoint_reached":
     case "onboarding_started": {
       if (managerId) {

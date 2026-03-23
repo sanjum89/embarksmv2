@@ -187,6 +187,8 @@ export interface DemoScenarios {
 export const EVENT_CATEGORY_MAP: Record<EventType, ActionCategory> = {
   onboarding_started: "onboarding_progress",
   onboarding_midpoint_reached: "onboarding_progress",
+  onboarding_assigned: "onboarding_progress",
+  manager_new_hires_present: "onboarding_progress",
   assessment_completed: "onboarding_progress",
   assessment_passed: "onboarding_progress",
   role_play_completed: "onboarding_progress",

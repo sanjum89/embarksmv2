@@ -79,7 +79,7 @@ export function processEvent(event: AgentOneEvent, account: NormalizedAccount): 
           ctaType: "open_agentone_chat",
           priority: "high",
           groupingKey: `${event.account_id}:bootstrap:learner:${learnerId}`,
-          metadata: { employeeName: learnerName },
+          metadata: { employeeName: learnerName, ctaPrompt: "I'm ready to start my onboarding journey. What should I do first?" },
         });
       }
       break;
@@ -461,7 +461,7 @@ export async function generateNotifications(
     subtitle: o.subtitle,
     color_theme: CATEGORY_COLOR_MAP[o.category] || "blue",
     cta_label: o.ctaLabel,
-    cta_action: { type: o.ctaType, path: o.ctaPath, employeeIds: o.metadata?.employeeId ? [o.metadata.employeeId] : [] },
+    cta_action: { type: o.ctaType, path: o.ctaPath, prompt: o.metadata?.ctaPrompt, employeeIds: o.metadata?.employeeId ? [o.metadata.employeeId] : [] },
     priority: o.priority,
     metadata: { ...o.metadata, secondaryActions: o.secondaryActions },
     viewed: false,

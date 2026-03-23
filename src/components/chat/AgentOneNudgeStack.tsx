@@ -115,12 +115,16 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
   const handleCategoryClick = useCallback(
     (card: CategoryCard) => {
       const cta = card.primaryCta;
-      const target = resolveCtaTarget(cta.type, undefined, { prompt: cta.prompt });
-
-      if (cta.prompt || target.prompt) {
-        onChatAction(cta.prompt || target.prompt || "");
-      } else if (target.path) {
-        navigate(target.path);
+      // Use explicit prompt/path from the category card first
+      if (cta.prompt) {
+        onChatAction(cta.prompt);
+      } else if (cta.path) {
+        navigate(cta.path);
+      } else {
+        // Fallback to resolveCtaTarget
+        const target = resolveCtaTarget(cta.type);
+        if (target.prompt) onChatAction(target.prompt);
+        else if (target.path) navigate(target.path);
       }
     },
     [navigate, onChatAction]

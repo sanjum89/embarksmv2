@@ -259,11 +259,33 @@ export function groupByCategory(
 
   const cards: CategoryCard[] = [];
 
+  // Audience-aware CTA overrides
+  const ctaOverrides: Record<AudienceKey, Partial<Record<ActionCategory, { type: CTAType; path?: string; prompt?: string }>>> = {
+    manager: {
+      onboarding_progress: { type: "open_action_center", path: "/team-dashboard" },
+    },
+    learner: {
+      onboarding_progress: { type: "open_agentone_chat", prompt: "I'm ready to start my onboarding journey. What should I do first?" },
+      reflection_request: { type: "open_agentone_chat", prompt: "My manager has requested a reflection. Help me get started." },
+    },
+  };
+
   for (const [cat, items] of map) {
     const label = labels[cat];
     if (!label) continue;
 
     const firstCta = items[0].cta_action;
+    let primaryCta: { type: CTAType; path?: string; prompt?: string } = {
+      type: firstCta.type,
+      path: firstCta.path,
+      prompt: firstCta.prompt,
+    };
+
+    // Apply audience-aware override if available
+    const override = ctaOverrides[audienceType]?.[cat];
+    if (override) {
+      primaryCta = override;
+    }
 
     cards.push({
       category: cat,
@@ -272,11 +294,7 @@ export function groupByCategory(
       subtitle: label.subtitle(items.length),
       colorToken: CATEGORY_COLOR_MAP[cat] || "sky",
       icon: CATEGORY_ICON_MAP[cat] || "Bell",
-      primaryCta: {
-        type: firstCta.type,
-        path: firstCta.path,
-        prompt: firstCta.prompt,
-      },
+      primaryCta,
       items,
     });
   }

@@ -19,6 +19,7 @@ import RolePlaySession from "./pages/RolePlaySession";
 import LearningModulePage from "./pages/LearningModulePage";
 import RolePlayBank from "./pages/RolePlayBank";
 import TeamInsights from "./pages/TeamInsights";
+import TeamDashboard from "./pages/TeamDashboard";
 import My360 from "./pages/My360";
 import ManagerView from "./pages/ManagerView";
 import LearnerChat from "./pages/LearnerChat";
@@ -63,6 +64,7 @@ const App = () => (
               <Route path="/my-inbox" element={<MyInbox />} />
               <Route path="/team-insights" element={<TeamInsights />} />
               <Route path="/manager" element={<ManagerView />} />
+              <Route path="/team-dashboard" element={<TeamDashboard />} />
               <Route path="/manager/role-play" element={<RolePlayBank />} />
               <Route path="/manager/skill-targets" element={<ManagerSkillTargets />} />
               <Route path="/manager/skill-target/:id" element={<ManagerSkillTargetDetail />} />

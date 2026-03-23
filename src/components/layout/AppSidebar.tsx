@@ -65,6 +65,7 @@ const navItems: NavItem[] = [
       { label: "Learning Paths", path: "/manager/skill-targets", icon: Target },
       { label: "Programs", path: "/manager/programs", icon: Layers },
       { label: "Team Insights", path: "/team-insights", icon: BarChart3 },
+      { label: "Team Dashboard", path: "/team-dashboard", icon: Shield },
     ],
   },
   {

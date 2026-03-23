@@ -348,3 +348,58 @@ export function getPerformanceAlerts(acct: NormalizedAccount): PerformanceAlert[
 export function getRecommendedCTAs(acct: NormalizedAccount): RecommendedCTA[] {
   return acct.recommendedCTAs?.length ? acct.recommendedCTAs : deriveRecommendedCTAs(getAdminEmployeeSource(acct));
 }
+
+/* ─── Scoped Account (for Team Dashboard) ─── */
+
+export function getScopedAccount(
+  acct: NormalizedAccount,
+  managerId: string
+): NormalizedAccount {
+  // Get all recursive report IDs
+  const reportIds = new Set<string>();
+  const queue = [managerId];
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+    const directIds = acct.hierarchyMap[current] || [];
+    for (const id of directIds) {
+      if (acct.employeesById[id]) {
+        reportIds.add(id);
+        queue.push(id);
+      }
+    }
+  }
+
+  const scopedEmployeesById: Record<string, any> = {};
+  for (const id of reportIds) {
+    scopedEmployeesById[id] = acct.employeesById[id];
+  }
+
+  const scopedHierarchy: Record<string, string[]> = {};
+  for (const id of reportIds) {
+    if (acct.hierarchyMap[id]) {
+      scopedHierarchy[id] = acct.hierarchyMap[id].filter((rid) => reportIds.has(rid));
+    }
+  }
+  // Include manager's direct reports in hierarchy
+  if (acct.hierarchyMap[managerId]) {
+    scopedHierarchy[managerId] = acct.hierarchyMap[managerId].filter((rid) => reportIds.has(rid));
+  }
+
+  return {
+    ...acct,
+    employeesById: scopedEmployeesById,
+    hierarchyMap: scopedHierarchy,
+    namedEmployees: acct.namedEmployees.filter((e) => reportIds.has(e.id)),
+    peopleGraph: acct.peopleGraph.filter((r) => reportIds.has(r.employeeId)),
+    signals: acct.signals.filter((s) => reportIds.has(s.employeeId)),
+    reflections: (acct.reflections as any[]).filter((r: any) => reportIds.has(r.employeeId)),
+    workSignals: (acct.workSignals as any[]).filter((w: any) => !w.employeeId || reportIds.has(w.employeeId)),
+    showcaseCases: acct.showcaseCases.filter((c: any) => !c.employeeId || reportIds.has(c.employeeId)),
+    explainability: acct.explainability.filter((e) => !e.employeeId || reportIds.has(e.employeeId)),
+    performanceAlerts: acct.performanceAlerts.filter((a) => !a.employeeId || reportIds.has(a.employeeId)),
+    recommendedCTAs: acct.recommendedCTAs.filter((c) => !c.targetEmployeeId || reportIds.has(c.targetEmployeeId)),
+    // Clear cached derived data so panels re-derive from scoped employees
+    orgOverview: undefined,
+    learningAndSkills: undefined,
+  };
+}

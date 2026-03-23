@@ -1,28 +1,31 @@
+## Plan: Agent One Event-Driven Notification System
 
+### Status: Implemented ✅
 
-## Plan: Fix Skill Targets Block CTAs and Links
+### What was built
 
-### Problem
-The "Skill Targets" rich block in Agent One chat has:
-1. "View Dashboard" CTA linking to `/dashboard` — should say "View Skill Targets" and link to `/` (the dashboard/skill targets page)
-2. Individual skill target rows are not clickable — they should link to `/skill-target/:id`
+1. **DB Migration** — Created `agent_one_events` and `mentor_assignments` tables. Extended `nudge_cards` with `audience_type`, `source_event_id`, `category`, `grouping_key`, `recipient_employee_id`.
 
-### Changes
+2. **`src/types/agentOneActions.ts`** — All types: `ActionCategory`, `EventType`, `CTAType`, `AudienceType`, `ActionStatus`, `PastelColorToken`, `AgentOneEvent`, `MentorAssignment`, `AgentOneNotification`, `AgentOneGroupedCard`, `TriggerOutput`, `DemoScenarios`. Color/icon constant maps.
 
-**1. `supabase/functions/super-agent-chat/index.ts`**
-- Update the skill_targets_table prompt to include an `id` field in target data
-- Change default CTA from `{"label":"View Dashboard","path":"/dashboard"}` to `{"label":"View Skill Targets","path":"/"}`
-- Also update inbox CTA label from "Go to Inbox" to "Go to Action Centre" (matching earlier rename)
+3. **`src/lib/agentOneActions.ts`** — Helpers: `groupNotifications`, `filterByCategory`, `filterByStatus`, `countActionable`, `resolveCtaTarget`, `getCategoryColor`, `getCategoryIcon`.
 
-**2. `src/components/chat/RichContentBlock.tsx`**
-- Make each skill target row a clickable `<Link>` to `/skill-target/${t.id}` when `t.id` is present
-- Keep fallback as non-clickable div when no id
-- Update bottom CTA — it already renders dynamically from the block data, so the AI prompt fix handles this
+4. **`src/lib/agentOneTriggers.ts`** — Trigger rules with explicit recipient mapping for all event types. Dynamic audience resolution for mentors. `generateNotifications()` handles dedup + DB persistence.
 
-### Files changed
+5. **`src/lib/agentOneEventEmitter.ts`** — Event emission: `emitEvent`, `emitKudos`, `emitReflectionRequest`, `emitReflectionSubmitted`, `emitMentorAssignment`, `emitAssessmentCompleted`, `emitOnboardingMidpoint`, `emitFlag`.
 
-| File | Change |
-|------|--------|
-| `supabase/functions/super-agent-chat/index.ts` | Add `id` to target data schema, fix CTA label/path, fix inbox CTA label |
-| `src/components/chat/RichContentBlock.tsx` | Make individual target rows link to `/skill-target/:id` |
+6. **`src/data/agentOneSeeds.ts`** — Idempotent demo seeder using stable employee IDs from `demoScenarios` config. Seeds for Clara, Elliot, Sophie, Maya + admin summaries.
 
+7. **`src/lib/accountDefaults.ts`** — Added `demoMode: true` and `demoScenarios` map with `EmployeeId` suffixed keys.
+
+8. **`src/types/account-v2.ts`** — Added `demoMode?` and `demoScenarios?` to `NormalizedAccount`.
+
+9. **`src/contexts/AccountContext.tsx`** — Calls `seedDemoNotifications` for demo-enabled accounts after init (fire-and-forget).
+
+### Key design decisions
+- Employee IDs are canonical in `demoScenarios`
+- Mentor is a relationship (`mentor_assignments`), not a persona
+- `nudge_cards` is the shared notification store for all personas
+- Audience type resolved dynamically from user role
+- No seeding from component mount
+- Admin summary notifications included

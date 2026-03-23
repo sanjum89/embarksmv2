@@ -139,10 +139,6 @@ export default function LearnerChat() {
   const hasMessages = messages.filter((m) => m.role !== "system").length > 0;
   const isActive = chatActive;
 
-  // Auto-open Agent One when on this page
-  useEffect(() => {
-    setIsOpen(true);
-  }, [setIsOpen]);
 
   // When nudge card is clicked, activate chat mode
   const handleNudgeClick = () => {

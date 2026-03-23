@@ -177,7 +177,7 @@ function ProgramDetail({ program, onBack }: { program: ProgramContext; onBack: (
                     <span className={cn("text-sm flex-1", enabledSteps.has(step.id) ? "text-foreground" : "text-muted-foreground line-through")}>
                       {step.title}
                     </span>
-                    <Badge variant="outline" className="text-[9px] shrink-0 capitalize">{step.type.replace("_", " ")}</Badge>
+                    {step.type && <Badge variant="outline" className="text-[9px] shrink-0 capitalize">{step.type.replace("_", " ")}</Badge>}
                     {step.duration && <span className="text-[10px] text-muted-foreground shrink-0">{step.duration}</span>}
                   </label>
                 ))}

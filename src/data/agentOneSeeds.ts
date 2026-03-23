@@ -13,20 +13,18 @@ export async function bootstrapInitialNotifications(
   accountId: string,
   account: NormalizedAccount
 ): Promise<void> {
-  // Check if bootstrap cards already exist for this account
-  const { data: existingBootstrap } = await supabase
-    .from("nudge_cards")
-    .select("id")
-    .eq("account_id", accountId)
-    .like("grouping_key", `${accountId}:bootstrap:%`)
-    .limit(1);
-
-  if (existingBootstrap && existingBootstrap.length > 0) {
-    console.log("[AgentOne Bootstrap] Bootstrap cards already exist, skipping");
-    return;
-  }
-
   console.log("[AgentOne Bootstrap] Deriving initial-state notifications for account:", accountId);
+
+  // Helper: check if a specific bootstrap card already exists
+  const bootstrapCardExists = async (groupingKey: string): Promise<boolean> => {
+    const { data } = await supabase
+      .from("nudge_cards")
+      .select("id")
+      .eq("account_id", accountId)
+      .eq("grouping_key", groupingKey)
+      .limit(1);
+    return !!(data && data.length > 0);
+  };
 
   const users = Object.values(account.usersById);
   const employees = account.employeesById;
@@ -36,7 +34,6 @@ export async function bootstrapInitialNotifications(
   const managers = users.filter(u => u.role === "manager" || u.role === "admin");
   for (const mgr of managers) {
     const directReportIds = hierarchy[mgr.id] || [];
-    // Identify new hires: employees in newHires list OR those with skill targets assigned
     const newHireSet = new Set((account.newHires || []).map(nh => nh.user?.id || (nh as any).employeeId));
     const newHireDirectReports = directReportIds.filter(id =>
       newHireSet.has(id) || (account.skillTargets || []).some(
@@ -44,16 +41,65 @@ export async function bootstrapInitialNotifications(
       )
     );
 
+    // Card 1: New Hires onboarding card (via event pipeline)
     if (newHireDirectReports.length > 0) {
-      await emitEvent({
+      const onboardingKey = `${accountId}:bootstrap:manager:onboarding:${mgr.id}`;
+      if (!(await bootstrapCardExists(onboardingKey))) {
+        await emitEvent({
+          account_id: accountId,
+          event_type: "manager_new_hires_present",
+          category: "onboarding_progress",
+          source_employee_id: "system",
+          target_employee_id: mgr.id,
+          related_employee_ids: newHireDirectReports,
+          payload: { count: newHireDirectReports.length },
+        }, account);
+      }
+    }
+
+    // Card 2: Reflections posted (direct insert)
+    const reflectionsKey = `${accountId}:bootstrap:manager:reflections:${mgr.id}`;
+    if (!(await bootstrapCardExists(reflectionsKey))) {
+      const reflectionCount = Math.min(directReportIds.length, 5);
+      await supabase.from("nudge_cards").insert({
         account_id: accountId,
-        event_type: "manager_new_hires_present",
-        category: "onboarding_progress",
-        source_employee_id: "system",
-        target_employee_id: mgr.id,
-        related_employee_ids: newHireDirectReports,
-        payload: { count: newHireDirectReports.length },
-      }, account);
+        target_user_id: mgr.id,
+        audience_type: "manager",
+        category: "reflection_request",
+        grouping_key: reflectionsKey,
+        type: "bootstrap_reflections",
+        title: "Reflections posted!",
+        subtitle: `${reflectionCount} of your team members have shared their reflections. Check them out.`,
+        color_theme: "lavender",
+        cta_label: "Review",
+        cta_action: { type: "open_action_center", path: "/team-dashboard" },
+        priority: "medium",
+        metadata: {},
+        viewed: false,
+        created_by: "system",
+      });
+    }
+
+    // Card 3: Actions required (direct insert)
+    const actionsKey = `${accountId}:bootstrap:manager:actions:${mgr.id}`;
+    if (!(await bootstrapCardExists(actionsKey))) {
+      await supabase.from("nudge_cards").insert({
+        account_id: accountId,
+        target_user_id: mgr.id,
+        audience_type: "manager",
+        category: "one_on_one_recommended",
+        grouping_key: actionsKey,
+        type: "bootstrap_actions",
+        title: "Actions required!",
+        subtitle: "1 teammate of yours has critical actions to be taken.",
+        color_theme: "peach",
+        cta_label: "View",
+        cta_action: { type: "open_action_center", path: "/team-dashboard" },
+        priority: "high",
+        metadata: {},
+        viewed: false,
+        created_by: "system",
+      });
     }
   }
 
@@ -68,15 +114,41 @@ export async function bootstrapInitialNotifications(
     );
 
     if (isNewHire || hasTargets) {
-      await emitEvent({
-        account_id: accountId,
-        event_type: "onboarding_assigned",
-        category: "onboarding_progress",
-        source_employee_id: "system",
-        target_employee_id: learner.id,
-        related_employee_ids: [],
-        payload: {},
-      }, account);
+      // Card 1: Onboarding journey (via event pipeline)
+      const onboardingKey = `${accountId}:bootstrap:learner:onboarding:${learner.id}`;
+      if (!(await bootstrapCardExists(onboardingKey))) {
+        await emitEvent({
+          account_id: accountId,
+          event_type: "onboarding_assigned",
+          category: "onboarding_progress",
+          source_employee_id: "system",
+          target_employee_id: learner.id,
+          related_employee_ids: [],
+          payload: {},
+        }, account);
+      }
+
+      // Card 2: Reflection request from manager (direct insert)
+      const reflectionKey = `${accountId}:bootstrap:learner:reflection:${learner.id}`;
+      if (!(await bootstrapCardExists(reflectionKey))) {
+        await supabase.from("nudge_cards").insert({
+          account_id: accountId,
+          target_user_id: learner.id,
+          audience_type: "learner",
+          category: "reflection_request",
+          grouping_key: reflectionKey,
+          type: "bootstrap_reflection_request",
+          title: "Your manager has requested a reflection",
+          subtitle: "Share how your onboarding experience has been going so far.",
+          color_theme: "lavender",
+          cta_label: "Start Reflection",
+          cta_action: { type: "open_agentone_chat", prompt: "My manager has requested a reflection to hear about my onboarding experience. How are you finding things so far?" },
+          priority: "medium",
+          metadata: {},
+          viewed: false,
+          created_by: "system",
+        });
+      }
     }
   }
 

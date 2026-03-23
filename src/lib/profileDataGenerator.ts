@@ -24,11 +24,15 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
 
     const employeeSkills = emp.skills || [];
 
-    const roleSkillsCurrent = employeeSkills.map((s) => ({
-      skill_name: s.skillName,
-      proficiency: s.proficiency as any,
-      assessment_year: s.assessmentYear || new Date().getFullYear(),
-    }));
+    const roleSkillNames = new Set(roleSkillsRequired.map((s) => s.skill_name));
+    const roleSkillsCurrent = roleSkillsRequired.map((req) => {
+      const current = employeeSkills.find((s) => s.skillName === req.skill_name);
+      return {
+        skill_name: req.skill_name,
+        proficiency: (current?.proficiency || "Beginner") as any,
+        assessment_year: current?.assessmentYear || new Date().getFullYear(),
+      };
+    });
 
     // Find project skills
     const empProjects = acct.projectAssignments

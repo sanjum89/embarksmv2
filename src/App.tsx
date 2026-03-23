@@ -64,6 +64,7 @@ const App = () => (
               <Route path="/my-inbox" element={<MyInbox />} />
               <Route path="/team-insights" element={<TeamInsights />} />
               <Route path="/manager" element={<ManagerView />} />
+              <Route path="/team-dashboard" element={<TeamDashboard />} />
               <Route path="/manager/role-play" element={<RolePlayBank />} />
               <Route path="/manager/skill-targets" element={<ManagerSkillTargets />} />
               <Route path="/manager/skill-target/:id" element={<ManagerSkillTargetDetail />} />

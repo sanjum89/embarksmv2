@@ -58,7 +58,7 @@ export async function bootstrapInitialNotifications(
   }
 
   // Find learners who are new hires with assigned skill targets
-  const newHireSet = new Set((account.newHires || []).map(nh => nh.id || (nh as any).employeeId));
+  const newHireSet2 = new Set((account.newHires || []).map(nh => nh.user?.id || (nh as any).employeeId));
   const learners = users.filter(u => u.role === "learner" || (!u.role && !managers.some(m => m.id === u.id)));
 
   for (const learner of learners) {

@@ -3,7 +3,7 @@ import type { Account, AccountData } from "@/types/account";
 import type { NormalizedAccount } from "@/types/account-v2";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized } from "@/lib/accountDefaults";
-import { seedDemoNotifications } from "@/data/agentOneSeeds";
+import { seedDemoNotifications, bootstrapInitialNotifications } from "@/data/agentOneSeeds";
 import { parseAccountJSON } from "@/lib/accountParser";
 import { generateProfileData } from "@/lib/profileDataGenerator";
 import { deriveReflections } from "@/lib/adminDataDerivation";

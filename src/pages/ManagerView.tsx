@@ -256,6 +256,13 @@ export default function ManagerView() {
                   Hi {firstName}, let's dive in
                 </h1>
 
+                <div className="mb-6">
+                  <AgentOneNudgeStack
+                    onAgentClick={() => setAgentOpen(true)}
+                    onChatAction={(prompt) => { setAgentOpen(true); agentSend(prompt); }}
+                  />
+                </div>
+
                 <div className="grid grid-cols-3 gap-3 mb-6">
                   {suggestionCards.map((card, i) => (
                     <motion.button

@@ -19,7 +19,7 @@ interface DemoCard {
   subtitle: string;
   color_theme: string;
   cta_label: string;
-  cta_action: Record<string, unknown>;
+  cta_action: Json;
   priority: string;
 }
 

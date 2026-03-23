@@ -1,8 +1,9 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import type { SkillTarget } from "@/types/learning";
 import { mockSkillTargets } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
+import { emitEvent } from "@/lib/agentOneEventEmitter";
 
 interface SkillTargetsContextType {
   skillTargets: SkillTarget[];

@@ -218,8 +218,8 @@ const LEARNER_LABELS: Record<ActionCategory, { title: string; subtitle: (n: numb
     subtitle: () => "You've been assigned an onboarding journey. Click to begin.",
   },
   reflection_request: {
-    title: "Reflection requested",
-    subtitle: () => "Your manager has asked you to share how onboarding is going.",
+    title: "Your manager has requested a reflection",
+    subtitle: () => "Share how your onboarding experience has been going so far.",
   },
   recognition_kudos: {
     title: "Kudos received!",
@@ -266,7 +266,7 @@ export function groupByCategory(
     },
     learner: {
       onboarding_progress: { type: "open_agentone_chat", prompt: "I'm ready to start my onboarding journey. What should I do first?" },
-      reflection_request: { type: "open_agentone_chat", prompt: "My manager has requested a reflection. Help me get started." },
+      reflection_request: { type: "open_agentone_chat", prompt: "My manager has requested a reflection to hear about my onboarding experience. How are you finding things so far?" },
     },
   };
 

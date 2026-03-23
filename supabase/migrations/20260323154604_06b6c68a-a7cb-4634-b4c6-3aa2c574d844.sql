@@ -1,0 +1,1 @@
+DELETE FROM nudge_cards WHERE grouping_key LIKE '%:bootstrap:%';

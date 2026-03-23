@@ -97,7 +97,7 @@ export function AppSidebar() {
   const baseRole = availableUsers.find((u) => u.id === user.id)?.role ?? user.role;
   const teamRole = baseRole === "admin" ? "admin" : "manager";
 
-  const [viewMode, setViewMode] = useState<"me" | "team">("me");
+  const [viewMode, setViewMode] = useState<"me" | "team">(() => user.canManage ? "team" : "me");
   const [switchingProfile, setSwitchingProfile] = useState(false);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
 

@@ -19,6 +19,7 @@ import RolePlaySession from "./pages/RolePlaySession";
 import LearningModulePage from "./pages/LearningModulePage";
 import RolePlayBank from "./pages/RolePlayBank";
 import TeamInsights from "./pages/TeamInsights";
+import TeamDashboard from "./pages/TeamDashboard";
 import My360 from "./pages/My360";
 import ManagerView from "./pages/ManagerView";
 import LearnerChat from "./pages/LearnerChat";

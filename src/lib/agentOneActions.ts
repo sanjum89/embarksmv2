@@ -183,7 +183,7 @@ const LEARNER_CATEGORY_PRIORITY: ActionCategory[] = [
   "mentor_action",
 ];
 
-type AudienceKey = "manager" | "learner";
+export type AudienceKey = "manager" | "learner" | "admin";
 
 const MANAGER_LABELS: Record<ActionCategory, { title: string; subtitle: (n: number) => string }> = {
   onboarding_progress: {

@@ -235,7 +235,7 @@ async function seedDemoPersonaCards(
 
       if (existing && existing.length > 0) continue;
 
-      await supabase.from("nudge_cards").insert({
+      await supabase.from("nudge_cards").insert([{
         account_id: accountId,
         target_user_id: employeeId,
         audience_type: card.audience_type,

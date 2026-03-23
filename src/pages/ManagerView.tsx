@@ -169,6 +169,7 @@ export default function ManagerView() {
   const { user } = useUser();
   const { skillTargets } = useSkillTargets();
   const { normalizedAccount, activeAccount } = useAccount();
+  const { setIsOpen: setAgentOpen, handleSend: agentSend } = useAgentOne();
 
   // Use account-aware data — no demo fallback for uploaded accounts
   const mockNewHires = normalizedAccount?.newHires || activeAccount?.data?.newHires || [];

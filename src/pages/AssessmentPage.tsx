@@ -6,6 +6,9 @@ import { ArrowLeft, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 import { mockAssessments } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { useAccount } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
+import { emitAssessmentCompleted } from "@/lib/agentOneEventEmitter";
 
 export default function AssessmentPage() {
   const { aid } = useParams();

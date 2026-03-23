@@ -251,7 +251,7 @@ async function seedDemoPersonaCards(
         metadata: { bootstrap: true },
         viewed: false,
         created_by: "system",
-      });
+      }]);
     }
   }
 

@@ -218,8 +218,8 @@ const LEARNER_LABELS: Record<ActionCategory, { title: string; subtitle: (n: numb
     subtitle: () => "You've been assigned an onboarding journey. Click to begin.",
   },
   reflection_request: {
-    title: "Reflection requested",
-    subtitle: () => "Your manager has asked you to share how onboarding is going.",
+    title: "Your manager has requested a reflection",
+    subtitle: () => "Share how your onboarding experience has been going so far.",
   },
   recognition_kudos: {
     title: "Kudos received!",

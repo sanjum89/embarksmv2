@@ -609,8 +609,8 @@ export function AppSidebar() {
               <TooltipTrigger asChild>
                 <button
                   onClick={() => {
-                    if (viewMode === "me") { setViewMode("team"); setRole(teamRole); navigate("/manager"); }
-                    else { setViewMode("me"); setRole("learner"); navigate("/"); }
+                    if (viewMode === "me") { setViewMode("team"); setRole(teamRole); navigate("/chat"); }
+                    else { setViewMode("me"); setRole("learner"); navigate("/chat"); }
                   }}
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-full transition-colors",

@@ -6,12 +6,17 @@ import { ArrowLeft, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 import { mockAssessments } from "@/data/mock";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { useAccount } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
+import { emitAssessmentCompleted } from "@/lib/agentOneEventEmitter";
 
 export default function AssessmentPage() {
   const { aid } = useParams();
   const { id: skillTargetId } = useParams();
   const foundAssessment = mockAssessments.find((a) => a.id === aid);
   const { updateSkillTarget, skillTargets } = useSkillTargets();
+  const { activeAccount, normalizedAccount } = useAccount();
+  const { user } = useUser();
 
   // Generate fallback assessment from skill target step data when not in mock catalog
   const assessment = foundAssessment ?? (() => {
@@ -86,6 +91,17 @@ export default function AssessmentPage() {
         assessment.questions.length) *
         100
     );
+
+    // Emit assessment event
+    if (activeAccount?.id && normalizedAccount && aid) {
+      emitAssessmentCompleted(
+        user.id,
+        aid,
+        finalScore,
+        activeAccount.id,
+        normalizedAccount
+      ).catch(console.error);
+    }
 
     updateSkillTarget(skillTargetId, (target) => {
       const steps = [...target.steps].sort((a, b) => a.order - b.order);

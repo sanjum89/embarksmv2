@@ -12,41 +12,52 @@ export async function emitEvent(
   event: Omit<AgentOneEvent, "id" | "status" | "created_at" | "updated_at">,
   account: NormalizedAccount
 ): Promise<string | null> {
-  const { data, error } = await supabase
-    .from("agent_one_events")
-    .insert({
-      account_id: event.account_id,
-      event_type: event.event_type,
-      category: event.category,
-      source_user_id: event.source_user_id || null,
-      source_employee_id: event.source_employee_id || null,
-      target_user_id: event.target_user_id || null,
-      target_employee_id: event.target_employee_id || null,
-      related_employee_ids: event.related_employee_ids || [],
-      related_skill_target_id: event.related_skill_target_id || null,
-      related_role_play_id: event.related_role_play_id || null,
-      related_assessment_id: event.related_assessment_id || null,
-      related_mentor_employee_id: event.related_mentor_employee_id || null,
-      status: "pending",
-      payload: event.payload || {},
-    } as any)
-    .select("id")
-    .single();
+  try {
+    const { data, error } = await supabase
+      .from("agent_one_events")
+      .insert({
+        account_id: event.account_id,
+        event_type: event.event_type,
+        category: event.category,
+        source_user_id: event.source_user_id || null,
+        source_employee_id: event.source_employee_id || null,
+        target_user_id: event.target_user_id || null,
+        target_employee_id: event.target_employee_id || null,
+        related_employee_ids: event.related_employee_ids || [],
+        related_skill_target_id: event.related_skill_target_id || null,
+        related_role_play_id: event.related_role_play_id || null,
+        related_assessment_id: event.related_assessment_id || null,
+        related_mentor_employee_id: event.related_mentor_employee_id || null,
+        status: "pending",
+        payload: event.payload || {},
+      } as any)
+      .select("id")
+      .single();
 
-  if (error) {
-    console.error("[AgentOne] Failed to emit event:", error);
+    if (error) {
+      console.error("[AgentOne] Failed to emit event:", error);
+      return null;
+    }
+
+    const eventId = (data as any)?.id;
+    const fullEvent: AgentOneEvent = {
+      ...event,
+      id: eventId,
+      status: "pending",
+    };
+
+    // Generate notifications — wrapped in try/catch so event insertion is not lost
+    try {
+      await generateNotifications(fullEvent, account);
+    } catch (notifError) {
+      console.error("[AgentOne] Failed to generate notifications for event:", eventId, notifError);
+    }
+
+    return eventId;
+  } catch (err) {
+    console.error("[AgentOne] Unexpected error in emitEvent:", err);
     return null;
   }
-
-  const eventId = (data as any)?.id;
-  const fullEvent: AgentOneEvent = {
-    ...event,
-    id: eventId,
-    status: "pending",
-  };
-
-  await generateNotifications(fullEvent, account);
-  return eventId;
 }
 
 /* ─── Convenience Wrappers ─── */
@@ -111,7 +122,6 @@ export async function emitMentorAssignment(
   reason?: string,
   focusAreas?: string[]
 ): Promise<string | null> {
-  // Write mentor_assignments record
   const { error: maError } = await supabase
     .from("mentor_assignments")
     .insert({
@@ -129,7 +139,6 @@ export async function emitMentorAssignment(
     console.error("[AgentOne] Failed to create mentor assignment:", maError);
   }
 
-  // Emit event
   return emitEvent({
     account_id: accountId,
     event_type: "mentor_assigned",

@@ -7,28 +7,59 @@ import { emitEvent } from "@/lib/agentOneEventEmitter";
 /**
  * Seed demo notifications for accounts with demo_mode enabled.
  * Reads stable employee IDs from account data's demoScenarios config.
- * Idempotent: skips if events already exist for this account.
+ * Idempotent: skips if processed events AND matching nudge_cards exist.
+ * Recovers from partial failures by clearing stale pending events.
  */
 export async function seedDemoNotifications(
   accountId: string,
   account: NormalizedAccount
 ): Promise<void> {
-  // Read demoScenarios from the account data
   const scenarios = (account as any).demoScenarios as DemoScenarios | undefined;
   if (!scenarios) {
     console.log("[AgentOne Seed] No demoScenarios config found, skipping seed");
     return;
   }
 
-  // Idempotency check: skip if events already exist for this account
-  const { data: existing } = await supabase
+  // Check for existing nudge_cards from agent one events (not legacy cards)
+  const { data: existingCards } = await supabase
+    .from("nudge_cards")
+    .select("id")
+    .eq("account_id", accountId)
+    .not("source_event_id", "is", null)
+    .limit(1);
+
+  if (existingCards && existingCards.length > 0) {
+    console.log("[AgentOne Seed] Event-generated nudge_cards already exist, skipping seed");
+    return;
+  }
+
+  // Check for stale pending events (events created but notifications never generated)
+  const { data: pendingEvents } = await supabase
     .from("agent_one_events")
     .select("id")
     .eq("account_id", accountId)
+    .eq("status", "pending")
     .limit(1);
 
-  if (existing && existing.length > 0) {
-    console.log("[AgentOne Seed] Events already exist for account, skipping seed");
+  if (pendingEvents && pendingEvents.length > 0) {
+    console.log("[AgentOne Seed] Clearing stale pending events for re-seed");
+    await supabase
+      .from("agent_one_events")
+      .delete()
+      .eq("account_id", accountId)
+      .eq("status", "pending");
+  }
+
+  // Check for already-processed events with nudge_cards
+  const { data: processedEvents } = await supabase
+    .from("agent_one_events")
+    .select("id")
+    .eq("account_id", accountId)
+    .eq("status", "processed")
+    .limit(1);
+
+  if (processedEvents && processedEvents.length > 0) {
+    console.log("[AgentOne Seed] Processed events already exist, skipping seed");
     return;
   }
 
@@ -42,7 +73,6 @@ export async function seedDemoNotifications(
     reflectionTargetEmployeeIds,
   } = scenarios;
 
-  // Validate that referenced employees exist
   const validate = (id: string) => !!account.employeesById[id];
   if (!validate(onboardingLearnerEmployeeId) || !validate(managerEmployeeId)) {
     console.warn("[AgentOne Seed] Required employees missing from account, skipping seed");
@@ -74,7 +104,7 @@ export async function seedDemoNotifications(
     payload: { score: 92, passed: true },
   }, account);
 
-  // 3. Louis/Elliot: rising star flagged
+  // 3. Rising star flagged
   if (validate(risingStarEmployeeId)) {
     await emitEvent({
       account_id: accountId,
@@ -87,7 +117,7 @@ export async function seedDemoNotifications(
     }, account);
   }
 
-  // 4. Theo/Sophie: underperformance flagged (creates 1:1 + mentor cards)
+  // 4. Underperformance flagged (creates 1:1 + mentor cards)
   if (validate(underperformerEmployeeId)) {
     await emitEvent({
       account_id: accountId,
@@ -100,7 +130,7 @@ export async function seedDemoNotifications(
     }, account);
   }
 
-  // 5. Amelia/Maya: promotion candidate flagged
+  // 5. Promotion candidate flagged
   if (validate(promotionCandidateEmployeeId)) {
     await emitEvent({
       account_id: accountId,

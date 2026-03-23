@@ -1,8 +1,9 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import type { SkillTarget } from "@/types/learning";
 import { mockSkillTargets } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
+import { emitEvent } from "@/lib/agentOneEventEmitter";
 
 interface SkillTargetsContextType {
   skillTargets: SkillTarget[];
@@ -96,12 +97,39 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
     }));
   }, [compositeKey]);
 
+  // Track which targets have already emitted midpoint events to avoid duplicates
+  const midpointEmitted = useRef<Set<string>>(new Set());
+
   const updateSkillTarget = useCallback((id: string, updater: (target: SkillTarget) => SkillTarget) => {
-    setPerUserTargets((prev) => ({
-      ...prev,
-      [compositeKey]: (prev[compositeKey] ?? []).map((st) => (st.id === id ? updater(st) : st)),
-    }));
-  }, [compositeKey]);
+    setPerUserTargets((prev) => {
+      const currentTargets = prev[compositeKey] ?? [];
+      const oldTarget = currentTargets.find((st) => st.id === id);
+      const updated = currentTargets.map((st) => (st.id === id ? updater(st) : st));
+      const newTarget = updated.find((st) => st.id === id);
+
+      // Emit onboarding_midpoint_reached when progress crosses 50%
+      if (
+        oldTarget && newTarget &&
+        oldTarget.progress < 50 && newTarget.progress >= 50 &&
+        !midpointEmitted.current.has(`${compositeKey}::${id}`) &&
+        normalizedAccount && activeAccount?.id
+      ) {
+        midpointEmitted.current.add(`${compositeKey}::${id}`);
+        emitEvent({
+          account_id: activeAccount.id,
+          event_type: "onboarding_midpoint_reached",
+          category: "onboarding_progress",
+          source_employee_id: userId,
+          target_employee_id: userId,
+          related_employee_ids: [],
+          related_skill_target_id: id,
+          payload: { progress: newTarget.progress, skillTargetTitle: newTarget.title },
+        }, normalizedAccount).catch(console.error);
+      }
+
+      return { ...prev, [compositeKey]: updated };
+    });
+  }, [compositeKey, normalizedAccount, activeAccount?.id, userId]);
 
   return (
     <SkillTargetsContext.Provider value={{ skillTargets, addSkillTargets, updateSkillTarget }}>

@@ -389,7 +389,7 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
       promotionCandidateEmployeeId: "u6",         // Maya Thompson
       managerEmployeeId: "u1",                    // Alex Rivera
       adminEmployeeId: "u11",                     // Sarah Chen
-      reflectionTargetEmployeeIds: ["u6", "u8", "u10"],
+      reflectionTargetEmployeeIds: ["u6", "u8", "u9"],
     },
   };
 }

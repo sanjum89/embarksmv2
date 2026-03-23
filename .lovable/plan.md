@@ -1,32 +1,31 @@
+## Plan: Agent One Event-Driven Notification System
 
+### Status: Implemented ✅
 
-## Correction: Use Employee IDs in `demoScenarios`
+### What was built
 
-### What changes
+1. **DB Migration** — Created `agent_one_events` and `mentor_assignments` tables. Extended `nudge_cards` with `audience_type`, `source_event_id`, `category`, `grouping_key`, `recipient_employee_id`.
 
-In `src/lib/accountDefaults.ts`, the `demoScenarios` map added to the default account data blob will use keys that explicitly reference **employee IDs**, not user IDs.
+2. **`src/types/agentOneActions.ts`** — All types: `ActionCategory`, `EventType`, `CTAType`, `AudienceType`, `ActionStatus`, `PastelColorToken`, `AgentOneEvent`, `MentorAssignment`, `AgentOneNotification`, `AgentOneGroupedCard`, `TriggerOutput`, `DemoScenarios`. Color/icon constant maps.
 
-**Updated `demoScenarios` definition:**
+3. **`src/lib/agentOneActions.ts`** — Helpers: `groupNotifications`, `filterByCategory`, `filterByStatus`, `countActionable`, `resolveCtaTarget`, `getCategoryColor`, `getCategoryIcon`.
 
-```typescript
-demoScenarios: {
-  onboardingLearnerEmployeeId: "u12",        // Clara Whitfield
-  risingStarEmployeeId: "u13",               // Elliot Hargreaves
-  underperformerEmployeeId: "u14",            // Sophie Langford
-  promotionCandidateEmployeeId: "u6",         // Maya Thompson
-  managerEmployeeId: "u1",                    // Alex Rivera
-  adminEmployeeId: "u11",                     // Sarah Chen
-  reflectionTargetEmployeeIds: ["u6", "u8", "u10"]
-}
-```
+4. **`src/lib/agentOneTriggers.ts`** — Trigger rules with explicit recipient mapping for all event types. Dynamic audience resolution for mentors. `generateNotifications()` handles dedup + DB persistence.
 
-Key naming uses `EmployeeId` suffix to make it unambiguous that these reference `employeesById` keys, not auth user IDs.
+5. **`src/lib/agentOneEventEmitter.ts`** — Event emission: `emitEvent`, `emitKudos`, `emitReflectionRequest`, `emitReflectionSubmitted`, `emitMentorAssignment`, `emitAssessmentCompleted`, `emitOnboardingMidpoint`, `emitFlag`.
 
-### Impact on other files from the approved plan
+6. **`src/data/agentOneSeeds.ts`** — Idempotent demo seeder using stable employee IDs from `demoScenarios` config. Seeds for Clara, Elliot, Sophie, Maya + admin summaries.
 
-- **`src/data/agentOneSeeds.ts`** — reads `demoScenarios.onboardingLearnerEmployeeId` etc. to look up employees from `account.employeesById[id]`, then resolves the manager via `account.hierarchyMap`
-- **`src/lib/agentOneTriggers.ts`** — event fields use `sourceEmployeeId` / `targetEmployeeId` (already correct in the plan)
-- **`src/types/agentOneActions.ts`** — the `DemoScenarios` interface uses `...EmployeeId` field names
+7. **`src/lib/accountDefaults.ts`** — Added `demoMode: true` and `demoScenarios` map with `EmployeeId` suffixed keys.
 
-Everything else in the approved plan remains unchanged.
+8. **`src/types/account-v2.ts`** — Added `demoMode?` and `demoScenarios?` to `NormalizedAccount`.
 
+9. **`src/contexts/AccountContext.tsx`** — Calls `seedDemoNotifications` for demo-enabled accounts after init (fire-and-forget).
+
+### Key design decisions
+- Employee IDs are canonical in `demoScenarios`
+- Mentor is a relationship (`mentor_assignments`), not a persona
+- `nudge_cards` is the shared notification store for all personas
+- Audience type resolved dynamically from user role
+- No seeding from component mount
+- Admin summary notifications included

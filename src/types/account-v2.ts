@@ -451,6 +451,10 @@ export interface NormalizedAccount {
   learningAndSkills?: LearningAndSkillsSummary;
   performanceAlerts: PerformanceAlert[];
   recommendedCTAs: RecommendedCTA[];
+
+  // Demo / Agent One
+  demoMode?: boolean;
+  demoScenarios?: import("@/types/agentOneActions").DemoScenarios;
 }
 
 /* ─── Skill Gap ─── */

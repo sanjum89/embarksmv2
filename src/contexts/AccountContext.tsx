@@ -3,6 +3,7 @@ import type { Account, AccountData } from "@/types/account";
 import type { NormalizedAccount } from "@/types/account-v2";
 import { supabase } from "@/integrations/supabase/client";
 import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized } from "@/lib/accountDefaults";
+import { seedDemoNotifications } from "@/data/agentOneSeeds";
 import { parseAccountJSON } from "@/lib/accountParser";
 import { generateProfileData } from "@/lib/profileDataGenerator";
 import { deriveReflections } from "@/lib/adminDataDerivation";
@@ -231,6 +232,16 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     }
     setNormalizedCache(cache);
     setAccounts(accts);
+
+    // Seed demo notifications for demo-enabled accounts (fire-and-forget)
+    for (const acct of accts) {
+      const norm = cache[acct.id];
+      if (norm?.demoMode) {
+        seedDemoNotifications(acct.id, norm).catch((err) =>
+          console.error("[AgentOne] Seed error:", err)
+        );
+      }
+    }
 
     const savedId = localStorage.getItem("activeAccountId");
     if (savedId && accts.some((a) => a.id === savedId)) {

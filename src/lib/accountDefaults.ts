@@ -380,6 +380,17 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
     learningAndSkills: buildDefaultLearningAndSkills(),
     performanceAlerts: buildDefaultPerformanceAlerts(),
     recommendedCTAs: buildDefaultRecommendedCTAs(),
+    // Demo mode config
+    demoMode: true,
+    demoScenarios: {
+      onboardingLearnerEmployeeId: "u12",        // Clara Whitfield
+      risingStarEmployeeId: "u13",               // Elliot Hargreaves
+      underperformerEmployeeId: "u14",            // Sophie Langford
+      promotionCandidateEmployeeId: "u6",         // Maya Thompson
+      managerEmployeeId: "u1",                    // Alex Rivera
+      adminEmployeeId: "u11",                     // Sarah Chen
+      reflectionTargetEmployeeIds: ["u6", "u8", "u10"],
+    },
   };
 }
 

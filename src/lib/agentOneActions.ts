@@ -321,7 +321,7 @@ export function buildPersonalizedSummary(
 
   const totalCount = categoryCards.reduce((s, c) => s + c.count, 0);
 
-  if (audienceType === "manager") {
+  if (audienceType === "manager" || audienceType === "admin") {
     const parts: string[] = [];
     for (const c of categoryCards) {
       switch (c.category) {

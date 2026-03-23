@@ -67,9 +67,9 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
     });
 
     // Other skills = skills not in role requirements
-    const roleSkillNames = new Set(roleSkillsRequired.map((s) => s.skill_name));
+    const projectSkillNames = new Set(uniqueProjectRequired.map((s) => s.skill_name));
     const otherSkills = employeeSkills
-      .filter((s) => !roleSkillNames.has(s.skillName))
+      .filter((s) => !roleSkillNames.has(s.skillName) && !projectSkillNames.has(s.skillName))
       .map((s) => ({
         skill_name: s.skillName,
         proficiency: s.proficiency as any,

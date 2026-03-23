@@ -37,7 +37,7 @@ export async function bootstrapInitialNotifications(
   for (const mgr of managers) {
     const directReportIds = hierarchy[mgr.id] || [];
     // Identify new hires: employees in newHires list OR those with skill targets assigned
-    const newHireSet = new Set((account.newHires || []).map(nh => nh.id || (nh as any).employeeId));
+    const newHireSet = new Set((account.newHires || []).map(nh => nh.user?.id || (nh as any).employeeId));
     const newHireDirectReports = directReportIds.filter(id =>
       newHireSet.has(id) || (account.skillTargets || []).some(
         (st: any) => st.assignedTo === id || st.employeeId === id

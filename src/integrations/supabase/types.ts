@@ -50,17 +50,143 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_one_events: {
+        Row: {
+          account_id: string
+          category: string
+          created_at: string
+          event_type: string
+          id: string
+          payload: Json
+          related_assessment_id: string | null
+          related_employee_ids: Json
+          related_mentor_employee_id: string | null
+          related_role_play_id: string | null
+          related_skill_target_id: string | null
+          source_employee_id: string | null
+          source_user_id: string | null
+          status: string
+          target_employee_id: string | null
+          target_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          category: string
+          created_at?: string
+          event_type: string
+          id?: string
+          payload?: Json
+          related_assessment_id?: string | null
+          related_employee_ids?: Json
+          related_mentor_employee_id?: string | null
+          related_role_play_id?: string | null
+          related_skill_target_id?: string | null
+          source_employee_id?: string | null
+          source_user_id?: string | null
+          status?: string
+          target_employee_id?: string | null
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          category?: string
+          created_at?: string
+          event_type?: string
+          id?: string
+          payload?: Json
+          related_assessment_id?: string | null
+          related_employee_ids?: Json
+          related_mentor_employee_id?: string | null
+          related_role_play_id?: string | null
+          related_skill_target_id?: string | null
+          source_employee_id?: string | null
+          source_user_id?: string | null
+          status?: string
+          target_employee_id?: string | null
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_one_events_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mentor_assignments: {
+        Row: {
+          account_id: string
+          assigned_by_user_id: string
+          created_at: string
+          focus_areas: Json
+          id: string
+          mentee_employee_id: string
+          mentor_employee_id: string
+          notes: string | null
+          reason: string | null
+          start_date: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          assigned_by_user_id: string
+          created_at?: string
+          focus_areas?: Json
+          id?: string
+          mentee_employee_id: string
+          mentor_employee_id: string
+          notes?: string | null
+          reason?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          assigned_by_user_id?: string
+          created_at?: string
+          focus_areas?: Json
+          id?: string
+          mentee_employee_id?: string
+          mentor_employee_id?: string
+          notes?: string | null
+          reason?: string | null
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mentor_assignments_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nudge_cards: {
         Row: {
           account_id: string
+          audience_type: string
+          category: string | null
           color_theme: string
           created_at: string
           created_by: string
           cta_action: Json
           cta_label: string
+          grouping_key: string | null
           id: string
           metadata: Json | null
           priority: string
+          recipient_employee_id: string | null
+          source_event_id: string | null
           subtitle: string
           target_user_id: string
           title: string
@@ -69,14 +195,19 @@ export type Database = {
         }
         Insert: {
           account_id: string
+          audience_type?: string
+          category?: string | null
           color_theme?: string
           created_at?: string
           created_by?: string
           cta_action?: Json
           cta_label?: string
+          grouping_key?: string | null
           id?: string
           metadata?: Json | null
           priority?: string
+          recipient_employee_id?: string | null
+          source_event_id?: string | null
           subtitle?: string
           target_user_id: string
           title: string
@@ -85,14 +216,19 @@ export type Database = {
         }
         Update: {
           account_id?: string
+          audience_type?: string
+          category?: string | null
           color_theme?: string
           created_at?: string
           created_by?: string
           cta_action?: Json
           cta_label?: string
+          grouping_key?: string | null
           id?: string
           metadata?: Json | null
           priority?: string
+          recipient_employee_id?: string | null
+          source_event_id?: string | null
           subtitle?: string
           target_user_id?: string
           title?: string

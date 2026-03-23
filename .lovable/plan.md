@@ -1,47 +1,57 @@
 
 
-## Plan: Remove Stacked Card UI — Clean Restart
+## Plan: Fix Skills Data Discrepancy Between Agent One and My 360
 
-Strip away the depth layers, cycling arrows, single cycling action card, and expanded card list. Keep only the main Agent One summary card as a simple clickable card.
+### Problem
 
-### File: `src/components/chat/AgentOneNudgeStack.tsx`
+The `profileDataGenerator.ts` builds `roleSkillsCurrent` from ALL employee skills (not just role-relevant ones). This causes:
+- **My 360** "Core Skills" shows every skill the employee has, not just role-related ones
+- **Agent One** combines role + project + other skills, leading to duplicates (skills appear in both `roleSkillsCurrent` and `otherSkills`)
+- **"Other Skills"** section appears empty or underpopulated because the role skills set already consumed everything
 
-**Remove:**
-- Depth layer divs (lines 177-186)
-- Cycling arrows and counter from the main card (lines 242-263)
-- Single cycling action card below summary (lines 267-313)
-- Expanded nudge cards list (lines 315-374)
-- `cycleLeft` / `cycleRight` handlers
-- `currentIndex` state
-- `getDepthColor` function
-- `CurrentIcon` variable
-- `themeMap`, `typeIcons` constants (no longer used)
-- `confettiFired` state and `fireKudosConfetti` logic
-- Related `useEffect` hooks for confetti and index bounds
+### Root Cause
 
-**Keep:**
-- Nudge data fetching from DB (for future use)
-- `activeNudges` count (shown as badge)
-- `dismissedIds` state (for future use)
-- Main Agent One summary card with: Sparkles icon, "Agent One" title, "Live" badge, action count badge, subtitle "Hey! I'm here to help you get started →"
-- `onAgentClick` fires when card is clicked
-- The outer `motion.div` wrapper with entry animation
-
-### Result
-
-A single clean summary card:
-```text
-┌─────────────────────────────────────────────┐
-│ [✦] Agent One  LIVE  4 actions              │
-│      Hey! I'm here to help you get started →│
-└─────────────────────────────────────────────┘
+In `profileDataGenerator.ts` lines 27-31:
+```typescript
+// Currently: ALL employee skills go into roleSkillsCurrent
+const roleSkillsCurrent = employeeSkills.map(s => ({ ... }));
 ```
 
-No stacked layers, no cycling, no expand/collapse. Clean slate to rebuild from.
+Should be: only employee skills that match role requirements go into `roleSkillsCurrent`.
+
+### Fix
+
+**File: `src/lib/profileDataGenerator.ts`**
+
+1. **`roleSkillsCurrent`** — filter to only include skills whose name matches a role requirement
+2. **`otherSkills`** — filter to exclude skills in role requirements AND project requirements (currently only excludes role)
+3. This ensures three non-overlapping skill buckets: Role, Project, Other
+
+```text
+Before (Helena with 10 skills, 6 role-required):
+  roleSkillsCurrent: [all 10 skills]     ← wrong
+  otherSkills: [4 non-role skills]        ← correct count but duplicated
+  
+After:
+  roleSkillsCurrent: [6 role skills only] ← only matching role reqs
+  otherSkills: [remaining skills not in role OR project reqs]
+```
+
+**Changes:**
+| Line | Change |
+|------|--------|
+| 27-31 | Filter `roleSkillsCurrent` to only skills matching `roleSkillsRequired` names, with fallback proficiency |
+| 66-73 | Update `otherSkills` to exclude both role AND project required skill names |
+
+### No changes needed
+
+- `AgentOneContext.tsx` — combining all three categories is correct once the buckets are non-overlapping
+- `My360.tsx` — already reads from profileData correctly
+- `accountParser.ts` — handles explicit JSON profile data which is assumed correct as-is
 
 ### Files changed
 
 | File | Change |
 |------|--------|
-| `src/components/chat/AgentOneNudgeStack.tsx` | Remove all stacked/cycling/expanded UI; keep only main summary card |
+| `src/lib/profileDataGenerator.ts` | Fix roleSkillsCurrent to only include role-matching skills; fix otherSkills to exclude both role and project skills |
 

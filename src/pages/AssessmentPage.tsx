@@ -15,6 +15,8 @@ export default function AssessmentPage() {
   const { id: skillTargetId } = useParams();
   const foundAssessment = mockAssessments.find((a) => a.id === aid);
   const { updateSkillTarget, skillTargets } = useSkillTargets();
+  const { activeAccount, normalizedAccount } = useAccount();
+  const { user } = useUser();
 
   // Generate fallback assessment from skill target step data when not in mock catalog
   const assessment = foundAssessment ?? (() => {

@@ -42,6 +42,7 @@ function ThinkingIndicator() {
 export function AIChatWrapper() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { skillTargets } = useSkillTargets();
   const {
     messages,
     suggestions,

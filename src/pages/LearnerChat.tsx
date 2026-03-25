@@ -482,31 +482,29 @@ export default function LearnerChat() {
                       </div>
                     )}
                   </AnimatePresence>
+
+                  {/* Suggestion Pills — right below last AI response */}
+                  {(() => {
+                    const activePills = suggestions.length > 0 ? suggestions : contextualSuggestions;
+                    const visiblePills = activePills.slice(0, 4);
+                    return visiblePills.length > 0 && !isStreaming ? (
+                      <motion.div initial={{ opacity: 0, y: 2 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-1.5 mt-2">
+                        {visiblePills.map((pill) => (
+                          <button
+                            key={pill}
+                            onClick={() => handleSend(pill)}
+                            className="rounded-full border border-primary/20 bg-card px-3 py-1 text-[11px] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]"
+                          >
+                            {pill}
+                          </button>
+                        ))}
+                      </motion.div>
+                    ) : null;
+                  })()}
+
                   <div ref={chatEndRef} />
                 </div>
               </div>
-
-
-              {/* Suggestion Pills */}
-              {(() => {
-                const activePills = suggestions.length > 0 ? suggestions : contextualSuggestions;
-                const visiblePills = activePills.slice(0, 4);
-                return visiblePills.length > 0 && !isStreaming ? (
-                  <div className="shrink-0 max-w-[720px] mx-auto w-full px-4 pt-1.5">
-                    <motion.div initial={{ opacity: 0, y: 2 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-1.5">
-                      {visiblePills.map((pill) => (
-                        <button
-                          key={pill}
-                          onClick={() => handleSend(pill)}
-                          className="rounded-full border border-primary/20 bg-card px-3 py-1 text-[11px] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]"
-                        >
-                          {pill}
-                        </button>
-                      ))}
-                    </motion.div>
-                  </div>
-                ) : null;
-              })()}
 
               {/* Input Bar — Send inside input */}
               <div className="shrink-0 max-w-[720px] mx-auto w-full px-4 pb-4 pt-2">

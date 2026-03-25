@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 
 import { mockAssessments } from "@/data/mock";
+import { st2BaselineAssessment, st2MidAssessment, st2FinalAssessment } from "@/data/rathbonesOnboarding";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
@@ -13,7 +14,8 @@ import { emitAssessmentCompleted } from "@/lib/agentOneEventEmitter";
 export default function AssessmentPage() {
   const { aid } = useParams();
   const { id: skillTargetId } = useParams();
-  const foundAssessment = mockAssessments.find((a) => a.id === aid);
+  const allAssessments = [...mockAssessments, st2BaselineAssessment, st2MidAssessment, st2FinalAssessment];
+  const foundAssessment = allAssessments.find((a) => a.id === aid);
   const { updateSkillTarget, skillTargets } = useSkillTargets();
   const { activeAccount, normalizedAccount } = useAccount();
   const { user } = useUser();

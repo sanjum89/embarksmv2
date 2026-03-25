@@ -583,6 +583,10 @@ export const mockSkillTargets: SkillTarget[] = [
     ],
   },
 ];
+
+// Add Rathbones onboarding targets (Intro, Bridge, ST2)
+import { introToRathbones, elliotDomainBridge, claraSkillTarget2, elliotSkillTarget2, sophieSkillTarget2 } from "@/data/rathbonesOnboarding";
+mockSkillTargets.push(introToRathbones, elliotDomainBridge, claraSkillTarget2, elliotSkillTarget2, sophieSkillTarget2);
 /* ─── Role Plays ─── */
 export const mockRolePlayBank: RolePlay[] = [
   { id: "rp-rb1", title: "First Client Intro and Risk Appetite Conversation", scenario: "You're meeting a new Rathbones client for the first time. Understand their financial goals, family situation, and risk appetite. The client is a recently retired professional with £800k in savings, cautious but open to guidance.", difficulty: "beginner", isPrivate: false, tags: ["wealth-management", "client-intro", "risk-appetite", "rathbones"], assignedTo: ["u12", "u13", "u14"], aiCloneConfig: { persona: "Margaret Ellsworth, 63, recently retired NHS consultant", context: "Margaret is polite, well-informed, and slightly anxious about market volatility. She wants to protect her £800k in capital but generate modest income. Her late husband previously managed the family finances, so this is her first time engaging directly with an investment manager. She will ask thoughtful questions about fees, ESG investment options, and how Rathbones would protect her capital in a downturn. She responds well to patience and clarity, but will disengage if she feels rushed or patronised." } },

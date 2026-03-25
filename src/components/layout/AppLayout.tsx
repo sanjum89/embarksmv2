@@ -14,6 +14,7 @@ export function AppLayout() {
   const { expanded } = useSidebarState();
   const { styleTheme } = useTheme();
   const { signedInUserIds } = useUser();
+  const { switching } = useAccount();
   const isTraditional = styleTheme === "traditional";
 
   // Apply brand colors from active account

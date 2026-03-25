@@ -18,7 +18,15 @@ export default function AssessmentPage() {
   const rathbonesAssessments = [st2BaselineAssessment, st2MidAssessment, st2FinalAssessment];
   const rathbonesIds = new Set(rathbonesAssessments.map(a => a.id));
   const allAssessments = [...mockAssessments.filter(a => !rathbonesIds.has(a.id)), ...rathbonesAssessments];
-  const foundAssessment = allAssessments.find((a) => a.id === aid);
+  // Try direct assessment ID match first, then resolve via step referenceId
+  let foundAssessment = allAssessments.find((a) => a.id === aid);
+  if (!foundAssessment) {
+    const target = skillTargets.find((st) => st.id === skillTargetId);
+    const stepByStepId = target?.steps.find((s) => s.id === aid && s.type === "assessment");
+    if (stepByStepId) {
+      foundAssessment = allAssessments.find((a) => a.id === stepByStepId.referenceId);
+    }
+  }
   const { updateSkillTarget, skillTargets } = useSkillTargets();
   const { activeAccount, normalizedAccount } = useAccount();
   const { user } = useUser();

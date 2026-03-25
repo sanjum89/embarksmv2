@@ -153,6 +153,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     () => localStorage.getItem("activeAccountId")
   );
   const [loading, setLoading] = useState(true);
+  const [switching, setSwitching] = useState(false);
+  const switchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     loadAccounts();

@@ -302,6 +302,10 @@ export const mockAssessments: Assessment[] = [
   },
 ];
 
+// Import and spread Rathbones ST2 assessments
+import { st2BaselineAssessment, st2MidAssessment, st2FinalAssessment } from "@/data/rathbonesOnboarding";
+mockAssessments.push(st2BaselineAssessment, st2MidAssessment, st2FinalAssessment);
+
 /* ─── Learning Modules ─── */
 export const mockLearningModules: LearningModule[] = [
   { id: "m1", title: "Objection Handling Framework", contentType: "video", contentUrl: "https://example.com/laer-framework", duration: "25 min", transcript: "In this module, we'll cover the LAER framework — Listen, Acknowledge, Explore, Respond. This proven methodology helps sales professionals navigate even the toughest customer objections with confidence and empathy.\n\nStep 1: Listen — Give the customer your full attention. Don't interrupt. Let them express their complete concern.\n\nStep 2: Acknowledge — Show that you've heard and understood their concern. Use phrases like 'I understand why that's important to you.'\n\nStep 3: Explore — Ask open-ended questions to dig deeper. Often the stated objection isn't the real concern.\n\nStep 4: Respond — Once you truly understand the objection, address it directly with relevant value propositions." },

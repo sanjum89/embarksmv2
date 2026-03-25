@@ -617,6 +617,49 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // ─── Demo interceptor: deterministic responses for Clara/Elliot/Sophie ───
+    const persona = getDemoPersona(user.id);
+    if (persona) {
+      const match = findDemoMatch(text, !!chapterContext);
+      if (match) {
+        const userMsg: ChatMessage = { role: "user", content: text };
+        setMessages(prev => [...prev, userMsg]);
+        setInput("");
+
+        const ctx = chapterContext ? {
+          chapterTitle: chapterContext.title,
+          chapterSummary: chapterContext.summary,
+          chapterTakeaways: chapterContext.keyTakeaways,
+        } : undefined;
+
+        const responseText = match.response(persona, ctx);
+        const pills = match.pills(persona, stageRef.current);
+
+        // Parse rich blocks from response
+        const { cleanText, blocks } = parseRichBlocks(responseText);
+
+        setTimeout(() => {
+          setMessages(prev => {
+            const updated = [...prev, { role: "assistant" as const, content: cleanText }];
+            if (blocks.length > 0) {
+              const idx = updated.length - 1;
+              setRichBlocksMap(old => ({ ...old, [idx]: blocks }));
+              setIsExpanded(true);
+              setCollapsedBlockIds(new Set());
+            }
+            saveConversation(updated, match.nextStage || stageRef.current);
+            return updated;
+          });
+          setSuggestions(pills);
+          if (match.nextStage) {
+            setStage(match.nextStage);
+            stageRef.current = match.nextStage;
+          }
+        }, 600);
+        return;
+      }
+    }
+
     // Auto-collapse if message doesn't look like a data query
     const dataKeywords = ["show", "skills", "progress", "targets", "inbox", "chart", "table", "display", "view", "gap"];
     const isDataQuery = dataKeywords.some(k => lower.includes(k));
@@ -629,7 +672,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setMessages(allMsgs);
     setInput("");
     streamResponse(allMsgs);
-  }, [isStreaming, assessmentCompleted, isExpanded]);
+  }, [isStreaming, assessmentCompleted, isExpanded, chapterContext, user.id]);
 
   const handleInlineAssessmentComplete = (score: number, _answers: number[]) => {
     setAssessmentCompletedLocal(true);

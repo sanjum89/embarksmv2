@@ -132,6 +132,7 @@ export default function LearnerChat() {
     toggleBlockCollapse,
   } = useAgentOne();
   const navigate = useNavigate();
+  const { skillTargets } = useSkillTargets();
 
   const [chatActive, setChatActive] = useState(false);
   const [dismissedNudgeIds] = useState<Set<string>>(new Set());

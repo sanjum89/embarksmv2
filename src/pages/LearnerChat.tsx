@@ -260,17 +260,22 @@ export default function LearnerChat() {
                   <div className="mb-6">
                     <AgentOneNudgeStack
                       onAgentClick={handleNudgeClick}
-                      onChatAction={(prompt) => {
+                      onChatAction={async (prompt) => {
                         if (prompt === "__ASSESSMENT__") {
                           setChatActive(true);
                           return;
+                        }
+                        // Reset conversation first so nudge always starts a fresh journey
+                        if (hasMessages) {
+                          await handleReset();
                         }
                         openedFromCta.current = true;
                         isNearBottom.current = true;
                         setCtaLabel(deriveCTALabel(prompt));
                         setChatActive(true);
                         setIsOpen(true);
-                        handleSend(prompt);
+                        // Small delay to let reset complete before sending
+                        setTimeout(() => handleSend(prompt), 100);
                       }}
                     />
                   </div>

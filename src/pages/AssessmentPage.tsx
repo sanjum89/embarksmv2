@@ -14,7 +14,8 @@ import { emitAssessmentCompleted } from "@/lib/agentOneEventEmitter";
 export default function AssessmentPage() {
   const { aid } = useParams();
   const { id: skillTargetId } = useParams();
-  const foundAssessment = mockAssessments.find((a) => a.id === aid);
+  const allAssessments = [...mockAssessments, st2BaselineAssessment, st2MidAssessment, st2FinalAssessment];
+  const foundAssessment = allAssessments.find((a) => a.id === aid);
   const { updateSkillTarget, skillTargets } = useSkillTargets();
   const { activeAccount, normalizedAccount } = useAccount();
   const { user } = useUser();

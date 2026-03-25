@@ -783,12 +783,17 @@ export const DEMO_SCRIPT: DemoScriptEntry[] = [
 
   // ─── Let's start with the onboarding plan ───
   {
-    patterns: ["let's start", "start with the onboarding", "begin my onboarding", "start onboarding"],
+    patterns: ["let's start", "start with the onboarding", "begin my onboarding", "start onboarding", "let's start the onboarding plan"],
     response: (p) => {
+      if (p === "elliot") {
+        return `Fantastic — let's begin. Because you already bring relevant experience, I'll first guide you through a short baseline assessment to understand what you already know. This helps tailor your learning path. If you perform strongly, some early modules in Investment Management Foundations can be skipped, although they'll still remain available if you want to review them.\n\nYour path after the assessment:\n1. **Introduction to Rathbones** — heritage, approach, and your first 90 days\n2. **Rathbones Investment Domain Bridge** — connecting your experience to the Rathbones context\n3. **Investment Management Foundations** — your personalised learning path`;
+      }
       const content = agentOneContent[Object.keys(PERSONA_MAP).find(k => PERSONA_MAP[k] === p) || ""];
       return content?.onboardingStartGuidance || `Let's get your onboarding started, ${personaName(p)}!`;
     },
-    pills: () => ["Go to Introduction to Rathbones", "What will I learn?", "How long will it take?"],
+    pills: (p) => p === "elliot"
+      ? ["Take the assessment", "Why do I need the domain bridge?", "Show me my 5-day plan"]
+      : ["Go to Introduction to Rathbones", "What will I learn?", "How long will it take?"],
     nextStage: "pre-intro",
   },
 

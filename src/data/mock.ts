@@ -302,6 +302,10 @@ export const mockAssessments: Assessment[] = [
   },
 ];
 
+// Import and spread Rathbones ST2 assessments
+import { st2BaselineAssessment, st2MidAssessment, st2FinalAssessment } from "@/data/rathbonesOnboarding";
+mockAssessments.push(st2BaselineAssessment, st2MidAssessment, st2FinalAssessment);
+
 /* ─── Learning Modules ─── */
 export const mockLearningModules: LearningModule[] = [
   { id: "m1", title: "Objection Handling Framework", contentType: "video", contentUrl: "https://example.com/laer-framework", duration: "25 min", transcript: "In this module, we'll cover the LAER framework — Listen, Acknowledge, Explore, Respond. This proven methodology helps sales professionals navigate even the toughest customer objections with confidence and empathy.\n\nStep 1: Listen — Give the customer your full attention. Don't interrupt. Let them express their complete concern.\n\nStep 2: Acknowledge — Show that you've heard and understood their concern. Use phrases like 'I understand why that's important to you.'\n\nStep 3: Explore — Ask open-ended questions to dig deeper. Often the stated objection isn't the real concern.\n\nStep 4: Respond — Once you truly understand the objection, address it directly with relevant value propositions." },
@@ -579,6 +583,10 @@ export const mockSkillTargets: SkillTarget[] = [
     ],
   },
 ];
+
+// Add Rathbones onboarding targets (Intro, Bridge, ST2)
+import { introToRathbones, elliotDomainBridge, claraSkillTarget2, elliotSkillTarget2, sophieSkillTarget2 } from "@/data/rathbonesOnboarding";
+mockSkillTargets.push(introToRathbones, elliotDomainBridge, claraSkillTarget2, elliotSkillTarget2, sophieSkillTarget2);
 /* ─── Role Plays ─── */
 export const mockRolePlayBank: RolePlay[] = [
   { id: "rp-rb1", title: "First Client Intro and Risk Appetite Conversation", scenario: "You're meeting a new Rathbones client for the first time. Understand their financial goals, family situation, and risk appetite. The client is a recently retired professional with £800k in savings, cautious but open to guidance.", difficulty: "beginner", isPrivate: false, tags: ["wealth-management", "client-intro", "risk-appetite", "rathbones"], assignedTo: ["u12", "u13", "u14"], aiCloneConfig: { persona: "Margaret Ellsworth, 63, recently retired NHS consultant", context: "Margaret is polite, well-informed, and slightly anxious about market volatility. She wants to protect her £800k in capital but generate modest income. Her late husband previously managed the family finances, so this is her first time engaging directly with an investment manager. She will ask thoughtful questions about fees, ESG investment options, and how Rathbones would protect her capital in a downturn. She responds well to patience and clarity, but will disengage if she feels rushed or patronised." } },

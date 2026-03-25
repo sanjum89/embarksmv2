@@ -764,7 +764,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       return onboardingSuggestionPills[stage];
     }
     return ["What should I do next?", "Show my progress", "Help me with something"];
-  }, [location.pathname, currentSkillTarget, rolePlays]);
+  }, [location.pathname, currentSkillTarget, rolePlays, stage, isNewJoiner]);
 
   return (
     <AgentOneContext.Provider value={{

@@ -231,6 +231,23 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     }).filter((g: any) => g.gap > 0);
   }, [userProfile]);
 
+  // Chapter context for Agent One — look up summary when on a module page
+  const chapterContext = useMemo(() => {
+    const moduleMatch = currentPage.match(/\/skill-target\/([^/]+)\/module\/([^/]+)/);
+    if (!moduleMatch) return null;
+    const targetId = moduleMatch[1];
+    const moduleId = moduleMatch[2];
+    for (const summary of chapterSummaries) {
+      if (summary.targetId === targetId || summary.targetId === currentSkillTargetId) {
+        const chapter = summary.chapters.find(
+          (c) => c.stepId === moduleId || (currentSkillTarget?.steps.find((s) => s.referenceId === moduleId)?.id === c.stepId)
+        );
+        if (chapter) return { title: chapter.title, summary: chapter.summary, keyTakeaways: chapter.keyTakeaways };
+      }
+    }
+    return null;
+  }, [currentPage, currentSkillTargetId, currentSkillTarget]);
+
   const userContext = {
     name: user.name,
     role: user.role,
@@ -256,6 +273,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     skillTargetsSummary,
     inboxSummary,
     skillGaps,
+    chapterContext,
   };
 
   // Load persisted conversation

@@ -82,9 +82,10 @@ export default function AssessmentPage() {
   };
 
   /* ─── Explicit Assessment Gate Map ─── */
+  interface GateAction { skip?: string[]; unlock?: string[]; complete?: string[]; reset?: string[]; retryId?: string }
   const GATE_MAP: Record<string, {
-    onPass: { skip?: string[]; unlock?: string[]; complete?: string[] };
-    onFail: { reset?: string[]; unlock?: string[]; retryId?: string };
+    onPass: GateAction;
+    onFail: GateAction;
     passThreshold: number;
   }> = {
     "a-rb-st2-baseline": {

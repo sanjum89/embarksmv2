@@ -46,7 +46,10 @@ export function LoginPage() {
     const success = loginUser(adminUser.id);
     if (!success) {
       setError("Login failed. Please try again.");
+      return;
     }
+    setStyleTheme("new");
+    setSuperLight(true);
   };
 
   if (accountsLoading) {

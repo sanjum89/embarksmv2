@@ -378,6 +378,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       activeAccount,
       normalizedAccount,
       loading,
+      switching,
       switchAccount,
       addAccount,
       deleteAccount,

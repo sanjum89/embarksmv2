@@ -108,9 +108,10 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
   const cycleHighlight = useCallback(
     (dir: 1 | -1) => {
       if (categoryCards.length < 2) return;
+      if (!expanded) setExpanded(true);
       setHighlightIndex((prev) => (prev + dir + categoryCards.length) % categoryCards.length);
     },
-    [categoryCards.length]
+    [categoryCards.length, expanded]
   );
 
   const handleCategoryClick = useCallback(

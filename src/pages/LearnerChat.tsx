@@ -260,17 +260,22 @@ export default function LearnerChat() {
                   <div className="mb-6">
                     <AgentOneNudgeStack
                       onAgentClick={handleNudgeClick}
-                      onChatAction={(prompt) => {
+                      onChatAction={async (prompt) => {
                         if (prompt === "__ASSESSMENT__") {
                           setChatActive(true);
                           return;
+                        }
+                        // Reset conversation first so nudge always starts a fresh journey
+                        if (hasMessages) {
+                          await handleReset();
                         }
                         openedFromCta.current = true;
                         isNearBottom.current = true;
                         setCtaLabel(deriveCTALabel(prompt));
                         setChatActive(true);
                         setIsOpen(true);
-                        handleSend(prompt);
+                        // Small delay to let reset complete before sending
+                        setTimeout(() => handleSend(prompt), 100);
                       }}
                     />
                   </div>
@@ -375,7 +380,7 @@ export default function LearnerChat() {
                         </div>
                       </div>
                       <button
-                        onClick={() => { handleReset(); navigate("/"); }}
+                        onClick={async () => { await handleReset(); setChatActive(false); }}
                         disabled={isStreaming || !hasMessages}
                         className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors"
                         title="Reset conversation"

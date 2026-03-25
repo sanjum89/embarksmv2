@@ -164,7 +164,7 @@ export function AIChatWrapper() {
                   </div>
                 </div>
                 <button
-                  onClick={() => { handleReset(); navigate("/"); }}
+                  onClick={async () => { await handleReset(); navigate("/chat"); }}
                   disabled={isStreaming || messages.length === 0}
                   className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors"
                   title="Reset conversation"

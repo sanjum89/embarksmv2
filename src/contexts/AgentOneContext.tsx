@@ -723,6 +723,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     // Clear all tracking refs
     completedStepIdsRef.current = new Set();
     firedReflectionKeysRef.current = new Set();
+    firedMilestonesRef.current = new Set();
     pendingReinforcementRef.current = [];
     const initialStage = isNewJoiner ? "welcome" : "general";
     setStage(initialStage);

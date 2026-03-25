@@ -744,6 +744,10 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     }
 
     if (path === "/dashboard") {
+      // Use onboarding stage pills for new joiners
+      if (isNewJoiner && onboardingSuggestionPills[stage]) {
+        return onboardingSuggestionPills[stage];
+      }
       return ["What should I work on next?", "How am I progressing?", "Explain my skill targets"];
     }
 
@@ -755,6 +759,10 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       return ["How is my team doing?", "Who needs attention?", "Suggest a team action"];
     }
 
+    // Fallback: use onboarding stage pills for new joiners on any unmatched page
+    if (isNewJoiner && onboardingSuggestionPills[stage]) {
+      return onboardingSuggestionPills[stage];
+    }
     return ["What should I do next?", "Show my progress", "Help me with something"];
   }, [location.pathname, currentSkillTarget, rolePlays]);
 

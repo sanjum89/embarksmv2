@@ -14,6 +14,7 @@ const PASSWORD = "workforceai";
 export function LoginPage() {
   const { accounts, activeAccountId, switchAccount, loading: accountsLoading } = useAccount();
   const { availableUsers, loginUser } = useUser();
+  const { setStyleTheme, setSuperLight } = useTheme();
 
   const [selectedAccountId, setSelectedAccountId] = useState(activeAccountId ?? "");
   const [password, setPassword] = useState("");

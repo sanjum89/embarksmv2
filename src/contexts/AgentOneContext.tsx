@@ -110,6 +110,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [stage, setStage] = useState("welcome");
   const [loaded, setLoaded] = useState(false);
+  const [resetCounter, setResetCounter] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [showInlineAssessment, setShowInlineAssessment] = useState(false);
   const [assessmentCompletedLocal, setAssessmentCompletedLocal] = useState(false);

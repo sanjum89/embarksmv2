@@ -356,6 +356,32 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
           }
         }
       }
+
+      // ─── Manager milestone emission (deduplicated) ───
+      const milestoneKey = `${user.id}:${step.id}`;
+      if (!firedMilestonesRef.current.has(milestoneKey)) {
+        const milestone = MANAGER_MILESTONES.find(m => m.stepId === step.id);
+        if (milestone && normalizedAccount && accountId) {
+          firedMilestonesRef.current.add(milestoneKey);
+          const memberName = investmentManagerCohort.members.find(m => m.employeeId === user.id)?.name || user.name;
+          // Find Julian (manager) — reportsTo field
+          const managerEmployeeId = (employee as any)?.reportsTo || null;
+          emitEvent({
+            account_id: accountId,
+            event_type: milestone.eventType,
+            category: milestone.category,
+            source_employee_id: user.id,
+            target_employee_id: managerEmployeeId,
+            related_employee_ids: [user.id],
+            payload: {
+              title: milestone.titleTemplate(memberName),
+              subtitle: milestone.subtitleTemplate(memberName),
+            },
+          }, normalizedAccount).catch(err =>
+            console.error("[AgentOne] Milestone emission failed:", err)
+          );
+        }
+      }
     }
   }, [skillTargets, loaded, isOpen, user.id, isNewJoiner]);
 

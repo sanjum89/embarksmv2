@@ -383,7 +383,21 @@ export default function LearnerChat() {
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto min-h-0">
+              <div className="flex-1 overflow-y-auto min-h-0 relative" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
+                {/* Earlier messages pill */}
+                {openedFromCta.current && hasMessages && !isNearBottom.current && (
+                  <div className="sticky top-0 z-10 flex justify-center py-1.5">
+                    <button
+                      onClick={() => {
+                        messagesContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className="flex items-center gap-1 rounded-full bg-card border border-border shadow-sm px-3 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <ChevronUp className="h-3 w-3" />
+                      Earlier messages
+                    </button>
+                  </div>
+                )}
                 <div className="max-w-[720px] mx-auto px-4 py-4 space-y-3">
                   {!loaded && (
                     <div className="flex items-center justify-center py-8">
@@ -438,7 +452,19 @@ export default function LearnerChat() {
                     <InlineAssessment onComplete={handleInlineAssessmentComplete} />
                   )}
 
-                  <AnimatePresence>{isStreaming && <ThinkingIndicator />}</AnimatePresence>
+                  {/* CTA context label + thinking indicator */}
+                  <AnimatePresence>
+                    {isStreaming && (
+                      <div>
+                        {ctaLabel && (
+                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[11px] italic text-muted-foreground mb-1 px-1">
+                            {ctaLabel}
+                          </motion.div>
+                        )}
+                        <ThinkingIndicator />
+                      </div>
+                    )}
+                  </AnimatePresence>
                   <div ref={chatEndRef} />
                 </div>
               </div>

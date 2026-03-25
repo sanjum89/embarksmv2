@@ -645,22 +645,22 @@ export const agentOneContent: Record<string, AgentOneOnboardingContent> = {
     ],
   },
 
-  // Elliot — adaptive path with bridge target
+  // Elliot — experienced hire, adaptive path with domain bridge
   u13: {
-    welcome: `Welcome to Rathbones, Elliot! 🎉 I'm Agent One, your AI learning companion. I see you have financial services experience — that's a great foundation for your role here.\n\nLet me pull up your profile so we can tailor your onboarding.`,
-    whatsNext: `Here's your personalised path:\n\n1. **Introduction to Rathbones** — a quick overview of heritage, investment approach, and your first 90 days\n2. **Investment Manager Foundations** — your main learning path\n3. **Domain Bridge** — a short path to map your financial services experience to the Rathbones context\n4. **Skills Assessment** — a baseline to customise your investment management training\n5. **Investment Management Foundations** — your personalised learning path\n\nYour financial services background means you'll likely progress quickly through some areas!`,
+    welcome: `Welcome onboard, Elliot — it's great to have you here. You already bring valuable experience, and I'll help you build the Rathbones-specific investment context you need to succeed here. I'll guide you through your onboarding journey, answer questions, and help you move through your assigned skill targets step by step. How has your experience been so far?`,
+    whatsNext: `You've been added to the Investment Manager Cohort — March 2026. Over the next five days, I'll guide you through your onboarding plan. Since you already have strong experience, your path is tailored to help you quickly build Rathbones-specific investment knowledge before moving deeper into the core investment manager foundations.`,
     cohortExplanation: `You're part of the **Investment Manager Cohort — March 2026** with Clara Whitfield and Sophie Langford. You're all starting the same core programme, but your path includes a Domain Bridge that maps your existing financial services experience to the Rathbones context.`,
-    skillProfileExplanation: `Here's your starting position:\n- **Client Relationship Management** — Beginner → target: Intermediate\n- **Suitability and Documentation** — Beginner → target: Intermediate\n- **Investment Communication** — Beginner → target: Intermediate\n- **Active Listening** — Intermediate → target: Advanced\n\nYour financial services background gives you a head start. The Domain Bridge will help you apply that knowledge in the Rathbones context.`,
-    onboardingStartGuidance: `Let's start with the **Introduction to Rathbones** — three chapters that cover our heritage, investment approach, and what your first 90 days look like. It's about 45 minutes total.\n\nAfter that, you'll complete your Foundations path and then the Domain Bridge before your skills assessment.`,
+    skillProfileExplanation: `Based on your profile, the system already understands your current strengths. You bring strong transferable financial services experience, but you're still building depth in Rathbones-specific investment domain knowledge. The Domain Bridge and your adaptive learning path are designed to close that gap efficiently.\n\n:::RICH_BLOCK{"type":"skills_chart","data":{},"cta":{"label":"Open My360","path":"/my-360"}}:::`,
+    onboardingStartGuidance: `Fantastic — let's begin. Because you already bring relevant experience, I'll first guide you through a short baseline assessment to understand what you already know. This helps tailor your learning path. If you perform strongly, some early modules in Investment Management Foundations can be skipped, although they'll still remain available if you want to review them.\n\nYour path after the assessment:\n1. **Introduction to Rathbones** — heritage, approach, and your first 90 days\n2. **Rathbones Investment Domain Bridge** — connecting your experience to the Rathbones context\n3. **Investment Management Foundations** — your personalised learning path`,
     positiveReinforcement: [
-      "Great progress, Elliot! Your financial services background is clearly serving you well.",
-      "Well done on the bridge target — you've successfully mapped your experience to the Rathbones context.",
-      "Strong performance! Your existing knowledge is accelerating your path.",
-      "You're ahead of schedule — keep up the excellent work!",
-      "Impressive assessment result! Your background really shows here.",
+      "Nice progress — you're moving through this well.",
+      "You're building the Rathbones-specific context quickly.",
+      "That's a strong step forward.",
+      "You're on track — let's keep going.",
+      "Your existing experience is clearly helping you pick this up fast.",
     ],
     reflectionPrompts: [
-      "How does the Rathbones approach compare to your previous experience in financial services?",
+      "I'd like to understand how your onboarding is going so far, especially as you connect your previous experience to the Rathbones investment context. What's feeling familiar, and what still feels new?",
       "What aspects of the Domain Bridge felt most familiar? What was new?",
       "Are there areas where you feel your past experience gives you an advantage?",
       "What's been the biggest adjustment so far?",

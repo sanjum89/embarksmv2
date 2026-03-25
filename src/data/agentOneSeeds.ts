@@ -104,9 +104,32 @@ function buildDemoCardMap(scenarios: DemoScenarios): Record<string, DemoCard[]> 
   // ── Clara (learner — onboarding) ──
   map[onboardingLearnerEmployeeId] = [...LEARNER_ONBOARDING_CARDS];
 
-  // ── Elliot (learner — same as Clara) ──
+  // ── Elliot (learner — tailored onboarding) ──
   if (risingStarEmployeeId && risingStarEmployeeId !== onboardingLearnerEmployeeId) {
-    map[risingStarEmployeeId] = [...LEARNER_ONBOARDING_CARDS];
+    map[risingStarEmployeeId] = [
+      {
+        category: "onboarding_progress",
+        audience_type: "learner",
+        type: "demo_onboarding",
+        title: "Your onboarding journey is ready",
+        subtitle: "You've been assigned a guided onboarding journey tailored to your background. Click to begin.",
+        color_theme: "sky",
+        cta_label: "Start",
+        cta_action: { type: "open_agentone_chat", prompt: "I'm ready to start my onboarding journey. What should I do first?" },
+        priority: "medium",
+      },
+      {
+        category: "reflection_request",
+        audience_type: "learner",
+        type: "demo_reflection_request",
+        title: "Reflection requested",
+        subtitle: "Share how your onboarding experience is going so far.",
+        color_theme: "lavender",
+        cta_label: "Start Reflection",
+        cta_action: { type: "open_agentone_chat", prompt: "I'd like to understand how your onboarding is going so far, especially as you connect your previous experience to the Rathbones investment context. What's feeling familiar, and what still feels new?" },
+        priority: "medium",
+      },
+    ];
   }
 
   // ── Sophie (learner — same as Clara) ──

@@ -5,6 +5,8 @@ import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUser } from "@/contexts/UserContext";
+import { useAccount } from "@/contexts/AccountContext";
+import { Loader2 } from "lucide-react";
 import { useBrandColors } from "@/hooks/useBrandColors";
 import { cn } from "@/lib/utils";
 

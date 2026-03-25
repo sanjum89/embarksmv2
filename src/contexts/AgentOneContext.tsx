@@ -848,6 +848,15 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
 
     // --- Skill Target detail (enhanced) ---
     if (path.startsWith("/skill-target/") && currentSkillTarget) {
+      // Elliot on Domain Bridge target page gets bridge-specific framing
+      const persona = getDemoPersona(user.id);
+      if (persona === "elliot" && currentSkillTargetId === "RAT-ST-BRIDGE-001") {
+        return [
+          "Why do I need the domain bridge?",
+          "How will this help me in the role?",
+          "What's next after the bridge?",
+        ];
+      }
       const currentStep = currentSkillTarget.steps.find(s => s.status === "available" || s.status === "in_progress");
       const completedSteps = currentSkillTarget.steps.filter(s => s.status === "completed");
       const lastCompleted = completedSteps[completedSteps.length - 1];

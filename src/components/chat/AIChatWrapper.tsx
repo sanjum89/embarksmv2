@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -7,6 +7,7 @@ import {
   Send,
   RotateCcw,
   Minimize2,
+  ChevronUp,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";
@@ -66,10 +67,45 @@ export function AIChatWrapper() {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const isNearBottom = useRef(true);
+  const prevIsStreaming = useRef(false);
+  const prevMsgCount = useRef(0);
 
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
+    requestAnimationFrame(() => {
+      chatEndRef.current?.scrollIntoView({ behavior });
+    });
+  }, []);
+
+  const handleMessagesScroll = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    isNearBottom.current = distanceFromBottom < 80;
+  }, []);
+
+  // Normal auto-scroll: only when near bottom
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (isNearBottom.current) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages, isStreaming]);
+
+  // When panel opens during streaming, scroll to bottom immediately
+  useEffect(() => {
+    if (isOpen && isStreaming) {
+      scrollToBottom("auto");
+    }
+  }, [isOpen, isStreaming, scrollToBottom]);
+
+  // CTA dual scroll: second scroll when streaming starts
+  useEffect(() => {
+    if (isStreaming && !prevIsStreaming.current) {
+      if (isNearBottom.current) scrollToBottom("auto");
+    }
+    prevIsStreaming.current = isStreaming;
+  }, [isStreaming, scrollToBottom]);
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
@@ -154,7 +190,7 @@ export function AIChatWrapper() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="flex-1 overflow-y-auto min-h-0" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
               <div className="px-4 py-4 space-y-3">
                 {!loaded && (
                   <div className="flex items-center justify-center py-8">

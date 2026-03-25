@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, Home, ArrowRight, X } from "lucide-react";
+import { Send, Sparkles, Home, ArrowRight, X, ChevronUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";
@@ -132,13 +132,42 @@ export default function LearnerChat() {
 
   const [chatActive, setChatActive] = useState(false);
   const [dismissedNudgeIds] = useState<Set<string>>(new Set());
+  const [ctaLabel, setCtaLabel] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const openedFromCta = useRef(false);
+  const isNearBottom = useRef(true);
+  const prevMsgCount = useRef(0);
+  const prevIsStreaming = useRef(false);
 
   const firstName = user.name.split(" ")[0];
   const hasMessages = messages.filter((m) => m.role !== "system").length > 0;
   const isActive = chatActive;
 
+  // Derive CTA label from prompt content
+  const deriveCTALabel = (prompt: string): string => {
+    const lower = prompt.toLowerCase();
+    if (lower.includes("onboarding")) return "Starting your onboarding journey";
+    if (lower.includes("reflection")) return "Opening reflection request";
+    if (lower.includes("skill") || lower.includes("target")) return "Loading your assigned targets";
+    return "Agent One is responding...";
+  };
+
+  // Scroll to bottom helper
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
+    requestAnimationFrame(() => {
+      chatEndRef.current?.scrollIntoView({ behavior });
+    });
+  }, []);
+
+  // Handle scroll on messages container — near-bottom detection
+  const handleMessagesScroll = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    isNearBottom.current = distanceFromBottom < 80;
+  }, []);
 
   // When nudge card is clicked, activate chat mode
   const handleNudgeClick = () => {
@@ -154,9 +183,38 @@ export default function LearnerChat() {
     handleSend(prompt);
   };
 
+  // Normal auto-scroll: only when near bottom
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (isNearBottom.current) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages, isStreaming]);
+
+  // CTA dual scroll: second scroll when streaming starts after CTA
+  useEffect(() => {
+    if (openedFromCta.current && isStreaming && !prevIsStreaming.current) {
+      scrollToBottom("auto");
+    }
+    prevIsStreaming.current = isStreaming;
+  }, [isStreaming, scrollToBottom]);
+
+  // CTA context cleanup: clear after first assistant response is rendered
+  useEffect(() => {
+    const currentMsgCount = messages.length;
+    if (openedFromCta.current && currentMsgCount > prevMsgCount.current) {
+      // A new message appeared — check if streaming just ended (response complete)
+      if (!isStreaming) {
+        openedFromCta.current = false;
+        setCtaLabel(null);
+      }
+    }
+    // Also handle error/cancel: streaming stopped without new messages
+    if (openedFromCta.current && !isStreaming && prevIsStreaming.current && currentMsgCount === prevMsgCount.current) {
+      openedFromCta.current = false;
+      setCtaLabel(null);
+    }
+    prevMsgCount.current = currentMsgCount;
+  }, [messages.length, isStreaming]);
 
   useEffect(() => {
     if (isActive) inputRef.current?.focus();
@@ -193,9 +251,14 @@ export default function LearnerChat() {
                           setChatActive(true);
                           return;
                         }
+                        openedFromCta.current = true;
+                        isNearBottom.current = true;
+                        setCtaLabel(deriveCTALabel(prompt));
                         setChatActive(true);
                         setIsOpen(true);
                         handleSend(prompt);
+                        // First scroll — immediately after activating
+                        requestAnimationFrame(() => scrollToBottom("auto"));
                       }}
                     />
                   </div>
@@ -320,7 +383,21 @@ export default function LearnerChat() {
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto min-h-0">
+              <div className="flex-1 overflow-y-auto min-h-0 relative" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
+                {/* Earlier messages pill */}
+                {openedFromCta.current && hasMessages && !isNearBottom.current && (
+                  <div className="sticky top-0 z-10 flex justify-center py-1.5">
+                    <button
+                      onClick={() => {
+                        messagesContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className="flex items-center gap-1 rounded-full bg-card border border-border shadow-sm px-3 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <ChevronUp className="h-3 w-3" />
+                      Earlier messages
+                    </button>
+                  </div>
+                )}
                 <div className="max-w-[720px] mx-auto px-4 py-4 space-y-3">
                   {!loaded && (
                     <div className="flex items-center justify-center py-8">
@@ -375,7 +452,19 @@ export default function LearnerChat() {
                     <InlineAssessment onComplete={handleInlineAssessmentComplete} />
                   )}
 
-                  <AnimatePresence>{isStreaming && <ThinkingIndicator />}</AnimatePresence>
+                  {/* CTA context label + thinking indicator */}
+                  <AnimatePresence>
+                    {isStreaming && (
+                      <div>
+                        {ctaLabel && (
+                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[11px] italic text-muted-foreground mb-1 px-1">
+                            {ctaLabel}
+                          </motion.div>
+                        )}
+                        <ThinkingIndicator />
+                      </div>
+                    )}
+                  </AnimatePresence>
                   <div ref={chatEndRef} />
                 </div>
               </div>

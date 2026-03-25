@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -7,6 +7,7 @@ import {
   Send,
   RotateCcw,
   Minimize2,
+  ChevronUp,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";

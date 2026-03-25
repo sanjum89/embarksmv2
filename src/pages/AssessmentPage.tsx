@@ -14,7 +14,10 @@ import { emitAssessmentCompleted } from "@/lib/agentOneEventEmitter";
 export default function AssessmentPage() {
   const { aid } = useParams();
   const { id: skillTargetId } = useParams();
-  const allAssessments = [...mockAssessments, st2BaselineAssessment, st2MidAssessment, st2FinalAssessment];
+  // Deduplicate: ensure Rathbones assessments are always present regardless of import order
+  const rathbonesAssessments = [st2BaselineAssessment, st2MidAssessment, st2FinalAssessment];
+  const rathbonesIds = new Set(rathbonesAssessments.map(a => a.id));
+  const allAssessments = [...mockAssessments.filter(a => !rathbonesIds.has(a.id)), ...rathbonesAssessments];
   const foundAssessment = allAssessments.find((a) => a.id === aid);
   const { updateSkillTarget, skillTargets } = useSkillTargets();
   const { activeAccount, normalizedAccount } = useAccount();

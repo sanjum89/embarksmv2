@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Maximize2, X, ThumbsUp, ThumbsDown, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { mockAssessments as defaultAssessments } from "@/data/mock";
+import { st2BaselineAssessment, st2MidAssessment, st2FinalAssessment } from "@/data/rathbonesOnboarding";
 import { useAccount } from "@/contexts/AccountContext";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
@@ -18,7 +19,10 @@ interface TraditionalContentViewerProps {
 export function TraditionalContentViewer({ step, onClose, skillTargetId, allSteps, onNavigateToStep }: TraditionalContentViewerProps) {
   const isAssessment = step.type === "assessment";
   const { normalizedAccount } = useAccount();
-  const assessments = normalizedAccount?.assessments?.length ? normalizedAccount.assessments : defaultAssessments;
+  const rathbonesAssessments = [st2BaselineAssessment, st2MidAssessment, st2FinalAssessment];
+  const rathbonesIds = new Set(rathbonesAssessments.map(a => a.id));
+  const baseAssessments = normalizedAccount?.assessments?.length ? normalizedAccount.assessments : defaultAssessments;
+  const assessments = [...(baseAssessments as Assessment[]).filter(a => !rathbonesIds.has(a.id)), ...rathbonesAssessments];
   const assessment = isAssessment ? assessments.find((a) => a.id === step.referenceId) : null;
 
   return (

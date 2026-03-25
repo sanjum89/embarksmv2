@@ -157,7 +157,13 @@ export default function LearnerChat() {
   // Scroll to bottom helper
   const scrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
     requestAnimationFrame(() => {
-      chatEndRef.current?.scrollIntoView({ behavior });
+      requestAnimationFrame(() => {
+        const container = messagesContainerRef.current;
+        if (container) {
+          container.scrollTo({ top: container.scrollHeight, behavior });
+        }
+        chatEndRef.current?.scrollIntoView({ behavior, block: "end" });
+      });
     });
   }, []);
 
@@ -197,6 +203,13 @@ export default function LearnerChat() {
     }
     prevIsStreaming.current = isStreaming;
   }, [isStreaming, scrollToBottom]);
+
+  // CTA first scroll: wait until the chat panel has mounted before jumping down
+  useEffect(() => {
+    if (isActive && openedFromCta.current) {
+      scrollToBottom("auto");
+    }
+  }, [isActive, scrollToBottom]);
 
   // CTA context cleanup: clear after first assistant response is rendered
   useEffect(() => {
@@ -257,8 +270,6 @@ export default function LearnerChat() {
                         setChatActive(true);
                         setIsOpen(true);
                         handleSend(prompt);
-                        // First scroll — immediately after activating
-                        requestAnimationFrame(() => scrollToBottom("auto"));
                       }}
                     />
                   </div>

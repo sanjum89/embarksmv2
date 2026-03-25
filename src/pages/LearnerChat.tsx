@@ -494,7 +494,10 @@ export default function LearnerChat() {
                         {visiblePills.map((pill) => (
                           <button
                             key={pill}
-                            onClick={() => handleSend(pill)}
+                            onClick={() => {
+                              const action = resolvePillAction(pill, skillTargets);
+                              if (action) { navigate(action.navigate); } else { handleSend(pill); }
+                            }}
                             className="rounded-full border border-primary/20 bg-card px-3 py-1 text-[11px] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]"
                           >
                             {pill}

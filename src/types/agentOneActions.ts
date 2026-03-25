@@ -207,4 +207,5 @@ export const EVENT_CATEGORY_MAP: Record<EventType, ActionCategory> = {
   rising_star_summary: "recognition_kudos",
   underperformance_summary: "one_on_one_recommended",
   promotion_summary: "promotion_development",
+  skill_target_completed: "onboarding_progress",
 };

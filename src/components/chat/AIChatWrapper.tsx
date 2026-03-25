@@ -1,5 +1,7 @@
 import { useRef, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { resolvePillAction } from "@/lib/pillActionResolver";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,

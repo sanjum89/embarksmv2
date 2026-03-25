@@ -376,10 +376,10 @@ export default function LearnerChat() {
                       <button
                         onClick={() => { handleReset(); setChatActive(false); }}
                         disabled={isStreaming || !hasMessages}
-                        className="text-[11px] text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors px-2 py-1 rounded-md hover:bg-white/10"
+                        className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors"
                         title="Reset conversation"
                       >
-                        New chat
+                        <RotateCcw className="h-3.5 w-3.5" />
                       </button>
                     </div>
                     <button

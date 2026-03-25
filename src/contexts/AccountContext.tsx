@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import type { Account, AccountData } from "@/types/account";
 import type { NormalizedAccount } from "@/types/account-v2";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +15,7 @@ interface AccountContextType {
   /** Normalized view of the active account */
   normalizedAccount: NormalizedAccount | null;
   loading: boolean;
+  switching: boolean;
   switchAccount: (id: string) => void;
   addAccount: (name: string, data: Partial<AccountData> & { logo?: string; accent_color?: string; use_case_context?: string }, selectedUsers?: import("@/types/account-v2").AccountUser[]) => Promise<string>;
   deleteAccount: (id: string) => Promise<void>;
@@ -27,6 +28,7 @@ const AccountContext = createContext<AccountContextType>({
   activeAccount: null,
   normalizedAccount: null,
   loading: true,
+  switching: false,
   switchAccount: () => {},
   addAccount: async () => "",
   deleteAccount: async () => {},
@@ -151,6 +153,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     () => localStorage.getItem("activeAccountId")
   );
   const [loading, setLoading] = useState(true);
+  const [switching, setSwitching] = useState(false);
+  const switchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     loadAccounts();
@@ -261,9 +265,16 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   };
 
   const switchAccount = useCallback((id: string) => {
-    setActiveAccountId(id);
-    localStorage.setItem("activeAccountId", id);
-  }, []);
+    if (id === activeAccountId) return;
+    if (switchTimerRef.current) clearTimeout(switchTimerRef.current);
+    setSwitching(true);
+    switchTimerRef.current = setTimeout(() => {
+      setActiveAccountId(id);
+      localStorage.setItem("activeAccountId", id);
+      setSwitching(false);
+      switchTimerRef.current = null;
+    }, 1500);
+  }, [activeAccountId]);
 
   const addAccount = useCallback(async (
     name: string,
@@ -367,6 +378,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       activeAccount,
       normalizedAccount,
       loading,
+      switching,
       switchAccount,
       addAccount,
       deleteAccount,

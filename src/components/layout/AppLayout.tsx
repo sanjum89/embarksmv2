@@ -5,6 +5,8 @@ import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUser } from "@/contexts/UserContext";
+import { useAccount } from "@/contexts/AccountContext";
+import { Loader2 } from "lucide-react";
 import { useBrandColors } from "@/hooks/useBrandColors";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +14,7 @@ export function AppLayout() {
   const { expanded } = useSidebarState();
   const { styleTheme } = useTheme();
   const { signedInUserIds } = useUser();
+  const { switching } = useAccount();
   const isTraditional = styleTheme === "traditional";
 
   // Apply brand colors from active account
@@ -24,6 +27,14 @@ export function AppLayout() {
 
   return (
     <div className="h-screen overflow-hidden bg-background flex flex-col">
+      {switching && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm font-medium text-muted-foreground">Switching accounts…</p>
+          </div>
+        </div>
+      )}
       <AppSidebar />
       <main className={cn("flex-1 flex flex-col min-h-0 transition-all duration-200", expanded ? (isTraditional ? "ml-[248px]" : "ml-56") : (isTraditional ? "ml-[82px]" : "ml-16"), isTraditional && "pt-14")}>
         <div className="flex-1 flex flex-col min-h-0 overflow-hidden">

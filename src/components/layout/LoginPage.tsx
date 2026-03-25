@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import { LogIn } from "lucide-react";
 import cornerstoneLogo from "@/assets/cornerstone-logo.svg";
 
@@ -13,6 +14,7 @@ const PASSWORD = "workforceai";
 export function LoginPage() {
   const { accounts, activeAccountId, switchAccount, loading: accountsLoading } = useAccount();
   const { availableUsers, loginUser } = useUser();
+  const { setStyleTheme, setSuperLight } = useTheme();
 
   const [selectedAccountId, setSelectedAccountId] = useState(activeAccountId ?? "");
   const [password, setPassword] = useState("");
@@ -44,7 +46,10 @@ export function LoginPage() {
     const success = loginUser(adminUser.id);
     if (!success) {
       setError("Login failed. Please try again.");
+      return;
     }
+    setStyleTheme("new");
+    setSuperLight(true);
   };
 
   if (accountsLoading) {

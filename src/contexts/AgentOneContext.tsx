@@ -110,6 +110,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const [isStreaming, setIsStreaming] = useState(false);
   const [stage, setStage] = useState("welcome");
   const [loaded, setLoaded] = useState(false);
+  const [resetCounter, setResetCounter] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [showInlineAssessment, setShowInlineAssessment] = useState(false);
   const [assessmentCompletedLocal, setAssessmentCompletedLocal] = useState(false);
@@ -309,14 +310,14 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setLoaded(true);
   };
 
-  // Auto-send welcome for new joiners on first visit
+  // Auto-send welcome for new joiners on first visit (or after reset)
   useEffect(() => {
     if (loaded && messages.length === 0 && isNewJoiner && stage === "welcome") {
       streamResponse([{ role: "user" as const, content: "Hi, I just joined!" }], true);
     } else if (loaded && messages.length === 0 && !isNewJoiner) {
       streamResponse([{ role: "user" as const, content: "Hello!" }], true);
     }
-  }, [loaded]);
+  }, [loaded, resetCounter]);
 
   // ─── Step-completion watcher: reinforcement + reflection ───
   useEffect(() => {
@@ -650,11 +651,15 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setRichBlocksMap({});
     setCollapsedBlockIds(new Set());
     setIsExpanded(false);
+    // Clear all tracking refs
+    completedStepIdsRef.current = new Set();
+    firedReflectionKeysRef.current = new Set();
+    pendingReinforcementRef.current = [];
     const initialStage = isNewJoiner ? "welcome" : "general";
     setStage(initialStage);
     stageRef.current = initialStage;
-    setLoaded(false);
-    setTimeout(() => setLoaded(true), 100);
+    setLoaded(true);
+    setResetCounter(prev => prev + 1);
   };
 
   // Clear AI-returned suggestions on page navigation so contextual pills take priority

@@ -61,6 +61,11 @@ function buildSystemPrompt(stage: string, userContext: any): string {
     ? `\n\nSKILL GAPS:\n${JSON.stringify(skillGaps)}`
     : "";
 
+  const chapterData = chapterContext
+    ? `\n\nCURRENT CHAPTER: "${chapterContext.title}" — ${chapterContext.summary}\nKey takeaways: ${chapterContext.keyTakeaways.map((t: string) => `• ${t}`).join("; ")}\nIf the user asks to summarise this chapter, use the summary and takeaways above.`
+    : "";
+    : "";
+
   const richBlockInstructions = `
 
 RICH CONTENT BLOCKS (critical — use these to show data visually):

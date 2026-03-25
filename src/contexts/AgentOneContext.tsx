@@ -120,6 +120,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   // Queued reinforcement for when chat is closed
   const pendingReinforcementRef = useRef<string[]>([]);
   const completedStepIdsRef = useRef<Set<string>>(new Set());
+  const firedMilestonesRef = useRef<Set<string>>(new Set());
   const firedReflectionKeysRef = useRef<Set<string>>(new Set());
 
   const toggleBlockCollapse = useCallback((blockId: string) => {

@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { resolvePillAction } from "@/lib/pillActionResolver";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Sparkles, Home, ArrowRight, X, ChevronUp, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";

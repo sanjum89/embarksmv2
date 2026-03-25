@@ -24,10 +24,25 @@ export default function AssessmentPage() {
   // Try direct assessment ID match first, then resolve via step referenceId
   let foundAssessment = allAssessments.find((a) => a.id === aid);
   if (!foundAssessment) {
-    const target = skillTargets.find((st) => st.id === skillTargetId);
-    const stepByStepId = target?.steps.find((s) => s.id === aid && s.type === "assessment");
-    if (stepByStepId) {
-      foundAssessment = allAssessments.find((a) => a.id === stepByStepId.referenceId);
+    // Search across all skill targets (context + any loaded targets) for a step whose ID matches aid
+    for (const target of skillTargets) {
+      const stepByStepId = target.steps.find((s) => s.id === aid && s.type === "assessment");
+      if (stepByStepId) {
+        foundAssessment = allAssessments.find((a) => a.id === stepByStepId.referenceId);
+        break;
+      }
+    }
+  }
+  // Static fallback map for known Rathbones step IDs → assessment IDs
+  if (!foundAssessment) {
+    const STEP_TO_ASSESSMENT: Record<string, string> = {
+      "RAT-ASM-001": "a-rb-st2-baseline",
+      "RAT-ASM-002": "a-rb-st2-mid",
+      "RAT-ASM-003": "a-rb-st2-final",
+    };
+    const mappedId = STEP_TO_ASSESSMENT[aid ?? ""];
+    if (mappedId) {
+      foundAssessment = allAssessments.find((a) => a.id === mappedId);
     }
   }
 

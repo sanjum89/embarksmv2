@@ -651,11 +651,15 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setRichBlocksMap({});
     setCollapsedBlockIds(new Set());
     setIsExpanded(false);
+    // Clear all tracking refs
+    completedStepIdsRef.current = new Set();
+    firedReflectionKeysRef.current = new Set();
+    pendingReinforcementRef.current = [];
     const initialStage = isNewJoiner ? "welcome" : "general";
     setStage(initialStage);
     stageRef.current = initialStage;
-    setLoaded(false);
-    setTimeout(() => setLoaded(true), 100);
+    setLoaded(true);
+    setResetCounter(prev => prev + 1);
   };
 
   // Clear AI-returned suggestions on page navigation so contextual pills take priority

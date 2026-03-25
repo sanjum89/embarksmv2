@@ -78,7 +78,7 @@ export function processEvent(event: AgentOneEvent, account: NormalizedAccount): 
           ctaLabel: "Start Journey",
           ctaType: "open_agentone_chat",
           priority: "high",
-          groupingKey: `${event.account_id}:bootstrap:learner:${learnerId}`,
+          groupingKey: `${event.account_id}:bootstrap:learner:onboarding:${learnerId}`,
           metadata: { employeeName: learnerName, ctaPrompt: "I'm ready to start my onboarding journey. What should I do first?" },
         });
       }

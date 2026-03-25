@@ -190,7 +190,7 @@ export function AIChatWrapper() {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="flex-1 overflow-y-auto min-h-0" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
               <div className="px-4 py-4 space-y-3">
                 {!loaded && (
                   <div className="flex items-center justify-center py-8">

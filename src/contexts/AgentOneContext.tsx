@@ -10,7 +10,8 @@ import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { inboxNotifications } from "@/data/inboxNotifications";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
 import type { RichBlock } from "@/components/chat/RichContentBlock";
-import { chapterSummaries, agentOneContent, onboardingSuggestionPills } from "@/data/rathbonesOnboarding";
+import { chapterSummaries, agentOneContent, onboardingSuggestionPills, isDemoLearner, getDemoPersona, findDemoMatch, MANAGER_MILESTONES } from "@/data/rathbonesOnboarding";
+import { emitEvent } from "@/lib/agentOneEventEmitter";
 
 /* ─── Stage-based Reflection Triggers (explicit step IDs per learner) ─── */
 const REFLECTION_TRIGGERS: { userId: string; stepId: string; promptIndex: number }[] = [

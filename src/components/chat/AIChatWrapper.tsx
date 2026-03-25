@@ -1,5 +1,5 @@
 import { useRef, useEffect, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -39,6 +39,7 @@ function ThinkingIndicator() {
 
 export function AIChatWrapper() {
   const location = useLocation();
+  const navigate = useNavigate();
   const {
     messages,
     suggestions,
@@ -163,7 +164,7 @@ export function AIChatWrapper() {
                   </div>
                 </div>
                 <button
-                  onClick={handleReset}
+                  onClick={() => { handleReset(); navigate("/"); }}
                   disabled={isStreaming || messages.length === 0}
                   className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors"
                   title="Reset conversation"

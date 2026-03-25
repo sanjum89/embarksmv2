@@ -129,6 +129,7 @@ export default function LearnerChat() {
     collapsedBlockIds,
     toggleBlockCollapse,
   } = useAgentOne();
+  const navigate = useNavigate();
 
   const [chatActive, setChatActive] = useState(false);
   const [dismissedNudgeIds] = useState<Set<string>>(new Set());
@@ -374,7 +375,7 @@ export default function LearnerChat() {
                         </div>
                       </div>
                       <button
-                        onClick={() => { handleReset(); }}
+                        onClick={() => { handleReset(); navigate("/"); }}
                         disabled={isStreaming || !hasMessages}
                         className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors"
                         title="Reset conversation"

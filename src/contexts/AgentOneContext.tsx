@@ -810,6 +810,16 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     if (moduleMatch && currentSkillTarget) {
       const step = currentSkillTarget.steps.find(s => s.referenceId === moduleMatch[2] || s.id === moduleMatch[2]);
       const stepTitle = step?.title || "this chapter";
+      // Elliot on Domain Bridge gets bridge-specific pills
+      const persona = getDemoPersona(user.id);
+      if (persona === "elliot" && moduleMatch[1] === "RAT-ST-BRIDGE-001") {
+        return [
+          "Summarise this chapter",
+          "Why does this matter at Rathbones?",
+          "What should I focus on here?",
+          "Give me a simple example",
+        ];
+      }
       return [
         `Summarise ${stepTitle}`,
         `Quiz me on ${stepTitle}`,

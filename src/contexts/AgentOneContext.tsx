@@ -313,6 +313,25 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   // Auto-send welcome for new joiners on first visit (or after reset)
   useEffect(() => {
     if (loaded && messages.length === 0 && isNewJoiner && stage === "welcome") {
+      // Demo learners get deterministic welcome — no AI call
+      const persona = getDemoPersona(user.id);
+      if (persona) {
+        const content = agentOneContent[user.id];
+        if (content) {
+          const welcomeMsg: ChatMessage = { role: "assistant", content: content.welcome };
+          setMessages([welcomeMsg]);
+
+          // Persona-specific opening pills
+          const openingPills: Record<string, string[]> = {
+            clara: ["What's next?", "Show me my current skills", "Tell me about my cohort"],
+            elliot: ["What's next?", "Show me my current skills", "What is my onboarding plan?", "Why do I need the domain bridge?", "How will this help me in the role?"],
+            sophie: ["What's next?", "Show me my current skills", "Tell me about my cohort"],
+          };
+          setSuggestions(openingPills[persona] || []);
+          saveConversation([welcomeMsg], "welcome");
+          return;
+        }
+      }
       streamResponse([{ role: "user" as const, content: "Hi, I just joined!" }], true);
     } else if (loaded && messages.length === 0 && !isNewJoiner) {
       streamResponse([{ role: "user" as const, content: "Hello!" }], true);

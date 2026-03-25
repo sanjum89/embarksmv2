@@ -1,30 +1,28 @@
 
 
-## Plan: Make Reset Button Consistent
+## Plan: Baseline Assessment Skip Logic for RAT-ST-001
 
-### Problem
-1. `handleReset` doesn't clear `completedStepIdsRef`, `firedReflectionKeysRef`, or `pendingReinforcementRef` — leftover state from previous sessions leaks back
-2. The `loaded` false→true trick via `setTimeout(100ms)` races with the auto-welcome `useEffect`, causing inconsistent welcome message firing
-3. On `/chat` page, reset sets `chatActive = false` which hides the chat area, so the user doesn't see the fresh welcome
+The core logic already exists in both `AssessmentPage.tsx` (GATE_MAP) and `AgentOneContext.tsx` (inline assessment handler). This plan verifies consistency and updates the badge text.
+
+---
+
+### Current State
+
+- **GATE_MAP in `AssessmentPage.tsx`**: `a-rb-st2-baseline` > 80% → skips `RAT-LM-001/002/003`, unlocks `RAT-LM-004`. ≤ 80% → completes assessment, unlocks `RAT-LM-001`. Already correct.
+- **Inline assessment in `AgentOneContext.tsx`**: Same logic at line 614-626. Already correct.
+- **Sophie**: `buildST2ForLearner` already excludes the baseline assessment step and sets all modules as non-skippable. Already correct.
+- **Skipped badge text**: Currently says "Passed via assessment" — user wants "Skipped based on assessment".
 
 ### Changes
 
-**`src/contexts/AgentOneContext.tsx`** — Fix `handleReset`:
-- Clear all refs: `completedStepIdsRef.current = new Set()`, `firedReflectionKeysRef.current = new Set()`, `pendingReinforcementRef.current = []`
-- Replace the fragile `setTimeout` re-loaded trick with a dedicated `resetCounter` state (number) that increments on reset
-- Change the auto-welcome `useEffect` to depend on `resetCounter` instead of `loaded` — this guarantees the welcome fires exactly once per reset
-- After clearing state and DB row, set `loaded = true` synchronously (no timeout needed since the welcome useEffect triggers off `resetCounter`)
+**`src/components/skill-target/StepListItem.tsx`** — Update badge text:
+- Change "Passed via assessment" → "Skipped based on assessment" (line 138)
 
-**`src/pages/LearnerChat.tsx`** — Fix reset on chat page:
-- Remove `setChatActive(false)` from the reset button click handler — the chat should stay visible after reset so the user sees the fresh welcome message
-- Keep only `handleReset()` in the onClick
-
-**`src/components/chat/AIChatWrapper.tsx`** — No changes needed (floating panel reset already works correctly)
+That's the only change needed. The skip/gate logic, the visual treatment (same green checkmark and border as completed), and the clickability of skipped steps are all already implemented correctly.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/contexts/AgentOneContext.tsx` | Clear all refs on reset, replace setTimeout with resetCounter for reliable welcome re-trigger |
-| `src/pages/LearnerChat.tsx` | Remove `setChatActive(false)` from reset click so chat stays visible |
+| `src/components/skill-target/StepListItem.tsx` | Update skipped badge text to "Skipped based on assessment" |
 

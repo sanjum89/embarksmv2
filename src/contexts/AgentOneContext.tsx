@@ -313,6 +313,25 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   // Auto-send welcome for new joiners on first visit (or after reset)
   useEffect(() => {
     if (loaded && messages.length === 0 && isNewJoiner && stage === "welcome") {
+      // Demo learners get deterministic welcome — no AI call
+      const persona = getDemoPersona(user.id);
+      if (persona) {
+        const content = agentOneContent[user.id];
+        if (content) {
+          const welcomeMsg: ChatMessage = { role: "assistant", content: content.welcome };
+          setMessages([welcomeMsg]);
+
+          // Persona-specific opening pills
+          const openingPills: Record<string, string[]> = {
+            clara: ["What's next?", "Show me my current skills", "Tell me about my cohort"],
+            elliot: ["What's next?", "Show me my current skills", "What is my onboarding plan?", "Why do I need the domain bridge?", "How will this help me in the role?"],
+            sophie: ["What's next?", "Show me my current skills", "Tell me about my cohort"],
+          };
+          setSuggestions(openingPills[persona] || []);
+          saveConversation([welcomeMsg], "welcome");
+          return;
+        }
+      }
       streamResponse([{ role: "user" as const, content: "Hi, I just joined!" }], true);
     } else if (loaded && messages.length === 0 && !isNewJoiner) {
       streamResponse([{ role: "user" as const, content: "Hello!" }], true);
@@ -695,6 +714,28 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       });
     }
 
+    // Demo learners get deterministic post-baseline message
+    const persona = getDemoPersona(user.id);
+    if (persona === "elliot" && passed) {
+      const postBaselineMsg: ChatMessage = {
+        role: "assistant",
+        content: `Excellent work, Elliot — you've shown strong existing knowledge. I've tailored your path accordingly, and some early modules in Investment Management Foundations are now marked as skipped. You can still open them if you want to review them, but you'll be able to move faster into the most relevant parts of your journey.`,
+      };
+      setMessages(prev => {
+        const resultMsg: ChatMessage = {
+          role: "user",
+          content: `I just completed the Investment Management Foundations assessment. I scored ${score}% (${Math.round(score / 10)} out of 10 correct). I passed and can skip the introductory modules!`,
+        };
+        const updated = [...prev, resultMsg, postBaselineMsg];
+        setStage("post-assessment");
+        stageRef.current = "post-assessment";
+        saveConversation(updated, "post-assessment");
+        return updated;
+      });
+      setSuggestions(["Start Introduction to Rathbones", "Why were modules skipped?", "Show me my next steps"]);
+      return;
+    }
+
     const resultMsg: ChatMessage = {
       role: "user",
       content: `I just completed the Investment Management Foundations assessment. I scored ${score}% (${Math.round(score / 10)} out of 10 correct).${passed ? " I passed and can skip the introductory modules!" : " I'll go through all the modules for a solid foundation."}`,
@@ -769,6 +810,16 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     if (moduleMatch && currentSkillTarget) {
       const step = currentSkillTarget.steps.find(s => s.referenceId === moduleMatch[2] || s.id === moduleMatch[2]);
       const stepTitle = step?.title || "this chapter";
+      // Elliot on Domain Bridge gets bridge-specific pills
+      const persona = getDemoPersona(user.id);
+      if (persona === "elliot" && moduleMatch[1] === "RAT-ST-BRIDGE-001") {
+        return [
+          "Summarise this chapter",
+          "Why does this matter at Rathbones?",
+          "What should I focus on here?",
+          "Give me a simple example",
+        ];
+      }
       return [
         `Summarise ${stepTitle}`,
         `Quiz me on ${stepTitle}`,
@@ -797,6 +848,15 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
 
     // --- Skill Target detail (enhanced) ---
     if (path.startsWith("/skill-target/") && currentSkillTarget) {
+      // Elliot on Domain Bridge target page gets bridge-specific framing
+      const persona = getDemoPersona(user.id);
+      if (persona === "elliot" && currentSkillTargetId === "RAT-ST-BRIDGE-001") {
+        return [
+          "Why do I need the domain bridge?",
+          "How will this help me in the role?",
+          "What's next after the bridge?",
+        ];
+      }
       const currentStep = currentSkillTarget.steps.find(s => s.status === "available" || s.status === "in_progress");
       const completedSteps = currentSkillTarget.steps.filter(s => s.status === "completed");
       const lastCompleted = completedSteps[completedSteps.length - 1];

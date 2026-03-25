@@ -645,22 +645,22 @@ export const agentOneContent: Record<string, AgentOneOnboardingContent> = {
     ],
   },
 
-  // Elliot — adaptive path with bridge target
+  // Elliot — experienced hire, adaptive path with domain bridge
   u13: {
-    welcome: `Welcome to Rathbones, Elliot! 🎉 I'm Agent One, your AI learning companion. I see you have financial services experience — that's a great foundation for your role here.\n\nLet me pull up your profile so we can tailor your onboarding.`,
-    whatsNext: `Here's your personalised path:\n\n1. **Introduction to Rathbones** — a quick overview of heritage, investment approach, and your first 90 days\n2. **Investment Manager Foundations** — your main learning path\n3. **Domain Bridge** — a short path to map your financial services experience to the Rathbones context\n4. **Skills Assessment** — a baseline to customise your investment management training\n5. **Investment Management Foundations** — your personalised learning path\n\nYour financial services background means you'll likely progress quickly through some areas!`,
+    welcome: `Welcome onboard, Elliot — it's great to have you here. You already bring valuable experience, and I'll help you build the Rathbones-specific investment context you need to succeed here. I'll guide you through your onboarding journey, answer questions, and help you move through your assigned skill targets step by step. How has your experience been so far?`,
+    whatsNext: `You've been added to the Investment Manager Cohort — March 2026. Over the next five days, I'll guide you through your onboarding plan. Since you already have strong experience, your path is tailored to help you quickly build Rathbones-specific investment knowledge before moving deeper into the core investment manager foundations.`,
     cohortExplanation: `You're part of the **Investment Manager Cohort — March 2026** with Clara Whitfield and Sophie Langford. You're all starting the same core programme, but your path includes a Domain Bridge that maps your existing financial services experience to the Rathbones context.`,
-    skillProfileExplanation: `Here's your starting position:\n- **Client Relationship Management** — Beginner → target: Intermediate\n- **Suitability and Documentation** — Beginner → target: Intermediate\n- **Investment Communication** — Beginner → target: Intermediate\n- **Active Listening** — Intermediate → target: Advanced\n\nYour financial services background gives you a head start. The Domain Bridge will help you apply that knowledge in the Rathbones context.`,
-    onboardingStartGuidance: `Let's start with the **Introduction to Rathbones** — three chapters that cover our heritage, investment approach, and what your first 90 days look like. It's about 45 minutes total.\n\nAfter that, you'll complete your Foundations path and then the Domain Bridge before your skills assessment.`,
+    skillProfileExplanation: `Based on your profile, the system already understands your current strengths. You bring strong transferable financial services experience, but you're still building depth in Rathbones-specific investment domain knowledge. The Domain Bridge and your adaptive learning path are designed to close that gap efficiently.\n\n:::RICH_BLOCK{"type":"skills_chart","data":{},"cta":{"label":"Open My360","path":"/my-360"}}:::`,
+    onboardingStartGuidance: `Fantastic — let's begin. Because you already bring relevant experience, I'll first guide you through a short baseline assessment to understand what you already know. This helps tailor your learning path. If you perform strongly, some early modules in Investment Management Foundations can be skipped, although they'll still remain available if you want to review them.\n\nYour path after the assessment:\n1. **Introduction to Rathbones** — heritage, approach, and your first 90 days\n2. **Rathbones Investment Domain Bridge** — connecting your experience to the Rathbones context\n3. **Investment Management Foundations** — your personalised learning path`,
     positiveReinforcement: [
-      "Great progress, Elliot! Your financial services background is clearly serving you well.",
-      "Well done on the bridge target — you've successfully mapped your experience to the Rathbones context.",
-      "Strong performance! Your existing knowledge is accelerating your path.",
-      "You're ahead of schedule — keep up the excellent work!",
-      "Impressive assessment result! Your background really shows here.",
+      "Nice progress — you're moving through this well.",
+      "You're building the Rathbones-specific context quickly.",
+      "That's a strong step forward.",
+      "You're on track — let's keep going.",
+      "Your existing experience is clearly helping you pick this up fast.",
     ],
     reflectionPrompts: [
-      "How does the Rathbones approach compare to your previous experience in financial services?",
+      "I'd like to understand how your onboarding is going so far, especially as you connect your previous experience to the Rathbones investment context. What's feeling familiar, and what still feels new?",
       "What aspects of the Domain Bridge felt most familiar? What was new?",
       "Are there areas where you feel your past experience gives you an advantage?",
       "What's been the biggest adjustment so far?",
@@ -757,10 +757,15 @@ export const DEMO_SCRIPT: DemoScriptEntry[] = [
   {
     patterns: ["what's next", "what is next", "what comes next", "what's ahead"],
     response: (p) => {
+      if (p === "elliot") {
+        return `You've been added to the Investment Manager Cohort — March 2026. Over the next five days, I'll guide you through your onboarding plan. Since you already have strong experience, your path is tailored to help you quickly build Rathbones-specific investment knowledge before moving deeper into the core investment manager foundations.`;
+      }
       const content = agentOneContent[Object.keys(PERSONA_MAP).find(k => PERSONA_MAP[k] === p) || ""];
       return content?.whatsNext || `Let me outline your onboarding path, ${personaName(p)}.`;
     },
-    pills: () => ["Let's start with the onboarding plan", "Show me my current skills", "Tell me about my cohort"],
+    pills: (p) => p === "elliot"
+      ? ["Show my 5-day plan", "Show me my current skills", "Why is the domain bridge important?", "Let's start the onboarding plan"]
+      : ["Let's start with the onboarding plan", "Show me my current skills", "Tell me about my cohort"],
     nextStage: "task-list",
   },
 
@@ -778,12 +783,17 @@ export const DEMO_SCRIPT: DemoScriptEntry[] = [
 
   // ─── Let's start with the onboarding plan ───
   {
-    patterns: ["let's start", "start with the onboarding", "begin my onboarding", "start onboarding"],
+    patterns: ["let's start", "start with the onboarding", "begin my onboarding", "start onboarding", "let's start the onboarding plan"],
     response: (p) => {
+      if (p === "elliot") {
+        return `Fantastic — let's begin. Because you already bring relevant experience, I'll first guide you through a short baseline assessment to understand what you already know. This helps tailor your learning path. If you perform strongly, some early modules in Investment Management Foundations can be skipped, although they'll still remain available if you want to review them.\n\nYour path after the assessment:\n1. **Introduction to Rathbones** — heritage, approach, and your first 90 days\n2. **Rathbones Investment Domain Bridge** — connecting your experience to the Rathbones context\n3. **Investment Management Foundations** — your personalised learning path`;
+      }
       const content = agentOneContent[Object.keys(PERSONA_MAP).find(k => PERSONA_MAP[k] === p) || ""];
       return content?.onboardingStartGuidance || `Let's get your onboarding started, ${personaName(p)}!`;
     },
-    pills: () => ["Go to Introduction to Rathbones", "What will I learn?", "How long will it take?"],
+    pills: (p) => p === "elliot"
+      ? ["Take the assessment", "Why do I need the domain bridge?", "Show me my 5-day plan"]
+      : ["Go to Introduction to Rathbones", "What will I learn?", "How long will it take?"],
     nextStage: "pre-intro",
   },
 
@@ -851,6 +861,153 @@ export const DEMO_SCRIPT: DemoScriptEntry[] = [
     response: () => `Your Domain Bridge is ready. Head to your skill targets to begin — the first module will map your financial services experience to the Rathbones context.`,
     pills: () => ["What will I learn?", "How long will it take?"],
     nextStage: "pre-bridge",
+  },
+
+  // ─── Elliot: What is my onboarding plan ───
+  {
+    patterns: ["what is my onboarding plan", "my onboarding plan", "tell me about my plan"],
+    response: (p) => p === "elliot"
+      ? `Your onboarding is tailored to your background, Elliot. Because you already have financial services experience, your path focuses on building Rathbones-specific investment context:\n\n1. **Introduction to Rathbones** — heritage, approach, and your first 90 days\n2. **Rathbones Investment Domain Bridge** — connecting your existing experience to how we work here\n3. **Investment Management Foundations** — your adaptive learning path (modules may be skipped based on your baseline assessment)\n\nThis structure lets you move quickly through what you already know and spend time where it matters most.`
+      : `Your onboarding plan covers the core foundations you need, ${personaName(p)}. Would you like to see what's next?`,
+    pills: (p) => p === "elliot"
+      ? ["Why do I need the domain bridge?", "Take the assessment", "Show me my 5-day plan"]
+      : ["What's next?", "Let's start with the onboarding plan"],
+  },
+
+  // ─── Elliot: Why do I need the domain bridge ───
+  {
+    patterns: ["why do i need the domain bridge", "why is the domain bridge important", "why the bridge"],
+    response: () => `The Domain Bridge exists because your financial services experience is valuable — but wealth management at Rathbones has specific nuances that differ from broader financial services. This step is designed to connect your existing experience to the Rathbones investment context, so you can move into the core foundations with confidence. It covers how our client relationship model, regulatory framework, and investment philosophy may differ from what you've seen elsewhere.`,
+    pills: () => ["Go to my bridge target", "Show me my 5-day plan", "Let's start the onboarding plan"],
+  },
+
+  // ─── Elliot: How will this help me in the role ───
+  {
+    patterns: ["how will this help me", "how will this help me in the role", "why does this matter for my role"],
+    response: (p) => p === "elliot"
+      ? `Everything in your onboarding path is designed to make you effective in your Investment Manager role at Rathbones. The Domain Bridge connects your existing knowledge to our specific context. The baseline assessment ensures you don't waste time on material you already know. And the Foundations path builds the depth you need in client suitability, portfolio construction, and communication — all tailored to how we work here.`
+      : `Your onboarding is designed to build the specific skills and knowledge you need to succeed as an Investment Manager at Rathbones, ${personaName(p)}.`,
+    pills: (p) => p === "elliot"
+      ? ["What's next?", "Show me my current skills", "Let's start the onboarding plan"]
+      : ["What's next?", "Let's start with the onboarding plan"],
+  },
+
+  // ─── Elliot: Show my 5-day plan ───
+  {
+    patterns: ["show my 5-day plan", "show me my 5-day plan", "5-day plan", "five day plan", "5 day plan"],
+    response: (p) => p === "elliot"
+      ? `Here's your 5-day onboarding plan, Elliot:\n\n**Day 1 — Welcome & Orientation**\nWelcome session, meet Agent One, and start Introduction to Rathbones\n\n**Day 2 — Domain Bridge**\nBegin the Rathbones Investment Domain Bridge — mapping your financial services experience to the wealth management context\n\n**Day 3 — Foundation Skills**\nStart Investment Management Foundations with your adaptive baseline assessment\n\n**Day 4 — Core Learning**\nContinue through your personalised Foundations modules and your first role play\n\n**Day 5 — Consolidation**\nComplete remaining modules, reflections, and plan your Week 2`
+      : `Here's your 5-day onboarding plan:\n\n**Day 1** — Welcome & Introduction to Rathbones\n**Day 2** — Foundation Skills — Client Relationships\n**Day 3** — Foundation Skills — Collaboration & Process\n**Day 4** — Integrity & First Role Play\n**Day 5** — Start Investment Management Path`,
+    pills: (p) => p === "elliot"
+      ? ["Let's start the onboarding plan", "Why do I need the domain bridge?", "Show me my current skills"]
+      : ["Let's start with the onboarding plan", "What should I focus on first?"],
+  },
+
+  // ─── Elliot: What are my skill gaps ───
+  {
+    patterns: ["what are my skill gaps", "skill gaps", "where are my gaps"],
+    response: (p) => p === "elliot"
+      ? `Based on your profile, your transferable skills in financial services are strong — but there are specific gaps in Rathbones investment domain knowledge. The key areas to build are:\n\n- **Rathbones Investment Philosophy** — how our bespoke approach differs from model-based firms\n- **Client Suitability at Rathbones** — our specific documentation and compliance standards\n- **Internal Collaboration** — how IMs work with Financial Planners and Portfolio Managers here\n\nThe Domain Bridge and your adaptive learning path are designed to close these gaps efficiently.\n\n:::RICH_BLOCK{"type":"skills_chart","data":{},"cta":{"label":"Open My360","path":"/my-360"}}:::`
+      : `Let me show you where your current skills compare to what's needed for the role.\n\n:::RICH_BLOCK{"type":"skills_chart","data":{},"cta":{"label":"Open My360","path":"/my-360"}}:::`,
+    pills: (p) => p === "elliot"
+      ? ["Why do I need the domain bridge?", "Let's start the onboarding plan", "Open My360"]
+      : ["What should I focus on?", "Let's start with the onboarding plan"],
+    richBlockType: "skills_chart",
+  },
+
+  // ─── Elliot: Why were modules skipped ───
+  {
+    patterns: ["why were modules skipped", "why are modules skipped", "why did i skip modules", "skipped modules"],
+    response: () => `Your baseline assessment showed strong existing knowledge, so I've marked the first three modules in Investment Management Foundations as skipped. This means you won't need to complete them to progress — but they're still fully accessible if you want to review any of the material. This adaptive approach lets you focus your time on the areas where you'll gain the most value.`,
+    pills: () => ["Start Introduction to Rathbones", "Show me my next steps", "Open my skill target"],
+  },
+
+  // ─── Elliot: Start Introduction to Rathbones ───
+  {
+    patterns: ["start introduction to rathbones", "go to introduction to rathbones", "open introduction to rathbones"],
+    response: () => `The Introduction to Rathbones is ready for you. It has three short chapters covering our heritage and values, how we invest, and what to expect in your first 90 days. Head to your skill targets to begin.`,
+    pills: () => ["What will I learn?", "How long will it take?"],
+    nextStage: "pre-intro",
+  },
+
+  // ─── Elliot: Show me my next steps ───
+  {
+    patterns: ["show me my next steps", "what's next after this", "my next steps", "next steps"],
+    response: (p) => {
+      if (p === "elliot") {
+        return `Based on your current progress, here's what's ahead:\n\n1. **Introduction to Rathbones** — if not yet completed\n2. **Rathbones Investment Domain Bridge** — connecting your experience to our context\n3. **Investment Management Foundations** — your adaptive learning path\n\nI'll guide you through each step. Would you like to start the next one?`;
+      }
+      return `Let me check your progress and show you what's coming up next, ${personaName(p)}.`;
+    },
+    pills: (p) => p === "elliot"
+      ? ["Start Introduction to Rathbones", "Go to my bridge target", "Show me my current skills"]
+      : ["What's next?", "Show my progress"],
+  },
+
+  // ─── Elliot: Why does this matter at Rathbones (chapter context) ───
+  {
+    patterns: ["why does this matter at rathbones", "why is this relevant", "how does this apply at rathbones"],
+    requiresChapter: true,
+    response: (_p, ctx) => {
+      if (!ctx?.chapterTitle) return "This material is directly relevant to how Investment Managers operate at Rathbones.";
+      return `**${ctx.chapterTitle}** is particularly important in the Rathbones context because our approach to wealth management is bespoke and relationship-led. Unlike model-based firms, every decision you make needs to reflect the individual client's circumstances, goals, and risk profile. The concepts in this chapter connect directly to how you'll work with clients and colleagues here.`;
+    },
+    pills: () => ["Summarise this chapter", "What should I focus on here?", "Give me a simple example"],
+  },
+
+  // ─── Elliot: What should I focus on here (chapter context) ───
+  {
+    patterns: ["what should i focus on here", "what to focus on in this chapter"],
+    requiresChapter: true,
+    response: (_p, ctx) => {
+      if (!ctx?.chapterTakeaways?.length) return "Focus on the key concepts and how they apply to your day-to-day work at Rathbones.";
+      return `For **${ctx.chapterTitle}**, I'd recommend focusing on these key areas:\n\n${ctx.chapterTakeaways.map(t => `- ${t}`).join("\n")}\n\nThink about how each of these connects to your previous experience — where are the similarities, and where does the Rathbones approach differ?`;
+    },
+    pills: () => ["Summarise this chapter", "Why does this matter at Rathbones?", "Give me a simple example"],
+  },
+
+  // ─── Elliot: Give me a simple example (chapter context) ───
+  {
+    patterns: ["give me a simple example", "give me an example", "can you give an example"],
+    requiresChapter: true,
+    response: (_p, ctx) => {
+      if (!ctx?.chapterTitle) return "Let me think of a practical example for you.";
+      return `Here's a practical example for **${ctx.chapterTitle}**:\n\nImagine a new client comes to you with a portfolio they've managed themselves. They want Rathbones to take over, but they're attached to several positions. At Rathbones, you'd need to:\n1. Understand their emotional attachment and financial rationale for each position\n2. Assess suitability against their stated objectives and risk profile\n3. Propose a transition plan that respects their feelings while moving toward a better-aligned portfolio\n\nThis is where the Rathbones bespoke approach really shows — it's not just about the numbers, it's about the relationship.`;
+    },
+    pills: () => ["Summarise this chapter", "What should I focus on here?", "What's next after this?"],
+  },
+
+  // ─── Elliot: Reflection responses ───
+  {
+    patterns: ["it's going well", "going well so far", "it's going well so far"],
+    response: (p) => p === "elliot"
+      ? `That's great to hear, Elliot. It sounds like you're settling in well and the transition from your previous experience is going smoothly. Is there anything specific that's stood out — either something that feels very familiar, or something that's been a useful new perspective?`
+      : `Glad to hear that, ${personaName(p)}! What's been the highlight so far?`,
+    pills: (p) => p === "elliot"
+      ? ["The domain bridge is helping", "I understand the general concepts but need more Rathbones context", "Yes, add that as my reflection"]
+      : ["Yes, add that as my reflection", "What's next?"],
+  },
+
+  {
+    patterns: ["general concepts", "understand the general concepts", "need more rathbones context", "i understand the general concepts but need more rathbones context"],
+    response: (p) => p === "elliot"
+      ? `That makes perfect sense, Elliot. Your financial services foundation means the general concepts are familiar — it's the Rathbones-specific application that needs building. That's exactly what the Domain Bridge and your adaptive path are designed for. You're in the right place, and you'll keep building that context as you progress.`
+      : `That's a very honest and useful reflection, ${personaName(p)}. The training ahead will help build that context.`,
+    pills: () => ["Yes, add that as my reflection", "What's next?", "Show me my next steps"],
+  },
+
+  {
+    patterns: ["domain bridge is helping", "the domain bridge is helping", "bridge is helpful"],
+    response: () => `That's exactly what we want to hear, Elliot. The Domain Bridge is designed to make your transition as smooth as possible — connecting what you already know to how things work at Rathbones. Once you've completed it, you'll move into the core Foundations with a solid Rathbones-specific context.`,
+    pills: () => ["Yes, add that as my reflection", "What's next?", "Show me my next steps"],
+  },
+
+  {
+    patterns: ["still have some questions", "i still have some questions", "have questions"],
+    response: (p) => `That's completely normal, ${personaName(p)} — questions are a sign of engaged learning. What's on your mind? I can help clarify anything about your onboarding, the Rathbones approach, or the material you've covered so far.`,
+    pills: (p) => p === "elliot"
+      ? ["Why do I need the domain bridge?", "What are my skill gaps?", "Yes, add that as my reflection"]
+      : ["What should I focus on?", "Yes, add that as my reflection"],
   },
 ];
 

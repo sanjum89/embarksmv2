@@ -64,7 +64,6 @@ function buildSystemPrompt(stage: string, userContext: any): string {
   const chapterData = chapterContext
     ? `\n\nCURRENT CHAPTER: "${chapterContext.title}" — ${chapterContext.summary}\nKey takeaways: ${chapterContext.keyTakeaways.map((t: string) => `• ${t}`).join("; ")}\nIf the user asks to summarise this chapter, use the summary and takeaways above.`
     : "";
-    : "";
 
   const richBlockInstructions = `
 

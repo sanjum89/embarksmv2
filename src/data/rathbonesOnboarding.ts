@@ -709,6 +709,218 @@ export const onboardingSuggestionPills: Record<string, string[]> = {
 };
 
 /* ═══════════════════════════════════════════════════════════
+ * DEMO LEARNER HELPERS — derived from cohort, not hardcoded
+ * ═══════════════════════════════════════════════════════════ */
+
+const PERSONA_MAP: Record<string, "clara" | "elliot" | "sophie"> = {};
+for (const member of investmentManagerCohort.members) {
+  const first = member.name.split(" ")[0].toLowerCase() as "clara" | "elliot" | "sophie";
+  PERSONA_MAP[member.employeeId] = first;
+}
+
+const DEMO_LEARNER_ID_SET = new Set(investmentManagerCohort.members.map(m => m.employeeId));
+
+export function isDemoLearner(userId: string): boolean {
+  return DEMO_LEARNER_ID_SET.has(userId);
+}
+
+export function getDemoPersona(userId: string): "clara" | "elliot" | "sophie" | null {
+  return PERSONA_MAP[userId] || null;
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * DEMO SCRIPT — deterministic input → response map
+ * ═══════════════════════════════════════════════════════════ */
+
+export interface DemoScriptEntry {
+  patterns: string[];
+  /** If true, only intercept when chapterContext is available */
+  requiresChapter?: boolean;
+  response: (persona: "clara" | "elliot" | "sophie", ctx?: { chapterTitle?: string; chapterSummary?: string; chapterTakeaways?: string[] }) => string;
+  pills: (persona: "clara" | "elliot" | "sophie", stage: string) => string[];
+  nextStage?: string;
+  richBlockType?: string;
+}
+
+const personaName = (p: "clara" | "elliot" | "sophie") =>
+  p === "clara" ? "Clara" : p === "elliot" ? "Elliot" : "Sophie";
+
+export const DEMO_SCRIPT: DemoScriptEntry[] = [
+  // ─── Opening / positive experience ───
+  {
+    patterns: ["positive experience", "really enjoying", "great so far", "loving it"],
+    response: (p) => `That's wonderful to hear, ${personaName(p)}! It's great that you're settling in well. Let's make sure you have a clear view of what's coming up — would you like to see what's next, or take a look at your current skills?`,
+    pills: () => ["What's next?", "Show me my current skills"],
+  },
+
+  // ─── What's next ───
+  {
+    patterns: ["what's next", "what is next", "what comes next", "what's ahead"],
+    response: (p) => {
+      const content = agentOneContent[Object.keys(PERSONA_MAP).find(k => PERSONA_MAP[k] === p) || ""];
+      return content?.whatsNext || `Let me outline your onboarding path, ${personaName(p)}.`;
+    },
+    pills: () => ["Let's start with the onboarding plan", "Show me my current skills", "Tell me about my cohort"],
+    nextStage: "task-list",
+  },
+
+  // ─── Show my skills ───
+  {
+    patterns: ["show me my current skills", "show my skills", "my current skills", "view my skills", "what are my skills"],
+    response: (p) => {
+      const content = agentOneContent[Object.keys(PERSONA_MAP).find(k => PERSONA_MAP[k] === p) || ""];
+      return (content?.skillProfileExplanation || `Here's your skill profile, ${personaName(p)}.`) +
+        `\n\n:::RICH_BLOCK{"type":"skills_chart","data":{},"cta":{"label":"View My 360","path":"/my-360"}}:::`;
+    },
+    pills: () => ["Let's start with the onboarding plan", "What should I focus on?"],
+    richBlockType: "skills_chart",
+  },
+
+  // ─── Let's start with the onboarding plan ───
+  {
+    patterns: ["let's start", "start with the onboarding", "begin my onboarding", "start onboarding"],
+    response: (p) => {
+      const content = agentOneContent[Object.keys(PERSONA_MAP).find(k => PERSONA_MAP[k] === p) || ""];
+      return content?.onboardingStartGuidance || `Let's get your onboarding started, ${personaName(p)}!`;
+    },
+    pills: () => ["Go to Introduction to Rathbones", "What will I learn?", "How long will it take?"],
+    nextStage: "pre-intro",
+  },
+
+  // ─── Summarise this chapter (requires chapter context) ───
+  {
+    patterns: ["summarize", "summarise", "summary of this", "recap this chapter", "what did this cover"],
+    requiresChapter: true,
+    response: (_p, ctx) => {
+      if (!ctx?.chapterTitle) return "Let me summarise this chapter for you.";
+      let resp = `Here's a summary of **${ctx.chapterTitle}**:\n\n${ctx.chapterSummary || ""}`;
+      if (ctx.chapterTakeaways?.length) {
+        resp += "\n\n**Key takeaways:**\n" + ctx.chapterTakeaways.map(t => `- ${t}`).join("\n");
+      }
+      return resp;
+    },
+    pills: () => ["What's next after this?", "Quiz me on this", "What should I focus on?"],
+  },
+
+  // ─── What should I focus on ───
+  {
+    patterns: ["what should i focus on", "where should i focus", "what do i prioritise"],
+    response: (p) => `Great question, ${personaName(p)}. Based on your current progress, I'd recommend focusing on your active skill target — work through each chapter in order, and don't skip the reflections. They help consolidate your learning and give your manager visibility into how you're progressing.`,
+    pills: () => ["Let's start with the onboarding plan", "Show me my current skills"],
+  },
+
+  // ─── What is a reflection ───
+  {
+    patterns: ["what is a reflection", "what's a reflection", "tell me about reflections", "how do reflections work"],
+    response: (p) => `Reflections are short check-ins where you share how you're finding the training, ${personaName(p)}. They help you consolidate what you've learned and give your manager, Julian, insight into your progress and confidence. I'll prompt you at key points — you just respond naturally, and I'll log it for you.`,
+    pills: () => ["Yes, add that as my reflection", "What's next?"],
+  },
+
+  // ─── Yes, add as reflection ───
+  {
+    patterns: ["yes, add that as my reflection", "add that as my reflection", "yes, log that", "submit my reflection"],
+    response: (p) => `Done! I've logged your reflection, ${personaName(p)}. Your manager Julian will be able to see it in his team dashboard. Keep up the great work — reflections like these show real engagement with your learning.`,
+    pills: () => ["What's next?", "Show my progress"],
+    nextStage: "post-completion",
+  },
+
+  // ─── Tell me about my cohort ───
+  {
+    patterns: ["tell me about my cohort", "who's in my cohort", "who else is onboarding", "my cohort"],
+    response: (p) => {
+      const content = agentOneContent[Object.keys(PERSONA_MAP).find(k => PERSONA_MAP[k] === p) || ""];
+      return content?.cohortExplanation || `You're part of the Investment Manager Cohort — March 2026.`;
+    },
+    pills: () => ["What's next?", "Let's start with the onboarding plan"],
+  },
+
+  // ─── Elliot-specific: domain bridge ───
+  {
+    patterns: ["domain bridge", "what's a domain bridge", "what is a domain bridge", "tell me about the bridge"],
+    response: (p) => p === "elliot"
+      ? `The Domain Bridge is a short learning path designed specifically for you, Elliot. It maps your existing financial services experience to the Rathbones wealth management context. There are two modules and a role play — it should feel quite natural given your background.`
+      : `The Domain Bridge is a specialised path for learners transitioning from financial services. It maps existing experience to the Rathbones wealth management context.`,
+    pills: (p) => p === "elliot"
+      ? ["Go to my bridge target", "What's next?"]
+      : ["What's next?", "Let's start with the onboarding plan"],
+  },
+
+  // ─── Go to my bridge (Elliot) ───
+  {
+    patterns: ["go to my bridge", "start the bridge", "open bridge target"],
+    response: () => `Your Domain Bridge is ready. Head to your skill targets to begin — the first module will map your financial services experience to the Rathbones context.`,
+    pills: () => ["What will I learn?", "How long will it take?"],
+    nextStage: "pre-bridge",
+  },
+];
+
+/**
+ * Find a matching demo script entry for the given input.
+ * Returns null if no match or if chapter context is required but missing.
+ */
+export function findDemoMatch(
+  input: string,
+  hasChapterContext: boolean
+): DemoScriptEntry | null {
+  const lower = input.toLowerCase().trim();
+  for (const entry of DEMO_SCRIPT) {
+    if (entry.requiresChapter && !hasChapterContext) continue;
+    if (entry.patterns.some(p => lower.includes(p))) return entry;
+  }
+  return null;
+}
+
+/* ═══════════════════════════════════════════════════════════
+ * MANAGER MILESTONES — step completion → manager event
+ * ═══════════════════════════════════════════════════════════ */
+
+export interface ManagerMilestone {
+  stepId: string;
+  eventType: string;
+  category: string;
+  titleTemplate: (name: string) => string;
+  subtitleTemplate: (name: string) => string;
+}
+
+export const MANAGER_MILESTONES: ManagerMilestone[] = [
+  {
+    stepId: "RAT-INTRO-001",
+    eventType: "onboarding_started",
+    category: "onboarding_progress",
+    titleTemplate: (n) => `${n} has started onboarding`,
+    subtitleTemplate: (n) => `${n} began the Introduction to Rathbones — their onboarding journey is underway.`,
+  },
+  {
+    stepId: "RAT-INTRO-003",
+    eventType: "skill_target_completed",
+    category: "onboarding_progress",
+    titleTemplate: (n) => `${n} completed Introduction to Rathbones`,
+    subtitleTemplate: (n) => `${n} finished all three introductory chapters and is ready for the next phase.`,
+  },
+  {
+    stepId: "RAT-ASM-001",
+    eventType: "assessment_completed",
+    category: "onboarding_progress",
+    titleTemplate: (n) => `${n} completed the baseline assessment`,
+    subtitleTemplate: (n) => `${n} has taken the Investment Management Foundations baseline assessment.`,
+  },
+  {
+    stepId: "s-rb-c3",
+    eventType: "reflection_submitted",
+    category: "reflection_request",
+    titleTemplate: (n) => `${n} submitted a reflection`,
+    subtitleTemplate: (n) => `${n} has shared their Day 2/3 onboarding reflection.`,
+  },
+  {
+    stepId: "RAT-ASM-003",
+    eventType: "onboarding_midpoint_reached",
+    category: "onboarding_progress",
+    titleTemplate: (n) => `${n} reached readiness milestone`,
+    subtitleTemplate: (n) => `${n} completed the final assessment — a key onboarding readiness milestone.`,
+  },
+];
+
+/* ═══════════════════════════════════════════════════════════
  * GET ALL RATHBONES SKILL TARGETS FOR A USER
  * ═══════════════════════════════════════════════════════════ */
 

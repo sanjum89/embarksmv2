@@ -10,19 +10,18 @@ import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { inboxNotifications } from "@/data/inboxNotifications";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
 import type { RichBlock } from "@/components/chat/RichContentBlock";
-import { chapterSummaries, agentOneContent, onboardingSuggestionPills } from "@/data/rathbonesOnboarding";
+import { chapterSummaries, agentOneContent, onboardingSuggestionPills, isDemoLearner, getDemoPersona, findDemoMatch, MANAGER_MILESTONES } from "@/data/rathbonesOnboarding";
+import { emitEvent } from "@/lib/agentOneEventEmitter";
 
-/* ─── Stage-based Reflection Triggers (explicit step IDs per learner) ─── */
-const REFLECTION_TRIGGERS: { userId: string; stepId: string; promptIndex: number }[] = [
-  // Day 2/3 reflection — after "Suitability, Documentation, and Client Fairness" (s-rb-c3)
-  { userId: "u12", stepId: "s-rb-c3", promptIndex: 0 },
-  { userId: "u13", stepId: "s-rb-c3", promptIndex: 0 },
-  { userId: "u14", stepId: "s-rb-c3", promptIndex: 0 },
-  // Final onboarding reflection — after final assessment (RAT-ASM-003)
-  { userId: "u12", stepId: "RAT-ASM-003", promptIndex: 3 },
-  { userId: "u13", stepId: "RAT-ASM-003", promptIndex: 3 },
-  { userId: "u14", stepId: "RAT-ASM-003", promptIndex: 3 },
-];
+/* ─── Stage-based Reflection Triggers (derived from cohort) ─── */
+import { investmentManagerCohort } from "@/data/rathbonesOnboarding";
+const REFLECTION_TRIGGERS: { userId: string; stepId: string; promptIndex: number }[] = [];
+for (const member of investmentManagerCohort.members) {
+  REFLECTION_TRIGGERS.push(
+    { userId: member.employeeId, stepId: "s-rb-c3", promptIndex: 0 },
+    { userId: member.employeeId, stepId: "RAT-ASM-003", promptIndex: 3 },
+  );
+}
 
 const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/super-agent-chat`;
 
@@ -121,6 +120,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   // Queued reinforcement for when chat is closed
   const pendingReinforcementRef = useRef<string[]>([]);
   const completedStepIdsRef = useRef<Set<string>>(new Set());
+  const firedMilestonesRef = useRef<Set<string>>(new Set());
   const firedReflectionKeysRef = useRef<Set<string>>(new Set());
 
   const toggleBlockCollapse = useCallback((blockId: string) => {
@@ -354,6 +354,32 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
           } else {
             pendingReinforcementRef.current.push(reflMsg.content);
           }
+        }
+      }
+
+      // ─── Manager milestone emission (deduplicated) ───
+      const milestoneKey = `${user.id}:${step.id}`;
+      if (!firedMilestonesRef.current.has(milestoneKey)) {
+        const milestone = MANAGER_MILESTONES.find(m => m.stepId === step.id);
+        if (milestone && normalizedAccount && accountId) {
+          firedMilestonesRef.current.add(milestoneKey);
+          const memberName = investmentManagerCohort.members.find(m => m.employeeId === user.id)?.name || user.name;
+          // Find Julian (manager) — reportsTo field
+          const managerEmployeeId = (employee as any)?.reportsTo || null;
+          emitEvent({
+            account_id: accountId,
+            event_type: milestone.eventType as import("@/types/agentOneActions").EventType,
+            category: milestone.category as import("@/types/agentOneActions").ActionCategory,
+            source_employee_id: user.id,
+            target_employee_id: managerEmployeeId,
+            related_employee_ids: [user.id],
+            payload: {
+              title: milestone.titleTemplate(memberName),
+              subtitle: milestone.subtitleTemplate(memberName),
+            },
+          }, normalizedAccount).catch(err =>
+            console.error("[AgentOne] Milestone emission failed:", err)
+          );
         }
       }
     }
@@ -591,6 +617,49 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // ─── Demo interceptor: deterministic responses for Clara/Elliot/Sophie ───
+    const persona = getDemoPersona(user.id);
+    if (persona) {
+      const match = findDemoMatch(text, !!chapterContext);
+      if (match) {
+        const userMsg: ChatMessage = { role: "user", content: text };
+        setMessages(prev => [...prev, userMsg]);
+        setInput("");
+
+        const ctx = chapterContext ? {
+          chapterTitle: chapterContext.title,
+          chapterSummary: chapterContext.summary,
+          chapterTakeaways: chapterContext.keyTakeaways,
+        } : undefined;
+
+        const responseText = match.response(persona, ctx);
+        const pills = match.pills(persona, stageRef.current);
+
+        // Parse rich blocks from response
+        const { cleanText, blocks } = parseRichBlocks(responseText);
+
+        setTimeout(() => {
+          setMessages(prev => {
+            const updated = [...prev, { role: "assistant" as const, content: cleanText }];
+            if (blocks.length > 0) {
+              const idx = updated.length - 1;
+              setRichBlocksMap(old => ({ ...old, [idx]: blocks }));
+              setIsExpanded(true);
+              setCollapsedBlockIds(new Set());
+            }
+            saveConversation(updated, match.nextStage || stageRef.current);
+            return updated;
+          });
+          setSuggestions(pills);
+          if (match.nextStage) {
+            setStage(match.nextStage);
+            stageRef.current = match.nextStage;
+          }
+        }, 600);
+        return;
+      }
+    }
+
     // Auto-collapse if message doesn't look like a data query
     const dataKeywords = ["show", "skills", "progress", "targets", "inbox", "chart", "table", "display", "view", "gap"];
     const isDataQuery = dataKeywords.some(k => lower.includes(k));
@@ -603,7 +672,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setMessages(allMsgs);
     setInput("");
     streamResponse(allMsgs);
-  }, [isStreaming, assessmentCompleted, isExpanded]);
+  }, [isStreaming, assessmentCompleted, isExpanded, chapterContext, user.id]);
 
   const handleInlineAssessmentComplete = (score: number, _answers: number[]) => {
     setAssessmentCompletedLocal(true);
@@ -654,6 +723,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     // Clear all tracking refs
     completedStepIdsRef.current = new Set();
     firedReflectionKeysRef.current = new Set();
+    firedMilestonesRef.current = new Set();
     pendingReinforcementRef.current = [];
     const initialStage = isNewJoiner ? "welcome" : "general";
     setStage(initialStage);

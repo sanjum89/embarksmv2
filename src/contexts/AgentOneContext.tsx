@@ -714,6 +714,28 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       });
     }
 
+    // Demo learners get deterministic post-baseline message
+    const persona = getDemoPersona(user.id);
+    if (persona === "elliot" && passed) {
+      const postBaselineMsg: ChatMessage = {
+        role: "assistant",
+        content: `Excellent work, Elliot — you've shown strong existing knowledge. I've tailored your path accordingly, and some early modules in Investment Management Foundations are now marked as skipped. You can still open them if you want to review them, but you'll be able to move faster into the most relevant parts of your journey.`,
+      };
+      setMessages(prev => {
+        const resultMsg: ChatMessage = {
+          role: "user",
+          content: `I just completed the Investment Management Foundations assessment. I scored ${score}% (${Math.round(score / 10)} out of 10 correct). I passed and can skip the introductory modules!`,
+        };
+        const updated = [...prev, resultMsg, postBaselineMsg];
+        setStage("post-assessment");
+        stageRef.current = "post-assessment";
+        saveConversation(updated, "post-assessment");
+        return updated;
+      });
+      setSuggestions(["Start Introduction to Rathbones", "Why were modules skipped?", "Show me my next steps"]);
+      return;
+    }
+
     const resultMsg: ChatMessage = {
       role: "user",
       content: `I just completed the Investment Management Foundations assessment. I scored ${score}% (${Math.round(score / 10)} out of 10 correct).${passed ? " I passed and can skip the introductory modules!" : " I'll go through all the modules for a solid foundation."}`,

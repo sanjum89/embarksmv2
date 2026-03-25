@@ -1,48 +1,29 @@
 
 
-## Plan: Auto-scroll to Bottom on CTA Chat Launch (Final)
-
-### Problem
-When a CTA card triggers `handleSend`, prior chat history is visible and the new "Thinking..." indicator appears below the fold, making it look like nothing is happening.
+## Plan: Login to New UI + Account Switch Overlay
 
 ### Changes
 
-**1. `src/pages/LearnerChat.tsx`**
+**1. `src/components/layout/LoginPage.tsx`** — Force New UI + Super Light on login
 
-- Add `openedFromCta` ref (boolean) and `ctaLabel` state (string | null)
-- When `onChatAction` fires from `AgentOneNudgeStack`, set both `openedFromCta.current = true` and `ctaLabel` based on prompt content, then call `handleSend`
-- **First scroll**: After `setChatActive(true)`, use `requestAnimationFrame` → `chatEndRef.current?.scrollIntoView({ behavior: "auto" })`
-- **Second scroll**: In `useEffect` watching `[isStreaming]`, if `openedFromCta.current` is true and streaming just started, scroll again to ensure the Thinking row is visible
+After successful `loginUser()` call, set the theme to "new" and superLight to true:
+- Import `useTheme` from ThemeContext
+- After `loginUser(adminUser.id)` succeeds, call `setStyleTheme("new")` and `setSuperLight(true)`
 
-- **User scroll override — near-bottom detection**: On the messages container's `onScroll`, compute whether the user is near the bottom:
-  ```
-  const { scrollTop, scrollHeight, clientHeight } = container;
-  const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-  const isNearBottom = distanceFromBottom < 80; // ~80px threshold
-  ```
-  Store `isNearBottom` in a ref. Auto-scroll only continues while `isNearBottom` is true. If the user scrolls meaningfully upward (away from bottom), `isNearBottom` becomes false and auto-scroll stops. No need to track scroll direction — only position matters.
+**2. Account switch loading overlay**
 
-- **CTA context cleanup**: Clear `openedFromCta.current = false` and `setCtaLabel(null)` in a `useEffect` that watches `messages.length`. When a new assistant message appears after the CTA send (i.e., messages count increases while `openedFromCta.current` is true and `isStreaming` transitions false), clear both. Also clear if `isStreaming` goes false without a new message (error/cancel). This ensures old CTA context never persists into the next interaction or next panel open.
+Add a "Switching accounts..." overlay with a brief delay when switching between accounts.
 
-- Show contextual label above ThinkingIndicator when `ctaLabel` is set and `isStreaming` is true
-- Show "↑ Earlier messages" pill at top of chat area when `openedFromCta` is active and messages exist above viewport
-
-**CTA label mapping** (from prompt content):
-- Contains "onboarding" → "Starting your onboarding journey"
-- Contains "reflection" → "Opening reflection request"
-- Contains "skill"/"target" → "Loading your assigned targets"
-- Default → "Agent One is responding..."
-
-**2. `src/components/chat/AIChatWrapper.tsx`** (floating panel)
-
-- Same pattern: `openedFromCta` ref, dual scroll, near-bottom detection for auto-follow, clean CTA context clearing after first assistant response
+- **`src/contexts/AccountContext.tsx`**: Add `switching` state (boolean) to context. In `switchAccount`, set `switching = true`, use `setTimeout` (~1.5s) before actually updating `activeAccountId`, then set `switching = false`.
+- **`src/components/layout/AppLayout.tsx`**: Read `switching` from AccountContext. When true, render a full-screen overlay with "Switching accounts..." text and a subtle spinner/animation, blocking the main content underneath.
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/pages/LearnerChat.tsx` | openedFromCta ref, ctaLabel state, dual auto-scroll, near-bottom detection, CTA context cleanup, context label UI, earlier-messages pill |
-| `src/components/chat/AIChatWrapper.tsx` | Same scroll + CTA behavior for floating panel |
+| `src/components/layout/LoginPage.tsx` | Set styleTheme to "new" and superLight to true on login |
+| `src/contexts/AccountContext.tsx` | Add `switching` boolean state, delay account switch by ~1.5s |
+| `src/components/layout/AppLayout.tsx` | Show "Switching accounts..." overlay when `switching` is true |
 
-No DB changes. No new components. Behavior fix only.
+No DB changes.
 

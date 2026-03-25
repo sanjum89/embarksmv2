@@ -1,95 +1,30 @@
 
 
-## Plan: Wire Onboarding Flow Logic (Refined)
+## Plan: Make Reset Button Consistent
+
+### Problem
+1. `handleReset` doesn't clear `completedStepIdsRef`, `firedReflectionKeysRef`, or `pendingReinforcementRef` — leftover state from previous sessions leaks back
+2. The `loaded` false→true trick via `setTimeout(100ms)` races with the auto-welcome `useEffect`, causing inconsistent welcome message firing
+3. On `/chat` page, reset sets `chatActive = false` which hides the chat area, so the user doesn't see the fresh welcome
+
+### Changes
+
+**`src/contexts/AgentOneContext.tsx`** — Fix `handleReset`:
+- Clear all refs: `completedStepIdsRef.current = new Set()`, `firedReflectionKeysRef.current = new Set()`, `pendingReinforcementRef.current = []`
+- Replace the fragile `setTimeout` re-loaded trick with a dedicated `resetCounter` state (number) that increments on reset
+- Change the auto-welcome `useEffect` to depend on `resetCounter` instead of `loaded` — this guarantees the welcome fires exactly once per reset
+- After clearing state and DB row, set `loaded = true` synchronously (no timeout needed since the welcome useEffect triggers off `resetCounter`)
+
+**`src/pages/LearnerChat.tsx`** — Fix reset on chat page:
+- Remove `setChatActive(false)` from the reset button click handler — the chat should stay visible after reset so the user sees the fresh welcome message
+- Keep only `handleReset()` in the onClick
+
+**`src/components/chat/AIChatWrapper.tsx`** — No changes needed (floating panel reset already works correctly)
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/pages/AssessmentPage.tsx` | Assessment gate logic using explicit step IDs |
-| `src/contexts/AgentOneContext.tsx` | Stage-based reflections, queued reinforcement, chapter context, onboarding pills |
-| `supabase/functions/super-agent-chat/index.ts` | Chapter summary injection into system prompt |
-
----
-
-### 1. Assessment Gate Logic — Explicit Step IDs (`src/pages/AssessmentPage.tsx`)
-
-Replace all relative-order offset logic with explicit step ID maps:
-
-**Baseline (`a-rb-st2-baseline`) — score > 80%:**
-- Mark `RAT-ASM-001` completed
-- Set `RAT-LM-001`, `RAT-LM-002`, `RAT-LM-003` to `skipped`
-- Set `RAT-LM-004` to `available`
-
-**Baseline ≤ 80%:**
-- Mark `RAT-ASM-001` completed
-- Set `RAT-LM-001` to `available`
-
-**Mid (`a-rb-st2-mid`) — score < 80%:**
-- Reset `RAT-LM-004`, `RAT-LM-005`, `RAT-LM-006`, `RAT-LM-007` to `available`/`locked` as appropriate
-- Set `RAT-ASM-002` back to `available` (retry)
-
-**Mid ≥ 80%:**
-- Mark `RAT-ASM-002` completed
-- Set `RAT-RP-001` to `available`
-
-**Final (`a-rb-st2-final`) — score < 80%:**
-- Reset `RAT-RP-001` to `available`, `RAT-ASM-003` to `available` (retry)
-
-**Final ≥ 80%:**
-- Mark `RAT-ASM-003` completed
-- Mark skill target as fully passed
-
-All logic uses a `const GATE_MAP` keyed by assessment reference ID mapping to the explicit step IDs to skip/reset/unlock. No `order + N` math.
-
----
-
-### 2. Stage-Based Reflection Prompts (`src/contexts/AgentOneContext.tsx`)
-
-Replace "after ~3 steps" heuristic with explicit stage triggers tied to seeded step IDs:
-
-**Reflection trigger map per learner:**
-
-```text
-Day 2/3 reflection:
-  Clara (u12): fires after step "s-rb-c3" (Suitability chapter) completed
-  Elliot (u13): fires after step "s-rb-c3" completed
-  Sophie (u14): fires after step "s-rb-c3" completed
-
-Final onboarding reflection:
-  Clara: fires after "RAT-ASM-003" (final assessment) completed
-  Elliot: fires after "RAT-ASM-003" completed
-  Sophie: fires after "RAT-ASM-003" completed
-```
-
-A `REFLECTION_TRIGGERS` constant maps `{ userId, stepId }` → reflection prompt index from `agentOneContent[userId].reflectionPrompts`. When a step status changes to `completed`, check the trigger map — if matched, queue the reflection prompt.
-
----
-
-### 3. Queued Reinforcement When Chat Closed (`src/contexts/AgentOneContext.tsx`)
-
-- Add a `pendingReinforcement` ref (array of queued messages)
-- On step completion, check if Agent One panel is currently open (use existing `isOpen` / `chatActive` state from context)
-- **If open**: inject reinforcement message into chat immediately
-- **If closed**: push to `pendingReinforcement` queue
-- On Agent One open (when `isOpen` transitions false→true), flush queued messages into chat as system-injected assistant messages, then clear the queue
-
----
-
-### 4. Chapter Context for Agent One (`src/contexts/AgentOneContext.tsx` + Edge Function)
-
-- When `currentPage` matches a module page (`/skill-target/:id/module/:mid`), look up the matching `chapterSummaries` entry by `stepId`
-- Include `chapterContext: { title, summary, keyTakeaways }` in the `userContext` payload sent to the edge function
-- **Edge function** (`super-agent-chat/index.ts`): If `userContext.chapterContext` exists, append to system prompt: `CURRENT CHAPTER: [title] — [summary]. Key takeaways: [list]. Use this to answer chapter summary questions.`
-
----
-
-### 5. Onboarding Suggestion Pills (`src/contexts/AgentOneContext.tsx`)
-
-Wire `onboardingSuggestionPills` from seeded data into contextual suggestions:
-- Determine current onboarding stage from skill target progress (which steps are completed)
-- Map to the correct pill set key (`welcome`, `pre-intro`, `pre-bridge`, `pre-assessment`, `post-assessment`, `post-completion`)
-- Override default dashboard pills with stage-appropriate pills for Rathbones learners
-
-No new pages, no UI redesign, no DB changes.
+| `src/contexts/AgentOneContext.tsx` | Clear all refs on reset, replace setTimeout with resetCounter for reliable welcome re-trigger |
+| `src/pages/LearnerChat.tsx` | Remove `setChatActive(false)` from reset click so chat stays visible |
 

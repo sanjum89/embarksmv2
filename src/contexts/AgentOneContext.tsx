@@ -10,6 +10,19 @@ import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { inboxNotifications } from "@/data/inboxNotifications";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
 import type { RichBlock } from "@/components/chat/RichContentBlock";
+import { chapterSummaries, agentOneContent, onboardingSuggestionPills } from "@/data/rathbonesOnboarding";
+
+/* ─── Stage-based Reflection Triggers (explicit step IDs per learner) ─── */
+const REFLECTION_TRIGGERS: { userId: string; stepId: string; promptIndex: number }[] = [
+  // Day 2/3 reflection — after "Suitability, Documentation, and Client Fairness" (s-rb-c3)
+  { userId: "u12", stepId: "s-rb-c3", promptIndex: 0 },
+  { userId: "u13", stepId: "s-rb-c3", promptIndex: 0 },
+  { userId: "u14", stepId: "s-rb-c3", promptIndex: 0 },
+  // Final onboarding reflection — after final assessment (RAT-ASM-003)
+  { userId: "u12", stepId: "RAT-ASM-003", promptIndex: 3 },
+  { userId: "u13", stepId: "RAT-ASM-003", promptIndex: 3 },
+  { userId: "u14", stepId: "RAT-ASM-003", promptIndex: 3 },
+];
 
 const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/super-agent-chat`;
 
@@ -103,6 +116,11 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const [richBlocksMap, setRichBlocksMap] = useState<Record<string, RichBlock[]>>({});
   const [collapsedBlockIds, setCollapsedBlockIds] = useState<Set<string>>(new Set());
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Queued reinforcement for when chat is closed
+  const pendingReinforcementRef = useRef<string[]>([]);
+  const completedStepIdsRef = useRef<Set<string>>(new Set());
+  const firedReflectionKeysRef = useRef<Set<string>>(new Set());
 
   const toggleBlockCollapse = useCallback((blockId: string) => {
     setCollapsedBlockIds(prev => {
@@ -213,6 +231,23 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     }).filter((g: any) => g.gap > 0);
   }, [userProfile]);
 
+  // Chapter context for Agent One — look up summary when on a module page
+  const chapterContext = useMemo(() => {
+    const moduleMatch = currentPage.match(/\/skill-target\/([^/]+)\/module\/([^/]+)/);
+    if (!moduleMatch) return null;
+    const targetId = moduleMatch[1];
+    const moduleId = moduleMatch[2];
+    for (const summary of chapterSummaries) {
+      if (summary.targetId === targetId || summary.targetId === currentSkillTargetId) {
+        const chapter = summary.chapters.find(
+          (c) => c.stepId === moduleId || (currentSkillTarget?.steps.find((s) => s.referenceId === moduleId)?.id === c.stepId)
+        );
+        if (chapter) return { title: chapter.title, summary: chapter.summary, keyTakeaways: chapter.keyTakeaways };
+      }
+    }
+    return null;
+  }, [currentPage, currentSkillTargetId, currentSkillTarget]);
+
   const userContext = {
     name: user.name,
     role: user.role,
@@ -238,6 +273,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     skillTargetsSummary,
     inboxSummary,
     skillGaps,
+    chapterContext,
   };
 
   // Load persisted conversation
@@ -281,6 +317,57 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       streamResponse([{ role: "user" as const, content: "Hello!" }], true);
     }
   }, [loaded]);
+
+  // ─── Step-completion watcher: reinforcement + reflection ───
+  useEffect(() => {
+    if (!loaded || !isNewJoiner) return;
+    const content = agentOneContent[user.id];
+    if (!content) return;
+
+    const allSteps = assignedTargets.flatMap((st) => st.steps);
+    const nowCompleted = allSteps.filter((s) => s.status === "completed" || s.status === "skipped");
+
+    for (const step of nowCompleted) {
+      if (completedStepIdsRef.current.has(step.id)) continue;
+      completedStepIdsRef.current.add(step.id);
+
+      // Pick a reinforcement message (cycle through array)
+      const reinfIdx = (completedStepIdsRef.current.size - 1) % content.positiveReinforcement.length;
+      const reinfMsg: ChatMessage = { role: "assistant", content: content.positiveReinforcement[reinfIdx] };
+
+      if (isOpen) {
+        setMessages((prev) => [...prev, reinfMsg]);
+      } else {
+        pendingReinforcementRef.current.push(reinfMsg.content);
+      }
+
+      // Check for stage-based reflection trigger
+      const trigger = REFLECTION_TRIGGERS.find((t) => t.userId === user.id && t.stepId === step.id);
+      if (trigger) {
+        const reflKey = `${user.id}:${step.id}`;
+        if (!firedReflectionKeysRef.current.has(reflKey)) {
+          firedReflectionKeysRef.current.add(reflKey);
+          const reflMsg: ChatMessage = { role: "assistant", content: content.reflectionPrompts[trigger.promptIndex] };
+          if (isOpen) {
+            setMessages((prev) => [...prev, reflMsg]);
+          } else {
+            pendingReinforcementRef.current.push(reflMsg.content);
+          }
+        }
+      }
+    }
+  }, [skillTargets, loaded, isOpen, user.id, isNewJoiner]);
+
+  // ─── Flush queued reinforcement when chat opens ───
+  useEffect(() => {
+    if (isOpen && pendingReinforcementRef.current.length > 0) {
+      const queued = pendingReinforcementRef.current.splice(0);
+      setMessages((prev) => [
+        ...prev,
+        ...queued.map((content) => ({ role: "assistant" as const, content })),
+      ]);
+    }
+  }, [isOpen]);
 
   const saveConversation = async (msgs: ChatMessage[], newStage?: string) => {
     if (!accountId) return;
@@ -657,6 +744,10 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     }
 
     if (path === "/dashboard") {
+      // Use onboarding stage pills for new joiners
+      if (isNewJoiner && onboardingSuggestionPills[stage]) {
+        return onboardingSuggestionPills[stage];
+      }
       return ["What should I work on next?", "How am I progressing?", "Explain my skill targets"];
     }
 
@@ -668,8 +759,12 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       return ["How is my team doing?", "Who needs attention?", "Suggest a team action"];
     }
 
+    // Fallback: use onboarding stage pills for new joiners on any unmatched page
+    if (isNewJoiner && onboardingSuggestionPills[stage]) {
+      return onboardingSuggestionPills[stage];
+    }
     return ["What should I do next?", "Show my progress", "Help me with something"];
-  }, [location.pathname, currentSkillTarget, rolePlays]);
+  }, [location.pathname, currentSkillTarget, rolePlays, stage, isNewJoiner]);
 
   return (
     <AgentOneContext.Provider value={{

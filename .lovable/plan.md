@@ -1,43 +1,48 @@
 
 
-## Plan: Filter Nudge Cards by Audience Type in View Mode
+## Plan: Auto-scroll to Bottom on CTA Chat Launch (Final)
 
 ### Problem
-When Julian (manager) or Helena (admin) switches to "Me" (learner) mode, the DB query fetches ALL their nudge cards regardless of `audience_type`. Their manager/admin cards then get learner labels applied by `groupByCategory`, making them appear as learner onboarding/reflection/1:1 cards.
+When a CTA card triggers `handleSend`, prior chat history is visible and the new "Thinking..." indicator appears below the fold, making it look like nothing is happening.
 
-### Root Cause
-`AgentOneNudgeStack.tsx` line 63-69 queries `nudge_cards` filtered only by `account_id` and `target_user_id` — it does NOT filter by `audience_type`. So Julian's 3 manager cards appear in "Me" mode with learner labels.
+### Changes
 
-### Fix
+**1. `src/pages/LearnerChat.tsx`**
 
-**File: `src/components/chat/AgentOneNudgeStack.tsx`**
+- Add `openedFromCta` ref (boolean) and `ctaLabel` state (string | null)
+- When `onChatAction` fires from `AgentOneNudgeStack`, set both `openedFromCta.current = true` and `ctaLabel` based on prompt content, then call `handleSend`
+- **First scroll**: After `setChatActive(true)`, use `requestAnimationFrame` → `chatEndRef.current?.scrollIntoView({ behavior: "auto" })`
+- **Second scroll**: In `useEffect` watching `[isStreaming]`, if `openedFromCta.current` is true and streaming just started, scroll again to ensure the Thinking row is visible
 
-Add `.eq("audience_type", audienceType)` to the Supabase query (after line 67), so only cards matching the current view mode are returned.
+- **User scroll override — near-bottom detection**: On the messages container's `onScroll`, compute whether the user is near the bottom:
+  ```
+  const { scrollTop, scrollHeight, clientHeight } = container;
+  const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+  const isNearBottom = distanceFromBottom < 80; // ~80px threshold
+  ```
+  Store `isNearBottom` in a ref. Auto-scroll only continues while `isNearBottom` is true. If the user scrolls meaningfully upward (away from bottom), `isNearBottom` becomes false and auto-scroll stops. No need to track scroll direction — only position matters.
 
-Current line 55 already computes `audienceType` correctly from `user?.role`:
-- "Me" mode → `setRole("learner")` → `audienceType = "learner"` → only learner cards shown
-- "Team" mode → `setRole("manager")` or `setRole("admin")` → `audienceType = "manager"` → only manager cards shown
+- **CTA context cleanup**: Clear `openedFromCta.current = false` and `setCtaLabel(null)` in a `useEffect` that watches `messages.length`. When a new assistant message appears after the CTA send (i.e., messages count increases while `openedFromCta.current` is true and `isStreaming` transitions false), clear both. Also clear if `isStreaming` goes false without a new message (error/cancel). This ensures old CTA context never persists into the next interaction or next panel open.
 
-One adjustment needed: line 55 currently only checks for `"manager"`, but Helena's role in Team mode is `"admin"`. Update the audienceType derivation to handle all three roles:
+- Show contextual label above ThinkingIndicator when `ctaLabel` is set and `isStreaming` is true
+- Show "↑ Earlier messages" pill at top of chat area when `openedFromCta` is active and messages exist above viewport
 
-```typescript
-const audienceType = user?.role === "admin" ? "admin" 
-  : user?.role === "manager" ? "manager" 
-  : "learner";
-```
+**CTA label mapping** (from prompt content):
+- Contains "onboarding" → "Starting your onboarding journey"
+- Contains "reflection" → "Opening reflection request"
+- Contains "skill"/"target" → "Loading your assigned targets"
+- Default → "Agent One is responding..."
 
-This ensures:
-- Julian in "Me" mode → queries `audience_type = 'learner'` → no results (he has no learner cards) → clean state
-- Julian in "Team" mode → queries `audience_type = 'manager'` → his 3 manager cards
-- Helena in "Me" mode → queries `audience_type = 'learner'` → no results → clean state  
-- Helena in "Team" mode → queries `audience_type = 'admin'` → her 3 admin cards
-- Clara/Elliot/Sophie → always `audience_type = 'learner'` → their 2 learner cards
+**2. `src/components/chat/AIChatWrapper.tsx`** (floating panel)
+
+- Same pattern: `openedFromCta` ref, dual scroll, near-bottom detection for auto-follow, clean CTA context clearing after first assistant response
 
 ### Files Changed
 
 | File | Change |
 |------|--------|
-| `src/components/chat/AgentOneNudgeStack.tsx` | Add `audience_type` filter to query + handle "admin" role in audienceType derivation |
+| `src/pages/LearnerChat.tsx` | openedFromCta ref, ctaLabel state, dual auto-scroll, near-bottom detection, CTA context cleanup, context label UI, earlier-messages pill |
+| `src/components/chat/AIChatWrapper.tsx` | Same scroll + CTA behavior for floating panel |
 
-No DB changes needed. No seeding changes needed.
+No DB changes. No new components. Behavior fix only.
 

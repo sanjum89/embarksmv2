@@ -117,6 +117,11 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const [collapsedBlockIds, setCollapsedBlockIds] = useState<Set<string>>(new Set());
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Queued reinforcement for when chat is closed
+  const pendingReinforcementRef = useRef<string[]>([]);
+  const completedStepIdsRef = useRef<Set<string>>(new Set());
+  const firedReflectionKeysRef = useRef<Set<string>>(new Set());
+
   const toggleBlockCollapse = useCallback((blockId: string) => {
     setCollapsedBlockIds(prev => {
       const next = new Set(prev);

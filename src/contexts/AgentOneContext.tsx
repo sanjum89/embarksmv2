@@ -318,6 +318,57 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     }
   }, [loaded]);
 
+  // ─── Step-completion watcher: reinforcement + reflection ───
+  useEffect(() => {
+    if (!loaded || !isNewJoiner) return;
+    const content = agentOneContent[user.id];
+    if (!content) return;
+
+    const allSteps = assignedTargets.flatMap((st) => st.steps);
+    const nowCompleted = allSteps.filter((s) => s.status === "completed" || s.status === "skipped");
+
+    for (const step of nowCompleted) {
+      if (completedStepIdsRef.current.has(step.id)) continue;
+      completedStepIdsRef.current.add(step.id);
+
+      // Pick a reinforcement message (cycle through array)
+      const reinfIdx = (completedStepIdsRef.current.size - 1) % content.positiveReinforcement.length;
+      const reinfMsg: ChatMessage = { role: "assistant", content: content.positiveReinforcement[reinfIdx] };
+
+      if (isOpen) {
+        setMessages((prev) => [...prev, reinfMsg]);
+      } else {
+        pendingReinforcementRef.current.push(reinfMsg.content);
+      }
+
+      // Check for stage-based reflection trigger
+      const trigger = REFLECTION_TRIGGERS.find((t) => t.userId === user.id && t.stepId === step.id);
+      if (trigger) {
+        const reflKey = `${user.id}:${step.id}`;
+        if (!firedReflectionKeysRef.current.has(reflKey)) {
+          firedReflectionKeysRef.current.add(reflKey);
+          const reflMsg: ChatMessage = { role: "assistant", content: content.reflectionPrompts[trigger.promptIndex] };
+          if (isOpen) {
+            setMessages((prev) => [...prev, reflMsg]);
+          } else {
+            pendingReinforcementRef.current.push(reflMsg.content);
+          }
+        }
+      }
+    }
+  }, [skillTargets, loaded, isOpen, user.id, isNewJoiner]);
+
+  // ─── Flush queued reinforcement when chat opens ───
+  useEffect(() => {
+    if (isOpen && pendingReinforcementRef.current.length > 0) {
+      const queued = pendingReinforcementRef.current.splice(0);
+      setMessages((prev) => [
+        ...prev,
+        ...queued.map((content) => ({ role: "assistant" as const, content })),
+      ]);
+    }
+  }, [isOpen]);
+
   const saveConversation = async (msgs: ChatMessage[], newStage?: string) => {
     if (!accountId) return;
     const stageToSave = newStage || stageRef.current;

@@ -67,10 +67,45 @@ export function AIChatWrapper() {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const isNearBottom = useRef(true);
+  const prevIsStreaming = useRef(false);
+  const prevMsgCount = useRef(0);
 
+  const scrollToBottom = useCallback((behavior: ScrollBehavior = "auto") => {
+    requestAnimationFrame(() => {
+      chatEndRef.current?.scrollIntoView({ behavior });
+    });
+  }, []);
+
+  const handleMessagesScroll = useCallback(() => {
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    isNearBottom.current = distanceFromBottom < 80;
+  }, []);
+
+  // Normal auto-scroll: only when near bottom
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (isNearBottom.current) {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages, isStreaming]);
+
+  // When panel opens during streaming, scroll to bottom immediately
+  useEffect(() => {
+    if (isOpen && isStreaming) {
+      scrollToBottom("auto");
+    }
+  }, [isOpen, isStreaming, scrollToBottom]);
+
+  // CTA dual scroll: second scroll when streaming starts
+  useEffect(() => {
+    if (isStreaming && !prevIsStreaming.current) {
+      if (isNearBottom.current) scrollToBottom("auto");
+    }
+    prevIsStreaming.current = isStreaming;
+  }, [isStreaming, scrollToBottom]);
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();

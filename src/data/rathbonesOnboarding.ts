@@ -1009,6 +1009,33 @@ export const DEMO_SCRIPT: DemoScriptEntry[] = [
       ? ["Why do I need the domain bridge?", "What are my skill gaps?", "Yes, add that as my reflection"]
       : ["What should I focus on?", "Yes, add that as my reflection"],
   },
+
+  // ─── Grow My Skills (learner suggestion card) ───
+  {
+    patterns: ["grow my skills", "recommendations for growing my skills", "show me recommendations for growing"],
+    response: (p) => {
+      const name = personaName(p);
+      const skillsIntro = p === "elliot"
+        ? `Here's an overview of where you stand, ${name}. Your financial services background gives you strong transferable skills, but there are specific areas to develop for the Investment Manager role at Rathbones.`
+        : p === "clara"
+        ? `Here's where you currently stand, ${name}. You're building from a solid foundation, and your onboarding is designed to close the key gaps.`
+        : `Here's your current skills overview, ${name}. Your onboarding is designed to build a comprehensive foundation across all the areas you need.`;
+
+      const currentSkills = `\n\n**Your current skills:**\n- Active Listening — Intermediate\n- Client Relationship Management — Beginner\n- Investment Communication — Beginner\n- Suitability and Documentation — Beginner`;
+
+      const gaps = p === "elliot"
+        ? `\n\n**Key skill gaps to close:**\n- Rathbones Investment Philosophy — you have general financial services knowledge but need depth in our specific bespoke approach\n- Client Suitability at Rathbones — our documentation and compliance standards differ from broader financial services\n- Internal Collaboration — how Investment Managers work with Financial Planners and Portfolio Managers here`
+        : `\n\n**Key skill gaps to close:**\n- Client Relationship Management — Beginner → target: Intermediate\n- Suitability and Documentation — Beginner → target: Intermediate\n- Investment Communication — Beginner → target: Intermediate\n- Portfolio Construction — Beginner → target: Intermediate`;
+
+      const onboardingCTA = `\n\nThe good news is you already have an onboarding journey assigned that's designed to close these gaps. I'd recommend continuing through your assigned skill targets — they're structured to build exactly the skills you need.\n\n:::RICH_BLOCK{"type":"skill_targets_progress","data":{},"cta":{"label":"View My Skill Targets","path":"/dashboard"}}:::`;
+
+      return skillsIntro + currentSkills + gaps + onboardingCTA;
+    },
+    pills: (p) => p === "elliot"
+      ? ["What is my onboarding plan?", "Why do I need the domain bridge?", "Open My360"]
+      : ["What's next?", "Let's start with the onboarding plan", "Open My360"],
+    richBlockType: "skill_targets_progress",
+  },
 ];
 
 /**

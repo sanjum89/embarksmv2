@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, Home, ArrowRight, X } from "lucide-react";
+import { Send, Sparkles, Home, ArrowRight, X, ChevronUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";

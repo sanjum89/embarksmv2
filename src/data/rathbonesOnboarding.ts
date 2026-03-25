@@ -757,10 +757,15 @@ export const DEMO_SCRIPT: DemoScriptEntry[] = [
   {
     patterns: ["what's next", "what is next", "what comes next", "what's ahead"],
     response: (p) => {
+      if (p === "elliot") {
+        return `You've been added to the Investment Manager Cohort — March 2026. Over the next five days, I'll guide you through your onboarding plan. Since you already have strong experience, your path is tailored to help you quickly build Rathbones-specific investment knowledge before moving deeper into the core investment manager foundations.`;
+      }
       const content = agentOneContent[Object.keys(PERSONA_MAP).find(k => PERSONA_MAP[k] === p) || ""];
       return content?.whatsNext || `Let me outline your onboarding path, ${personaName(p)}.`;
     },
-    pills: () => ["Let's start with the onboarding plan", "Show me my current skills", "Tell me about my cohort"],
+    pills: (p) => p === "elliot"
+      ? ["Show my 5-day plan", "Show me my current skills", "Why is the domain bridge important?", "Let's start the onboarding plan"]
+      : ["Let's start with the onboarding plan", "Show me my current skills", "Tell me about my cohort"],
     nextStage: "task-list",
   },
 

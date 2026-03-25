@@ -1036,6 +1036,68 @@ export const DEMO_SCRIPT: DemoScriptEntry[] = [
       : ["What's next?", "Let's start with the onboarding plan", "Open My360"],
     richBlockType: "skill_targets_progress",
   },
+
+  // ─── Required Skills (learner suggestion card) ───
+  {
+    patterns: ["required skills", "show me the required skills", "required skills for my role", "skills for my role"],
+    response: (p) => {
+      const name = personaName(p);
+      const intro = `Here are the skills required for your Investment Manager role at Rathbones, ${name}:\n\n`;
+      const required = `**Required skills and your current gaps:**\n\n| Skill | Current | Required | Gap |\n|-------|---------|----------|-----|\n| Client Relationship Management | Beginner | Intermediate | Medium |\n| Suitability and Documentation | Beginner | Intermediate | Medium |\n| Investment Communication | Beginner | Intermediate | Medium |\n| Portfolio Construction | Beginner | Intermediate | Medium |\n| Active Listening | Intermediate | Advanced | Medium |\n| Regulatory Knowledge | Beginner | Intermediate | Medium |\n| Financial Planning Collaboration | Beginner | Intermediate | Medium |`;
+      const extra = p === "elliot"
+        ? `\n\nYour financial services background means some of these will come quickly — particularly Client Relationship Management and Investment Communication. The Rathbones-specific areas like Suitability and Documentation and Portfolio Construction will need the most focus.`
+        : p === "sophie"
+        ? `\n\nDon't be put off by the gaps — your onboarding is designed to build all of these step by step. You'll develop each skill through your assigned modules, assessments, and role plays.`
+        : `\n\nYour onboarding path is structured to close each of these gaps progressively. The baseline assessment will help identify where you can move faster.`;
+      return intro + required + extra + `\n\n:::RICH_BLOCK{"type":"skills_chart","data":{},"cta":{"label":"Open My360","path":"/my-360"}}:::`;
+    },
+    pills: (p) => p === "elliot"
+      ? ["What are my skill gaps?", "What is my onboarding plan?", "Open My360"]
+      : ["What should I focus on first?", "Let's start with the onboarding plan", "Open My360"],
+    richBlockType: "skills_chart",
+  },
+
+  // ─── Create a Reflection (learner suggestion card) — guided 5-question flow ───
+  {
+    patterns: ["create a reflection", "help me create a reflection", "reflection on my recent learning"],
+    response: (p) => `Hey ${personaName(p)}, hope you're having a good time so far! I'd love to hear how things are going. Let me walk you through a few quick questions to capture your reflection.\n\n**Question 1 of 5:** How are you feeling about your onboarding experience overall?`,
+    pills: () => ["Great — really enjoying it", "Good but a bit overwhelming", "Still finding my feet", "It's been challenging"],
+  },
+
+  // Reflection Q1 answers → Q2
+  {
+    patterns: ["really enjoying it", "good but a bit overwhelming", "still finding my feet", "it's been challenging", "been challenging"],
+    response: (p) => `Thanks for sharing that, ${personaName(p)}. That's really useful context.\n\n**Question 2 of 5:** What's been the most valuable thing you've learned so far?`,
+    pills: () => ["Understanding the Rathbones approach", "Client suitability and documentation", "How the team works together", "The investment philosophy"],
+  },
+
+  // Reflection Q2 answers → Q3
+  {
+    patterns: ["understanding the rathbones approach", "client suitability and documentation", "how the team works together", "the investment philosophy"],
+    response: (p) => `Great — that's a strong takeaway.\n\n**Question 3 of 5:** Is there anything that still feels unclear or that you'd like more support with?`,
+    pills: () => ["Portfolio construction details", "Regulatory requirements", "Internal collaboration processes", "Nothing — feeling confident"],
+  },
+
+  // Reflection Q3 answers → Q4
+  {
+    patterns: ["portfolio construction details", "regulatory requirements", "internal collaboration processes", "nothing — feeling confident", "feeling confident"],
+    response: (p) => `Noted — I'll keep that in mind as we continue.\n\n**Question 4 of 5:** How confident are you about applying what you've learned in real client situations?`,
+    pills: () => ["Very confident", "Fairly confident — need more practice", "Not yet confident — still learning", "Confident in some areas, not others"],
+  },
+
+  // Reflection Q4 answers → Q5
+  {
+    patterns: ["very confident", "fairly confident", "not yet confident", "confident in some areas"],
+    response: (p) => `That's an honest and helpful answer, ${personaName(p)}.\n\n**Question 5 of 5:** What would help you most in the next stage of your onboarding?`,
+    pills: () => ["More practical examples", "A role play or simulation", "Time to review materials", "A conversation with my manager"],
+  },
+
+  // Reflection Q5 answers → summary + submit
+  {
+    patterns: ["more practical examples", "a role play or simulation", "time to review materials", "a conversation with my manager"],
+    response: (p) => `Thank you, ${personaName(p)} — that's a really thoughtful reflection. Here's a summary of what you shared:\n\n**Reflection Summary:**\n- You shared how you're feeling about the onboarding experience\n- You identified what's been most valuable so far\n- You flagged areas where you'd like more support\n- You assessed your confidence in applying your learning\n- You told me what would help most going forward\n\nI've compiled this into a reflection entry. Would you like me to submit it? Your manager Julian will be able to see it in his team dashboard.`,
+    pills: () => ["Yes, add that as my reflection", "Let me edit something first", "What's next?"],
+  },
 ];
 
 /**

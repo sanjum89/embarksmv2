@@ -310,14 +310,14 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setLoaded(true);
   };
 
-  // Auto-send welcome for new joiners on first visit
+  // Auto-send welcome for new joiners on first visit (or after reset)
   useEffect(() => {
     if (loaded && messages.length === 0 && isNewJoiner && stage === "welcome") {
       streamResponse([{ role: "user" as const, content: "Hi, I just joined!" }], true);
     } else if (loaded && messages.length === 0 && !isNewJoiner) {
       streamResponse([{ role: "user" as const, content: "Hello!" }], true);
     }
-  }, [loaded]);
+  }, [loaded, resetCounter]);
 
   // ─── Step-completion watcher: reinforcement + reflection ───
   useEffect(() => {

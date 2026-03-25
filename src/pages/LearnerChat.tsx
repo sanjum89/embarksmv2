@@ -251,9 +251,14 @@ export default function LearnerChat() {
                           setChatActive(true);
                           return;
                         }
+                        openedFromCta.current = true;
+                        isNearBottom.current = true;
+                        setCtaLabel(deriveCTALabel(prompt));
                         setChatActive(true);
                         setIsOpen(true);
                         handleSend(prompt);
+                        // First scroll — immediately after activating
+                        requestAnimationFrame(() => scrollToBottom("auto"));
                       }}
                     />
                   </div>

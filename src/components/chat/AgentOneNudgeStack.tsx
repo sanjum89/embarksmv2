@@ -285,34 +285,6 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
         </AnimatePresence>
       </div>
 
-      {/* Up/down navigation control — outside the card */}
-      {categoryCards.length >= 2 && (
-        <div className="shrink-0 flex flex-col items-center justify-center self-start mt-3">
-          <div className="flex flex-col rounded-full border bg-card shadow-sm overflow-hidden">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                cycleHighlight(-1);
-              }}
-              className="p-1.5 hover:bg-accent transition-colors"
-              aria-label="Previous category"
-            >
-              <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
-            <div className="h-px bg-border" />
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                cycleHighlight(1);
-              }}
-              className="p-1.5 hover:bg-accent transition-colors"
-              aria-label="Next category"
-            >
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

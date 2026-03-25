@@ -1027,7 +1027,7 @@ export const DEMO_SCRIPT: DemoScriptEntry[] = [
         ? `\n\n**Key skill gaps to close:**\n- Rathbones Investment Philosophy — you have general financial services knowledge but need depth in our specific bespoke approach\n- Client Suitability at Rathbones — our documentation and compliance standards differ from broader financial services\n- Internal Collaboration — how Investment Managers work with Financial Planners and Portfolio Managers here`
         : `\n\n**Key skill gaps to close:**\n- Client Relationship Management — Beginner → target: Intermediate\n- Suitability and Documentation — Beginner → target: Intermediate\n- Investment Communication — Beginner → target: Intermediate\n- Portfolio Construction — Beginner → target: Intermediate`;
 
-      const onboardingCTA = `\n\nThe good news is you already have an onboarding journey assigned that's designed to close these gaps. I'd recommend continuing through your assigned skill targets — they're structured to build exactly the skills you need.\n\n:::RICH_BLOCK{"type":"skill_targets_progress","data":{},"cta":{"label":"View My Skill Targets","path":"/dashboard"}}:::`;
+      const onboardingCTA = `\n\nThe good news is you already have an onboarding journey assigned that's designed to close these gaps. I'd recommend continuing through your assigned skill targets — they're structured to build exactly the skills you need.\n\n:::RICH_BLOCK{"type":"skill_targets_progress","data":{},"cta":{"label":"View My Skill Targets","path":"/"}}:::`;
 
       return skillsIntro + currentSkills + gaps + onboardingCTA;
     },

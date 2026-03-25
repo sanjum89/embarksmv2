@@ -392,7 +392,7 @@ export function processEvent(event: AgentOneEvent, account: NormalizedAccount): 
           category,
           title: summaryTitles[event.event_type] || "Summary",
           subtitle: count > 0 ? `${count} employee${count !== 1 ? "s" : ""} in this period` : "Review details",
-          ctaLabel: "View Dashboard",
+          ctaLabel: "View Skill Targets",
           ctaType: "open_action_center",
           priority: "low",
           groupingKey: `${event.account_id}:${category}:admin`,

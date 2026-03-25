@@ -76,7 +76,7 @@ Available block types:
 1. skills_chart — Show skills with proficiency bars. Data: {"skills":[{"name":"Skill Name","level":"Advanced","numeric":60},...]}. CTA: {"label":"View My 360","path":"/my-360"}
 2. skill_targets_table — Show skill targets progress. Data: {"targets":[{"id":"target-id","title":"Target Name","progress":65,"status":"in_progress","totalSteps":8,"completedSteps":5},...]}. CTA: {"label":"View Skill Targets","path":"/"}
 3. inbox_cards — Show inbox notifications. Data: {"notifications":[{"title":"...","message":"...","type":"kudos|one_on_one|reflection_request","time":"..."},...]}. CTA: {"label":"Go to Action Centre","path":"/my-inbox"}
-4. progress_summary — Show overall progress metrics. Data: {"metrics":[{"label":"Targets Completed","value":"2/5"},{"label":"Skills Assessed","value":"8"},{"label":"Overall Progress","value":"45%"},...]}. CTA: {"label":"View Dashboard","path":"/dashboard"}
+4. progress_summary — Show overall progress metrics. Data: {"metrics":[{"label":"Targets Completed","value":"2/5"},{"label":"Skills Assessed","value":"8"},{"label":"Overall Progress","value":"45%"},...]}. CTA: {"label":"View Skill Targets","path":"/"}
 
 RULES FOR RICH BLOCKS:
 - Place the :::RICH_BLOCK{...}::: on its OWN line, between text paragraphs

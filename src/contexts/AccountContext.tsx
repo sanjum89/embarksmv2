@@ -265,9 +265,16 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   };
 
   const switchAccount = useCallback((id: string) => {
-    setActiveAccountId(id);
-    localStorage.setItem("activeAccountId", id);
-  }, []);
+    if (id === activeAccountId) return;
+    if (switchTimerRef.current) clearTimeout(switchTimerRef.current);
+    setSwitching(true);
+    switchTimerRef.current = setTimeout(() => {
+      setActiveAccountId(id);
+      localStorage.setItem("activeAccountId", id);
+      setSwitching(false);
+      switchTimerRef.current = null;
+    }, 1500);
+  }, [activeAccountId]);
 
   const addAccount = useCallback(async (
     name: string,

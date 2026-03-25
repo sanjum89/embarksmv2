@@ -1,5 +1,7 @@
 import { useRef, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { resolvePillAction } from "@/lib/pillActionResolver";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
@@ -40,6 +42,7 @@ function ThinkingIndicator() {
 export function AIChatWrapper() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { skillTargets } = useSkillTargets();
   const {
     messages,
     suggestions,
@@ -263,7 +266,10 @@ export function AIChatWrapper() {
                 <div className="shrink-0 px-3 pt-1.5">
                   <motion.div initial={{ opacity: 0, y: 2 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-1">
                     {visiblePills.map((pill) => (
-                      <button key={pill} onClick={() => handleSend(pill)} className="rounded-full border border-primary/20 bg-card px-2.5 py-0.5 text-[10px] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]">
+                      <button key={pill} onClick={() => {
+                              const action = resolvePillAction(pill, skillTargets);
+                              if (action) { navigate(action.navigate); } else { handleSend(pill); }
+                            }} className="rounded-full border border-primary/20 bg-card px-2.5 py-0.5 text-[10px] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]">
                         {pill}
                       </button>
                     ))}

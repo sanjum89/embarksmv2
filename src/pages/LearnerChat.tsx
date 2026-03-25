@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { resolvePillAction } from "@/lib/pillActionResolver";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Sparkles, Home, ArrowRight, X, ChevronUp, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -130,6 +132,7 @@ export default function LearnerChat() {
     toggleBlockCollapse,
   } = useAgentOne();
   const navigate = useNavigate();
+  const { skillTargets } = useSkillTargets();
 
   const [chatActive, setChatActive] = useState(false);
   const [dismissedNudgeIds] = useState<Set<string>>(new Set());
@@ -492,7 +495,10 @@ export default function LearnerChat() {
                         {visiblePills.map((pill) => (
                           <button
                             key={pill}
-                            onClick={() => handleSend(pill)}
+                            onClick={() => {
+                              const action = resolvePillAction(pill, skillTargets);
+                              if (action) { navigate(action.navigate); } else { handleSend(pill); }
+                            }}
                             className="rounded-full border border-primary/20 bg-card px-3 py-1 text-[11px] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]"
                           >
                             {pill}

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import type { Account, AccountData } from "@/types/account";
 import type { NormalizedAccount } from "@/types/account-v2";
 import { supabase } from "@/integrations/supabase/client";

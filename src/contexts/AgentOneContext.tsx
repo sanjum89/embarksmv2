@@ -368,8 +368,8 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
           const managerEmployeeId = (employee as any)?.reportsTo || null;
           emitEvent({
             account_id: accountId,
-            event_type: milestone.eventType,
-            category: milestone.category,
+            event_type: milestone.eventType as import("@/types/agentOneActions").EventType,
+            category: milestone.category as import("@/types/agentOneActions").ActionCategory,
             source_employee_id: user.id,
             target_employee_id: managerEmployeeId,
             related_employee_ids: [user.id],

@@ -32,7 +32,8 @@ export type EventType =
   | "onboarding_summary"
   | "rising_star_summary"
   | "underperformance_summary"
-  | "promotion_summary";
+  | "promotion_summary"
+  | "skill_target_completed";
 
 /* ─── CTA Types ─── */
 export type CTAType =

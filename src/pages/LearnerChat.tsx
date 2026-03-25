@@ -374,7 +374,7 @@ export default function LearnerChat() {
                         </div>
                       </div>
                       <button
-                        onClick={() => { handleReset(); }}
+                        onClick={() => { handleReset(); setChatActive(false); }}
                         disabled={isStreaming || !hasMessages}
                         className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors"
                         title="Reset conversation"

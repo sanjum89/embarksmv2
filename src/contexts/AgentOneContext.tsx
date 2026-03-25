@@ -10,6 +10,19 @@ import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { inboxNotifications } from "@/data/inboxNotifications";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
 import type { RichBlock } from "@/components/chat/RichContentBlock";
+import { chapterSummaries, agentOneContent, onboardingSuggestionPills } from "@/data/rathbonesOnboarding";
+
+/* ─── Stage-based Reflection Triggers (explicit step IDs per learner) ─── */
+const REFLECTION_TRIGGERS: { userId: string; stepId: string; promptIndex: number }[] = [
+  // Day 2/3 reflection — after "Suitability, Documentation, and Client Fairness" (s-rb-c3)
+  { userId: "u12", stepId: "s-rb-c3", promptIndex: 0 },
+  { userId: "u13", stepId: "s-rb-c3", promptIndex: 0 },
+  { userId: "u14", stepId: "s-rb-c3", promptIndex: 0 },
+  // Final onboarding reflection — after final assessment (RAT-ASM-003)
+  { userId: "u12", stepId: "RAT-ASM-003", promptIndex: 3 },
+  { userId: "u13", stepId: "RAT-ASM-003", promptIndex: 3 },
+  { userId: "u14", stepId: "RAT-ASM-003", promptIndex: 3 },
+];
 
 const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/super-agent-chat`;
 

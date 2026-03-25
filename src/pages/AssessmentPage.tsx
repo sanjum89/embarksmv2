@@ -81,6 +81,47 @@ export default function AssessmentPage() {
     if (currentQ > 0) setCurrentQ((prev) => prev - 1);
   };
 
+  /* ─── Explicit Assessment Gate Map ─── */
+  const GATE_MAP: Record<string, {
+    onPass: { skip?: string[]; unlock?: string[]; complete?: string[] };
+    onFail: { reset?: string[]; unlock?: string[]; retryId?: string };
+    passThreshold: number;
+  }> = {
+    "a-rb-st2-baseline": {
+      passThreshold: 80,
+      onPass: {
+        complete: ["RAT-ASM-001"],
+        skip: ["RAT-LM-001", "RAT-LM-002", "RAT-LM-003"],
+        unlock: ["RAT-LM-004"],
+      },
+      onFail: {
+        complete: ["RAT-ASM-001"],
+        unlock: ["RAT-LM-001"],
+      },
+    },
+    "a-rb-st2-mid": {
+      passThreshold: 80,
+      onPass: {
+        complete: ["RAT-ASM-002"],
+        unlock: ["RAT-RP-001"],
+      },
+      onFail: {
+        reset: ["RAT-LM-004", "RAT-LM-005", "RAT-LM-006", "RAT-LM-007"],
+        retryId: "RAT-ASM-002",
+      },
+    },
+    "a-rb-st2-final": {
+      passThreshold: 80,
+      onPass: {
+        complete: ["RAT-ASM-003"],
+      },
+      onFail: {
+        reset: ["RAT-RP-001"],
+        retryId: "RAT-ASM-003",
+      },
+    },
+  };
+
   const handleSubmit = () => {
     setShowResults(true);
 
@@ -103,54 +144,51 @@ export default function AssessmentPage() {
       ).catch(console.error);
     }
 
+    const gate = GATE_MAP[assessment.id];
+
     updateSkillTarget(skillTargetId, (target) => {
-      const steps = [...target.steps].sort((a, b) => a.order - b.order);
-      const updatedSteps = target.steps.map((step) => {
-        // Mark assessment step as completed
+      // Mark the assessment step itself as completed
+      let updatedSteps = target.steps.map((step) => {
         if (step.referenceId === assessment.id && step.type === "assessment") {
           return { ...step, status: "completed" as const };
         }
         return step;
       });
 
-      // Find steps by order for progression
-      const stepsByOrder = [...updatedSteps].sort((a, b) => a.order - b.order);
-      const assessmentOrder = stepsByOrder.find(
-        (s) => s.referenceId === assessment.id && s.type === "assessment"
-      )?.order ?? 0;
+      if (gate) {
+        const passed = finalScore >= gate.passThreshold;
+        const actions = passed ? gate.onPass : gate.onFail;
 
-      // Determine which steps to skip/unlock based on score
-      const finalSteps = updatedSteps.map((step) => {
-        if (step.order === assessmentOrder + 1) {
-          // Module 2 (order 2): skip if score > 80%, else unlock
-          if (finalScore > 80 && step.skippable) {
-            return { ...step, status: "skipped" as const };
+        updatedSteps = updatedSteps.map((step) => {
+          if (actions.complete?.includes(step.id)) return { ...step, status: "completed" as const };
+          if (actions.skip?.includes(step.id)) return { ...step, status: "skipped" as const };
+          if (actions.unlock?.includes(step.id)) return { ...step, status: "available" as const };
+          if (actions.reset?.includes(step.id)) return { ...step, status: "available" as const };
+          if (!passed && actions.retryId === step.id) return { ...step, status: "available" as const };
+          return step;
+        });
+      } else {
+        // Fallback: unlock the next locked step after this assessment
+        const assessmentStep = updatedSteps.find(
+          (s) => s.referenceId === assessment.id && s.type === "assessment"
+        );
+        if (assessmentStep) {
+          const sorted = [...updatedSteps].sort((a, b) => a.order - b.order);
+          const nextLocked = sorted.find((s) => s.order > assessmentStep.order && s.status === "locked");
+          if (nextLocked) {
+            updatedSteps = updatedSteps.map((s) =>
+              s.id === nextLocked.id ? { ...s, status: "available" as const } : s
+            );
           }
-          return { ...step, status: "available" as const };
         }
-        if (step.order === assessmentOrder + 2) {
-          // Module 3 (order 3): skip if score >= 90%, else...
-          if (finalScore >= 90 && step.skippable) {
-            return { ...step, status: "skipped" as const };
-          }
-          // Unlock if module 2 was skipped (score > 80)
-          if (finalScore > 80) {
-            return { ...step, status: "available" as const };
-          }
-        }
-        if (step.order === assessmentOrder + 3 && finalScore >= 90) {
-          // Unlock module 4 if both 2 and 3 were skipped
-          return { ...step, status: "available" as const };
-        }
-        return step;
-      });
+      }
 
-      const completedCount = finalSteps.filter(
+      const completedCount = updatedSteps.filter(
         (s) => s.status === "completed" || s.status === "skipped"
       ).length;
-      const progress = Math.round((completedCount / finalSteps.length) * 100);
+      const progress = Math.round((completedCount / updatedSteps.length) * 100);
 
-      return { ...target, steps: finalSteps, progress };
+      return { ...target, steps: updatedSteps, progress };
     });
   };
 

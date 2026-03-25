@@ -12,16 +12,24 @@ import { useUser } from "@/contexts/UserContext";
 import { emitAssessmentCompleted } from "@/lib/agentOneEventEmitter";
 
 export default function AssessmentPage() {
-  const { aid } = useParams();
-  const { id: skillTargetId } = useParams();
+  const { aid, id: skillTargetId } = useParams();
+  const { updateSkillTarget, skillTargets } = useSkillTargets();
+  const { activeAccount, normalizedAccount } = useAccount();
+  const { user } = useUser();
+
   // Deduplicate: ensure Rathbones assessments are always present regardless of import order
   const rathbonesAssessments = [st2BaselineAssessment, st2MidAssessment, st2FinalAssessment];
   const rathbonesIds = new Set(rathbonesAssessments.map(a => a.id));
   const allAssessments = [...mockAssessments.filter(a => !rathbonesIds.has(a.id)), ...rathbonesAssessments];
-  const foundAssessment = allAssessments.find((a) => a.id === aid);
-  const { updateSkillTarget, skillTargets } = useSkillTargets();
-  const { activeAccount, normalizedAccount } = useAccount();
-  const { user } = useUser();
+  // Try direct assessment ID match first, then resolve via step referenceId
+  let foundAssessment = allAssessments.find((a) => a.id === aid);
+  if (!foundAssessment) {
+    const target = skillTargets.find((st) => st.id === skillTargetId);
+    const stepByStepId = target?.steps.find((s) => s.id === aid && s.type === "assessment");
+    if (stepByStepId) {
+      foundAssessment = allAssessments.find((a) => a.id === stepByStepId.referenceId);
+    }
+  }
 
   // Generate fallback assessment from skill target step data when not in mock catalog
   const assessment = foundAssessment ?? (() => {

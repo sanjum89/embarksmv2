@@ -66,7 +66,7 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
       };
     });
 
-    // Other skills = skills not in role requirements
+    // Inferred skills = skills not in role requirements (from resume/reflections, pending validation)
     const projectSkillNames = new Set(uniqueProjectRequired.map((s) => s.skill_name));
     const otherSkills = employeeSkills
       .filter((s) => !roleSkillNames.has(s.skillName) && !projectSkillNames.has(s.skillName))

@@ -342,10 +342,11 @@ export default function My360() {
               />
             </div>
 
-            {/* Other Skills */}
+            {/* Inferred Skills */}
             <div className="mt-3">
               <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-sm font-semibold text-foreground">Other Skills</span>
+                <span className="text-sm font-semibold text-foreground">Inferred Skills</span>
+                <span className="text-[10px] text-muted-foreground italic">from resume & reflections — pending validation</span>
                 <Info className="h-3.5 w-3.5 text-muted-foreground" />
               </div>
               <ResponsivePillRow
@@ -390,7 +391,7 @@ export default function My360() {
                 }}
                 renderExpandedList={() => (
                   <div className="space-y-2">
-                    <p className="text-xs font-semibold text-muted-foreground mb-2">All Other Skills</p>
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">All Inferred Skills</p>
                     {(profileData.otherSkills ?? []).map((skill, i) => (
                       <div key={i} className="flex items-center justify-between gap-4 text-sm">
                         <span className="font-medium text-foreground">{skill.skill_name || "Unknown skill"}</span>

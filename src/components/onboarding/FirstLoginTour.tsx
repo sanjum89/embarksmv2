@@ -216,7 +216,7 @@ export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
             )}
             {currentSkills.other.length > 0 && (
               <div className="space-y-1.5 mb-3">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Other Skills</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Inferred Skills</p>
                 {currentSkills.other.map((s, i) => renderSkillRow(s, i))}
               </div>
             )}

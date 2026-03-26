@@ -860,6 +860,17 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const contextualSuggestions = useMemo(() => {
     const path = location.pathname;
 
+    // --- Reflection mode: always show reflection pills ---
+    if (stage === "reflection") {
+      return [
+        "What is a reflection?",
+        "What should I say?",
+        "How does this benefit me?",
+        "Summarize reflection",
+        "Submit reflection",
+      ];
+    }
+
     // --- Role Play Bank (list) ---
     if (path === "/role-play-bank") {
       const titles = rolePlays.slice(0, 2).map(rp => rp.title);

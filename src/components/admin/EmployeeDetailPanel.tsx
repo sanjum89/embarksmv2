@@ -47,6 +47,10 @@ function SeverityIcon({ severity }: { severity: string }) {
 }
 
 export default function EmployeeDetailPanel({ row, account, onClose }: Props) {
+  const { activeAccount } = useAccount();
+  const accountId = activeAccount?.id || "";
+  const [showReflectionDialog, setShowReflectionDialog] = useState(false);
+  const [showReflections, setShowReflections] = useState(false);
   const reflectionSummary = useMemo(() => getReflectionSummary(account, row.employeeId), [account, row.employeeId]);
   const signals = useMemo(() => getEmployeeSignals(account, row.employeeId), [account, row.employeeId]);
   const alerts = useMemo(() => getPerformanceAlerts(account).filter(a => a.employeeId === row.employeeId), [account, row.employeeId]);

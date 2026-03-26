@@ -689,6 +689,21 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     if (!text.trim() || isStreaming) return;
 
     const lower = text.toLowerCase();
+
+    // ─── Detect reflection prompts from nudge cards ───
+    const isReflectionPrompt = lower.includes("requested a reflection") || lower.includes("reflection to understand");
+    if (isReflectionPrompt && stageRef.current !== "reflection") {
+      // Extract reflection context from the prompt
+      setReflectionContext({
+        topic: "Onboarding experience",
+        questions: [],
+        managerMessage: text,
+        triggerType: "manager_requested",
+      });
+      setStage("reflection");
+      stageRef.current = "reflection";
+    }
+
     const isAssessmentTrigger = lower.includes("assessment") || lower.includes("take the") || lower.includes("start my");
     if (stageRef.current === "pre-assessment" && !assessmentCompleted && isAssessmentTrigger) {
       const userMsg: ChatMessage = { role: "user", content: text };

@@ -92,7 +92,7 @@ interface AgentOneContextType {
   isOpen: boolean;
   setIsOpen: (v: boolean) => void;
   handleSend: (text: string) => void;
-  handleReset: () => void;
+  handleReset: (pendingPrompt?: string) => void;
   showInlineAssessment: boolean;
   setShowInlineAssessment: (v: boolean) => void;
   assessmentCompleted: boolean;

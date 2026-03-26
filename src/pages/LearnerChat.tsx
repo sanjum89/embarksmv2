@@ -140,6 +140,7 @@ export default function LearnerChat() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const lastUserMsgRef = useRef<HTMLDivElement>(null);
   const openedFromCta = useRef(false);
   const isNearBottom = useRef(true);
   const prevMsgCount = useRef(0);
@@ -167,6 +168,15 @@ export default function LearnerChat() {
           container.scrollTo({ top: container.scrollHeight, behavior });
         }
         chatEndRef.current?.scrollIntoView({ behavior, block: "end" });
+      });
+    });
+  }, []);
+
+  // Scroll so the last user message is at the TOP of the viewport (for CTA-triggered flows)
+  const scrollToLastUserMessage = useCallback(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        lastUserMsgRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
       });
     });
   }, []);
@@ -203,17 +213,17 @@ export default function LearnerChat() {
   // CTA dual scroll: second scroll when streaming starts after CTA
   useEffect(() => {
     if (openedFromCta.current && isStreaming && !prevIsStreaming.current) {
-      scrollToBottom("auto");
+      scrollToLastUserMessage();
     }
     prevIsStreaming.current = isStreaming;
-  }, [isStreaming, scrollToBottom]);
+  }, [isStreaming, scrollToLastUserMessage]);
 
   // CTA first scroll: wait until the chat panel has mounted before jumping down
   useEffect(() => {
     if (isActive && openedFromCta.current) {
-      scrollToBottom("auto");
+      scrollToLastUserMessage();
     }
-  }, [isActive, scrollToBottom]);
+  }, [isActive, scrollToLastUserMessage]);
 
   // CTA context cleanup: clear after first assistant response is rendered
   useEffect(() => {
@@ -432,12 +442,13 @@ export default function LearnerChat() {
                   <AnimatePresence>
                     {messages
                       .filter((m) => m.role !== "system")
-                      .map((msg, i) => {
+                      .map((msg, i, arr) => {
                         const msgBlocks = richBlocksMap[i] || [];
+                        const isLastUserMsg = msg.role === "user" && !arr.slice(i + 1).some((m) => m.role === "user");
                         return (
                           <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
                             {msg.role === "user" ? (
-                              <div className="flex justify-end mb-1">
+                              <div className="flex justify-end mb-1" ref={isLastUserMsg ? lastUserMsgRef : undefined}>
                                 <div className="rounded-2xl bg-primary text-primary-foreground px-3.5 py-2.5 text-[13px] max-w-[75%] shadow-sm">
                                   {msg.content}
                                 </div>

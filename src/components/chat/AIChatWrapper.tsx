@@ -72,6 +72,7 @@ export function AIChatWrapper() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const lastUserMsgRef = useRef<HTMLDivElement>(null);
   const isNearBottom = useRef(true);
   const prevIsStreaming = useRef(false);
   const prevMsgCount = useRef(0);
@@ -96,20 +97,24 @@ export function AIChatWrapper() {
     }
   }, [messages, isStreaming]);
 
-  // When panel opens during streaming, scroll to bottom immediately
+  // When panel opens during streaming, scroll to last user message
   useEffect(() => {
     if (isOpen && isStreaming) {
-      scrollToBottom("auto");
+      requestAnimationFrame(() => {
+        lastUserMsgRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+      });
     }
-  }, [isOpen, isStreaming, scrollToBottom]);
+  }, [isOpen, isStreaming]);
 
-  // CTA dual scroll: second scroll when streaming starts
+  // CTA dual scroll: when streaming starts, scroll to last user message
   useEffect(() => {
     if (isStreaming && !prevIsStreaming.current) {
-      if (isNearBottom.current) scrollToBottom("auto");
+      requestAnimationFrame(() => {
+        lastUserMsgRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+      });
     }
     prevIsStreaming.current = isStreaming;
-  }, [isStreaming, scrollToBottom]);
+  }, [isStreaming]);
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();
@@ -207,12 +212,13 @@ export function AIChatWrapper() {
                 )}
 
                 <AnimatePresence>
-                  {messages.filter((m) => m.role !== "system").map((msg, i) => {
+                  {messages.filter((m) => m.role !== "system").map((msg, i, arr) => {
                     const msgBlocks = richBlocksMap[i] || [];
+                    const isLastUserMsg = msg.role === "user" && !arr.slice(i + 1).some((m) => m.role === "user");
                     return (
                       <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
                         {msg.role === "user" ? (
-                          <div className="flex justify-end mb-1">
+                          <div className="flex justify-end mb-1" ref={isLastUserMsg ? lastUserMsgRef : undefined}>
                             <div className="rounded-2xl bg-primary text-primary-foreground px-3 py-2 text-[13px] max-w-[85%] shadow-sm">
                               {msg.content}
                             </div>

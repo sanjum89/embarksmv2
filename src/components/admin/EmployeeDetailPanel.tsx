@@ -259,8 +259,17 @@ export default function EmployeeDetailPanel({ row, account, onClose }: Props) {
           <div className="px-5 pb-5">
             <h4 className="text-sm font-semibold text-foreground mb-3">Recommended Actions</h4>
             <div className="flex flex-wrap gap-2">
-              <button className="text-xs font-medium rounded-lg px-3 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border transition-colors">
-                View Full Profile
+              <button
+                onClick={() => setShowReflectionDialog(true)}
+                className="text-xs font-medium rounded-lg px-3 py-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors flex items-center gap-1.5"
+              >
+                <MessageSquare className="h-3.5 w-3.5" /> Request Reflection
+              </button>
+              <button
+                onClick={() => setShowReflections(!showReflections)}
+                className="text-xs font-medium rounded-lg px-3 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border transition-colors"
+              >
+                {showReflections ? "Hide Reflections" : "View Reflections"}
               </button>
               <button className="text-xs font-medium rounded-lg px-3 py-2 bg-secondary text-foreground hover:bg-secondary/80 border border-border transition-colors">
                 Assign Coaching
@@ -268,6 +277,28 @@ export default function EmployeeDetailPanel({ row, account, onClose }: Props) {
             </div>
           </div>
         )}
+
+        {/* Reflections Review */}
+        {showReflections && (
+          <div className="px-5 pb-5">
+            <h4 className="text-sm font-semibold text-foreground mb-3">Reflections</h4>
+            <ReflectionReviewPanel
+              accountId={accountId}
+              employeeId={row.employeeId}
+              account={account}
+            />
+          </div>
+        )}
+
+        {/* Request Reflection Dialog */}
+        <RequestReflectionDialog
+          open={showReflectionDialog}
+          onOpenChange={setShowReflectionDialog}
+          accountId={accountId}
+          account={account}
+          targetEmployeeIds={[row.employeeId]}
+          managerEmployeeId={Object.values(account.usersById).find(u => u.role === "manager")?.id || ""}
+        />
       </div>
     </motion.div>
   );

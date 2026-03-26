@@ -135,6 +135,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const [richBlocksMap, setRichBlocksMap] = useState<Record<string, RichBlock[]>>({});
   const [collapsedBlockIds, setCollapsedBlockIds] = useState<Set<string>>(new Set());
   const [isExpanded, setIsExpanded] = useState(false);
+  const [reflectionContext, setReflectionContext] = useState<ReflectionContextData | null>(null);
 
   // Queued reinforcement for when chat is closed
   const pendingReinforcementRef = useRef<string[]>([]);

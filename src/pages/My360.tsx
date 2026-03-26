@@ -290,7 +290,14 @@ export default function My360() {
             <div className="mt-4">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className="text-sm font-semibold text-foreground">Core Skills</span>
-                <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[220px] text-xs">
+                    Validated skills confirmed by your manager or through assessments
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <ResponsivePillRow
                 totalCount={profileData.roleSkillsCurrent?.length ?? 0}

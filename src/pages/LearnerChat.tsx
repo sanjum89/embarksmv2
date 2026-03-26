@@ -196,8 +196,11 @@ export default function LearnerChat() {
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
-  // Send via suggestion card also activates chat
+  // Send via suggestion card also activates chat (treated as CTA)
   const handleCardSend = (prompt: string) => {
+    openedFromCta.current = true;
+    prevMsgCount.current = messages.length;
+    setCtaLabel(deriveCTALabel(prompt));
     setChatActive(true);
     setIsOpen(true);
     handleSend(prompt);

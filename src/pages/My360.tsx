@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from "react";
+import { FirstLoginTour } from "@/components/onboarding/FirstLoginTour";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,
@@ -92,6 +93,7 @@ type GapSource = "Role" | "Project";
 type GapFilter = "All" | "Gap" | "No gap";
 
 export default function My360() {
+  const [showTour, setShowTour] = useState(false);
   const { user } = useUser();
   const { activeAccount, normalizedAccount } = useAccount();
   const chatRef = useRef<any>(null);
@@ -180,6 +182,8 @@ export default function My360() {
   };
 
   return (
+    <>
+    <FirstLoginTour open={showTour} onClose={() => setShowTour(false)} />
     <div className="flex flex-1 min-h-0 h-full overflow-hidden">
       <div className="flex-1 overflow-y-auto p-6">
           {/* Page title */}
@@ -191,7 +195,7 @@ export default function My360() {
                   Your profile and how to progress
                 </p>
               </div>
-              <button className="rounded-lg border border-border bg-card px-4 py-1.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+              <button onClick={() => setShowTour(true)} className="rounded-lg border border-border bg-card px-4 py-1.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors">
                 Manage Profile
               </button>
             </div>
@@ -715,5 +719,6 @@ export default function My360() {
       </div>
 
     </div>
+    </>
   );
 }

@@ -838,6 +838,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setRichBlocksMap({});
     setCollapsedBlockIds(new Set());
     setIsExpanded(false);
+    setReflectionContext(null);
     // Clear all tracking refs
     completedStepIdsRef.current = new Set();
     firedReflectionKeysRef.current = new Set();

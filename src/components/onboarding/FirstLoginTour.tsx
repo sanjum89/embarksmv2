@@ -456,9 +456,13 @@ export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
         </div>
 
         {/* Content */}
-        <AnimatePresence mode="wait">
-          {renderStep()}
-        </AnimatePresence>
+        <div className="flex-1 overflow-y-auto flex items-center justify-center">
+          <div className="w-full max-w-2xl mx-auto px-6">
+            <AnimatePresence mode="wait">
+              {renderStep()}
+            </AnimatePresence>
+          </div>
+        </div>
 
         {/* Footer */}
         {step !== 5 && !showQuiz && (

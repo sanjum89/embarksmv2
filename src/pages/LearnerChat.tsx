@@ -442,12 +442,13 @@ export default function LearnerChat() {
                   <AnimatePresence>
                     {messages
                       .filter((m) => m.role !== "system")
-                      .map((msg, i) => {
+                      .map((msg, i, arr) => {
                         const msgBlocks = richBlocksMap[i] || [];
+                        const isLastUserMsg = msg.role === "user" && !arr.slice(i + 1).some((m) => m.role === "user");
                         return (
                           <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
                             {msg.role === "user" ? (
-                              <div className="flex justify-end mb-1">
+                              <div className="flex justify-end mb-1" ref={isLastUserMsg ? lastUserMsgRef : undefined}>
                                 <div className="rounded-2xl bg-primary text-primary-foreground px-3.5 py-2.5 text-[13px] max-w-[75%] shadow-sm">
                                   {msg.content}
                                 </div>

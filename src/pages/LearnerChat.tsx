@@ -140,6 +140,7 @@ export default function LearnerChat() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const lastUserMsgRef = useRef<HTMLDivElement>(null);
   const openedFromCta = useRef(false);
   const isNearBottom = useRef(true);
   const prevMsgCount = useRef(0);

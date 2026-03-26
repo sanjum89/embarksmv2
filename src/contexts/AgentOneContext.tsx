@@ -546,8 +546,8 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     }
 
     const { clean, suggestions: newSugs } = parseSuggestions(assistantSoFar);
-    // Parse rich blocks
-    const { cleanText: finalText, blocks } = parseRichBlocks(clean);
+    // Parse rich blocks and check for reflection submit
+    const { cleanText: finalText, blocks, reflectionSubmit } = parseRichBlocks(clean);
     if (finalText !== assistantSoFar) {
       addOrUpdateAssistant(finalText);
     }

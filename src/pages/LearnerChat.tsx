@@ -283,7 +283,7 @@ export default function LearnerChat() {
                         }
                         // Reset conversation first so nudge always starts a fresh journey
                         if (hasMessages) {
-                          await handleReset();
+                          await handleReset(prompt);
                         }
                         openedFromCta.current = true;
                         isNearBottom.current = true;

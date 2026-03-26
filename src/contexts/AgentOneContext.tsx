@@ -693,6 +693,9 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const handleSend = useCallback((text: string) => {
     if (!text.trim() || isStreaming) return;
 
+    // Clear pending CTA prompt ref
+    pendingCtaPromptRef.current = null;
+
     const lower = text.toLowerCase();
 
     // ─── Detect reflection prompts from nudge cards ───

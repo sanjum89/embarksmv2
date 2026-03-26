@@ -335,6 +335,9 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
 
   // Auto-send welcome for new joiners on first visit (or after reset)
   useEffect(() => {
+    // Skip auto-welcome if a CTA prompt (e.g. reflection nudge) is pending
+    if (pendingCtaPromptRef.current) return;
+
     if (loaded && messages.length === 0 && isNewJoiner && stage === "welcome") {
       // Demo learners get deterministic welcome — no AI call
       const persona = getDemoPersona(user.id);

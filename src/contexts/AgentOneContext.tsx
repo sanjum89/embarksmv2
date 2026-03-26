@@ -45,11 +45,28 @@ function parseSuggestions(text: string): { clean: string; suggestions: string[] 
 
 // Parse :::RICH_BLOCK{...}::: markers from AI response text
 const RICH_BLOCK_RE = /:::RICH_BLOCK(\{[\s\S]*?\}):::/g;
+const REFLECTION_SUBMIT_RE = /:::REFLECTION_SUBMIT(\{[\s\S]*?\}):::/g;
 let richBlockIdCounter = 0;
 
-export function parseRichBlocks(text: string): { cleanText: string; blocks: RichBlock[] } {
+export interface ReflectionContextData {
+  topic: string;
+  questions: string[];
+  managerMessage?: string;
+  managerName?: string;
+  triggerType: string;
+  reflectionRequestId?: string;
+}
+
+export function parseRichBlocks(text: string): { cleanText: string; blocks: RichBlock[]; reflectionSubmit: boolean } {
+  let reflectionSubmit = false;
+  // Check for reflection submit marker
+  const cleanedReflection = text.replace(REFLECTION_SUBMIT_RE, () => {
+    reflectionSubmit = true;
+    return "";
+  });
+
   const blocks: RichBlock[] = [];
-  const cleanText = text.replace(RICH_BLOCK_RE, (_, json) => {
+  const cleanText = cleanedReflection.replace(RICH_BLOCK_RE, (_, json) => {
     try {
       const parsed = JSON.parse(json);
       blocks.push({
@@ -59,9 +76,9 @@ export function parseRichBlocks(text: string): { cleanText: string; blocks: Rich
         cta: parsed.cta,
       });
     } catch { /* ignore malformed blocks */ }
-    return ""; // Remove from text
+    return "";
   }).replace(/\n{3,}/g, "\n\n").trim();
-  return { cleanText, blocks };
+  return { cleanText, blocks, reflectionSubmit };
 }
 
 interface AgentOneContextType {

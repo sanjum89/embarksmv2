@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { NormalizedAccount, PeopleGraphRow } from "@/types/account-v2";
 import {
   getReflectionSummary,
@@ -7,9 +7,12 @@ import {
   getRecommendedCTAs,
   getEmployeeRoleGap,
 } from "@/lib/accountSelectors";
-import { AlertTriangle, TrendingUp, TrendingDown, CheckCircle, Activity, BookOpen, Flame, X } from "lucide-react";
+import { AlertTriangle, TrendingUp, TrendingDown, CheckCircle, Activity, BookOpen, Flame, X, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import RequestReflectionDialog from "./RequestReflectionDialog";
+import ReflectionReviewPanel from "./ReflectionReviewPanel";
+import { useAccount } from "@/contexts/AccountContext";
 
 interface Props {
   row: PeopleGraphRow;

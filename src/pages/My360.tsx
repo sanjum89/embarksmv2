@@ -93,6 +93,7 @@ type GapSource = "Role" | "Project";
 type GapFilter = "All" | "Gap" | "No gap";
 
 export default function My360() {
+  const [showTour, setShowTour] = useState(false);
   const { user } = useUser();
   const { activeAccount, normalizedAccount } = useAccount();
   const chatRef = useRef<any>(null);

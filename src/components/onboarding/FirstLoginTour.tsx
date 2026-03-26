@@ -77,7 +77,7 @@ export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
 
   if (!open || !profileData) return null;
 
-  const accountName = activeAccount?.name || normalizedAccount?.branding?.companyName || "your organization";
+  const accountName = activeAccount?.name || normalizedAccount?.branding?.name || "your organization";
   const { currentSkills, inferredSkills } = splitProfileData(profileData);
 
   const TOTAL_STEPS = 6;

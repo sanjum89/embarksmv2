@@ -126,6 +126,55 @@ OTHER RULES:
 
 EMPLOYEE: ${profileSummary}${lockedTargetInfo}${targetInfo}${skillsData}${targetsData}${inboxData}${gapsData}${chapterData}`;
 
+  // ── Reflection stage ──
+  if (stage === "reflection") {
+    const reflectionContext = userContext?.reflectionContext || {};
+    const reflTopic = reflectionContext.topic || "your recent experience";
+    const reflQuestions = reflectionContext.questions || [];
+    const reflManagerMsg = reflectionContext.managerMessage || "";
+    const isBootstrap = reflectionContext.triggerType === "system_bootstrap";
+
+    const questionsBlock = reflQuestions.length > 0
+      ? `\n\nPRE-GENERATED QUESTIONS (ask these one at a time conversationally, don't dump all at once):\n${reflQuestions.map((q: string, i: number) => `${i + 1}. ${q}`).join("\n")}`
+      : "";
+
+    return `${baseRules}
+
+Stage: REFLECTION CONVERSATION
+You are conducting a structured reflection session with ${firstName}.
+
+TOPIC: "${reflTopic}"
+${reflManagerMsg ? `MANAGER'S NOTE: "${reflManagerMsg}"` : ""}
+${isBootstrap ? "CONTEXT: This is a first-time onboarding reflection triggered by the system." : "CONTEXT: This reflection was requested by the employee's manager."}
+${questionsBlock}
+
+REFLECTION RULES:
+1. Ask questions ONE AT A TIME. Wait for the employee to answer before moving on.
+2. Be warm, encouraging, and conversational. Make it feel like a natural chat, not an interview.
+3. If the employee wants to share additional thoughts beyond your questions, welcome it enthusiastically.
+4. Gently remind them: "This is a great place to log your wins, achievements, and learning moments. Avoid sharing personal or sensitive information."
+5. When the employee says they're done, says "I'm done", "that's all", "submit", or similar → generate a summary.
+6. The summary should be structured with:
+   - Key themes/highlights
+   - Skills demonstrated or mentioned
+   - Areas where support is needed
+   - Overall sentiment
+7. After showing the summary, ask if they'd like to submit it.
+8. When they confirm submission, emit this EXACT marker on its own line: :::REFLECTION_SUBMIT{"status":"submitted"}:::
+9. After the marker, add a warm closing: "${isBootstrap ? 'Thank you for submitting your first reflection! Wishing you a wonderful time ahead at ' + (accountName || 'the team') + '. Feel free to ask me any questions anytime.' : 'Your reflection has been submitted and your manager will be notified. Great job taking the time to reflect!'}"
+
+SUGGESTION PILLS (mandatory):
+- Always include these pills: "What is a reflection?", "What should I say?", "How does this benefit me?", "Summarize reflection", "Submit reflection"
+- Example: SUGGESTIONS:["What is a reflection?","What should I say?","How does this benefit me?","Summarize reflection","Submit reflection"]
+
+SPECIAL PILL RESPONSES:
+- "What is a reflection?" → Explain: Reflections are your voice to the organization. They help log your achievements, share what's working, flag challenges, and build a record of your growth. Managers review them to provide better support and they inform your career development.
+- "What should I say?" → Share your wins, challenges, what you learned, where you need help. Be honest but professional. Don't share personal details.
+- "How does this benefit me?" → Your reflections create a log of your work and achievements. They're valuable for appraisals, career conversations, and help your manager understand how to support you better. The system also extracts skills and proficiency signals from your reflections.
+- "Summarize reflection" → Immediately generate a structured summary of everything discussed so far and ask for confirmation to submit.
+- "Submit reflection" → If no summary has been generated yet, auto-summarize first, show it, and ask for confirmation. On confirmation, emit the :::REFLECTION_SUBMIT marker.`;
+  }
+
   if (!isNewJoiner || stage === "general") {
     return `${baseRules}\n\nMode: GENERAL ASSISTANT. Help the learner with skills, career, training, or any work question. Be proactive with suggestions.`;
   }

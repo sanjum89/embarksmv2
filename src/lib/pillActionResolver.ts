@@ -89,5 +89,14 @@ export function resolvePillAction(
     }
   }
 
+  // Reflection pills — these should be sent as chat messages (return null = not a navigation action)
+  const reflectionPills = [
+    "what is a reflection", "what should i say", "how does this benefit me",
+    "summarize reflection", "submit reflection",
+  ];
+  if (reflectionPills.some(p => lower.includes(p))) {
+    return null; // Send as chat message, not navigation
+  }
+
   return null;
 }

@@ -245,6 +245,115 @@ export type Database = {
           },
         ]
       }
+      reflection_requests: {
+        Row: {
+          account_id: string
+          created_at: string
+          custom_message: string | null
+          id: string
+          manager_employee_id: string
+          questions: Json
+          status: string
+          target_employee_ids: Json
+          topic: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          custom_message?: string | null
+          id?: string
+          manager_employee_id: string
+          questions?: Json
+          status?: string
+          target_employee_ids?: Json
+          topic?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          custom_message?: string | null
+          id?: string
+          manager_employee_id?: string
+          questions?: Json
+          status?: string
+          target_employee_ids?: Json
+          topic?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reflection_requests_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reflections: {
+        Row: {
+          account_id: string
+          additional_notes: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          manager_feedback: string | null
+          manager_id: string
+          questions: Json
+          raw_conversation: Json
+          reviewed_at: string | null
+          skills_extracted: Json
+          status: string
+          submitted_at: string | null
+          summary: string | null
+          topic: string
+          trigger_type: string
+        }
+        Insert: {
+          account_id: string
+          additional_notes?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          manager_feedback?: string | null
+          manager_id?: string
+          questions?: Json
+          raw_conversation?: Json
+          reviewed_at?: string | null
+          skills_extracted?: Json
+          status?: string
+          submitted_at?: string | null
+          summary?: string | null
+          topic?: string
+          trigger_type?: string
+        }
+        Update: {
+          account_id?: string
+          additional_notes?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          manager_feedback?: string | null
+          manager_id?: string
+          questions?: Json
+          raw_conversation?: Json
+          reviewed_at?: string | null
+          skills_extracted?: Json
+          status?: string
+          submitted_at?: string | null
+          summary?: string | null
+          topic?: string
+          trigger_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reflections_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       super_agent_conversations: {
         Row: {
           account_id: string

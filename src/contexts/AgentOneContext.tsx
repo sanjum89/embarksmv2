@@ -45,11 +45,28 @@ function parseSuggestions(text: string): { clean: string; suggestions: string[] 
 
 // Parse :::RICH_BLOCK{...}::: markers from AI response text
 const RICH_BLOCK_RE = /:::RICH_BLOCK(\{[\s\S]*?\}):::/g;
+const REFLECTION_SUBMIT_RE = /:::REFLECTION_SUBMIT(\{[\s\S]*?\}):::/g;
 let richBlockIdCounter = 0;
 
-export function parseRichBlocks(text: string): { cleanText: string; blocks: RichBlock[] } {
+export interface ReflectionContextData {
+  topic: string;
+  questions: string[];
+  managerMessage?: string;
+  managerName?: string;
+  triggerType: string;
+  reflectionRequestId?: string;
+}
+
+export function parseRichBlocks(text: string): { cleanText: string; blocks: RichBlock[]; reflectionSubmit: boolean } {
+  let reflectionSubmit = false;
+  // Check for reflection submit marker
+  const cleanedReflection = text.replace(REFLECTION_SUBMIT_RE, () => {
+    reflectionSubmit = true;
+    return "";
+  });
+
   const blocks: RichBlock[] = [];
-  const cleanText = text.replace(RICH_BLOCK_RE, (_, json) => {
+  const cleanText = cleanedReflection.replace(RICH_BLOCK_RE, (_, json) => {
     try {
       const parsed = JSON.parse(json);
       blocks.push({
@@ -59,9 +76,9 @@ export function parseRichBlocks(text: string): { cleanText: string; blocks: Rich
         cta: parsed.cta,
       });
     } catch { /* ignore malformed blocks */ }
-    return ""; // Remove from text
+    return "";
   }).replace(/\n{3,}/g, "\n\n").trim();
-  return { cleanText, blocks };
+  return { cleanText, blocks, reflectionSubmit };
 }
 
 interface AgentOneContextType {
@@ -86,11 +103,13 @@ interface AgentOneContextType {
   isSophie: boolean;
   loaded: boolean;
   // Rich block state
-  richBlocksMap: Record<string, RichBlock[]>; // messageIndex → blocks
+  richBlocksMap: Record<string, RichBlock[]>;
   collapsedBlockIds: Set<string>;
   isExpanded: boolean;
   toggleBlockCollapse: (blockId: string) => void;
   setIsExpanded: (v: boolean) => void;
+  // Reflection state
+  reflectionContext: ReflectionContextData | null;
 }
 
 const AgentOneContext = createContext<AgentOneContextType>(null!);
@@ -116,6 +135,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const [richBlocksMap, setRichBlocksMap] = useState<Record<string, RichBlock[]>>({});
   const [collapsedBlockIds, setCollapsedBlockIds] = useState<Set<string>>(new Set());
   const [isExpanded, setIsExpanded] = useState(false);
+  const [reflectionContext, setReflectionContext] = useState<ReflectionContextData | null>(null);
 
   // Queued reinforcement for when chat is closed
   const pendingReinforcementRef = useRef<string[]>([]);
@@ -275,6 +295,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     inboxSummary,
     skillGaps,
     chapterContext,
+    reflectionContext: reflectionContext || undefined,
   };
 
   // Load persisted conversation
@@ -525,8 +546,8 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     }
 
     const { clean, suggestions: newSugs } = parseSuggestions(assistantSoFar);
-    // Parse rich blocks
-    const { cleanText: finalText, blocks } = parseRichBlocks(clean);
+    // Parse rich blocks and check for reflection submit
+    const { cleanText: finalText, blocks, reflectionSubmit } = parseRichBlocks(clean);
     if (finalText !== assistantSoFar) {
       addOrUpdateAssistant(finalText);
     }
@@ -542,6 +563,47 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     }
     // Only set AI suggestions if no contextual page pills exist — contextual pills take priority
     // setSuggestions(newSugs); — disabled so page-aware contextual pills always show
+
+    // Handle reflection submission
+    if (reflectionSubmit && reflectionContext && accountId) {
+      try {
+        const conversationMsgs = messagesRef.current.map(m => ({ role: m.role, content: m.content }));
+        await supabase.from("reflections" as any).insert({
+          account_id: accountId,
+          employee_id: user.id,
+          manager_id: reflectionContext.managerName || "system",
+          trigger_type: reflectionContext.triggerType || "manager_requested",
+          topic: reflectionContext.topic || "",
+          questions: reflectionContext.questions?.map((q, i) => ({ question: q, answer: "" })) || [],
+          summary: finalText.slice(0, 500),
+          raw_conversation: conversationMsgs,
+          status: "submitted",
+          submitted_at: new Date().toISOString(),
+        } as any);
+
+        // Emit reflection_submitted event
+        if (normalizedAccount) {
+          emitEvent({
+            account_id: accountId,
+            event_type: "reflection_submitted" as any,
+            category: "reflection_request" as any,
+            source_employee_id: user.id,
+            target_employee_id: user.id,
+            related_employee_ids: [user.id],
+            payload: { topic: reflectionContext.topic },
+          }, normalizedAccount).catch(err => console.error("[AgentOne] Reflection submit event failed:", err));
+        }
+
+        // Clear reflection context after submission
+        setReflectionContext(null);
+        // Return stage to previous
+        const postStage = isNewJoiner ? "post-completion" : "general";
+        setStage(postStage);
+        stageRef.current = postStage;
+      } catch (err) {
+        console.error("[AgentOne] Failed to save reflection:", err);
+      }
+    }
 
     // Detect stage transitions
     const lower = clean.toLowerCase();
@@ -627,6 +689,21 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     if (!text.trim() || isStreaming) return;
 
     const lower = text.toLowerCase();
+
+    // ─── Detect reflection prompts from nudge cards ───
+    const isReflectionPrompt = lower.includes("requested a reflection") || lower.includes("reflection to understand");
+    if (isReflectionPrompt && stageRef.current !== "reflection") {
+      // Extract reflection context from the prompt
+      setReflectionContext({
+        topic: "Onboarding experience",
+        questions: [],
+        managerMessage: text,
+        triggerType: "manager_requested",
+      });
+      setStage("reflection");
+      stageRef.current = "reflection";
+    }
+
     const isAssessmentTrigger = lower.includes("assessment") || lower.includes("take the") || lower.includes("start my");
     if (stageRef.current === "pre-assessment" && !assessmentCompleted && isAssessmentTrigger) {
       const userMsg: ChatMessage = { role: "user", content: text };
@@ -761,6 +838,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setRichBlocksMap({});
     setCollapsedBlockIds(new Set());
     setIsExpanded(false);
+    setReflectionContext(null);
     // Clear all tracking refs
     completedStepIdsRef.current = new Set();
     firedReflectionKeysRef.current = new Set();
@@ -781,6 +859,17 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   // Contextual page-aware suggestion pills
   const contextualSuggestions = useMemo(() => {
     const path = location.pathname;
+
+    // --- Reflection mode: always show reflection pills ---
+    if (stage === "reflection") {
+      return [
+        "What is a reflection?",
+        "What should I say?",
+        "How does this benefit me?",
+        "Summarize reflection",
+        "Submit reflection",
+      ];
+    }
 
     // --- Role Play Bank (list) ---
     if (path === "/role-play-bank") {
@@ -928,6 +1017,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       isExpanded,
       toggleBlockCollapse,
       setIsExpanded,
+      reflectionContext,
     }}>
       {children}
     </AgentOneContext.Provider>

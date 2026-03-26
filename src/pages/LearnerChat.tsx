@@ -213,17 +213,17 @@ export default function LearnerChat() {
   // CTA dual scroll: second scroll when streaming starts after CTA
   useEffect(() => {
     if (openedFromCta.current && isStreaming && !prevIsStreaming.current) {
-      scrollToBottom("auto");
+      scrollToLastUserMessage();
     }
     prevIsStreaming.current = isStreaming;
-  }, [isStreaming, scrollToBottom]);
+  }, [isStreaming, scrollToLastUserMessage]);
 
   // CTA first scroll: wait until the chat panel has mounted before jumping down
   useEffect(() => {
     if (isActive && openedFromCta.current) {
-      scrollToBottom("auto");
+      scrollToLastUserMessage();
     }
-  }, [isActive, scrollToBottom]);
+  }, [isActive, scrollToLastUserMessage]);
 
   // CTA context cleanup: clear after first assistant response is rendered
   useEffect(() => {

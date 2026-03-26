@@ -97,20 +97,24 @@ export function AIChatWrapper() {
     }
   }, [messages, isStreaming]);
 
-  // When panel opens during streaming, scroll to bottom immediately
+  // When panel opens during streaming, scroll to last user message
   useEffect(() => {
     if (isOpen && isStreaming) {
-      scrollToBottom("auto");
+      requestAnimationFrame(() => {
+        lastUserMsgRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+      });
     }
-  }, [isOpen, isStreaming, scrollToBottom]);
+  }, [isOpen, isStreaming]);
 
-  // CTA dual scroll: second scroll when streaming starts
+  // CTA dual scroll: when streaming starts, scroll to last user message
   useEffect(() => {
     if (isStreaming && !prevIsStreaming.current) {
-      if (isNearBottom.current) scrollToBottom("auto");
+      requestAnimationFrame(() => {
+        lastUserMsgRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+      });
     }
     prevIsStreaming.current = isStreaming;
-  }, [isStreaming, scrollToBottom]);
+  }, [isStreaming]);
 
   useEffect(() => {
     if (isOpen) inputRef.current?.focus();

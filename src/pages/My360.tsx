@@ -391,7 +391,7 @@ export default function My360() {
                 }}
                 renderExpandedList={() => (
                   <div className="space-y-2">
-                    <p className="text-xs font-semibold text-muted-foreground mb-2">All Other Skills</p>
+                    <p className="text-xs font-semibold text-muted-foreground mb-2">All Inferred Skills</p>
                     {(profileData.otherSkills ?? []).map((skill, i) => (
                       <div key={i} className="flex items-center justify-between gap-4 text-sm">
                         <span className="font-medium text-foreground">{skill.skill_name || "Unknown skill"}</span>

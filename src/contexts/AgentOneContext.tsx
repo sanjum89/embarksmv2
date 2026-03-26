@@ -142,6 +142,8 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const completedStepIdsRef = useRef<Set<string>>(new Set());
   const firedMilestonesRef = useRef<Set<string>>(new Set());
   const firedReflectionKeysRef = useRef<Set<string>>(new Set());
+  // Pending CTA prompt — when set, the auto-welcome effect is skipped
+  const pendingCtaPromptRef = useRef<string | null>(null);
 
   const toggleBlockCollapse = useCallback((blockId: string) => {
     setCollapsedBlockIds(prev => {

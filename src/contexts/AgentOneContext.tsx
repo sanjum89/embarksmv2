@@ -829,8 +829,10 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     streamResponse(allMsgs);
   };
 
-  const handleReset = async () => {
+  const handleReset = async (pendingPrompt?: string) => {
     if (!accountId) return;
+    // Store pending prompt so auto-welcome is skipped
+    pendingCtaPromptRef.current = pendingPrompt || null;
     await supabase
       .from("super_agent_conversations")
       .delete()

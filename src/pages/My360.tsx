@@ -182,6 +182,8 @@ export default function My360() {
   };
 
   return (
+    <>
+    <FirstLoginTour open={showTour} onClose={() => setShowTour(false)} />
     <div className="flex flex-1 min-h-0 h-full overflow-hidden">
       <div className="flex-1 overflow-y-auto p-6">
           {/* Page title */}

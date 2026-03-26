@@ -72,6 +72,7 @@ export function AIChatWrapper() {
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const lastUserMsgRef = useRef<HTMLDivElement>(null);
   const isNearBottom = useRef(true);
   const prevIsStreaming = useRef(false);
   const prevMsgCount = useRef(0);

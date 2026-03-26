@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from "react";
+import { Tooltip as UiTooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { FirstLoginTour } from "@/components/onboarding/FirstLoginTour";
 import { motion, AnimatePresence } from "framer-motion";
 import {

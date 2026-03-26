@@ -2,40 +2,32 @@
 
 ## Problem
 
-When a user clicks a suggestion pill like "Go to Introduction to Rathbones" or "Start my first module", it currently sends that text as a chat message. For **direct action prompts** — pills that imply navigation — the app should instead navigate the user to the appropriate page automatically.
+When a card/CTA triggers a chat message, the chat view shows the **beginning** of conversation history. The new user message (triggered by the click) is below the fold and only becomes visible once the AI finishes responding. 
+
+**Expected UX**: The new user message should appear at the **top** of the visible area immediately. Historical messages should be above the fold (scroll up to see them). The AI response then streams in below the user message.
 
 ## Approach
 
-Define a mapping of known "action pills" to their target routes. When a pill is clicked, check if it matches an action pill — if so, navigate directly instead of sending a message. Non-action pills continue to work as chat messages (the AI response will include CTA buttons for navigation where needed).
-
-## Action Pill → Route Mapping
-
-| Pill Text | Target Route |
-|---|---|
-| "Go to Introduction to Rathbones" | `/skill-target/{introTargetId}` |
-| "Go to my bridge target" | `/skill-target/{bridgeTargetId}` |
-| "Start my first module" | `/skill-target/{firstTargetId}/module/{firstModuleId}` |
-| "Take the assessment" | `/skill-target/{targetId}/assessment/{assessmentId}` |
-| "View my skill target" | `/skill-target/{targetId}` |
-| "View My 360" | `/my-360` |
-| "Go to Action Centre" | `/my-inbox` |
+Instead of `scrollToBottom` (which scrolls to the absolute end), we scroll so the **last user message** is aligned to the **top** of the viewport (`block: "start"`). This applies to both the `/chat` page and the floating panel.
 
 ## Technical Changes
 
-### 1. Create a pill-action resolver utility (`src/lib/pillActionResolver.ts`)
-- Export a function `resolvePillAction(pill: string, userContext)` that pattern-matches pill text against known action phrases
-- Returns `{ navigate: string }` if it's a direct action, or `null` if it should be sent as a chat message
-- Uses the current user's skill target data (from SkillTargetsContext) to resolve dynamic IDs (e.g., intro target ID, first module ID)
+### 1. `src/pages/LearnerChat.tsx`
 
-### 2. Update `src/pages/LearnerChat.tsx`
-- Import the resolver and `useNavigate`
-- On pill click: call `resolvePillAction(pill, context)` first
-  - If it returns a route → `navigate(route)` directly
-  - If null → call `handleSend(pill)` as before (sends as chat message)
+- Add a ref (`lastUserMsgRef`) that gets attached to the most recent user message bubble
+- Create a `scrollToLastUserMessage()` helper that calls `lastUserMsgRef.current?.scrollIntoView({ behavior: "auto", block: "start" })`
+- In the CTA flow (`onChatAction`, `handleCardSend`), replace `scrollToBottom("auto")` calls with `scrollToLastUserMessage()`
+- Update the CTA-related `useEffect` hooks (lines 204-216) to use `scrollToLastUserMessage()` instead of `scrollToBottom()`
+- Keep `scrollToBottom` for normal auto-scroll during typing (non-CTA flows)
+- Attach `ref={lastUserMsgRef}` to the last user message `div` in the message rendering loop
 
-### 3. Update `src/components/chat/AIChatWrapper.tsx`
-- Same logic for the floating panel's suggestion pills
+### 2. `src/components/chat/AIChatWrapper.tsx`
 
-### 4. Update system prompt pill definitions (`super-agent-chat/index.ts`)
-- No changes needed — the pills are already defined. The AI will still suggest them; the client-side just intercepts action ones before sending.
+- Same pattern: add `lastUserMsgRef`, attach to the last user message bubble
+- When the panel opens during streaming or from a CTA, scroll to the last user message with `block: "start"` instead of scrolling to `chatEndRef`
+- Keep normal auto-scroll behavior for ongoing conversations
+
+### 3. Normal typing behavior (unchanged)
+
+- When users type messages directly (not via CTA), the existing `scrollToBottom` / near-bottom heuristic remains unchanged — this only affects CTA-triggered navigation into chat
 

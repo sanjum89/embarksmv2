@@ -295,6 +295,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     inboxSummary,
     skillGaps,
     chapterContext,
+    reflectionContext: reflectionContext || undefined,
   };
 
   // Load persisted conversation

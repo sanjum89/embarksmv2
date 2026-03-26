@@ -435,8 +435,8 @@ export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl mx-4 rounded-2xl bg-card border border-border shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-[9999] flex flex-col bg-background">
+      <div className="relative w-full h-full flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3 border-b border-border bg-muted/30">
           <div className="flex items-center gap-2">
@@ -456,9 +456,13 @@ export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
         </div>
 
         {/* Content */}
-        <AnimatePresence mode="wait">
-          {renderStep()}
-        </AnimatePresence>
+        <div className="flex-1 overflow-y-auto flex items-center justify-center">
+          <div className="w-full max-w-2xl mx-auto px-6">
+            <AnimatePresence mode="wait">
+              {renderStep()}
+            </AnimatePresence>
+          </div>
+        </div>
 
         {/* Footer */}
         {step !== 5 && !showQuiz && (

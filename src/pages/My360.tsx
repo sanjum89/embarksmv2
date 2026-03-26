@@ -193,7 +193,7 @@ export default function My360() {
                   Your profile and how to progress
                 </p>
               </div>
-              <button className="rounded-lg border border-border bg-card px-4 py-1.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+              <button onClick={() => setShowTour(true)} className="rounded-lg border border-border bg-card px-4 py-1.5 text-sm font-medium text-foreground hover:bg-secondary transition-colors">
                 Manage Profile
               </button>
             </div>

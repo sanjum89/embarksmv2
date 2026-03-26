@@ -86,11 +86,13 @@ interface AgentOneContextType {
   isSophie: boolean;
   loaded: boolean;
   // Rich block state
-  richBlocksMap: Record<string, RichBlock[]>; // messageIndex → blocks
+  richBlocksMap: Record<string, RichBlock[]>;
   collapsedBlockIds: Set<string>;
   isExpanded: boolean;
   toggleBlockCollapse: (blockId: string) => void;
   setIsExpanded: (v: boolean) => void;
+  // Reflection state
+  reflectionContext: ReflectionContextData | null;
 }
 
 const AgentOneContext = createContext<AgentOneContextType>(null!);

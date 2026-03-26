@@ -353,8 +353,14 @@ export default function My360() {
             <div className="mt-3">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className="text-sm font-semibold text-foreground">Inferred Skills</span>
-                <span className="text-[10px] text-muted-foreground italic">from resume & reflections — pending validation</span>
-                <Info className="h-3.5 w-3.5 text-muted-foreground" />
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-[240px] text-xs">
+                    Skills inferred from resume uploads or reflections — pending manager validation
+                  </TooltipContent>
+                </Tooltip>
               </div>
               <ResponsivePillRow
                 totalCount={profileData.otherSkills?.length ?? 0}

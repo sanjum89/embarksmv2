@@ -172,6 +172,15 @@ export default function LearnerChat() {
     });
   }, []);
 
+  // Scroll so the last user message is at the TOP of the viewport (for CTA-triggered flows)
+  const scrollToLastUserMessage = useCallback(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        lastUserMsgRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+      });
+    });
+  }, []);
+
   // Handle scroll on messages container — near-bottom detection
   const handleMessagesScroll = useCallback(() => {
     const el = messagesContainerRef.current;

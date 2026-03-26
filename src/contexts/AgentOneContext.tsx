@@ -92,7 +92,7 @@ interface AgentOneContextType {
   isOpen: boolean;
   setIsOpen: (v: boolean) => void;
   handleSend: (text: string) => void;
-  handleReset: () => void;
+  handleReset: (pendingPrompt?: string) => void;
   showInlineAssessment: boolean;
   setShowInlineAssessment: (v: boolean) => void;
   assessmentCompleted: boolean;
@@ -142,6 +142,8 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const completedStepIdsRef = useRef<Set<string>>(new Set());
   const firedMilestonesRef = useRef<Set<string>>(new Set());
   const firedReflectionKeysRef = useRef<Set<string>>(new Set());
+  // Pending CTA prompt — when set, the auto-welcome effect is skipped
+  const pendingCtaPromptRef = useRef<string | null>(null);
 
   const toggleBlockCollapse = useCallback((blockId: string) => {
     setCollapsedBlockIds(prev => {
@@ -333,6 +335,9 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
 
   // Auto-send welcome for new joiners on first visit (or after reset)
   useEffect(() => {
+    // Skip auto-welcome if a CTA prompt (e.g. reflection nudge) is pending
+    if (pendingCtaPromptRef.current) return;
+
     if (loaded && messages.length === 0 && isNewJoiner && stage === "welcome") {
       // Demo learners get deterministic welcome — no AI call
       const persona = getDemoPersona(user.id);
@@ -688,6 +693,9 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
   const handleSend = useCallback((text: string) => {
     if (!text.trim() || isStreaming) return;
 
+    // Clear pending CTA prompt ref
+    pendingCtaPromptRef.current = null;
+
     const lower = text.toLowerCase();
 
     // ─── Detect reflection prompts from nudge cards ───
@@ -824,8 +832,10 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     streamResponse(allMsgs);
   };
 
-  const handleReset = async () => {
+  const handleReset = async (pendingPrompt?: string) => {
     if (!accountId) return;
+    // Store pending prompt so auto-welcome is skipped
+    pendingCtaPromptRef.current = pendingPrompt || null;
     await supabase
       .from("super_agent_conversations")
       .delete()

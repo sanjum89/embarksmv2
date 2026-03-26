@@ -1005,6 +1005,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       isExpanded,
       toggleBlockCollapse,
       setIsExpanded,
+      reflectionContext,
     }}>
       {children}
     </AgentOneContext.Provider>

@@ -1,4 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect } from "react";
+import { FirstLoginTour } from "@/components/onboarding/FirstLoginTour";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin,

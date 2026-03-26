@@ -564,6 +564,47 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     // Only set AI suggestions if no contextual page pills exist — contextual pills take priority
     // setSuggestions(newSugs); — disabled so page-aware contextual pills always show
 
+    // Handle reflection submission
+    if (reflectionSubmit && reflectionContext && accountId) {
+      try {
+        const conversationMsgs = messagesRef.current.map(m => ({ role: m.role, content: m.content }));
+        await supabase.from("reflections" as any).insert({
+          account_id: accountId,
+          employee_id: user.id,
+          manager_id: reflectionContext.managerName || "system",
+          trigger_type: reflectionContext.triggerType || "manager_requested",
+          topic: reflectionContext.topic || "",
+          questions: reflectionContext.questions?.map((q, i) => ({ question: q, answer: "" })) || [],
+          summary: finalText.slice(0, 500),
+          raw_conversation: conversationMsgs,
+          status: "submitted",
+          submitted_at: new Date().toISOString(),
+        } as any);
+
+        // Emit reflection_submitted event
+        if (normalizedAccount) {
+          emitEvent({
+            account_id: accountId,
+            event_type: "reflection_submitted" as any,
+            category: "reflection_request" as any,
+            source_employee_id: user.id,
+            target_employee_id: user.id,
+            related_employee_ids: [user.id],
+            payload: { topic: reflectionContext.topic },
+          }, normalizedAccount).catch(err => console.error("[AgentOne] Reflection submit event failed:", err));
+        }
+
+        // Clear reflection context after submission
+        setReflectionContext(null);
+        // Return stage to previous
+        const postStage = isNewJoiner ? "post-completion" : "general";
+        setStage(postStage);
+        stageRef.current = postStage;
+      } catch (err) {
+        console.error("[AgentOne] Failed to save reflection:", err);
+      }
+    }
+
     // Detect stage transitions
     const lower = clean.toLowerCase();
     let nextStage = stageRef.current;

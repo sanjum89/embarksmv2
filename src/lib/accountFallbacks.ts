@@ -20,6 +20,9 @@ export function generateNormalizedFallbacks(partial: Partial<NormalizedAccount>)
     rolesById: partial.rolesById || {},
     projectsById: partial.projectsById || {},
     projectAssignments: partial.projectAssignments || [],
+    cohortsById: partial.cohortsById || {},
+    cohortAssignments: partial.cohortAssignments || [],
+    employeeEntityOverrides: partial.employeeEntityOverrides || [],
     hierarchyMap: partial.hierarchyMap || {},
 
     skillTargets: partial.skillTargets || [],

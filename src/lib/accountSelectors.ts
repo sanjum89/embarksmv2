@@ -27,24 +27,6 @@ import type {
   CohortAssignment,
   EmployeeEntityOverride,
 } from "@/types/account-v2";
-  AccountHeader,
-  CompanyProfile,
-  SiteProfile,
-  SiteRationale,
-  ArchitectureSource,
-  ArchitectureSignalCount,
-  OrgOverviewData,
-  PeopleGraphRow,
-  EmployeeSignal,
-  ReflectionEntry,
-  ReflectionSummary,
-  WorkSignalCard,
-  LearningAndSkillsSummary,
-  ShowcaseCase,
-  ExplainabilityTrace,
-  PerformanceAlert,
-  RecommendedCTA,
-} from "@/types/account-v2";
 import type { ProfileData } from "@/data/mock";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
 import {

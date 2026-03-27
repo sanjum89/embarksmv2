@@ -415,6 +415,11 @@ export interface NormalizedAccount {
   projectsById: Record<string, AccountProject>;
   projectAssignments: ProjectAssignment[];
 
+  // Cohorts
+  cohortsById: Record<string, LearningCohort>;
+  cohortAssignments: CohortAssignment[];
+  employeeEntityOverrides: EmployeeEntityOverride[];
+
   // Hierarchy (managerId → direct report ids)
   hierarchyMap: Record<string, string[]>;
 

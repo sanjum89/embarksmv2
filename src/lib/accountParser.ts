@@ -536,6 +536,41 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     }
   }
 
+  // Cohorts
+  const cohortsById: Record<string, any> = {};
+  if (json.cohorts?.length) {
+    for (const c of json.cohorts) {
+      cohortsById[c.id] = {
+        id: c.id,
+        name: c.name,
+        description: c.description,
+        type: c.type || "custom",
+        skillTargetIds: c.skillTargetIds || [],
+        managerEmployeeIds: c.managerEmployeeIds || [],
+        status: c.status || "active",
+        startDate: c.startDate,
+        endDate: c.endDate,
+      };
+    }
+  }
+
+  // Cohort assignments
+  const cohortAssignments = (json.cohortAssignments || []).map((a: any) => ({
+    employeeId: a.employeeId,
+    cohortId: a.cohortId,
+    role: a.role || "member",
+    progress: a.progress ?? 0,
+  }));
+
+  // Employee entity overrides
+  const employeeEntityOverrides = (json.employeeEntityOverrides || []).map((o: any) => ({
+    employeeId: o.employeeId,
+    entityType: o.entityType,
+    entityId: o.entityId,
+    descriptionOverride: o.descriptionOverride,
+    snapshotOverride: o.snapshotOverride,
+  }));
+
   const partial: Partial<NormalizedAccount> = {
     id: accountId,
     schemaVersion,
@@ -547,6 +582,9 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
     rolesById,
     projectsById,
     projectAssignments,
+    cohortsById,
+    cohortAssignments,
+    employeeEntityOverrides,
     hierarchyMap,
     skillTargets: (json.skillTargets || []).map((st: any) => {
       const stepTypeMap: Record<string, string> = { rolePlay: "role_play" };

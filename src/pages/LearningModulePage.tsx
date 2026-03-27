@@ -212,21 +212,11 @@ export default function LearningModulePage() {
     </div>
   );
 
-  // New UI: two-column with AgentOne on the right
+  // Both UIs: just content, no side panel chat
   if (isNewUI) {
     return (
       <div className="flex flex-1 min-h-0 h-full overflow-hidden">
         {contentArea}
-        <div className="w-[400px] shrink-0 border-l border-border h-full">
-          <AIChatPanel
-            contextLabel={`Module: ${module.title}`}
-            suggestedActions={[
-              { label: "Summarise this module" },
-              { label: "Quiz me on key concepts" },
-              { label: "Explain the main takeaways" },
-            ]}
-          />
-        </div>
       </div>
     );
   }

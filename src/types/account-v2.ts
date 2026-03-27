@@ -59,6 +59,7 @@ export interface AccountEmployee {
   aspiration?: any;
   canManage?: boolean;
   role?: UserRole;
+  cohortIds?: string[];
 }
 
 export interface EmployeeSkill {

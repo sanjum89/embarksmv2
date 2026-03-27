@@ -511,6 +511,82 @@ export default function My360() {
                   </p>
                 </motion.div>
 
+                {/* Learning Cohorts */}
+                {(memberCohorts.length > 0 || managedCohorts.length > 0) && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.17 }}
+                    className="rounded-xl bg-card border border-border p-4 shadow-card border-l-4 border-l-primary"
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      <Users className="h-4 w-4 text-primary" />
+                      <h4 className="font-display text-sm font-semibold text-foreground">Learning Cohorts</h4>
+                    </div>
+                    {memberCohorts.length > 0 && (
+                      <div className="space-y-2 mb-3">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Enrolled</p>
+                        {memberCohorts.map((cohort) => {
+                          const assignment = normalizedAccount ? getCohortAssignment(normalizedAccount, user.id, cohort.id) : undefined;
+                          const progress = assignment?.progress || 0;
+                          return (
+                            <div key={cohort.id} className="rounded-lg border border-border p-3 space-y-1.5">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                                  <span className="text-sm font-medium text-foreground">{cohort.name}</span>
+                                </div>
+                                {cohort.type && (
+                                  <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground capitalize">
+                                    {cohort.type}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+                                  <div
+                                    className="h-full rounded-full bg-primary transition-all"
+                                    style={{ width: `${progress}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium text-muted-foreground w-8 text-right">{progress}%</span>
+                              </div>
+                              {cohort.skillTargetIds.length > 0 && (
+                                <p className="text-[10px] text-muted-foreground">
+                                  {cohort.skillTargetIds.length} skill target{cohort.skillTargetIds.length !== 1 ? "s" : ""}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {managedCohorts.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Managing</p>
+                        {managedCohorts.map((cohort) => (
+                          <div key={cohort.id} className="flex items-center justify-between rounded-lg border border-border p-3">
+                            <div className="flex items-center gap-2">
+                              <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
+                              <span className="text-sm font-medium text-foreground">{cohort.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {cohort.type && (
+                                <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground capitalize">
+                                  {cohort.type}
+                                </span>
+                              )}
+                              <span className="text-xs text-muted-foreground">
+                                {cohort.status || "active"}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+
                 {/* Skills & Gap */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}

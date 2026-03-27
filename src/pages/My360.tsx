@@ -119,6 +119,17 @@ export default function My360() {
     || activeAccount?.data?.profileData?.[user.id]
     || (isDefaultAccount ? staticProfileData[user.id] || staticProfileData["u1"] : null);
 
+  // Cohorts data
+  const memberCohorts = useMemo(() => {
+    if (!normalizedAccount) return [];
+    return getEmployeeCohorts(normalizedAccount, user.id);
+  }, [normalizedAccount, user.id]);
+
+  const managedCohorts = useMemo(() => {
+    if (!normalizedAccount) return [];
+    return getManagedCohorts(normalizedAccount, user.id);
+  }, [normalizedAccount, user.id]);
+
   // Derived core skills from role skills current
   const coreSkillNames = useMemo(
     () => profileData?.roleSkillsCurrent?.map((s) => s.skill_name) || [],

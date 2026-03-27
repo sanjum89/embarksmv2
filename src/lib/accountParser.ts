@@ -300,6 +300,7 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
         id: p.id,
         name: p.name,
         description: p.description,
+        snapshotText: p.snapshotText || p.snapshot_text,
         managerIds: p.managerIds || [],
         requiredSkills: (p.requiredSkills || []).map((s: any) => ({
           skillName: s.skillName || s.skill_name || s.name,

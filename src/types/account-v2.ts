@@ -59,6 +59,7 @@ export interface AccountEmployee {
   aspiration?: any;
   canManage?: boolean;
   role?: UserRole;
+  cohortIds?: string[];
 }
 
 export interface EmployeeSkill {
@@ -71,6 +72,8 @@ export interface EmployeeSkill {
 export interface AccountRole {
   id: string;
   name: string;
+  description?: string;
+  snapshotText?: string;
   requiredSkills: RoleSkillRequirement[];
 }
 
@@ -84,6 +87,7 @@ export interface AccountProject {
   id: string;
   name: string;
   description?: string;
+  snapshotText?: string;
   managerIds?: string[];
   requiredSkills?: ProjectSkillRequirement[];
   status?: string;
@@ -412,6 +416,11 @@ export interface NormalizedAccount {
   projectsById: Record<string, AccountProject>;
   projectAssignments: ProjectAssignment[];
 
+  // Cohorts
+  cohortsById: Record<string, LearningCohort>;
+  cohortAssignments: CohortAssignment[];
+  employeeEntityOverrides: EmployeeEntityOverride[];
+
   // Hierarchy (managerId → direct report ids)
   hierarchyMap: Record<string, string[]>;
 
@@ -457,11 +466,40 @@ export interface NormalizedAccount {
   demoScenarios?: import("@/types/agentOneActions").DemoScenarios;
 }
 
+/* ─── Learning Cohorts ─── */
+export interface LearningCohort {
+  id: string;
+  name: string;
+  description?: string;
+  type?: "onboarding" | "upskilling" | "compliance" | "custom";
+  skillTargetIds: string[];
+  managerEmployeeIds: string[];
+  status?: "active" | "completed" | "draft";
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface CohortAssignment {
+  employeeId: string;
+  cohortId: string;
+  role: "member" | "manager";
+  progress?: number;
+}
+
+/* ─── Employee Entity Overrides ─── */
+export interface EmployeeEntityOverride {
+  employeeId: string;
+  entityType: "role" | "project";
+  entityId: string;
+  descriptionOverride?: string;
+  snapshotOverride?: string;
+}
+
 /* ─── Skill Gap ─── */
 export interface SkillGapEntry {
   skillName: string;
   currentProficiency: string;
   targetProficiency: string;
   hasGap: boolean;
-  source: "role" | "project";
+  source: "role" | "project" | "cohort";
 }

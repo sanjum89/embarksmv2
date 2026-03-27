@@ -23,6 +23,9 @@ import type {
   ExplainabilityTrace,
   PerformanceAlert,
   RecommendedCTA,
+  LearningCohort,
+  CohortAssignment,
+  EmployeeEntityOverride,
 } from "@/types/account-v2";
 import type { ProfileData } from "@/data/mock";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
@@ -131,6 +134,53 @@ export function getRoleByEmployee(acct: NormalizedAccount, employeeId: string): 
   const emp = acct.employeesById[employeeId];
   if (!emp?.roleId) return undefined;
   return acct.rolesById[emp.roleId];
+}
+
+/* ─── Cohorts ─── */
+
+export function getEmployeeCohorts(acct: NormalizedAccount, employeeId: string): LearningCohort[] {
+  const cohortIds = (acct.cohortAssignments || [])
+    .filter((a) => a.employeeId === employeeId && a.role === "member")
+    .map((a) => a.cohortId);
+  return cohortIds.map((id) => acct.cohortsById[id]).filter(Boolean);
+}
+
+export function getManagedCohorts(acct: NormalizedAccount, employeeId: string): LearningCohort[] {
+  const cohortIds = (acct.cohortAssignments || [])
+    .filter((a) => a.employeeId === employeeId && a.role === "manager")
+    .map((a) => a.cohortId);
+  return cohortIds.map((id) => acct.cohortsById[id]).filter(Boolean);
+}
+
+export function getCohortAssignment(acct: NormalizedAccount, employeeId: string, cohortId: string): CohortAssignment | undefined {
+  return (acct.cohortAssignments || []).find((a) => a.employeeId === employeeId && a.cohortId === cohortId);
+}
+
+export function getCohortProgress(acct: NormalizedAccount, cohortId: string): { total: number; avgProgress: number } {
+  const members = (acct.cohortAssignments || []).filter((a) => a.cohortId === cohortId && a.role === "member");
+  const avg = members.length ? members.reduce((s, m) => s + (m.progress || 0), 0) / members.length : 0;
+  return { total: members.length, avgProgress: Math.round(avg) };
+}
+
+/* ─── Entity Overrides ─── */
+
+export function getRoleForEmployee(acct: NormalizedAccount, employeeId: string): (AccountRole & { descriptionOverride?: string; snapshotOverride?: string }) | undefined {
+  const role = getRoleByEmployee(acct, employeeId);
+  if (!role) return undefined;
+  const override = (acct.employeeEntityOverrides || []).find(
+    (o) => o.employeeId === employeeId && o.entityType === "role" && o.entityId === role.id
+  );
+  return { ...role, descriptionOverride: override?.descriptionOverride, snapshotOverride: override?.snapshotOverride };
+}
+
+export function getProjectsForEmployee(acct: NormalizedAccount, employeeId: string): (AccountProject & { descriptionOverride?: string; snapshotOverride?: string })[] {
+  const projects = getEmployeeProjects(acct, employeeId);
+  return projects.map((p) => {
+    const override = (acct.employeeEntityOverrides || []).find(
+      (o) => o.employeeId === employeeId && o.entityType === "project" && o.entityId === p.id
+    );
+    return { ...p, descriptionOverride: override?.descriptionOverride, snapshotOverride: override?.snapshotOverride };
+  });
 }
 
 /* ─── Skill Gaps ─── */

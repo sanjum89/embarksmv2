@@ -88,6 +88,26 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
       employeeSkills.length ? `with ${employeeSkills.length} tracked skill${employeeSkills.length === 1 ? "" : "s"}` : `with profile scaffolding generated from available workforce data`,
     ].filter(Boolean);
 
+    // Role snapshot: prefer user-level override → role snapshotText → role description → fallback
+    const roleOverride = (acct.employeeEntityOverrides || []).find(
+      (o) => o.employeeId === emp.id && o.entityType === "role" && o.entityId === (emp.roleId || "")
+    );
+    const roleSnapshotText = roleOverride?.snapshotOverride
+      || role?.snapshotText
+      || (role?.description ? role.description.slice(0, 120) + (role.description.length > 120 ? "…" : "") : undefined)
+      || (role ? `${role.name} — ${role.requiredSkills.length} required skills` : title);
+
+    // Project snapshot: prefer user-level override → project snapshotText → project description → fallback
+    const projectSnapshotParts = empProjects.map((p) => {
+      const projOverride = (acct.employeeEntityOverrides || []).find(
+        (o) => o.employeeId === emp.id && o.entityType === "project" && o.entityId === p.id
+      );
+      return projOverride?.snapshotOverride
+        || p.snapshotText
+        || (p.description ? p.description.slice(0, 120) + (p.description.length > 120 ? "…" : "") : p.name);
+    });
+    const projectSnapshotText = projectSnapshotParts.length > 0 ? projectSnapshotParts.join(" · ") : "No active projects";
+
     result[emp.id] = {
       title,
       location,
@@ -96,8 +116,8 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
       team,
       program: projectNames || undefined,
       summary: `${summaryParts.join(" ")}.`,
-      roleSnapshotText: role ? `${role.name} — ${role.requiredSkills.length} required skills` : title,
-      projectSnapshotText: projectNames || "No active projects",
+      roleSnapshotText,
+      projectSnapshotText,
       roleSkillsCurrent,
       roleSkillsRequired,
       projectSkillsCurrent,

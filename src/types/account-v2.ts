@@ -86,6 +86,7 @@ export interface AccountProject {
   id: string;
   name: string;
   description?: string;
+  snapshotText?: string;
   managerIds?: string[];
   requiredSkills?: ProjectSkillRequirement[];
   status?: string;

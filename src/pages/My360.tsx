@@ -10,6 +10,8 @@ import {
   ExternalLink,
   RadarIcon,
   BarChart3,
+  Users,
+  BookOpen,
 } from "lucide-react";
 import { ResponsivePillRow } from "@/components/my360/ResponsivePillRow";
 import {

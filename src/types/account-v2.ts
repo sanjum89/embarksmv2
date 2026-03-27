@@ -71,6 +71,8 @@ export interface EmployeeSkill {
 export interface AccountRole {
   id: string;
   name: string;
+  description?: string;
+  snapshotText?: string;
   requiredSkills: RoleSkillRequirement[];
 }
 

@@ -24,8 +24,87 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
 
     const employeeSkills = emp.skills || [];
 
-    const roleSkillNames = new Set(roleSkillsRequired.map((s) => s.skill_name));
-    const roleSkillsCurrent = roleSkillsRequired.map((req) => {
+    // Check if employee has explicit source tags — use source-based bucketing
+    const hasSourceTags = employeeSkills.some((s) => s.source);
+
+    let roleSkillsCurrent: any[];
+    let otherSkills: any[];
+
+    if (hasSourceTags) {
+      // Source-based bucketing: core skills = employee skills with source "core"
+      roleSkillsCurrent = employeeSkills
+        .filter((s) => s.source === "core")
+        .map((s) => ({
+          skill_name: s.skillName,
+          proficiency: s.proficiency as any,
+          assessment_year: s.assessmentYear || new Date().getFullYear(),
+          source: s.source,
+        }));
+
+      // Inferred skills = employee skills with source "inferred"
+      otherSkills = employeeSkills
+        .filter((s) => s.source === "inferred")
+        .map((s) => ({
+          skill_name: s.skillName,
+          proficiency: s.proficiency as any,
+          assessment_year: s.assessmentYear,
+          source: s.source,
+        }));
+    } else {
+      // Legacy: derive from role requirements
+      const roleSkillNames = new Set(roleSkillsRequired.map((s) => s.skill_name));
+      roleSkillsCurrent = roleSkillsRequired.map((req) => {
+        const current = employeeSkills.find((s) => s.skillName === req.skill_name);
+        return {
+          skill_name: req.skill_name,
+          proficiency: (current?.proficiency || "Beginner") as any,
+          assessment_year: current?.assessmentYear || new Date().getFullYear(),
+          source: current?.source,
+        };
+      });
+
+      // Find project skills
+      const empProjects = acct.projectAssignments
+        .filter((a) => a.employeeId === emp.id)
+        .map((a) => acct.projectsById[a.projectId])
+        .filter(Boolean);
+
+      const projectSkillNames = new Set(
+        empProjects.flatMap((p) => (p.requiredSkills || []).map((s) => s.skillName))
+      );
+
+      otherSkills = employeeSkills
+        .filter((s) => !roleSkillNames.has(s.skillName) && !projectSkillNames.has(s.skillName))
+        .map((s) => ({
+          skill_name: s.skillName,
+          proficiency: s.proficiency as any,
+          assessment_year: s.assessmentYear || new Date().getFullYear(),
+          source: s.source,
+        }));
+    }
+
+    // Find project skills (always needed for project section)
+    const empProjectsFull = acct.projectAssignments
+      .filter((a) => a.employeeId === emp.id)
+      .map((a) => acct.projectsById[a.projectId])
+      .filter(Boolean);
+
+    const projectSkillsRequired = empProjectsFull.flatMap((p) =>
+      (p.requiredSkills || []).map((s) => ({
+        skill_name: s.skillName,
+        proficiency: s.proficiency as any,
+        assessment_year: new Date().getFullYear(),
+      }))
+    );
+
+    const seenProjectSkills = new Set<string>();
+    const uniqueProjectRequired = projectSkillsRequired.filter((s) => {
+      if (seenProjectSkills.has(s.skill_name)) return false;
+      seenProjectSkills.add(s.skill_name);
+      return true;
+    });
+
+    const projectSkillsCurrent = uniqueProjectRequired.map((req) => {
       const current = employeeSkills.find((s) => s.skillName === req.skill_name);
       return {
         skill_name: req.skill_name,
@@ -35,51 +114,7 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
       };
     });
 
-    // Find project skills
-    const empProjects = acct.projectAssignments
-      .filter((a) => a.employeeId === emp.id)
-      .map((a) => acct.projectsById[a.projectId])
-      .filter(Boolean);
-
-    const projectSkillsRequired = empProjects.flatMap((p) =>
-      (p.requiredSkills || []).map((s) => ({
-        skill_name: s.skillName,
-        proficiency: s.proficiency as any,
-        assessment_year: new Date().getFullYear(),
-      }))
-    );
-
-    // Deduplicate project skills
-    const seenProjectSkills = new Set<string>();
-    const uniqueProjectRequired = projectSkillsRequired.filter((s) => {
-      if (seenProjectSkills.has(s.skill_name)) return false;
-      seenProjectSkills.add(s.skill_name);
-      return true;
-    });
-
-    // Project current = employee's current proficiency for project-required skills
-    const projectSkillsCurrent = uniqueProjectRequired.map((req) => {
-        const current = employeeSkills.find((s) => s.skillName === req.skill_name);
-      return {
-        skill_name: req.skill_name,
-        proficiency: (current?.proficiency || "Beginner") as any,
-        assessment_year: current?.assessmentYear || new Date().getFullYear(),
-        source: current?.source,
-      };
-    });
-
-    // Inferred skills = skills not in role requirements (from resume/reflections, pending validation)
-    const projectSkillNames = new Set(uniqueProjectRequired.map((s) => s.skill_name));
-    const otherSkills = employeeSkills
-      .filter((s) => !roleSkillNames.has(s.skillName) && !projectSkillNames.has(s.skillName))
-      .map((s) => ({
-        skill_name: s.skillName,
-        proficiency: s.proficiency as any,
-        assessment_year: s.assessmentYear || new Date().getFullYear(),
-        source: s.source,
-      }));
-
-    const projectNames = empProjects.map((p) => p.name).join(", ");
+    const projectNames = empProjectsFull.map((p) => p.name).join(", ");
     const yearsExperience = typeof emp.tenure === "number" ? emp.tenure : Number.parseFloat(String(emp.tenure ?? 0)) || 0;
     const location = (acct as any).namedEmployees?.find((n: any) => n.id === emp.id)?.location || emp.location || "—";
     const team = emp.department || emp.function;
@@ -101,7 +136,7 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
       || (role ? `${role.name} — ${role.requiredSkills.length} required skills` : title);
 
     // Project snapshot: prefer user-level override → project snapshotText → project description → fallback
-    const projectSnapshotParts = empProjects.map((p) => {
+    const projectSnapshotParts = empProjectsFull.map((p) => {
       const projOverride = (acct.employeeEntityOverrides || []).find(
         (o) => o.employeeId === emp.id && o.entityType === "project" && o.entityId === p.id
       );

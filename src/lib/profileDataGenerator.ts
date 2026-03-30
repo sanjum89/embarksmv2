@@ -84,9 +84,37 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
     }
 
     // Find project skills (always needed for project section)
-    const empProjects = acct.projectAssignments
+    const empProjectsFull = acct.projectAssignments
+      .filter((a) => a.employeeId === emp.id)
+      .map((a) => acct.projectsById[a.projectId])
+      .filter(Boolean);
 
-    const projectNames = empProjects.map((p) => p.name).join(", ");
+    const projectSkillsRequired = empProjectsFull.flatMap((p) =>
+      (p.requiredSkills || []).map((s) => ({
+        skill_name: s.skillName,
+        proficiency: s.proficiency as any,
+        assessment_year: new Date().getFullYear(),
+      }))
+    );
+
+    const seenProjectSkills = new Set<string>();
+    const uniqueProjectRequired = projectSkillsRequired.filter((s) => {
+      if (seenProjectSkills.has(s.skill_name)) return false;
+      seenProjectSkills.add(s.skill_name);
+      return true;
+    });
+
+    const projectSkillsCurrent = uniqueProjectRequired.map((req) => {
+      const current = employeeSkills.find((s) => s.skillName === req.skill_name);
+      return {
+        skill_name: req.skill_name,
+        proficiency: (current?.proficiency || "Beginner") as any,
+        assessment_year: current?.assessmentYear || new Date().getFullYear(),
+        source: current?.source,
+      };
+    });
+
+    const projectNames = empProjectsFull.map((p) => p.name).join(", ");
     const yearsExperience = typeof emp.tenure === "number" ? emp.tenure : Number.parseFloat(String(emp.tenure ?? 0)) || 0;
     const location = (acct as any).namedEmployees?.find((n: any) => n.id === emp.id)?.location || emp.location || "—";
     const team = emp.department || emp.function;
@@ -108,7 +136,7 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
       || (role ? `${role.name} — ${role.requiredSkills.length} required skills` : title);
 
     // Project snapshot: prefer user-level override → project snapshotText → project description → fallback
-    const projectSnapshotParts = empProjects.map((p) => {
+    const projectSnapshotParts = empProjectsFull.map((p) => {
       const projOverride = (acct.employeeEntityOverrides || []).find(
         (o) => o.employeeId === emp.id && o.entityType === "project" && o.entityId === p.id
       );

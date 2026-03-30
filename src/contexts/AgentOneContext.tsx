@@ -173,9 +173,9 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     return baselineStep?.status === "completed";
   })();
 
-  const userProfile = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)
-    ?? activeAccount?.data?.profileData?.[user.id]
-    ?? (defaultProfileData as any)[user.id];
+  const userProfile = normalizedAccount
+    ? getProfileData(normalizedAccount, user.id)
+    : activeAccount?.data?.profileData?.[user.id];
 
   const employee = normalizedAccount?.employeesById?.[user.id];
   const tenure = (employee as any)?.tenure;

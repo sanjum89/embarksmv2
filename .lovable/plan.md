@@ -1,29 +1,43 @@
 
 
-## Fix: Clara's My360 Shows Wrong Skills Data
+## Fix: Skills Display Should Use Employee Skills, Not Role Requirements
 
 ### Problem
 
-Clara (u12) has explicit skills defined on her employee record in `accountDefaults.ts`, but the default account's `profileData` is set to `profileDataByUser` from `mock.ts`, which has no entry for `u12`. The My360 page falls back to `u1` (Hitesh's) profile data — showing completely wrong skills.
+Currently, `profileDataGenerator.ts` derives `roleSkillsCurrent` by iterating over the **role's required skills** and looking up each one on the employee. This means:
+- Skills the employee has but the role doesn't require get missed from "Core Skills"
+- Skills the role requires but the employee doesn't have show up as "Beginner"
+- Name mismatches between employee skills and role skills cause duplicates
 
-The `generateProfileData` function exists and correctly derives profile data from employee skills, but it's only called for uploaded accounts with empty profileData. The default account never uses it.
+The user wants: **Core Skills = employee skills with `source: "core"`**, and **Inferred Skills = employee skills with `source: "inferred"`**. Role requirements should only be used for gap analysis.
 
-### Fix in `src/lib/accountDefaults.ts`
+### Changes
 
-After setting Clara's skills and role (around line 920), call `generateProfileData` for employees that have explicit skills and merge the results into the profileData map. This ensures Clara's My360, Agent One chat, and all other pages see her actual skills.
+#### 1. `src/lib/profileDataGenerator.ts`
 
-**Specifically:**
-1. Import `generateProfileData` from `@/lib/profileDataGenerator`
-2. After the normalized account object is constructed (line ~983), iterate employees with explicit `skills` arrays and generate their profileData entries using `generateProfileData`, then merge those into the account's `profileData` — overriding the static fallback for those specific employees
+When an employee has skills with explicit `source` tags, change the bucketing:
 
-This way:
-- Employees with explicit skills (Clara) get auto-generated profile data from their employee record
-- Other employees (u1–u11) continue using the existing static `profileDataByUser` entries
-- All pages and Agent One chat that consume `profileData` will see correct skills
+- **`roleSkillsCurrent`** (used as "Core Skills" in My360): employee skills where `source === "core"`, mapped to `{ skill_name, proficiency, assessment_year, source }`
+- **`roleSkillsRequired`** (used for gap analysis): keep as-is from role requirements
+- **`otherSkills`** (used as "Inferred Skills"): employee skills where `source === "inferred"`
+- **`projectSkillsCurrent`** / **`projectSkillsRequired`**: keep as-is from project requirements
+
+Add a check: if any employee skill has a `source` field, use the source-based bucketing. Otherwise, fall back to the existing role-matching logic for backward compatibility.
+
+#### 2. No other files need changes
+
+The My360 page already renders `roleSkillsCurrent` as "Core Skills" and `otherSkills` as "Inferred Skills". The radar chart and gap matrix use `roleSkillsCurrent` vs `roleSkillsRequired` — which will now correctly compare the employee's core skills against the role's requirements for gap detection.
+
+### Result
+
+- Core Skills pills: Clara's 12 core skills at their actual proficiency
+- Inferred Skills: Clara's 4 inferred skills
+- Skills & Gap matrix: compares core skills against role requirements to find gaps
+- No phantom "Beginner" entries from unmatched role skills
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| `src/lib/accountDefaults.ts` | Import `generateProfileData`, after building the account object merge generated profileData for employees with explicit skills |
+| `src/lib/profileDataGenerator.ts` | When employee skills have `source` tags, bucket by source field instead of role-matching for `roleSkillsCurrent` and `otherSkills` |
 

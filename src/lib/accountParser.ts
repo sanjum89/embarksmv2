@@ -47,14 +47,18 @@ function normalizeProficiency(value: unknown): string {
 }
 
 function parseSkills(source: Record<string, any>): AccountEmployee["skills"] {
+  // Look up a separate proficiency map if skills are plain strings
+  const proficiencyMap = source.proficiency || source.proficiencies || source.skillProficiency || source.skill_proficiency;
+
   if (Array.isArray(source.skills)) {
     return source.skills
       .map((s: any) => {
         // Handle plain string entries (e.g. ["Client Relationship Management", ...])
         if (typeof s === "string") {
+          const mapped = proficiencyMap && typeof proficiencyMap === "object" ? proficiencyMap[s] : undefined;
           return {
             skillName: s,
-            proficiency: normalizeProficiency(undefined),
+            proficiency: normalizeProficiency(mapped),
             assessmentYear: new Date().getFullYear(),
           };
         }
@@ -62,12 +66,12 @@ function parseSkills(source: Record<string, any>): AccountEmployee["skills"] {
           skillName: s?.skillName || s?.skill_name || s?.name,
           proficiency: normalizeProficiency(s?.proficiency || s?.level),
           assessmentYear: s?.assessmentYear || s?.assessment_year,
+          source: s?.source,
         };
       })
       .filter((s) => s.skillName);
   }
 
-  const proficiencyMap = source.proficiency || source.proficiencies || source.skillProficiency || source.skill_proficiency;
   if (proficiencyMap && typeof proficiencyMap === "object") {
     return Object.entries(proficiencyMap)
       .map(([skillName, proficiency]) => ({

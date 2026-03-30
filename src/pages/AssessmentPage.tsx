@@ -373,7 +373,7 @@ export default function AssessmentPage() {
                     <span className="inline-flex items-center gap-2.5">
                       <span className={cn(
                         "flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium",
-                        isSelected ? "bg-accent text-accent-foreground" : isCorrect ? "bg-secondary/80 text-muted-foreground" : "bg-secondary/60 text-muted-foreground"
+                        isSelected ? "bg-accent text-accent-foreground" : isCorrect ? "bg-secondary/80 text-foreground/70" : "bg-secondary/60 text-muted-foreground"
                       )}>
                         {String.fromCharCode(65 + i)}
                       </span>

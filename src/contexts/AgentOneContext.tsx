@@ -6,6 +6,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useRolePlays } from "@/contexts/RolePlayContext";
 import { getProfileData, getRoleForEmployee } from "@/lib/accountSelectors";
+import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { inboxNotifications } from "@/data/inboxNotifications";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
 import type { RichBlock } from "@/components/chat/RichContentBlock";
@@ -173,9 +174,9 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     return baselineStep?.status === "completed";
   })();
 
-  const userProfile = normalizedAccount
-    ? getProfileData(normalizedAccount, user.id)
-    : activeAccount?.data?.profileData?.[user.id];
+  const userProfile = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)
+    ?? activeAccount?.data?.profileData?.[user.id]
+    ?? (defaultProfileData as any)[user.id];
 
   const employee = normalizedAccount?.employeesById?.[user.id];
   const tenure = (employee as any)?.tenure;

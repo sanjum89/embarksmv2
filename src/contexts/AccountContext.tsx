@@ -57,15 +57,9 @@ function normalizeFromLegacy(acct: Account): NormalizedAccount {
       parsed.branding.accentColor = acct.accent_color || parsed.branding.accentColor;
       parsed.isDefault = acct.is_default;
       parsed.createdAt = acct.created_at;
-      // Ensure profileData always maps to employee skills across all accounts
-      if (Object.values(parsed.employeesById).length > 0) {
-        const generated = generateProfileData(parsed);
-        for (const [empId, profile] of Object.entries(generated)) {
-          const hasEmployeeSkills = (parsed.employeesById[empId]?.skills?.length || 0) > 0;
-          if (hasEmployeeSkills || !parsed.profileData[empId]) {
-            parsed.profileData[empId] = profile;
-          }
-        }
+      // Auto-generate profileData when missing so every uploaded employee can open My360 safely
+      if (Object.keys(parsed.profileData).length === 0 && Object.values(parsed.employeesById).length > 0) {
+        parsed.profileData = generateProfileData(parsed);
       }
       // Auto-derive reflections from employee data when none provided
       if (!parsed.reflections?.length) {

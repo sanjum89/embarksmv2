@@ -981,7 +981,7 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
     newHires: mockNewHires,
     programContexts: mockProgramContexts,
     teamMembers: Object.values(usersById),
-    profileData: profileDataByUser,
+    profileData: { ...profileDataByUser },
     prompts: {},
     aiContext: {},
     pageData: {},

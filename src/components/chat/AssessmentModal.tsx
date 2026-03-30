@@ -186,7 +186,7 @@ export function AssessmentModal({ open, onClose, onComplete, assessmentId, skill
                     <span className={cn("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium", answers[question.id] === i ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground")}>
                       {String.fromCharCode(65 + i)}
                     </span>
-                    {opt}
+                    <span className={cn("leading-snug", i === question.correctIndex && "font-medium")}>{opt}</span>
                   </span>
                 </button>
               ))}

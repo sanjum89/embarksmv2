@@ -66,6 +66,7 @@ export interface EmployeeSkill {
   skillName: string;
   proficiency: string;
   assessmentYear?: number;
+  source?: "core" | "inferred";
 }
 
 /* ─── Roles Catalog ─── */

@@ -31,6 +31,7 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
         skill_name: req.skill_name,
         proficiency: (current?.proficiency || "Beginner") as any,
         assessment_year: current?.assessmentYear || new Date().getFullYear(),
+        source: current?.source,
       };
     });
 
@@ -63,6 +64,7 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
         skill_name: req.skill_name,
         proficiency: (current?.proficiency || "Beginner") as any,
         assessment_year: current?.assessmentYear || new Date().getFullYear(),
+        source: current?.source,
       };
     });
 
@@ -74,6 +76,7 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
         skill_name: s.skillName,
         proficiency: s.proficiency as any,
         assessment_year: s.assessmentYear || new Date().getFullYear(),
+        source: s.source,
       }));
 
     const projectNames = empProjects.map((p) => p.name).join(", ");

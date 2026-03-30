@@ -955,7 +955,7 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
     { employeeId: "u1", projectId: "p2" },
   ];
 
-  return {
+  const account: NormalizedAccount = {
     id,
     schemaVersion: "1",
     isDefault: true,

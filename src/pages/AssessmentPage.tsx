@@ -372,7 +372,7 @@ export default function AssessmentPage() {
                     )}>
                       {String.fromCharCode(65 + i)}
                     </span>
-                    {option}
+                    <span className={cn("leading-snug", i === question.correctIndex && "font-medium")}>{option}</span>
                   </span>
                 </button>
               ))}

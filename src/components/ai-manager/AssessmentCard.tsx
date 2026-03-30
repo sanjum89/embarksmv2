@@ -73,7 +73,7 @@ export function AssessmentCard({ onComplete }: AssessmentCardProps) {
                     )}
                   >
                     <div className="flex items-center gap-2">
-                      <span className="flex-1">{opt}</span>
+                      <span className={cn("flex-1", oi === q.correct && "font-medium")}>{opt}</span>
                       {submitted && isCorrect && <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))]" />}
                       {submitted && isWrong && <XCircle className="h-3.5 w-3.5 text-destructive" />}
                     </div>

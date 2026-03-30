@@ -321,7 +321,7 @@ export function InlineAssessment({ onComplete }: InlineAssessmentProps) {
                     )}>
                       {String.fromCharCode(65 + idx)}
                     </span>
-                    <span className="leading-snug">{opt}</span>
+                    <span className={cn("leading-snug", isCorrect && "font-medium")}>{opt}</span>
                   </div>
                 </motion.button>
               );

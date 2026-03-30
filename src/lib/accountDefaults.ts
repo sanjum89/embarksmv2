@@ -384,46 +384,142 @@ In this role, we expect you to build the technical understanding, professional h
     "role-asst-inv-mgr": {
       id: "role-asst-inv-mgr",
       name: "Assistant Investment Manager",
-      snapshotText: "Supports portfolio decisions, conducts in-depth research, prepares client reports, and begins developing client-facing skills.",
-      description: "The Assistant Investment Manager works alongside senior portfolio managers to support investment decision-making. They conduct detailed equity and fixed income analysis, prepare client-facing reports, and begin to take ownership of smaller client relationships under supervision. This role bridges the gap between learning and independent portfolio responsibility.",
-      detailedDescription: `The Assistant Investment Manager (AIM) role represents the first step toward independent portfolio management responsibility at Rathbones.
+      snapshotText: "In this role, we expect you to support client portfolio work, contribute to research and suitability processes, communicate clearly, and build the judgement, confidence, and consistency needed for full Investment Manager responsibility.",
+      description: `As an Assistant Investment Manager, you are expected to operate beyond pure learning and begin contributing meaningfully to real client and investment work. This role sits between early-career development and full Investment Manager ownership.
 
-RESPONSIBILITIES:
-• Conduct in-depth fundamental analysis on equities and fixed income securities
-• Prepare investment recommendation memos for review by Investment Managers
-• Build and maintain financial models for company valuations (DCF, comparable analysis)
-• Draft quarterly client reports and investment commentaries
-• Attend client review meetings with senior colleagues and present specific portfolio segments
-• Monitor assigned watch-list securities and flag material developments
-• Contribute to the weekly investment committee with sector-specific insights
-• Support portfolio rebalancing activities and trade execution under supervision
+In this role, we expect you to:
+• support portfolio management and client servicing activity reliably
+• strengthen your understanding of suitability, risk, documentation, and investment rationale
+• communicate clearly with colleagues and begin contributing more confidently in client-related work
+• build independence in research, analysis, and portfolio-support activity
+• develop the judgement and consistency needed for more direct ownership over time
 
-CLIENT INTERACTION:
-• Begin managing a small number of lower-complexity client relationships (under supervision)
-• Handle routine client queries on portfolio performance and market movements
-• Prepare for and attend client annual reviews with the lead Investment Manager
+Your focus at this stage is:
+• turning technical knowledge into dependable day-to-day execution
+• understanding how investment decisions connect to client objectives
+• becoming stronger in judgement, communication, and professional discipline
+• building confidence in a regulated, client-trust environment
 
-ANALYTICAL EXPECTATIONS:
-• Independently produce 2-3 investment research notes per month
-• Maintain coverage of 15-20 securities across assigned sectors
-• Demonstrate proficiency with Bloomberg Terminal, FactSet, and internal portfolio management systems
-• Begin developing proprietary screening and filtering methodologies
+Skills and proficiency we expect in this role
 
-PROGRESSION CRITERIA:
-• Minimum 2 years in role before promotion consideration
-• Consistent quality in research output as assessed by Investment Committee
-• Positive client feedback on interactions and report quality
-• Achievement of "Advanced" proficiency in Financial Analysis and Market Research
-• Completion of CFA Level 1 (Level 2 progress preferred)
+At this stage, we expect you to demonstrate or build toward:
+• Client Relationship Management — Intermediate
+• Investment Communication — Intermediate
+• Investment Research — Intermediate
+• Portfolio Construction — Intermediate
+• Portfolio Management — Intermediate
+• Suitability and Documentation — Intermediate
+• Regulatory Compliance — Intermediate
+• Portfolio Risk Alignment — Intermediate
+• Commercial Awareness — Intermediate
+• Active Listening — Intermediate
+• Relationship Building — Intermediate
+• Attention to Detail — Intermediate
+• Client Administration — Intermediate
+• Wealth Planning Collaboration — Intermediate
+• Professional Integrity — Advanced
 
-TYPICAL TENURE: 2–4 years
-REPORTS TO: Investment Manager or Investment Director`,
+This role is preparing you for:
+• Investment Manager
+• Specialist client-facing portfolio responsibility
+• broader commercial, client, and judgement-led ownership over time
+
+In simple terms, we expect you to move from supporting the work to understanding it deeply enough to take on more of it with confidence.`,
+      detailedDescription: `As an Assistant Investment Manager, we expect you to support the delivery of high-quality client and investment work while continuing to develop the technical understanding, judgement, and professional confidence needed to progress into a full Investment Manager role. In a Rathbones-style wealth-management environment, this role is not purely administrative and not yet fully independent portfolio ownership either. It is a development stage where you are expected to contribute meaningfully, learn in context, and show that you can handle greater responsibility over time. Rathbones' early-careers material and graduate outcomes point to Assistant Investment Manager as a believable progression point between structured entry routes and more senior client-facing roles.
+
+What we expect from you in this role
+
+In this role, we expect you to:
+• support portfolio and client work with a high level of professionalism and consistency
+• build a stronger practical understanding of how investment recommendations are formed and documented
+• understand how client objectives, risk tolerance, suitability, and market context connect to portfolio decisions
+• contribute reliably to research, reviews, documentation, and follow-up work
+• grow in confidence when discussing investment thinking and client needs with colleagues and, over time, clients
+• show strong judgement, attention to detail, and ownership in a regulated environment
+
+What your responsibilities are likely to include
+
+Depending on the team or assignment, we would typically expect you to:
+• support portfolio monitoring, review preparation, and investment documentation
+• contribute to research and analysis that inform portfolio decisions
+• help prepare materials and follow-up actions related to client meetings
+• understand and apply suitability and documentation requirements carefully
+• support communication around investment decisions, performance, and rationale
+• work closely with more senior investment professionals and partner teams
+• build stronger awareness of risk, regulation, and client outcomes
+• contribute reliably to the smooth execution of client and portfolio work
+
+This is consistent with what wealth-management progression typically looks like: moving from broad entry-level development into more applied, client-relevant portfolio and research work before taking on full Investment Manager responsibility.
+
+Skills and proficiency expected in this role
+
+We expect you to demonstrate or build toward the following capability level:
+• Client Relationship Management — Intermediate
+• Investment Communication — Intermediate
+• Investment Research — Intermediate
+• Portfolio Construction — Intermediate
+• Portfolio Management — Intermediate
+• Suitability and Documentation — Intermediate
+• Regulatory Compliance — Intermediate
+• Portfolio Risk Alignment — Intermediate
+• Commercial Awareness — Intermediate
+• Active Listening — Intermediate
+• Relationship Building — Intermediate
+• Attention to Detail — Intermediate
+• Client Administration — Intermediate
+• Wealth Planning Collaboration — Intermediate
+• Professional Integrity — Advanced
+
+What success looks like
+
+You are doing well in this role when you:
+• contribute reliably to client and investment workflows
+• understand the reasoning behind investment decisions more clearly over time
+• show good judgement in documentation, follow-through, and suitability-related work
+• communicate clearly and professionally with colleagues and in client-related contexts
+• become more confident in how you support portfolio and client outcomes
+• show you can handle greater complexity without losing consistency or attention to detail
+
+What you are growing toward
+
+In this role, we are helping you grow toward:
+• Investment Manager
+• stronger ownership of client relationships and portfolio decisions
+• more independent judgement in research, suitability, and investment communication
+• broader contribution to commercial, client, and business-development activity
+
+A company like Rathbones positions long-term development as a core part of career progression, and the broader wealth-management qualification path also supports this step-up into more independent client and portfolio responsibility.
+
+Why this role matters for your development
+
+This role matters because it helps you:
+• move from foundational learning into applied investment and client work
+• build stronger judgement in a regulated, high-trust environment
+• connect technical investment knowledge with client needs and business outcomes
+• prepare for a more independent portfolio and client-facing future
+• build the consistency, credibility, and professional maturity needed for the next role
+
+The wider industry path supports this progression too. CISI positions wealth-management qualifications as a progressive route for practitioners, and the Chartered Wealth Manager pathway is aimed at professionals working toward high-quality portfolio and client service in wealth management.
+
+In simple terms
+
+In this role, we expect you to become a dependable, increasingly confident contributor to client and portfolio work, while building the technical judgement and professional maturity needed to progress into an Investment Manager role.`,
       requiredSkills: [
-        { skillName: "Financial Analysis", proficiency: "Intermediate" },
-        { skillName: "Portfolio Management", proficiency: "Beginner" },
-        { skillName: "Client Communication", proficiency: "Intermediate" },
-        { skillName: "Market Research", proficiency: "Advanced" },
-        { skillName: "Risk Assessment", proficiency: "Beginner" },
+        { skillName: "Client Relationship Management", proficiency: "Intermediate" },
+        { skillName: "Investment Communication", proficiency: "Intermediate" },
+        { skillName: "Investment Research", proficiency: "Intermediate" },
+        { skillName: "Portfolio Construction", proficiency: "Intermediate" },
+        { skillName: "Portfolio Management", proficiency: "Intermediate" },
+        { skillName: "Suitability & Documentation", proficiency: "Intermediate" },
+        { skillName: "Regulatory Compliance", proficiency: "Intermediate" },
+        { skillName: "Portfolio Risk Alignment", proficiency: "Intermediate" },
+        { skillName: "Commercial Awareness", proficiency: "Intermediate" },
+        { skillName: "Active Listening", proficiency: "Intermediate" },
+        { skillName: "Relationship Building", proficiency: "Intermediate" },
+        { skillName: "Attention to Detail", proficiency: "Intermediate" },
+        { skillName: "Client Administration", proficiency: "Intermediate" },
+        { skillName: "Wealth Planning Collaboration", proficiency: "Intermediate" },
+        { skillName: "Professional Integrity", proficiency: "Advanced" },
       ],
     },
     "role-inv-mgr": {

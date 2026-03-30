@@ -905,10 +905,10 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
       { skillName: "Business Development", proficiency: "Intermediate", assessmentYear: 2026, source: "core" },
       { skillName: "Relationship Building", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
       { skillName: "Active Listening", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
-      { skillName: "Mentoring and Coaching", proficiency: "Intermediate", assessmentYear: 2026, source: "inferred" },
-      { skillName: "Stakeholder Management", proficiency: "Intermediate", assessmentYear: 2026, source: "inferred" },
-      { skillName: "Process Improvement", proficiency: "Intermediate", assessmentYear: 2026, source: "inferred" },
-      { skillName: "Knowledge Sharing", proficiency: "Intermediate", assessmentYear: 2026, source: "inferred" },
+      { skillName: "Mentoring and Coaching", proficiency: "Intermediate", source: "inferred" },
+      { skillName: "Stakeholder Management", proficiency: "Intermediate", source: "inferred" },
+      { skillName: "Process Improvement", proficiency: "Intermediate", source: "inferred" },
+      { skillName: "Knowledge Sharing", proficiency: "Intermediate", source: "inferred" },
     ];
   }
 

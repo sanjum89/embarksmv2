@@ -1,125 +1,70 @@
 
 
-## Roles, Projects & Learning Cohorts as First-Class Entities
+## Create Investment Management Role Catalog
 
 ### What Changes
 
-The data model already has `AccountRole`, `AccountProject`, and `ProjectAssignment`. We need to:
-1. Enrich Role and Project with descriptions
-2. Add a new **Learning Cohort** entity
-3. Support **user-level overrides** for role/project descriptions
-4. Wire cohort assignments and progress
-5. Update My360 to show cohorts and use the richer data
+Extend `AccountRole` type with a new `detailedDescription` field, then populate `rolesById` in `accountDefaults.ts` with 4 investment management roles, each containing structured data for snapshot, explore-more, and detailed Q&A.
 
 ---
 
-### 1. Extend Types (`src/types/account-v2.ts`)
+### 1. Extend `AccountRole` type (`src/types/account-v2.ts`)
 
-**AccountRole** — add fields:
-- `description?: string` (full description)
-- `snapshotText?: string` (2-line condensed version for My360)
+Add to `AccountRole`:
+- `detailedDescription?: string` — long-form text used by Agent One to answer any role-related questions
+- `snapshotText` already exists (2-line summary for My360 card)
+- `description` already exists (used for "Explore more" in Agent One)
 
-**AccountProject** — add fields:
-- `snapshotText?: string` (2-line condensed version)
-- (already has `description`)
+The three tiers become:
+| Field | Purpose | Length |
+|---|---|---|
+| `snapshotText` | My360 card summary | 1-2 sentences |
+| `description` | "Explore more" view via Agent One | 1-2 paragraphs |
+| `detailedDescription` | Full reference for AI Q&A | Multi-paragraph, covers responsibilities, progression, expectations |
 
-**New: LearningCohort**
-```typescript
-interface LearningCohort {
-  id: string;
-  name: string;
-  description?: string;
-  type?: "onboarding" | "upskilling" | "compliance" | "custom";
-  skillTargetIds: string[];        // assigned skill targets
-  managerEmployeeIds: string[];    // who manages this cohort
-  status?: "active" | "completed" | "draft";
-  startDate?: string;
-  endDate?: string;
-}
+### 2. Populate 4 Roles (`src/lib/accountDefaults.ts`)
+
+Add `rolesById` with these roles instead of `{}`:
+
+1. **Graduate Trainee** (`role-grad-trainee`)
+   - Entry-level, learning-focused, shadowing senior staff
+   - Skills: Financial Analysis (Beginner), Portfolio Basics (Beginner), Client Communication (Beginner), Market Research (Intermediate), Excel/Modelling (Beginner)
+
+2. **Assistant Investment Manager** (`role-asst-inv-mgr`)
+   - Supports portfolio decisions, conducts research, prepares reports
+   - Skills: Financial Analysis (Intermediate), Portfolio Management (Beginner), Client Communication (Intermediate), Market Research (Advanced), Risk Assessment (Beginner)
+
+3. **Investment Manager** (`role-inv-mgr`)
+   - Owns portfolio decisions, manages client relationships, leads team
+   - Skills: Financial Analysis (Advanced), Portfolio Management (Advanced), Client Communication (Advanced), Risk Assessment (Intermediate), Strategic Planning (Intermediate)
+
+4. **Investment Director** (`role-inv-director`)
+   - Strategic oversight, firm-level investment policy, mentoring
+   - Skills: Financial Analysis (Expert), Portfolio Management (Expert), Client Communication (Expert), Risk Assessment (Advanced), Strategic Planning (Advanced), Leadership (Advanced)
+
+Each role gets all three text fields populated with investment-management-appropriate content.
+
+### 3. Update Parser (`src/lib/accountParser.ts`)
+
+Parse `detailedDescription` from uploaded JSON (line ~285):
+```
+detailedDescription: r.detailedDescription || r.detailed_description
 ```
 
-**New: CohortAssignment** (many-to-many employee↔cohort)
-```typescript
-interface CohortAssignment {
-  employeeId: string;
-  cohortId: string;
-  role: "member" | "manager";      // learner vs manager of cohort
-  progress?: number;               // 0-100, user-level
-}
-```
+### 4. Update Fallbacks (`src/lib/accountFallbacks.ts`)
 
-**New: EmployeeEntityOverride** (user-level description overrides)
-```typescript
-interface EmployeeEntityOverride {
-  employeeId: string;
-  entityType: "role" | "project";
-  entityId: string;
-  descriptionOverride?: string;
-  snapshotOverride?: string;
-}
-```
+No change needed — `rolesById` already defaults to `{}`.
 
-**NormalizedAccount** — add:
-- `cohortsById: Record<string, LearningCohort>`
-- `cohortAssignments: CohortAssignment[]`
-- `employeeEntityOverrides: EmployeeEntityOverride[]`
+### 5. Wire to Agent One context (`src/lib/agentOneActions.ts` or system prompt builder)
 
-**AccountEmployee** — add:
-- `cohortIds?: string[]` (convenience, derived from assignments)
-
-### 2. Update Parser (`src/lib/accountParser.ts`)
-
-- Parse `cohorts`, `cohortAssignments`, `employeeEntityOverrides` from uploaded JSON
-- Default to empty arrays/maps when not present
-- Parse `description` and `snapshotText` on roles
-
-### 3. Update Selectors (`src/lib/accountSelectors.ts`)
-
-- `getEmployeeCohorts(acct, employeeId)` → cohorts the employee is a member of
-- `getManagedCohorts(acct, employeeId)` → cohorts the employee manages
-- `getRoleForEmployee(acct, employeeId)` → role with user-level override applied
-- `getProjectsForEmployee(acct, employeeId)` → projects with user-level overrides
-- `getCohortProgress(acct, cohortId)` → aggregated progress across members
-
-### 4. Update Profile Data Generator (`src/lib/profileDataGenerator.ts`)
-
-- Use `role.snapshotText` or `role.description` (truncated) for `roleSnapshotText` instead of just counting skills
-- Apply `employeeEntityOverrides` when generating snapshot text
-- Generate project snapshot from project descriptions
-- Add cohort names to profile data
-
-### 5. Update My360 (`src/pages/My360.tsx`)
-
-- **Role Snapshot card**: Use role description (override if exists). "Explore" opens full description
-- **Project Snapshot card**: Show project(s) with descriptions. Multiple projects listed
-- **New: Cohorts section** — show cohorts the user belongs to with progress bars and skill target counts
-- **Skills & Gap filter**: Already supports "Role" / "Project" toggle — no change needed
-
-### 6. Update SkillGapEntry source type
-
-- Extend `source: "role" | "project"` → `"role" | "project" | "cohort"` for future cohort-based gap analysis
-
-### 7. Stub Data Structure
-
-All new fields default to empty so existing accounts work unchanged. The user will populate:
-- Skills and proficiency per user, role, project
-- Role/project/cohort details and assignments
-- User-level overrides
-
----
-
-### Key Principle
-
-Role, Project, and Cohort are **top-level entities** in `NormalizedAccount`. Changes to these entities affect all assigned users. But `employeeEntityOverrides` allows user-level customization (descriptions, snapshots) that stays confined to that user. Cohort progress is always per-user via `CohortAssignment.progress`.
+Ensure the current user's role `detailedDescription` is injected into the Agent One system prompt so it can answer role questions. Check where role data currently feeds into the prompt and add the new field.
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| `src/types/account-v2.ts` | Add LearningCohort, CohortAssignment, EmployeeEntityOverride; extend AccountRole, NormalizedAccount |
-| `src/lib/accountParser.ts` | Parse new entities from JSON |
-| `src/lib/accountSelectors.ts` | New selectors for cohorts, overridden role/project data |
-| `src/lib/profileDataGenerator.ts` | Use descriptions + overrides for snapshots |
-| `src/pages/My360.tsx` | Cohorts section, richer role/project snapshots |
-| `src/lib/accountFallbacks.ts` | Default empty values for new fields |
+| `src/types/account-v2.ts` | Add `detailedDescription?: string` to `AccountRole` |
+| `src/lib/accountDefaults.ts` | Populate `rolesById` with 4 roles, full text + skills |
+| `src/lib/accountParser.ts` | Parse `detailedDescription` field |
+| Agent One system prompt builder | Include role `detailedDescription` in context |
 

@@ -1,33 +1,38 @@
 
 
-## Update Graduate Trainee Role Content
+## Update Investment Manager Role Content
 
-### Changes in `src/lib/accountDefaults.ts`
+### Changes in `src/lib/accountDefaults.ts` (lines 525-576)
 
-Replace the `role-grad-trainee` entry with the updated content:
+Replace the `role-inv-mgr` entry with the user-provided content:
 
-- **`snapshotText`**: Updated 1-sentence summary
-- **`description`**: Full "Explore More" text including expectations, focus areas, skills with proficiency levels, and progression paths
-- **`detailedDescription`**: Full detailed description covering expectations, responsibilities, skills, success criteria, growth trajectory, and development rationale
-- **`requiredSkills`**: Updated skill list with mixed proficiency levels:
-  - Client Relationship Management (Beginner)
-  - Investment Communication (Beginner)
-  - Investment Research (Beginner)
-  - Portfolio Construction (Beginner)
-  - Portfolio Management (Beginner)
-  - Suitability & Documentation (Beginner)
-  - Regulatory Compliance (Beginner)
-  - Commercial Awareness (Beginner)
-  - Active Listening (Intermediate)
-  - Attention to Detail (Intermediate)
-  - Relationship Building (Intermediate)
-  - Professional Integrity (Intermediate)
+- **`snapshotText`**: "In this role, we expect you to manage client portfolios, make suitable investment decisions, communicate clearly with clients and colleagues, and contribute to strong client outcomes, growth, and professional trust."
+
+- **`description`**: Full "Explore More" text covering expectations, focus areas, skills with proficiency levels (mostly Advanced, some Intermediate), and progression paths (Senior Investment Manager, broader ownership).
+
+- **`detailedDescription`**: Full detailed description covering what we expect, responsibilities (including Rathbones-specific context), skills, success criteria, growth trajectory, CISI/Chartered Wealth Manager references, and development rationale.
+
+- **`requiredSkills`**: Updated to 16 skills with mixed proficiency:
+  - Client Relationship Management (Advanced)
+  - Investment Communication (Advanced)
+  - Investment Research (Advanced)
+  - Portfolio Construction (Advanced)
+  - Portfolio Management (Advanced)
+  - Suitability & Documentation (Advanced)
+  - Regulatory Compliance (Advanced)
+  - Portfolio Risk Alignment (Advanced)
+  - Commercial Awareness (Advanced)
+  - Business Development (Intermediate)
+  - Active Listening (Advanced)
+  - Relationship Building (Advanced)
+  - Attention to Detail (Advanced)
   - Client Administration (Intermediate)
-  - Adaptability (Intermediate)
+  - Wealth Planning Collaboration (Intermediate)
+  - Professional Integrity (Advanced)
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| `src/lib/accountDefaults.ts` | Replace Graduate Trainee snapshotText, description, detailedDescription, and requiredSkills with user-provided content |
+| `src/lib/accountDefaults.ts` | Replace Investment Manager snapshotText, description, detailedDescription, and requiredSkills with user-provided content |
 

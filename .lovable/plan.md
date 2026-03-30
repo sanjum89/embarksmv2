@@ -1,43 +1,72 @@
 
 
-## Fix: Skills Display Should Use Employee Skills, Not Role Requirements
+## Fix My360 Skills Display and Gap Analysis
 
 ### Problem
 
-Currently, `profileDataGenerator.ts` derives `roleSkillsCurrent` by iterating over the **role's required skills** and looking up each one on the employee. This means:
-- Skills the employee has but the role doesn't require get missed from "Core Skills"
-- Skills the role requires but the employee doesn't have show up as "Beginner"
-- Name mismatches between employee skills and role skills cause duplicates
+1. **Core Skills & Inferred Skills sections** — already correctly implemented (using `roleSkillsCurrent` from source-based bucketing and `otherSkills`). If they're not showing, it's likely a data loading issue.
 
-The user wants: **Core Skills = employee skills with `source: "core"`**, and **Inferred Skills = employee skills with `source: "inferred"`**. Role requirements should only be used for gap analysis.
+2. **Skills & Gap section** — the gap derivation functions (`deriveSkillGaps`, `deriveRadarSkills`) iterate over the **required** skills list as the driver. This means:
+   - Skills that exist in role requirements but the employee doesn't have still appear
+   - Name mismatches between employee skills and role requirements cause "missing" lookups
+   - The employee's actual core skills are not the basis of comparison
+
+### Solution
+
+Change the Skills & Gap logic so the **employee's core skills** drive the comparison, looking up the matching role/project requirement to find the target proficiency.
 
 ### Changes
 
-#### 1. `src/lib/profileDataGenerator.ts`
+#### 1. `src/lib/skillUtils.ts` — Add a new function `deriveGapsFromEmployee`
 
-When an employee has skills with explicit `source` tags, change the bucketing:
+Create a new gap derivation function that iterates over the employee's current skills (not the requirements) and finds matching required proficiency:
 
-- **`roleSkillsCurrent`** (used as "Core Skills" in My360): employee skills where `source === "core"`, mapped to `{ skill_name, proficiency, assessment_year, source }`
-- **`roleSkillsRequired`** (used for gap analysis): keep as-is from role requirements
-- **`otherSkills`** (used as "Inferred Skills"): employee skills where `source === "inferred"`
-- **`projectSkillsCurrent`** / **`projectSkillsRequired`**: keep as-is from project requirements
+```typescript
+export function deriveGapsFromEmployee(
+  current: SkillEntry[],
+  required: SkillRequirement[]
+): GapResult[] {
+  return current.map((cur) => {
+    const req = required.find((r) => r.skill_name === cur.skill_name);
+    if (!req) {
+      // No requirement for this skill — no gap
+      return { skill_name: cur.skill_name, currentLevel: cur.proficiency, requiredLevel: cur.proficiency, gapLevel: "No gap" as GapLevel };
+    }
+    const curIdx = proficiencyIndex(cur.proficiency);
+    const reqIdx = proficiencyIndex(req.proficiency);
+    const diff = reqIdx - curIdx;
+    let gapLevel: GapLevel = "No gap";
+    if (diff >= 2) gapLevel = "High gap";
+    else if (diff === 1) gapLevel = "Medium gap";
+    return { skill_name: cur.skill_name, currentLevel: cur.proficiency, requiredLevel: req.proficiency, gapLevel };
+  });
+}
+```
 
-Add a check: if any employee skill has a `source` field, use the source-based bucketing. Otherwise, fall back to the existing role-matching logic for backward compatibility.
+Add a similar `deriveRadarFromEmployee` function that drives from employee skills, looking up targets from requirements.
 
-#### 2. No other files need changes
+#### 2. `src/pages/My360.tsx` — Use employee-driven gap functions
 
-The My360 page already renders `roleSkillsCurrent` as "Core Skills" and `otherSkills` as "Inferred Skills". The radar chart and gap matrix use `roleSkillsCurrent` vs `roleSkillsRequired` — which will now correctly compare the employee's core skills against the role's requirements for gap detection.
+Update the `radarSkills` and `allGapRows` useMemo hooks:
+
+- When `gapSource === "Role"`: use `deriveGapsFromEmployee(profileData.roleSkillsCurrent, profileData.roleSkillsRequired)` — compares Clara's 12 core skills against role requirement proficiency levels
+- When `gapSource === "Project"`: use `deriveGapsFromEmployee(profileData.projectSkillsCurrent, profileData.projectSkillsRequired)` — same logic for project skills
+- Same change for `deriveRadarSkills` → use the new employee-driven radar function
+
+This ensures the gap matrix shows all of Clara's core skills with their current level, the target from role/project requirements, and the computed gap. Skills without a matching requirement show as "No gap".
 
 ### Result
 
-- Core Skills pills: Clara's 12 core skills at their actual proficiency
-- Inferred Skills: Clara's 4 inferred skills
-- Skills & Gap matrix: compares core skills against role requirements to find gaps
-- No phantom "Beginner" entries from unmatched role skills
+- **Core Skills pills**: Clara's 12 core skills at actual proficiency
+- **Inferred Skills pills**: Clara's 4 inferred skills
+- **Skills & Gap (Role filter)**: Shows Clara's core skills compared against Investment Manager role requirements, highlighting gaps
+- **Skills & Gap (Project filter)**: Shows project skills compared against project requirements
+- **Radar/Bar chart**: Same employee-driven comparison
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| `src/lib/profileDataGenerator.ts` | When employee skills have `source` tags, bucket by source field instead of role-matching for `roleSkillsCurrent` and `otherSkills` |
+| `src/lib/skillUtils.ts` | Add `deriveGapsFromEmployee` and `deriveRadarFromEmployee` functions |
+| `src/pages/My360.tsx` | Use employee-driven gap functions in `radarSkills` and `allGapRows` computations |
 

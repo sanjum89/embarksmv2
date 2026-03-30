@@ -29,6 +29,7 @@ import type {
 } from "@/types/account-v2";
 import type { ProfileData } from "@/data/mock";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
+import { generateProfileData } from "@/lib/profileDataGenerator";
 import {
   deriveExplainabilityTraces,
   deriveLearningAndSkills,
@@ -288,7 +289,18 @@ export function getLearnerHomeData(acct: NormalizedAccount, userId: string) {
 /* ─── Profile Data Helper ─── */
 
 export function getProfileData(acct: NormalizedAccount, userId: string): ProfileData | undefined {
-  return acct.profileData[userId];
+  const linkedEmployeeId = acct.usersById[userId]?.linkedEmployeeId || userId;
+
+  const fromMap = acct.profileData[linkedEmployeeId] || acct.profileData[userId];
+  if (fromMap) return fromMap;
+
+  const employee = acct.employeesById[linkedEmployeeId];
+  if (employee?.skills?.length) {
+    const generated = generateProfileData(acct);
+    return generated[linkedEmployeeId];
+  }
+
+  return undefined;
 }
 
 /* ─── New Dataset Selectors ─── */

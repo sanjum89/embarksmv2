@@ -70,10 +70,9 @@ export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
   const [quizDone, setQuizDone] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isDefaultAccount = normalizedAccount?.isDefault !== false;
-  const profileData = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)
-    || activeAccount?.data?.profileData?.[user.id]
-    || (isDefaultAccount ? staticProfileData[user.id] || staticProfileData["u1"] : null);
+  const profileData = normalizedAccount
+    ? getProfileData(normalizedAccount, user.id)
+    : (activeAccount?.data?.profileData?.[user.id] || staticProfileData[user.id] || staticProfileData["u1"]);
 
   if (!open || !profileData) return null;
 

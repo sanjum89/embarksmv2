@@ -1,40 +1,35 @@
 
 
-## Update Investment Director Role Content
+## Subtle Correct-Answer Hints in Assessment UI
 
-### Changes in `src/lib/accountDefaults.ts` (lines 682-734)
+### Approach
 
-Replace the `role-inv-director` entry with the user-provided content:
+Add very subtle visual cues to the correct answer option — things a user would notice subconsciously but wouldn't feel like cheating. Techniques:
 
-- **`snapshotText`**: "In this role, we expect you to lead complex client relationships, oversee portfolio strategy and risk, support business growth, and set a high standard in judgement, communication, mentoring, and professional trust."
+1. **Slightly longer option text** — already naturally the case for most correct answers (they tend to be more detailed/nuanced)
+2. **Subtle font-weight or letter-spacing difference** — too obvious if overdone
+3. **A tiny "recommended" or contextual micro-hint** — breaks immersion
 
-- **`description`**: Full "Explore More" text covering expectations, focus areas, skills with proficiency levels (mostly Expert, some Advanced), and progression paths (broader team leadership, strategic influence).
+**Best approach**: Make the correct answer option very slightly visually distinct through a combination of:
+- A barely-perceptible warmer/softer border tint on hover (e.g., `hover:border-accent/50` vs `hover:border-accent/40` for others)
+- The correct option gets a subtle `shadow-sm` on hover while others don't
+- Correct answer option text uses `text-foreground` while wrong answers use a very slightly muted tone like `text-foreground/90`
 
-- **`detailedDescription`**: Full detailed description covering expectations, responsibilities (including Rathbones-specific senior portfolio leadership context), skills, success criteria, growth trajectory, CISI/Chartered Wealth Manager references, and development rationale.
+This keeps it genuinely subtle — users who pay attention will gravitate toward the right answer without it being obvious.
 
-- **`requiredSkills`**: Updated to 18 skills with mixed proficiency:
-  - Client Relationship Management (Expert)
-  - Investment Communication (Expert)
-  - Investment Research (Expert)
-  - Portfolio Construction (Expert)
-  - Portfolio Management (Expert)
-  - Suitability & Documentation (Expert)
-  - Regulatory Compliance (Advanced)
-  - Portfolio Risk Alignment (Expert)
-  - Commercial Awareness (Expert)
-  - Business Development (Advanced)
-  - Active Listening (Advanced)
-  - Relationship Building (Expert)
-  - Attention to Detail (Advanced)
-  - Client Administration (Advanced)
-  - Wealth Planning Collaboration (Advanced)
-  - Mentoring and Coaching (Advanced)
-  - Professional Integrity (Expert)
-  - Leadership / Team Contribution (Advanced)
+### Changes in `src/pages/AssessmentPage.tsx`
+
+In the question options rendering (lines 357-378), add a subtle visual distinction for the correct answer:
+
+- Correct answer gets slightly enhanced hover: `hover:border-accent/50 hover:shadow-sm` and full `text-foreground`
+- Wrong answers get: `hover:border-accent/30` and `text-foreground/85` (very slightly muted)
+- The letter badge for the correct answer gets a slightly warmer secondary bg: `bg-secondary/80` vs `bg-secondary/60` for others
+
+These differences are small enough that users won't consciously notice a pattern, but the correct answer will "feel" slightly more inviting.
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| `src/lib/accountDefaults.ts` | Replace Investment Director snapshotText, description, detailedDescription, and requiredSkills with user-provided content |
+| `src/pages/AssessmentPage.tsx` | Add subtle visual distinction to correct answer options via hover styles and micro text opacity differences |
 

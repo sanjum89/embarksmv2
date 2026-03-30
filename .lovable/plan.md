@@ -1,27 +1,61 @@
 
 
-## Subtly Highlight Correct Answers in All Assessments
+## Add Core and Inferred Skills for Clara Whitfield
 
-Make the correct answer option text slightly bolder (`font-medium`, ~500 weight) compared to other options (which use default `font-normal`, ~400 weight) across all 5 assessment components. This is a subtle visual hint for demo purposes only --- visible before submission, not after.
+### What Changes
 
-### Files to modify
+Add explicit skills data to Clara's employee record with a `source` field on `EmployeeSkill` to distinguish core vs inferred skills. Assign Clara the Investment Manager role. Update profile data generator to preserve the source field. Use **2026** as the assessment year for all skills.
+
+### 1. Extend `EmployeeSkill` type (`src/types/account-v2.ts`)
+
+Add optional `source` field:
+```ts
+export interface EmployeeSkill {
+  skillName: string;
+  proficiency: string;
+  assessmentYear?: number;
+  source?: "core" | "inferred";
+}
+```
+
+### 2. Add Clara's skills and roleId in `accountDefaults.ts`
+
+Set Clara's `roleId` to `"role-inv-mgr"` and populate her `skills` array with 16 skills, all with `assessmentYear: 2026`:
+
+**Core skills (12):**
+- Client Relationship Management — Advanced
+- Investment Communication — Advanced
+- Investment Research — Advanced
+- Portfolio Construction — Advanced
+- Portfolio Management — Advanced
+- Suitability and Documentation — Advanced
+- Regulatory Compliance — Advanced
+- Portfolio Risk Alignment — Advanced
+- Commercial Awareness — Advanced
+- Business Development — Intermediate
+- Relationship Building — Advanced
+- Active Listening — Advanced
+
+**Inferred skills (4):**
+- Mentoring and Coaching — Intermediate
+- Stakeholder Management — Intermediate
+- Process Improvement — Intermediate
+- Knowledge Sharing — Intermediate
+
+### 3. Update profile data generator (`src/lib/profileDataGenerator.ts`)
+
+Preserve the `source` field when mapping skills into profile buckets (`roleSkillsCurrent`, `projectSkillsCurrent`, `otherSkills`).
+
+### 4. Update `ProfileData` type in `src/data/mock.ts`
+
+Add optional `source` field to skill entry types in `ProfileData`.
+
+### Files Modified
 
 | File | Change |
 |---|---|
-| `src/pages/AssessmentPage.tsx` (~line 375) | Add `font-medium` to option text when `i === question.correctIndex`, keep others at normal weight |
-| `src/components/skill-target/TraditionalContentViewer.tsx` (~line 316) | Same: conditionally apply `font-medium` to correct option text |
-| `src/components/chat/AssessmentModal.tsx` (~line 175) | Same pattern on option text span |
-| `src/components/chat/InlineAssessment.tsx` (~line 324) | Add `font-medium` to the `<span>` wrapping `{opt}` when `isCorrect` |
-| `src/components/ai-manager/AssessmentCard.tsx` (~line 71) | Add `font-medium` to correct option text via `oi === q.correct` check |
-
-### Implementation detail
-
-In each option rendering, wrap or conditionally class the option text:
-```tsx
-<span className={cn("leading-snug", i === question.correctIndex && "font-medium")}>
-  {option}
-</span>
-```
-
-Other options remain at default weight. The difference between `font-normal` (400) and `font-medium` (500) is subtle enough for a demo hint without being obvious.
+| `src/types/account-v2.ts` | Add `source?: "core" \| "inferred"` to `EmployeeSkill` |
+| `src/lib/accountDefaults.ts` | Set Clara's `roleId`, add 16 skills with source tags and `assessmentYear: 2026` |
+| `src/lib/profileDataGenerator.ts` | Preserve `source` field in skill mapping |
+| `src/data/mock.ts` | Add `source?` field to `ProfileData` skill entry types |
 

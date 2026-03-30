@@ -1,5 +1,5 @@
 import type { AccountData, AccountEmployee, Account } from "@/types/account";
-import type { NormalizedAccount, AccountUser, AccountProject, ProjectAssignment } from "@/types/account-v2";
+import type { NormalizedAccount, AccountUser, AccountProject, ProjectAssignment, AccountRole } from "@/types/account-v2";
 import type { ReflectionEntry, WorkSignalCard, NamedEmployeeRecord, PeopleGraphRow, PerformanceAlert, RecommendedCTA, LearningAndSkillsSummary, OrgOverviewData } from "@/types/account-v2";
 import {
   currentUser,
@@ -246,6 +246,200 @@ function buildDefaultLearningAndSkills(): LearningAndSkillsSummary {
   };
 }
 
+function buildDefaultRolesCatalog(): Record<string, AccountRole> {
+  return {
+    "role-grad-trainee": {
+      id: "role-grad-trainee",
+      name: "Graduate Trainee",
+      snapshotText: "Entry-level role focused on learning investment fundamentals, shadowing senior staff, and building foundational analytical skills.",
+      description: "The Graduate Trainee is an entry-level position within the investment management team. Trainees rotate across desks — equities, fixed income, and multi-asset — to build a broad foundation. They shadow senior portfolio managers, assist with research, and learn to use internal tools and market data platforms. The role emphasises structured learning, mentorship, and progressive responsibility over the first 12–18 months.",
+      detailedDescription: `The Graduate Trainee programme at Rathbones is a structured 18-month development pathway designed to transform high-potential graduates into competent junior investment professionals.
+
+RESPONSIBILITIES:
+• Shadow senior Investment Managers and Directors across equity, fixed income, and multi-asset desks
+• Conduct preliminary market research and compile daily/weekly briefing notes
+• Assist with portfolio analytics using internal systems (Charles River, Bloomberg Terminal)
+• Attend client meetings as an observer and take structured notes for debrief sessions
+• Complete mandatory compliance and regulatory training (FCA, MiFID II basics)
+• Participate in weekly investment committee briefings and present research findings monthly
+• Support ad-hoc projects for Investment Directors including data gathering and presentation preparation
+
+LEARNING EXPECTATIONS:
+• Complete all assigned skill targets within prescribed timelines
+• Achieve minimum "Intermediate" proficiency in Financial Analysis and Market Research by month 12
+• Pass the IMC (Investment Management Certificate) within the first year
+• Maintain a learning journal with weekly reflections reviewed by assigned mentor
+
+PROGRESSION CRITERIA:
+• Successful completion of all rotational desk attachments
+• Positive mentor and line manager evaluations at 6-month and 12-month reviews
+• Demonstrated ability to independently produce basic investment research
+• Readiness assessment for promotion to Assistant Investment Manager
+
+TYPICAL TENURE: 12–18 months before promotion consideration
+REPORTS TO: Senior Investment Manager or Investment Director`,
+      requiredSkills: [
+        { skillName: "Financial Analysis", proficiency: "Beginner" },
+        { skillName: "Portfolio Basics", proficiency: "Beginner" },
+        { skillName: "Client Communication", proficiency: "Beginner" },
+        { skillName: "Market Research", proficiency: "Intermediate" },
+        { skillName: "Excel & Financial Modelling", proficiency: "Beginner" },
+      ],
+    },
+    "role-asst-inv-mgr": {
+      id: "role-asst-inv-mgr",
+      name: "Assistant Investment Manager",
+      snapshotText: "Supports portfolio decisions, conducts in-depth research, prepares client reports, and begins developing client-facing skills.",
+      description: "The Assistant Investment Manager works alongside senior portfolio managers to support investment decision-making. They conduct detailed equity and fixed income analysis, prepare client-facing reports, and begin to take ownership of smaller client relationships under supervision. This role bridges the gap between learning and independent portfolio responsibility.",
+      detailedDescription: `The Assistant Investment Manager (AIM) role represents the first step toward independent portfolio management responsibility at Rathbones.
+
+RESPONSIBILITIES:
+• Conduct in-depth fundamental analysis on equities and fixed income securities
+• Prepare investment recommendation memos for review by Investment Managers
+• Build and maintain financial models for company valuations (DCF, comparable analysis)
+• Draft quarterly client reports and investment commentaries
+• Attend client review meetings with senior colleagues and present specific portfolio segments
+• Monitor assigned watch-list securities and flag material developments
+• Contribute to the weekly investment committee with sector-specific insights
+• Support portfolio rebalancing activities and trade execution under supervision
+
+CLIENT INTERACTION:
+• Begin managing a small number of lower-complexity client relationships (under supervision)
+• Handle routine client queries on portfolio performance and market movements
+• Prepare for and attend client annual reviews with the lead Investment Manager
+
+ANALYTICAL EXPECTATIONS:
+• Independently produce 2-3 investment research notes per month
+• Maintain coverage of 15-20 securities across assigned sectors
+• Demonstrate proficiency with Bloomberg Terminal, FactSet, and internal portfolio management systems
+• Begin developing proprietary screening and filtering methodologies
+
+PROGRESSION CRITERIA:
+• Minimum 2 years in role before promotion consideration
+• Consistent quality in research output as assessed by Investment Committee
+• Positive client feedback on interactions and report quality
+• Achievement of "Advanced" proficiency in Financial Analysis and Market Research
+• Completion of CFA Level 1 (Level 2 progress preferred)
+
+TYPICAL TENURE: 2–4 years
+REPORTS TO: Investment Manager or Investment Director`,
+      requiredSkills: [
+        { skillName: "Financial Analysis", proficiency: "Intermediate" },
+        { skillName: "Portfolio Management", proficiency: "Beginner" },
+        { skillName: "Client Communication", proficiency: "Intermediate" },
+        { skillName: "Market Research", proficiency: "Advanced" },
+        { skillName: "Risk Assessment", proficiency: "Beginner" },
+      ],
+    },
+    "role-inv-mgr": {
+      id: "role-inv-mgr",
+      name: "Investment Manager",
+      snapshotText: "Owns portfolio decisions for assigned clients, manages client relationships end-to-end, and mentors junior team members.",
+      description: "The Investment Manager has full responsibility for managing client portfolios within defined mandates. They make independent buy/sell decisions, conduct client reviews, and are accountable for portfolio performance. They also mentor Assistant Investment Managers and Graduate Trainees, contributing to team development and investment committee discussions.",
+      detailedDescription: `The Investment Manager is a fully qualified portfolio manager responsible for independent investment decision-making and comprehensive client relationship management.
+
+RESPONSIBILITIES:
+• Full discretionary management of client portfolios (typically £50M–£200M AUM)
+• Make independent buy/sell/hold decisions within defined investment mandates and risk parameters
+• Conduct quarterly and annual client review meetings independently
+• Develop and articulate bespoke investment strategies aligned to client objectives
+• Present at the weekly investment committee and contribute to house view formation
+• Mentor 1-2 Assistant Investment Managers and Graduate Trainees
+• Participate in business development — prospect meetings and pitch presentations
+• Ensure all portfolio activity complies with regulatory requirements and internal policies
+
+CLIENT MANAGEMENT:
+• Primary relationship manager for 30-60 client accounts
+• Handle complex client queries including tax planning considerations, estate planning interface, and philanthropic giving strategies
+• Conduct annual suitability reviews and update investment policy statements
+• Manage client expectations during periods of market volatility
+
+INVESTMENT PROCESS:
+• Maintain deep expertise in 2-3 sectors with comprehensive coverage of 30+ securities
+• Generate original investment ideas and present conviction calls to the team
+• Conduct due diligence on new investment opportunities including company visits and management meetings
+• Contribute to asset allocation decisions at portfolio and model level
+
+TEAM LEADERSHIP:
+• Conduct regular 1:1s with direct reports (AIM / Graduate Trainees)
+• Review and approve research output from junior team members
+• Provide structured feedback through the reflection and skills assessment processes
+• Identify development needs and assign appropriate skill targets
+
+PROGRESSION CRITERIA:
+• Minimum 4 years as Investment Manager before Director consideration
+• Strong and consistent portfolio performance vs benchmarks
+• Excellent client retention and satisfaction scores
+• Demonstrated leadership and mentoring capability
+• CFA Charterholder status (or equivalent)
+• Business development contribution — evidence of client acquisition
+
+TYPICAL TENURE: 4–8 years
+REPORTS TO: Investment Director`,
+      requiredSkills: [
+        { skillName: "Financial Analysis", proficiency: "Advanced" },
+        { skillName: "Portfolio Management", proficiency: "Advanced" },
+        { skillName: "Client Communication", proficiency: "Advanced" },
+        { skillName: "Risk Assessment", proficiency: "Intermediate" },
+        { skillName: "Strategic Planning", proficiency: "Intermediate" },
+      ],
+    },
+    "role-inv-director": {
+      id: "role-inv-director",
+      name: "Investment Director",
+      snapshotText: "Provides strategic oversight of investment activity, sets firm-level policy, mentors senior staff, and drives business growth.",
+      description: "The Investment Director sits at the leadership level of the investment management function. They set strategic direction, oversee multiple Investment Managers, chair or contribute to the investment committee, and represent the firm externally. They are responsible for ensuring the quality and consistency of the investment process across the team and play a key role in talent development and succession planning.",
+      detailedDescription: `The Investment Director is a senior leadership role responsible for the strategic direction and oversight of the investment management function.
+
+RESPONSIBILITIES:
+• Strategic oversight of investment activity across the team (typically £500M–£2B+ AUM)
+• Chair or co-chair the investment committee and drive house view formation
+• Set and review firm-level investment policy, asset allocation frameworks, and risk parameters
+• Oversee portfolio performance across all managed accounts and intervene where necessary
+• Represent the firm at industry conferences, media engagements, and institutional client meetings
+• Lead business development strategy for the investment management division
+• Participate in executive-level decisions on firm strategy, technology investment, and operational change
+
+TEAM & TALENT:
+• Direct management of 3-6 Investment Managers
+• Conduct performance reviews and career development planning for senior team members
+• Lead succession planning for the investment management function
+• Champion the learning and development programme — review skill targets, approve learning cohorts
+• Act as escalation point for complex client situations and complaints
+
+INVESTMENT LEADERSHIP:
+• Set the tone for research quality and investment rigour across the team
+• Review and challenge investment theses from Investment Managers
+• Lead the annual strategic asset allocation review
+• Maintain high-level market awareness and communicate macroeconomic views to the team
+• Approve new investment strategies and product launches
+
+CLIENT & STAKEHOLDER MANAGEMENT:
+• Relationship owner for the firm's largest and most complex client accounts
+• Conduct strategic reviews with ultra-high-net-worth and institutional clients
+• Interface with compliance, risk, and operations teams on investment-related matters
+• Represent the investment management perspective at board and executive committee meetings
+
+GOVERNANCE & COMPLIANCE:
+• Ensure team adherence to FCA regulations, MiFID II, and internal compliance standards
+• Review and approve marketing materials and investment commentaries
+• Oversee suitability and best execution monitoring across portfolios
+• Participate in regulatory examinations and audits as required
+
+TYPICAL TENURE: 5+ years (often long-term career role)
+REPORTS TO: Chief Investment Officer / Managing Director`,
+      requiredSkills: [
+        { skillName: "Financial Analysis", proficiency: "Expert" },
+        { skillName: "Portfolio Management", proficiency: "Expert" },
+        { skillName: "Client Communication", proficiency: "Expert" },
+        { skillName: "Risk Assessment", proficiency: "Advanced" },
+        { skillName: "Strategic Planning", proficiency: "Advanced" },
+        { skillName: "Leadership", proficiency: "Advanced" },
+      ],
+    },
+  };
+}
+
 /**
  * Build a NormalizedAccount from the default mock data.
  */
@@ -351,7 +545,7 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
     proficiencyScale: ["Beginner", "Intermediate", "Advanced", "Expert", "Master"],
     usersById,
     employeesById,
-    rolesById: {},
+    rolesById: buildDefaultRolesCatalog(),
     projectsById,
     projectAssignments,
     cohortsById: {},

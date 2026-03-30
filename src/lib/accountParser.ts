@@ -284,6 +284,7 @@ export function parseAccountJSON(raw: unknown, accountId: string): ParseResult {
         name: r.name,
         description: r.description,
         snapshotText: r.snapshotText || r.snapshot_text,
+        detailedDescription: r.detailedDescription || r.detailed_description,
         requiredSkills: (r.requiredSkills || []).map((s: any) => ({
           skillName: s.skillName || s.skill_name || s.name,
           proficiency: s.proficiency || "Intermediate",

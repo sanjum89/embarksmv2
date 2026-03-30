@@ -5,7 +5,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useRolePlays } from "@/contexts/RolePlayContext";
-import { getProfileData } from "@/lib/accountSelectors";
+import { getProfileData, getRoleForEmployee } from "@/lib/accountSelectors";
 import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { inboxNotifications } from "@/data/inboxNotifications";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
@@ -271,6 +271,8 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     return null;
   }, [currentPage, currentSkillTargetId, currentSkillTarget]);
 
+  const employeeRole = useMemo(() => normalizedAccount ? getRoleForEmployee(normalizedAccount, user.id) : null, [normalizedAccount, user.id]);
+
   const userContext = {
     name: user.name,
     role: user.role,
@@ -298,6 +300,9 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     skillGaps,
     chapterContext,
     reflectionContext: reflectionContext || undefined,
+    roleDescription: employeeRole?.description || null,
+    roleDetailedDescription: employeeRole?.detailedDescription || null,
+    roleName: employeeRole?.name || null,
   };
 
   // Load persisted conversation

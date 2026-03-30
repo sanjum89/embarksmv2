@@ -74,6 +74,7 @@ export interface AccountRole {
   name: string;
   description?: string;
   snapshotText?: string;
+  detailedDescription?: string;
   requiredSkills: RoleSkillRequirement[];
 }
 

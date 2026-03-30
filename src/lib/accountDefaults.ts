@@ -525,54 +525,158 @@ In this role, we expect you to become a dependable, increasingly confident contr
     "role-inv-mgr": {
       id: "role-inv-mgr",
       name: "Investment Manager",
-      snapshotText: "Owns portfolio decisions for assigned clients, manages client relationships end-to-end, and mentors junior team members.",
-      description: "The Investment Manager has full responsibility for managing client portfolios within defined mandates. They make independent buy/sell decisions, conduct client reviews, and are accountable for portfolio performance. They also mentor Assistant Investment Managers and Graduate Trainees, contributing to team development and investment committee discussions.",
-      detailedDescription: `The Investment Manager is a fully qualified portfolio manager responsible for independent investment decision-making and comprehensive client relationship management.
+      snapshotText: "In this role, we expect you to manage client portfolios, make suitable investment decisions, communicate clearly with clients and colleagues, and contribute to strong client outcomes, growth, and professional trust.",
+      description: `As an Investment Manager, we expect you to take much greater ownership of client portfolios, investment recommendations, and relationship quality. At this stage, you are no longer mainly building foundations. You are expected to use your judgement consistently, work confidently with clients, and contribute to both investment delivery and the growth of the business. Rathbones' current Investment Manager role content emphasizes client outcomes, business development, commercial awareness, and confidence in delivering the Rathbones proposition.
 
-RESPONSIBILITIES:
-• Full discretionary management of client portfolios (typically £50M–£200M AUM)
-• Make independent buy/sell/hold decisions within defined investment mandates and risk parameters
-• Conduct quarterly and annual client review meetings independently
-• Develop and articulate bespoke investment strategies aligned to client objectives
-• Present at the weekly investment committee and contribute to house view formation
-• Mentor 1-2 Assistant Investment Managers and Graduate Trainees
-• Participate in business development — prospect meetings and pitch presentations
-• Ensure all portfolio activity complies with regulatory requirements and internal policies
+In this role, we expect you to:
 
-CLIENT MANAGEMENT:
-• Primary relationship manager for 30-60 client accounts
-• Handle complex client queries including tax planning considerations, estate planning interface, and philanthropic giving strategies
-• Conduct annual suitability reviews and update investment policy statements
-• Manage client expectations during periods of market volatility
+• manage client portfolios in line with client objectives, suitability, and risk requirements
+• explain investment thinking clearly and confidently to clients and colleagues
+• make sound recommendations supported by research, judgement, and documentation
+• maintain strong standards in regulatory conduct, suitability, and client communication
+• contribute to the growth of your client book and broader business-development activity
 
-INVESTMENT PROCESS:
-• Maintain deep expertise in 2-3 sectors with comprehensive coverage of 30+ securities
-• Generate original investment ideas and present conviction calls to the team
-• Conduct due diligence on new investment opportunities including company visits and management meetings
-• Contribute to asset allocation decisions at portfolio and model level
+Your focus at this stage is:
 
-TEAM LEADERSHIP:
-• Conduct regular 1:1s with direct reports (AIM / Graduate Trainees)
-• Review and approve research output from junior team members
-• Provide structured feedback through the reflection and skills assessment processes
-• Identify development needs and assign appropriate skill targets
+• applying strong judgement in real client situations
+• balancing investment thinking with client needs and risk tolerance
+• building trust through communication, consistency, and professionalism
+• contributing commercially as well as technically
+• preparing for more senior client and leadership responsibility over time
 
-PROGRESSION CRITERIA:
-• Minimum 4 years as Investment Manager before Director consideration
-• Strong and consistent portfolio performance vs benchmarks
-• Excellent client retention and satisfaction scores
-• Demonstrated leadership and mentoring capability
-• CFA Charterholder status (or equivalent)
-• Business development contribution — evidence of client acquisition
+Skills and proficiency we expect in this role
 
-TYPICAL TENURE: 4–8 years
-REPORTS TO: Investment Director`,
+At this stage, we expect you to demonstrate or build toward:
+
+• Client Relationship Management — Advanced
+• Investment Communication — Advanced
+• Investment Research — Advanced
+• Portfolio Construction — Advanced
+• Portfolio Management — Advanced
+• Suitability and Documentation — Advanced
+• Regulatory Compliance — Advanced
+• Portfolio Risk Alignment — Advanced
+• Commercial Awareness — Advanced
+• Business Development — Intermediate
+• Active Listening — Advanced
+• Relationship Building — Advanced
+• Attention to Detail — Advanced
+• Client Administration — Intermediate
+• Wealth Planning Collaboration — Intermediate
+• Professional Integrity — Advanced
+
+This role is preparing you for:
+
+• Senior Investment Manager
+• broader ownership of complex client relationships
+• stronger commercial and mentoring responsibility
+• progression into more senior portfolio or team leadership roles
+
+In simple terms, we expect you to move from supporting investment work to owning it with confidence, sound judgement, and strong client focus.`,
+      detailedDescription: `As an Investment Manager, we expect you to take primary responsibility for managing client portfolios and delivering high-quality investment outcomes in a way that is suitable, commercially aware, and aligned to the firm's standards. This is a fully client-relevant role. We expect you to combine technical investment knowledge with communication skill, judgement, and trustworthiness. Rathbones' current Investment Manager role content explicitly highlights good client outcomes, business development, growth of the client book, confidence in delivering the Rathbones proposition, and contribution to firm growth initiatives.
+
+What we expect from you in this role
+
+In this role, we expect you to:
+
+• manage client portfolios responsibly and in line with client objectives and risk profile
+• make sound investment decisions and recommendations supported by analysis and judgement
+• communicate clearly with clients about portfolios, performance, risks, and trade-offs
+• maintain high standards in suitability, documentation, and regulatory conduct
+• build and sustain trusted client relationships over time
+• contribute to growth by developing your client book and supporting business-development activity
+
+What your responsibilities are likely to include
+
+Depending on your client segment and business area, we would typically expect you to:
+
+• review and manage portfolios in line with suitability and client requirements
+• understand client needs, objectives, and preferences and reflect these in portfolio decisions
+• explain investment recommendations and portfolio changes clearly and professionally
+• prepare and maintain documentation that supports investment rationale and suitability
+• respond appropriately to market developments and assess their relevance to client portfolios
+• contribute to new business conversations, pipeline development, and growth initiatives
+• work with colleagues across related functions where client outcomes depend on joined-up delivery
+
+Rathbones' published Investment Manager role content specifically calls out business-development expectations, ability to deliver the Rathbones pitch with confidence and clarity, and contribution to firm growth.
+
+Skills and proficiency expected in this role
+
+We expect you to demonstrate or build toward the following capability level:
+
+• Client Relationship Management — Advanced
+• Investment Communication — Advanced
+• Investment Research — Advanced
+• Portfolio Construction — Advanced
+• Portfolio Management — Advanced
+• Suitability and Documentation — Advanced
+• Regulatory Compliance — Advanced
+• Portfolio Risk Alignment — Advanced
+• Commercial Awareness — Advanced
+• Business Development — Intermediate
+• Active Listening — Advanced
+• Relationship Building — Advanced
+• Attention to Detail — Advanced
+• Client Administration — Intermediate
+• Wealth Planning Collaboration — Intermediate
+• Professional Integrity — Advanced
+
+These expectations are consistent with the broader UK wealth-management standard for professionals who are expected to provide high-quality service to clients, understand financial markets, portfolio construction, and applied wealth management. The CISI Chartered Wealth Manager qualification is specifically aimed at wealth managers, private client managers, and discretionary portfolio managers, and covers financial markets, portfolio construction theory, and applied wealth management.
+
+What success looks like
+
+You are doing well in this role when you:
+
+• manage portfolios with sound judgement and clear rationale
+• align investment decisions to client needs, suitability, and risk profile
+• communicate confidently and credibly with clients
+• maintain strong documentation and regulatory discipline
+• build trusted long-term relationships with clients and colleagues
+• contribute to commercial growth without losing focus on client outcomes
+• show consistency under pressure, especially when markets or client needs change
+
+What you are growing toward
+
+In this role, we are helping you build toward:
+
+• Senior Investment Manager
+• broader ownership of more complex client situations
+• stronger mentoring and leadership contribution
+• deeper commercial impact
+• progression into more senior portfolio, team, or leadership roles
+
+This is consistent with the wider wealth-management career path, where investment professionals typically progress from more analytical or associate roles into portfolio responsibility, and then into broader leadership and commercial accountability over time.
+
+Why this role matters for your development
+
+This role matters because it is the point where technical capability, client trust, and professional judgement must come together. It helps you:
+
+• strengthen your credibility in client-facing investment work
+• build confidence in handling real portfolio decisions and trade-offs
+• connect research and portfolio thinking to real client outcomes
+• deepen your commercial awareness and growth contribution
+• prepare for more senior leadership, mentoring, and portfolio responsibility later
+
+In simple terms
+
+In this role, we expect you to deliver strong client outcomes through sound portfolio judgement, clear communication, disciplined suitability and documentation, and growing commercial contribution.`,
       requiredSkills: [
-        { skillName: "Financial Analysis", proficiency: "Advanced" },
+        { skillName: "Client Relationship Management", proficiency: "Advanced" },
+        { skillName: "Investment Communication", proficiency: "Advanced" },
+        { skillName: "Investment Research", proficiency: "Advanced" },
+        { skillName: "Portfolio Construction", proficiency: "Advanced" },
         { skillName: "Portfolio Management", proficiency: "Advanced" },
-        { skillName: "Client Communication", proficiency: "Advanced" },
-        { skillName: "Risk Assessment", proficiency: "Intermediate" },
-        { skillName: "Strategic Planning", proficiency: "Intermediate" },
+        { skillName: "Suitability & Documentation", proficiency: "Advanced" },
+        { skillName: "Regulatory Compliance", proficiency: "Advanced" },
+        { skillName: "Portfolio Risk Alignment", proficiency: "Advanced" },
+        { skillName: "Commercial Awareness", proficiency: "Advanced" },
+        { skillName: "Business Development", proficiency: "Intermediate" },
+        { skillName: "Active Listening", proficiency: "Advanced" },
+        { skillName: "Relationship Building", proficiency: "Advanced" },
+        { skillName: "Attention to Detail", proficiency: "Advanced" },
+        { skillName: "Client Administration", proficiency: "Intermediate" },
+        { skillName: "Wealth Planning Collaboration", proficiency: "Intermediate" },
+        { skillName: "Professional Integrity", proficiency: "Advanced" },
       ],
     },
     "role-inv-director": {

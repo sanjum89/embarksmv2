@@ -1011,6 +1011,16 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
       reflectionTargetEmployeeIds: ["u6", "u8", "u9"],
     },
   };
+
+  // Auto-generate profileData for employees with explicit skills
+  const generated = generateProfileData(account);
+  for (const [empId, profile] of Object.entries(generated)) {
+    if (account.employeesById[empId]?.skills?.length) {
+      account.profileData[empId] = profile;
+    }
+  }
+
+  return account;
 }
 
 /**

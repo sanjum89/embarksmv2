@@ -29,6 +29,7 @@ import type {
 } from "@/types/account-v2";
 import type { ProfileData } from "@/data/mock";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
+import { generateProfileData } from "@/lib/profileDataGenerator";
 import {
   deriveExplainabilityTraces,
   deriveLearningAndSkills,

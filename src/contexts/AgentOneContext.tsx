@@ -6,7 +6,6 @@ import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useRolePlays } from "@/contexts/RolePlayContext";
 import { getProfileData, getRoleForEmployee } from "@/lib/accountSelectors";
-import { profileDataByUser as defaultProfileData } from "@/data/mock";
 import { inboxNotifications } from "@/data/inboxNotifications";
 import { proficiencyNumeric, type Proficiency } from "@/types/learning";
 import type { RichBlock } from "@/components/chat/RichContentBlock";

@@ -682,54 +682,157 @@ In this role, we expect you to deliver strong client outcomes through sound port
     "role-inv-director": {
       id: "role-inv-director",
       name: "Investment Director",
-      snapshotText: "Provides strategic oversight of investment activity, sets firm-level policy, mentors senior staff, and drives business growth.",
-      description: "The Investment Director sits at the leadership level of the investment management function. They set strategic direction, oversee multiple Investment Managers, chair or contribute to the investment committee, and represent the firm externally. They are responsible for ensuring the quality and consistency of the investment process across the team and play a key role in talent development and succession planning.",
-      detailedDescription: `The Investment Director is a senior leadership role responsible for the strategic direction and oversight of the investment management function.
+      snapshotText: "In this role, we expect you to lead complex client relationships, oversee portfolio strategy and risk, support business growth, and set a high standard in judgement, communication, mentoring, and professional trust.",
+      description: `As an Investment Director, we expect you to operate at a senior level across client relationships, portfolio leadership, commercial contribution, and team influence. At this stage, you are expected to combine strong investment judgement with credibility, trust, and broader leadership across the business.
 
-RESPONSIBILITIES:
-• Strategic oversight of investment activity across the team (typically £500M–£2B+ AUM)
-• Chair or co-chair the investment committee and drive house view formation
-• Set and review firm-level investment policy, asset allocation frameworks, and risk parameters
-• Oversee portfolio performance across all managed accounts and intervene where necessary
-• Represent the firm at industry conferences, media engagements, and institutional client meetings
-• Lead business development strategy for the investment management division
-• Participate in executive-level decisions on firm strategy, technology investment, and operational change
+In this role, we expect you to:
 
-TEAM & TALENT:
-• Direct management of 3-6 Investment Managers
-• Conduct performance reviews and career development planning for senior team members
-• Lead succession planning for the investment management function
-• Champion the learning and development programme — review skill targets, approve learning cohorts
-• Act as escalation point for complex client situations and complaints
+• take ownership of significant client relationships and portfolio outcomes
+• apply strong judgement across investment decisions, risk, and suitability
+• communicate clearly and credibly with clients, advisers, and colleagues
+• contribute to business development, growth, and long-term client value
+• support the development of others through mentoring, coaching, and example
 
-INVESTMENT LEADERSHIP:
-• Set the tone for research quality and investment rigour across the team
-• Review and challenge investment theses from Investment Managers
-• Lead the annual strategic asset allocation review
-• Maintain high-level market awareness and communicate macroeconomic views to the team
-• Approve new investment strategies and product launches
+Your focus at this stage is:
 
-CLIENT & STAKEHOLDER MANAGEMENT:
-• Relationship owner for the firm's largest and most complex client accounts
-• Conduct strategic reviews with ultra-high-net-worth and institutional clients
-• Interface with compliance, risk, and operations teams on investment-related matters
-• Represent the investment management perspective at board and executive committee meetings
+• leading with sound judgement in more complex situations
+• balancing client needs, investment discipline, and commercial awareness
+• setting a high standard in communication, trust, and professionalism
+• helping others perform well through guidance and support
+• contributing not only as a portfolio leader, but as a senior presence in the business
 
-GOVERNANCE & COMPLIANCE:
-• Ensure team adherence to FCA regulations, MiFID II, and internal compliance standards
-• Review and approve marketing materials and investment commentaries
-• Oversee suitability and best execution monitoring across portfolios
-• Participate in regulatory examinations and audits as required
+Skills and proficiency we expect in this role:
 
-TYPICAL TENURE: 5+ years (often long-term career role)
-REPORTS TO: Chief Investment Officer / Managing Director`,
+• Client Relationship Management — Expert
+• Investment Communication — Expert
+• Investment Research — Expert
+• Portfolio Construction — Expert
+• Portfolio Management — Expert
+• Suitability and Documentation — Expert
+• Regulatory Compliance — Advanced
+• Portfolio Risk Alignment — Expert
+• Commercial Awareness — Expert
+• Business Development — Advanced
+• Active Listening — Advanced
+• Relationship Building — Expert
+• Attention to Detail — Advanced
+• Client Administration — Advanced
+• Wealth Planning Collaboration — Advanced
+• Mentoring and Coaching — Advanced
+• Professional Integrity — Expert
+• Leadership / Team Contribution — Advanced
+
+This role is preparing you for:
+
+• broader team or proposition leadership
+• larger or more complex portfolio responsibility
+• senior strategic influence across client and investment activity
+
+In simple terms, we expect you to lead with judgement, credibility, and consistency, while helping deliver strong client outcomes and stronger team capability.`,
+      detailedDescription: `As an Investment Director, we expect you to act as a senior investment professional with significant responsibility for client outcomes, portfolio oversight, communication quality, and leadership through influence. In a Rathbones-style environment, this role goes beyond managing day-to-day portfolio activity. We expect you to bring stronger technical authority, deeper risk judgement, and greater confidence in guiding clients, advisers, and colleagues through more complex investment situations. Rathbones' senior portfolio leadership content describes this type of role as a senior member responsible for portfolio management and governance, acting as a technical investment specialist and primary investment-facing contact, while ensuring robust and scalable investment process.
+
+What we expect from you in this role:
+
+In this role, we expect you to:
+
+• lead and oversee portfolio decisions with strong judgement and accountability
+• manage significant client relationships with credibility and consistency
+• ensure investment recommendations, suitability, and documentation are of a high standard
+• communicate clearly and authoritatively with clients, colleagues, and advisers
+• contribute to business growth through trusted relationships and commercial awareness
+• support others through mentoring, coaching, and professional example
+• maintain strong judgement under pressure, especially where markets, client expectations, and risk considerations intersect
+
+What your responsibilities are likely to include:
+
+Depending on the business area, we would typically expect you to:
+
+• oversee client portfolios and more complex investment situations
+• provide senior input into portfolio construction, portfolio changes, and investment rationale
+• act as a key point of contact on investment matters for clients or advisers
+• assess market developments and determine their relevance to portfolios and recommendations
+• maintain strong governance, process discipline, and standards of documentation
+• contribute to growth, proposition credibility, and long-term relationship value
+• help develop less experienced colleagues and raise the standard of investment thinking across the team
+
+Rathbones' current senior portfolio leadership material highlights portfolio management and governance, technical investment-specialist responsibility, investment-facing contact with advisers, and ensuring a robust, scalable investment process.
+
+Skills and proficiency expected in this role:
+
+We expect you to demonstrate or build toward the following capability level:
+
+• Client Relationship Management — Expert
+• Investment Communication — Expert
+• Investment Research — Expert
+• Portfolio Construction — Expert
+• Portfolio Management — Expert
+• Suitability and Documentation — Expert
+• Regulatory Compliance — Advanced
+• Portfolio Risk Alignment — Expert
+• Commercial Awareness — Expert
+• Business Development — Advanced
+• Active Listening — Advanced
+• Relationship Building — Expert
+• Attention to Detail — Advanced
+• Client Administration — Advanced
+• Wealth Planning Collaboration — Advanced
+• Mentoring and Coaching — Advanced
+• Professional Integrity — Expert
+• Leadership / Team Contribution — Advanced
+
+These expectations are realistic for a senior wealth-management role where high-quality client service, portfolio judgement, and leadership through technical credibility are essential. The CISI Chartered Wealth Manager qualification is positioned as a postgraduate-level specialist qualification for wealth managers, discretionary portfolio managers, and private client managers, covering financial markets, portfolio construction, and applied wealth management.
+
+What success looks like:
+
+You are doing well in this role when you:
+
+• make strong portfolio decisions supported by clear rationale and disciplined judgement
+• handle complex client and investment situations calmly and credibly
+• build trust through clarity, professionalism, and consistency
+• maintain high standards in suitability, documentation, and regulatory discipline
+• contribute meaningfully to growth and long-term client value
+• raise the quality of thinking and execution around you through your example and support
+• help others grow without losing focus on performance and client outcomes
+
+What you are growing toward:
+
+In this role, we are helping you build toward:
+
+• broader team leadership
+• deeper commercial and strategic influence
+• more complex portfolio and client responsibility
+• senior proposition or business leadership over time
+
+This is consistent with the wider progression path in wealth management, where experienced portfolio professionals may move into broader leadership, proposition, or strategic roles after establishing strong technical and client credibility.
+
+Why this role matters for your development:
+
+This role matters because it is where:
+
+• technical expertise becomes trusted senior judgement
+• client relationships require stronger leadership and confidence
+• portfolio oversight expands into governance and broader influence
+• commercial contribution becomes more visible
+• mentoring and leadership become part of your expected impact`,
       requiredSkills: [
-        { skillName: "Financial Analysis", proficiency: "Expert" },
+        { skillName: "Client Relationship Management", proficiency: "Expert" },
+        { skillName: "Investment Communication", proficiency: "Expert" },
+        { skillName: "Investment Research", proficiency: "Expert" },
+        { skillName: "Portfolio Construction", proficiency: "Expert" },
         { skillName: "Portfolio Management", proficiency: "Expert" },
-        { skillName: "Client Communication", proficiency: "Expert" },
-        { skillName: "Risk Assessment", proficiency: "Advanced" },
-        { skillName: "Strategic Planning", proficiency: "Advanced" },
-        { skillName: "Leadership", proficiency: "Advanced" },
+        { skillName: "Suitability & Documentation", proficiency: "Expert" },
+        { skillName: "Regulatory Compliance", proficiency: "Advanced" },
+        { skillName: "Portfolio Risk Alignment", proficiency: "Expert" },
+        { skillName: "Commercial Awareness", proficiency: "Expert" },
+        { skillName: "Business Development", proficiency: "Advanced" },
+        { skillName: "Active Listening", proficiency: "Advanced" },
+        { skillName: "Relationship Building", proficiency: "Expert" },
+        { skillName: "Attention to Detail", proficiency: "Advanced" },
+        { skillName: "Client Administration", proficiency: "Advanced" },
+        { skillName: "Wealth Planning Collaboration", proficiency: "Advanced" },
+        { skillName: "Mentoring and Coaching", proficiency: "Advanced" },
+        { skillName: "Professional Integrity", proficiency: "Expert" },
+        { skillName: "Leadership / Team Contribution", proficiency: "Advanced" },
       ],
     },
   };

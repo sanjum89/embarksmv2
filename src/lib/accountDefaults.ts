@@ -1,5 +1,5 @@
 import type { AccountData, AccountEmployee, Account } from "@/types/account";
-import type { NormalizedAccount, AccountUser, AccountProject, ProjectAssignment } from "@/types/account-v2";
+import type { NormalizedAccount, AccountUser, AccountProject, ProjectAssignment, AccountRole } from "@/types/account-v2";
 import type { ReflectionEntry, WorkSignalCard, NamedEmployeeRecord, PeopleGraphRow, PerformanceAlert, RecommendedCTA, LearningAndSkillsSummary, OrgOverviewData } from "@/types/account-v2";
 import {
   currentUser,

@@ -351,7 +351,7 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
     proficiencyScale: ["Beginner", "Intermediate", "Advanced", "Expert", "Master"],
     usersById,
     employeesById,
-    rolesById: {},
+    rolesById: buildDefaultRolesCatalog(),
     projectsById,
     projectAssignments,
     cohortsById: {},

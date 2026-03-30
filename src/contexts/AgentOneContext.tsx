@@ -298,6 +298,9 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     skillGaps,
     chapterContext,
     reflectionContext: reflectionContext || undefined,
+    roleDescription: employeeRole?.description || null,
+    roleDetailedDescription: employeeRole?.detailedDescription || null,
+    roleName: employeeRole?.name || null,
   };
 
   // Load persisted conversation

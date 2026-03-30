@@ -1,5 +1,6 @@
 import type { AccountData, AccountEmployee, Account } from "@/types/account";
 import type { NormalizedAccount, AccountUser, AccountProject, ProjectAssignment, AccountRole } from "@/types/account-v2";
+import { generateProfileData } from "@/lib/profileDataGenerator";
 import type { ReflectionEntry, WorkSignalCard, NamedEmployeeRecord, PeopleGraphRow, PerformanceAlert, RecommendedCTA, LearningAndSkillsSummary, OrgOverviewData } from "@/types/account-v2";
 import {
   currentUser,
@@ -954,7 +955,7 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
     { employeeId: "u1", projectId: "p2" },
   ];
 
-  return {
+  const account: NormalizedAccount = {
     id,
     schemaVersion: "1",
     isDefault: true,
@@ -980,7 +981,7 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
     newHires: mockNewHires,
     programContexts: mockProgramContexts,
     teamMembers: Object.values(usersById),
-    profileData: profileDataByUser,
+    profileData: { ...profileDataByUser },
     prompts: {},
     aiContext: {},
     pageData: {},
@@ -1010,6 +1011,16 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
       reflectionTargetEmployeeIds: ["u6", "u8", "u9"],
     },
   };
+
+  // Auto-generate profileData for employees with explicit skills
+  const generated = generateProfileData(account);
+  for (const [empId, profile] of Object.entries(generated)) {
+    if (account.employeesById[empId]?.skills?.length) {
+      account.profileData[empId] = profile;
+    }
+  }
+
+  return account;
 }
 
 /**

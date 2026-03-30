@@ -31,6 +31,7 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
         skill_name: req.skill_name,
         proficiency: (current?.proficiency || "Beginner") as any,
         assessment_year: current?.assessmentYear || new Date().getFullYear(),
+        source: current?.source,
       };
     });
 

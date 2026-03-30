@@ -315,7 +315,7 @@ export function InlineAssessment({ onComplete }: InlineAssessmentProps) {
                   <div className="flex items-start gap-2.5">
                     <span className={cn(
                       "shrink-0 h-5 w-5 rounded-full border text-[11px] font-medium flex items-center justify-center mt-0.5",
-                      !showFeedback && isSelected ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30 text-muted-foreground",
+                      !showFeedback && isSelected ? "border-primary bg-primary text-primary-foreground" : !showFeedback && isCorrect ? "border-muted-foreground/30 text-foreground/70" : "border-muted-foreground/30 text-muted-foreground",
                       showFeedback && isCorrect && "border-green-600 bg-green-600 text-white",
                       showFeedback && isSelected && !isCorrect && "border-red-500 bg-red-500 text-white"
                     )}>

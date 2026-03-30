@@ -271,6 +271,8 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     return null;
   }, [currentPage, currentSkillTargetId, currentSkillTarget]);
 
+  const employeeRole = useMemo(() => normalizedAccount ? getRoleForEmployee(normalizedAccount, user.id) : null, [normalizedAccount, user.id]);
+
   const userContext = {
     name: user.name,
     role: user.role,

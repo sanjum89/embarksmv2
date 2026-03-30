@@ -76,6 +76,7 @@ export function generateProfileData(acct: NormalizedAccount): Record<string, Pro
         skill_name: s.skillName,
         proficiency: s.proficiency as any,
         assessment_year: s.assessmentYear || new Date().getFullYear(),
+        source: s.source,
       }));
 
     const projectNames = empProjects.map((p) => p.name).join(", ");

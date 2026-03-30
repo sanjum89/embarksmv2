@@ -106,6 +106,7 @@ export interface SkillEntry {
   skill_name: string;
   proficiency: Proficiency;
   assessment_year: number;
+  source?: "core" | "inferred";
 }
 
 export interface SkillRequirement {

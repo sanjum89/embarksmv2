@@ -889,6 +889,29 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
     };
   }
 
+  // Clara Whitfield: explicit skills and role assignment
+  if (employeesById["u12"]) {
+    employeesById["u12"].roleId = "role-inv-mgr";
+    employeesById["u12"].skills = [
+      { skillName: "Client Relationship Management", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
+      { skillName: "Investment Communication", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
+      { skillName: "Investment Research", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
+      { skillName: "Portfolio Construction", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
+      { skillName: "Portfolio Management", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
+      { skillName: "Suitability and Documentation", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
+      { skillName: "Regulatory Compliance", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
+      { skillName: "Portfolio Risk Alignment", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
+      { skillName: "Commercial Awareness", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
+      { skillName: "Business Development", proficiency: "Intermediate", assessmentYear: 2026, source: "core" },
+      { skillName: "Relationship Building", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
+      { skillName: "Active Listening", proficiency: "Advanced", assessmentYear: 2026, source: "core" },
+      { skillName: "Mentoring and Coaching", proficiency: "Intermediate", assessmentYear: 2026, source: "inferred" },
+      { skillName: "Stakeholder Management", proficiency: "Intermediate", assessmentYear: 2026, source: "inferred" },
+      { skillName: "Process Improvement", proficiency: "Intermediate", assessmentYear: 2026, source: "inferred" },
+      { skillName: "Knowledge Sharing", proficiency: "Intermediate", assessmentYear: 2026, source: "inferred" },
+    ];
+  }
+
   // Build hierarchy map
   const hierarchyMap: Record<string, string[]> = {};
   for (const emp of Object.values(employeesById)) {

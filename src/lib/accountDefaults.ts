@@ -251,39 +251,134 @@ function buildDefaultRolesCatalog(): Record<string, AccountRole> {
     "role-grad-trainee": {
       id: "role-grad-trainee",
       name: "Graduate Trainee",
-      snapshotText: "Entry-level role focused on learning investment fundamentals, shadowing senior staff, and building foundational analytical skills.",
-      description: "The Graduate Trainee is an entry-level position within the investment management team. Trainees rotate across desks — equities, fixed income, and multi-asset — to build a broad foundation. They shadow senior portfolio managers, assist with research, and learn to use internal tools and market data platforms. The role emphasises structured learning, mentorship, and progressive responsibility over the first 12–18 months.",
-      detailedDescription: `The Graduate Trainee programme at Rathbones is a structured 18-month development pathway designed to transform high-potential graduates into competent junior investment professionals.
+      snapshotText: "In this role, we expect you to build core investment, professional, and client-service capability, contribute reliably across assignments, and develop the judgement and discipline needed for more advanced roles.",
+      description: `As a Graduate Trainee, you are in a structured early-career role where we expect you to build a strong foundation in wealth and investment management.
 
-RESPONSIBILITIES:
-• Shadow senior Investment Managers and Directors across equity, fixed income, and multi-asset desks
-• Conduct preliminary market research and compile daily/weekly briefing notes
-• Assist with portfolio analytics using internal systems (Charles River, Bloomberg Terminal)
-• Attend client meetings as an observer and take structured notes for debrief sessions
-• Complete mandatory compliance and regulatory training (FCA, MiFID II basics)
-• Participate in weekly investment committee briefings and present research findings monthly
-• Support ad-hoc projects for Investment Directors including data gathering and presentation preparation
+In this role, we expect you to:
+• learn how the business works and how different teams contribute to client outcomes
+• develop your understanding of core investment and wealth-management concepts
+• contribute reliably to day-to-day work, projects, and learning activities
+• build professional confidence, good judgement, and attention to detail
+• make steady progress toward more independent and higher-responsibility roles
 
-LEARNING EXPECTATIONS:
-• Complete all assigned skill targets within prescribed timelines
-• Achieve minimum "Intermediate" proficiency in Financial Analysis and Market Research by month 12
-• Pass the IMC (Investment Management Certificate) within the first year
-• Maintain a learning journal with weekly reflections reviewed by assigned mentor
+Your main areas of focus are:
+• learning quickly and applying feedback well
+• becoming dependable in the work assigned to you
+• strengthening communication and professional confidence
+• building the technical and behavioural foundation needed for future progression
 
-PROGRESSION CRITERIA:
-• Successful completion of all rotational desk attachments
-• Positive mentor and line manager evaluations at 6-month and 12-month reviews
-• Demonstrated ability to independently produce basic investment research
-• Readiness assessment for promotion to Assistant Investment Manager
+Skills and proficiency we expect in this role
 
-TYPICAL TENURE: 12–18 months before promotion consideration
-REPORTS TO: Senior Investment Manager or Investment Director`,
+At this stage, we expect you to be developing the following capabilities:
+• Client Relationship Management — Beginner
+• Investment Communication — Beginner
+• Investment Research — Beginner
+• Portfolio Construction — Beginner
+• Portfolio Management — Beginner
+• Suitability and Documentation — Beginner
+• Regulatory Compliance — Beginner
+• Commercial Awareness — Beginner
+• Active Listening — Intermediate
+• Attention to Detail — Intermediate
+• Relationship Building — Intermediate
+• Professional Integrity — Intermediate
+• Client Administration — Intermediate
+• Adaptability — Intermediate
+
+This role is preparing you for:
+• Assistant Investment Manager
+• Investment Analyst
+• Portfolio Analyst
+
+In simple terms, we expect you to use this stage to turn potential into dependable capability.`,
+      detailedDescription: `As a Graduate Trainee, we expect you to use this stage of your career to build the core knowledge, behaviours, and judgement needed to grow into a successful investment or wealth-management professional. This is not a role where we expect you to operate independently at full Investment Manager level. Instead, we expect you to learn through structured experience, practical exposure, feedback, mentoring, and professional development.
+
+What we expect from you in this role
+
+In this role, we expect you to:
+• build a clear understanding of how the firm serves clients and how different teams contribute to client outcomes
+• develop the technical foundations of wealth management, investment thinking, portfolio construction, suitability, and market awareness
+• support day-to-day work reliably, with strong attention to detail and professionalism
+• learn from feedback, ask thoughtful questions, and become increasingly confident in how you contribute
+• show integrity, proactivity, and a strong orientation toward client service
+
+What your responsibilities are likely to include
+
+Depending on your assignment or team, we would typically expect you to:
+• support research, portfolio administration, documentation, meeting preparation, and follow-up activity
+• contribute to projects and team initiatives
+• build familiarity with client objectives, risk appetite, and suitability concepts
+• develop your understanding of investment products, markets, and portfolio thinking
+• work professionally with managers, mentors, and peers
+• progress through structured learning and professional development
+• build your internal network and understand how the wider business fits together
+
+Skills and proficiency expected in this role
+
+We expect you to develop capability in the following areas:
+• Client Relationship Management — Beginner
+• Investment Communication — Beginner
+• Investment Research — Beginner
+• Portfolio Construction — Beginner
+• Portfolio Management — Beginner
+• Suitability and Documentation — Beginner
+• Regulatory Compliance — Beginner
+• Commercial Awareness — Beginner
+• Active Listening — Intermediate
+• Attention to Detail — Intermediate
+• Relationship Building — Intermediate
+• Professional Integrity — Intermediate
+• Client Administration — Intermediate
+• Adaptability — Intermediate
+
+These expectations mean that we do not expect deep independent technical mastery yet, but we do expect stronger professional behaviours, learning discipline, and reliable execution.
+
+What success looks like
+
+You are doing well in this role when you:
+• show curiosity and learn quickly
+• become dependable in the work assigned to you
+• communicate clearly and professionally
+• demonstrate strong attention to detail
+• respond well to feedback and improve visibly over time
+• understand how your work supports better client outcomes
+• build trust with colleagues through professionalism and consistency
+
+What you are growing toward
+
+In this role, we are helping you build toward progression into roles such as:
+• Assistant Investment Manager
+• Investment Analyst
+• Portfolio Analyst
+• and, over time, Investment Manager
+
+Why this role matters for your development
+
+This role gives you the opportunity to build:
+• practical experience in a professional wealth-management environment
+• stronger technical and commercial understanding
+• better judgement and professional discipline
+• exposure to how investment work is delivered in practice
+• a foundation for more specialized and client-facing roles later
+
+In simple terms
+
+In this role, we expect you to build the technical understanding, professional habits, and client-focused mindset that will prepare you for more independent and higher-impact work over time.`,
       requiredSkills: [
-        { skillName: "Financial Analysis", proficiency: "Beginner" },
-        { skillName: "Portfolio Basics", proficiency: "Beginner" },
-        { skillName: "Client Communication", proficiency: "Beginner" },
-        { skillName: "Market Research", proficiency: "Intermediate" },
-        { skillName: "Excel & Financial Modelling", proficiency: "Beginner" },
+        { skillName: "Client Relationship Management", proficiency: "Beginner" },
+        { skillName: "Investment Communication", proficiency: "Beginner" },
+        { skillName: "Investment Research", proficiency: "Beginner" },
+        { skillName: "Portfolio Construction", proficiency: "Beginner" },
+        { skillName: "Portfolio Management", proficiency: "Beginner" },
+        { skillName: "Suitability & Documentation", proficiency: "Beginner" },
+        { skillName: "Regulatory Compliance", proficiency: "Beginner" },
+        { skillName: "Commercial Awareness", proficiency: "Beginner" },
+        { skillName: "Active Listening", proficiency: "Intermediate" },
+        { skillName: "Attention to Detail", proficiency: "Intermediate" },
+        { skillName: "Relationship Building", proficiency: "Intermediate" },
+        { skillName: "Professional Integrity", proficiency: "Intermediate" },
+        { skillName: "Client Administration", proficiency: "Intermediate" },
+        { skillName: "Adaptability", proficiency: "Intermediate" },
       ],
     },
     "role-asst-inv-mgr": {

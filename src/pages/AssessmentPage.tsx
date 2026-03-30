@@ -354,34 +354,28 @@ export default function AssessmentPage() {
             </h3>
 
             <div className="space-y-2.5">
-              {question.options.map((option, i) => {
-                const isCorrect = i === question.correctIndex;
-                const isSelected = answers[question.id] === i;
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handleSelect(i)}
-                    className={cn(
-                      "w-full rounded-lg border p-3.5 text-left text-sm transition-all duration-200",
-                      isSelected
-                        ? "border-accent bg-accent/10 text-foreground ring-1 ring-accent/30"
-                        : isCorrect
-                        ? "border-border bg-card text-foreground hover:border-accent/50 hover:bg-accent/5 hover:shadow-sm"
-                        : "border-border bg-card text-foreground/85 hover:border-accent/30 hover:bg-accent/5"
-                    )}
-                  >
-                    <span className="inline-flex items-center gap-2.5">
-                      <span className={cn(
-                        "flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium",
-                        isSelected ? "bg-accent text-accent-foreground" : isCorrect ? "bg-secondary/80 text-foreground/70" : "bg-secondary/60 text-muted-foreground"
-                      )}>
-                        {String.fromCharCode(65 + i)}
-                      </span>
-                      {option}
+              {question.options.map((option, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSelect(i)}
+                  className={cn(
+                    "w-full rounded-lg border p-3.5 text-left text-sm transition-all duration-200",
+                    answers[question.id] === i
+                      ? "border-accent bg-accent/10 text-foreground ring-1 ring-accent/30"
+                      : "border-border bg-card text-foreground hover:border-accent/40 hover:bg-accent/5"
+                  )}
+                >
+                  <span className="inline-flex items-center gap-2.5">
+                    <span className={cn(
+                      "flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium",
+                      answers[question.id] === i ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground"
+                    )}>
+                      {String.fromCharCode(65 + i)}
                     </span>
-                  </button>
-                );
-              })}
+                    {option}
+                  </span>
+                </button>
+              ))}
             </div>
 
             {/* Nav buttons */}

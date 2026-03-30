@@ -1,26 +1,40 @@
 
 
-## Make Correct Answer Label Slightly Darker
+## Update Investment Director Role Content
 
-Subtle change across all 3 assessment components: the A/B/C/D letter badge for the correct answer gets a slightly darker text color compared to wrong answers (before selection/submission).
+### Changes in `src/lib/accountDefaults.ts` (lines 682-734)
 
-### Changes
+Replace the `role-inv-director` entry with the user-provided content:
 
-**1. `src/pages/AssessmentPage.tsx` (line 376)**
-- Correct answer badge: change `text-muted-foreground` → `text-foreground/70` (slightly darker)
-- Wrong answer badge: keep `text-muted-foreground` (unchanged at `bg-secondary/60`)
+- **`snapshotText`**: "In this role, we expect you to lead complex client relationships, oversee portfolio strategy and risk, support business growth, and set a high standard in judgement, communication, mentoring, and professional trust."
 
-**2. `src/components/ai-manager/AssessmentCard.tsx`**
-- This component doesn't use letter badges (A/B/C/D) — no change needed.
+- **`description`**: Full "Explore More" text covering expectations, focus areas, skills with proficiency levels (mostly Expert, some Advanced), and progression paths (broader team leadership, strategic influence).
 
-**3. `src/components/chat/InlineAssessment.tsx` (line 318)**
-- Before feedback, correct answer badge: change `text-muted-foreground` → `text-foreground/70`
-- Wrong answer badges remain `text-muted-foreground`
+- **`detailedDescription`**: Full detailed description covering expectations, responsibilities (including Rathbones-specific senior portfolio leadership context), skills, success criteria, growth trajectory, CISI/Chartered Wealth Manager references, and development rationale.
+
+- **`requiredSkills`**: Updated to 18 skills with mixed proficiency:
+  - Client Relationship Management (Expert)
+  - Investment Communication (Expert)
+  - Investment Research (Expert)
+  - Portfolio Construction (Expert)
+  - Portfolio Management (Expert)
+  - Suitability & Documentation (Expert)
+  - Regulatory Compliance (Advanced)
+  - Portfolio Risk Alignment (Expert)
+  - Commercial Awareness (Expert)
+  - Business Development (Advanced)
+  - Active Listening (Advanced)
+  - Relationship Building (Expert)
+  - Attention to Detail (Advanced)
+  - Client Administration (Advanced)
+  - Wealth Planning Collaboration (Advanced)
+  - Mentoring and Coaching (Advanced)
+  - Professional Integrity (Expert)
+  - Leadership / Team Contribution (Advanced)
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| `src/pages/AssessmentPage.tsx` | Correct answer letter badge text slightly darker |
-| `src/components/chat/InlineAssessment.tsx` | Correct answer letter badge text slightly darker |
+| `src/lib/accountDefaults.ts` | Replace Investment Director snapshotText, description, detailedDescription, and requiredSkills with user-provided content |
 

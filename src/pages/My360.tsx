@@ -40,7 +40,7 @@ import { getProfileData, getEmployeeCohorts, getManagedCohorts, getCohortAssignm
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/hooks/useChartColors";
 import { proficiencyShort } from "@/types/learning";
-import { deriveSkillGaps, deriveRadarSkills, deriveSkillGapRows } from "@/lib/skillUtils";
+import { deriveGapsFromEmployee, deriveRadarFromEmployee, deriveSkillGapRows } from "@/lib/skillUtils";
 
 const proficiencyLabels = ["", "B", "I", "A", "E", "M"];
 
@@ -140,17 +140,17 @@ export default function My360() {
   const radarSkills = useMemo(() => {
     if (!profileData) return [];
     if (gapSource === "Role") {
-      return deriveRadarSkills(profileData.roleSkillsCurrent, profileData.roleSkillsRequired);
+      return deriveRadarFromEmployee(profileData.roleSkillsCurrent, profileData.roleSkillsRequired);
     }
-    return deriveRadarSkills(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
+    return deriveRadarFromEmployee(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
   }, [profileData, gapSource]);
 
   // Derived gap rows
   const allGapRows = useMemo(() => {
     if (!profileData) return [];
     const gaps = gapSource === "Role"
-      ? deriveSkillGaps(profileData.roleSkillsCurrent, profileData.roleSkillsRequired)
-      : deriveSkillGaps(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
+      ? deriveGapsFromEmployee(profileData.roleSkillsCurrent, profileData.roleSkillsRequired)
+      : deriveGapsFromEmployee(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
     return deriveSkillGapRows(gaps);
   }, [profileData, gapSource]);
 

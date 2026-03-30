@@ -79,3 +79,57 @@ export function deriveSkillGapRows(gaps: GapResult[]): SkillGapRow[] {
     gapLevel: g.gapLevel,
   }));
 }
+
+/**
+ * Employee-driven gap derivation: iterates over the employee's current skills
+ * and looks up matching requirements to compute gaps.
+ */
+export function deriveGapsFromEmployee(
+  current: SkillEntry[],
+  required: SkillRequirement[]
+): GapResult[] {
+  return current.map((cur) => {
+    const req = required.find((r) => r.skill_name === cur.skill_name);
+    if (!req) {
+      return {
+        skill_name: cur.skill_name,
+        currentLevel: cur.proficiency,
+        requiredLevel: cur.proficiency,
+        gapLevel: "No gap" as GapLevel,
+      };
+    }
+    const curIdx = proficiencyIndex(cur.proficiency);
+    const reqIdx = proficiencyIndex(req.proficiency);
+    const diff = reqIdx - curIdx;
+    let gapLevel: GapLevel = "No gap";
+    if (diff >= 2) gapLevel = "High gap";
+    else if (diff === 1) gapLevel = "Medium gap";
+    return {
+      skill_name: cur.skill_name,
+      currentLevel: cur.proficiency,
+      requiredLevel: req.proficiency,
+      gapLevel,
+    };
+  });
+}
+
+/**
+ * Employee-driven radar derivation: iterates over the employee's current skills
+ * and looks up matching requirements for the target value.
+ */
+export function deriveRadarFromEmployee(
+  skillsCurrent?: SkillEntry[],
+  skillsRequired?: SkillRequirement[]
+): RadarEntry[] {
+  if (!skillsCurrent?.length) return [];
+  const required = skillsRequired || [];
+  return skillsCurrent.map((cur) => {
+    const name = cur.skill_name || "Unknown";
+    const req = required.find((r) => r.skill_name === cur.skill_name);
+    return {
+      skill: name.length > 16 ? name.slice(0, 14) + "…" : name,
+      score: proficiencyNumeric[cur.proficiency],
+      target: req ? proficiencyNumeric[req.proficiency] : proficiencyNumeric[cur.proficiency],
+    };
+  });
+}

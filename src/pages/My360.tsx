@@ -100,7 +100,7 @@ export default function My360() {
   const [showTour, setShowTour] = useState(false);
   const { user } = useUser();
   const { activeAccount, normalizedAccount } = useAccount();
-  const chatRef = useRef<any>(null);
+  const { handleSend: agentOneSend, setIsOpen: setAgentOneOpen } = useAgentOne();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");

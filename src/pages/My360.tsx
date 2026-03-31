@@ -188,7 +188,7 @@ export default function My360() {
 
 
   const handleRoleExploreClick = () => {
-    chatRef.current?.sendMessage(ROLE_EXPLORE_PROMPT, ROLE_EXPLORE_RESPONSE, [
+    chatRef.current?.sendMessage(ROLE_EXPLORE_PROMPT, roleExploreResponse, [
       { label: "Growth opportunities" },
       { label: "Key stakeholders" },
       { label: "Expected outcomes" },

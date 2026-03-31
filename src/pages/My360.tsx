@@ -109,10 +109,6 @@ export default function My360() {
   const [gapFilter, setGapFilter] = useState<GapFilter>("All");
   const colors = useChartColors();
 
-  // Clear chat when profile changes
-  useEffect(() => {
-    chatRef.current?.clearMessages();
-  }, [user.id]);
 
   // Use normalized selector; for non-default accounts avoid static fallback
   const isDefaultAccount = normalizedAccount?.isDefault !== false;

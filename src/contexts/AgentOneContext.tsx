@@ -92,7 +92,7 @@ interface AgentOneContextType {
   stage: string;
   isOpen: boolean;
   setIsOpen: (v: boolean) => void;
-  handleSend: (text: string) => void;
+  handleSend: (text: string, sourceBreadcrumb?: string) => void;
   handleReset: (pendingPrompt?: string) => void;
   showInlineAssessment: boolean;
   setShowInlineAssessment: (v: boolean) => void;

@@ -732,7 +732,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     if (persona) {
       const match = findDemoMatch(text, !!chapterContext);
       if (match) {
-        const userMsg: ChatMessage = { role: "user", content: text };
+        const userMsg: ChatMessage = { role: "user", content: text, sourceBreadcrumb };
         setMessages(prev => [...prev, userMsg]);
         setInput("");
 

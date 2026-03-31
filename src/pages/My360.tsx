@@ -185,19 +185,13 @@ export default function My360() {
 
 
   const handleRoleExploreClick = () => {
-    chatRef.current?.sendMessage(ROLE_EXPLORE_PROMPT, roleExploreResponse, [
-      { label: "Growth opportunities" },
-      { label: "Key stakeholders" },
-      { label: "Expected outcomes" },
-    ]);
+    agentOneSend("Tell me more about my role", "Role Snapshot › Explore more");
+    setAgentOneOpen(true);
   };
 
   const handleProjectExploreClick = () => {
-    chatRef.current?.sendMessage(PROJECT_EXPLORE_PROMPT, PROJECT_EXPLORE_RESPONSE, [
-      { label: "Explore Further" },
-      { label: "Your impact so far" },
-      { label: "Skills to build" },
-    ]);
+    agentOneSend("Tell me more about my current project", "Project Snapshot › Explore more");
+    setAgentOneOpen(true);
   };
 
   return (

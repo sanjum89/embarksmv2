@@ -10,7 +10,9 @@ import {
   RotateCcw,
   Minimize2,
   ChevronUp,
+  ChevronRight,
 } from "lucide-react";
+import { Fragment } from "react";
 import ReactMarkdown from "react-markdown";
 import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";
 import { InlineAssessment } from "@/components/chat/InlineAssessment";

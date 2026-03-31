@@ -40,7 +40,7 @@ import { getProfileData, getEmployeeCohorts, getManagedCohorts, getCohortAssignm
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/hooks/useChartColors";
 import { proficiencyShort } from "@/types/learning";
-import { deriveGapsFromEmployee, deriveRadarFromEmployee, deriveSkillGapRows } from "@/lib/skillUtils";
+import { deriveGapsFromEmployee, deriveRadarFromEmployee, deriveFullRoleGaps, deriveFullRoleRadar, deriveSkillGapRows } from "@/lib/skillUtils";
 
 const proficiencyLabels = ["", "B", "I", "A", "E", "M"];
 

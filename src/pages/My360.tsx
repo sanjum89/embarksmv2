@@ -105,7 +105,7 @@ export default function My360() {
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
   const [chartMode, setChartMode] = useState<"radar" | "bar">("radar");
-  const [gapSource, setGapSource] = useState<GapSource>("Project");
+  const [gapSource, setGapSource] = useState<GapSource>("Role");
   const [gapFilter, setGapFilter] = useState<GapFilter>("All");
   const colors = useChartColors();
 

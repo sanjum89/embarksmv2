@@ -133,3 +133,51 @@ export function deriveRadarFromEmployee(
     };
   });
 }
+
+/**
+ * Role-driven gap derivation: iterates over the role's required skills as the baseline.
+ * If an employee lacks a required skill, currentLevel is null and gap is computed from index -1.
+ */
+export function deriveFullRoleGaps(
+  current: SkillEntry[],
+  roleRequired: SkillRequirement[]
+): GapResult[] {
+  return roleRequired.map((req) => {
+    const cur = current.find((s) => s.skill_name === req.skill_name);
+    const curIdx = cur ? proficiencyIndex(cur.proficiency) : -1;
+    const reqIdx = proficiencyIndex(req.proficiency);
+    const diff = reqIdx - curIdx;
+
+    let gapLevel: GapLevel = "No gap";
+    if (diff >= 2) gapLevel = "High gap";
+    else if (diff === 1) gapLevel = "Medium gap";
+
+    return {
+      skill_name: req.skill_name,
+      currentLevel: cur?.proficiency ?? null,
+      requiredLevel: req.proficiency,
+      gapLevel,
+    };
+  });
+}
+
+/**
+ * Role-driven radar derivation: iterates over the role's required skills.
+ * Missing employee skills get score = 0.
+ */
+export function deriveFullRoleRadar(
+  skillsCurrent?: SkillEntry[],
+  roleRequired?: SkillRequirement[]
+): RadarEntry[] {
+  if (!roleRequired?.length) return [];
+  const current = skillsCurrent || [];
+  return roleRequired.map((req) => {
+    const name = req.skill_name || "Unknown";
+    const cur = current.find((s) => s.skill_name === req.skill_name);
+    return {
+      skill: name.length > 16 ? name.slice(0, 14) + "…" : name,
+      score: cur ? proficiencyNumeric[cur.proficiency] : 0,
+      target: proficiencyNumeric[req.proficiency],
+    };
+  });
+}

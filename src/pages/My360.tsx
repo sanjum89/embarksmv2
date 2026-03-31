@@ -40,7 +40,7 @@ import { getProfileData, getEmployeeCohorts, getManagedCohorts, getCohortAssignm
 import { cn } from "@/lib/utils";
 import { useChartColors } from "@/hooks/useChartColors";
 import { proficiencyShort } from "@/types/learning";
-import { deriveGapsFromEmployee, deriveRadarFromEmployee, deriveSkillGapRows } from "@/lib/skillUtils";
+import { deriveGapsFromEmployee, deriveRadarFromEmployee, deriveFullRoleGaps, deriveFullRoleRadar, deriveSkillGapRows } from "@/lib/skillUtils";
 
 const proficiencyLabels = ["", "B", "I", "A", "E", "M"];
 
@@ -49,7 +49,7 @@ const tabs = ["Role & Skills", "Career Timeline", "Growth Path"] as const;
 const ROLE_EXPLORE_PROMPT =
   "Tell me more about my current role, responsibilities, and what's expected of me.";
 
-const ROLE_EXPLORE_RESPONSE = `Here's an overview of your role
+const FALLBACK_ROLE_EXPLORE_RESPONSE = `Here's an overview of your role
 
 ## Customer Support Executive L1
 
@@ -136,11 +136,19 @@ export default function My360() {
     [profileData?.roleSkillsCurrent]
   );
 
+  // Look up the employee's role from the catalog
+  const employee = normalizedAccount?.employeesById[user.id];
+  const role = employee?.roleId ? normalizedAccount?.rolesById?.[employee.roleId] : undefined;
+
+  // Dynamic role snapshot text and explore response
+  const roleSnapshotText = (role as any)?.snapshotText || profileData?.roleSnapshotText;
+  const roleExploreResponse = (role as any)?.description || (role as any)?.detailedDescription || FALLBACK_ROLE_EXPLORE_RESPONSE;
+
   // Derived radar data based on gap source
   const radarSkills = useMemo(() => {
     if (!profileData) return [];
     if (gapSource === "Role") {
-      return deriveRadarFromEmployee(profileData.roleSkillsCurrent, profileData.roleSkillsRequired);
+      return deriveFullRoleRadar(profileData.roleSkillsCurrent, profileData.roleSkillsRequired);
     }
     return deriveRadarFromEmployee(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
   }, [profileData, gapSource]);
@@ -149,8 +157,8 @@ export default function My360() {
   const allGapRows = useMemo(() => {
     if (!profileData) return [];
     const gaps = gapSource === "Role"
-      ? deriveGapsFromEmployee(profileData.roleSkillsCurrent, profileData.roleSkillsRequired)
-      : deriveGapsFromEmployee(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
+      ? deriveFullRoleGaps(profileData.roleSkillsCurrent || [], profileData.roleSkillsRequired || [])
+      : deriveGapsFromEmployee(profileData.projectSkillsCurrent || [], profileData.projectSkillsRequired || []);
     return deriveSkillGapRows(gaps);
   }, [profileData, gapSource]);
 
@@ -180,7 +188,7 @@ export default function My360() {
 
 
   const handleRoleExploreClick = () => {
-    chatRef.current?.sendMessage(ROLE_EXPLORE_PROMPT, ROLE_EXPLORE_RESPONSE, [
+    chatRef.current?.sendMessage(ROLE_EXPLORE_PROMPT, roleExploreResponse, [
       { label: "Growth opportunities" },
       { label: "Key stakeholders" },
       { label: "Expected outcomes" },
@@ -486,7 +494,7 @@ export default function My360() {
                     </button>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    {profileData.roleSnapshotText}
+                    {roleSnapshotText}
                   </p>
                 </motion.div>
 
@@ -632,15 +640,19 @@ export default function My360() {
                           <React.Fragment key={row.skill}>
                             {/* Skill name pill */}
                             <span className={cn(
-                              "inline-flex items-center rounded-full border pl-3 pr-1.5 py-1 text-xs font-medium gap-1.5 w-full min-w-0",
-                              row.hasGap
-                                ? "border-border text-foreground"
-                                : "border-success/30 text-foreground"
+                              "inline-flex items-center rounded-full pl-3 pr-1.5 py-1 text-xs font-medium gap-1.5 w-full min-w-0",
+                              row.level === "—"
+                                ? "border border-dashed border-muted-foreground/40 text-muted-foreground"
+                                : row.hasGap
+                                  ? "border border-border text-foreground"
+                                  : "border border-success/30 text-foreground"
                             )}>
                               <span className="truncate">{row.skill}</span>
                               <span className={cn(
                                 "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0 ml-auto",
-                                row.hasGap ? "bg-accent/15 text-accent" : "bg-success/15 text-success"
+                                row.level === "—"
+                                  ? "bg-muted text-muted-foreground"
+                                  : row.hasGap ? "bg-accent/15 text-accent" : "bg-success/15 text-success"
                               )}>
                                 {row.level}
                               </span>

@@ -1,72 +1,63 @@
 
 
-## Dynamic Role Snapshot + Role-Driven Gap Analysis in My360
+## Fix Role Snapshot "Explore More" Injection into Agent One
 
 ### Problem
 
-1. **Role Snapshot card** shows static text baked into `profileData.roleSnapshotText` at generation time rather than dynamically reading from the role catalog
-2. **Explore button** on Role Snapshot sends a hardcoded response about "Customer Support Executive L1" instead of the actual role's description
-3. **Skills & Gap (Role filter)** uses `deriveGapsFromEmployee` which only iterates over the employee's own skills — role-required skills the employee doesn't possess are invisible. They should appear with a dotted-border pill, a hyphen for proficiency, and the expected target level shown.
+`handleRoleExploreClick` in My360 calls `chatRef.current?.sendMessage(...)`, but `chatRef` points to nothing — My360 doesn't render an `AIChatPanel`. The global chat is powered by `AgentOneContext`, not a local ref.
 
-### Changes
+### Solution
 
-#### 1. `src/pages/My360.tsx` — Dynamic role snapshot and explore
+Replace the broken `chatRef` approach with the `AgentOneContext` API:
 
-- Import `normalizedAccount` (already available) and look up the employee's role via `normalizedAccount.rolesById[employee.roleId]`
-- Replace `profileData.roleSnapshotText` with `role?.snapshotText` (falling back to profileData)
-- Replace hardcoded `ROLE_EXPLORE_RESPONSE` with the role's `description` or `detailedDescription` from the catalog, formatted as markdown
-- Remove the static `ROLE_EXPLORE_PROMPT` / `ROLE_EXPLORE_RESPONSE` constants (or keep as fallback for the default account)
+#### 1. `src/pages/My360.tsx`
 
-#### 2. `src/lib/skillUtils.ts` — New combined gap function
+- Import `useAgentOne` from `@/contexts/AgentOneContext`
+- Remove `chatRef` entirely
+- Update `handleRoleExploreClick` to:
+  - Call `handleSend("Tell me more about my role")` from the AgentOne context
+  - Call `setIsOpen(true)` to open the floating chat panel
+- Update `handleProjectExploreClick` similarly
+- Remove the `useEffect` that calls `chatRef.current?.clearMessages()`
 
-Add a new function `deriveFullRoleGaps(employeeSkills, roleRequiredSkills)` that:
-- Starts from the **role's required skills** as the baseline
-- For each required skill, finds the employee's matching skill (if any)
-- If the employee has the skill → compute gap as normal
-- If the employee **doesn't** have the skill → return `currentLevel: null`, gap = difference from 0
-- This produces `GapResult[]` entries with `currentLevel: null` for missing skills
+#### 2. `src/contexts/AgentOneContext.tsx` — Add breadcrumb support
 
-Add a corresponding `deriveFullRoleRadar` that includes missing skills (score = 0).
+- Add optional `sourceBreadcrumb` to user messages in the `ChatMessage` interface
+- Extend `handleSend` to accept an optional breadcrumb parameter: `handleSend(text: string, breadcrumb?: string)`
+- When breadcrumb is provided, attach it to the user message object
 
-#### 3. `src/pages/My360.tsx` — Use new gap function for Role filter
+#### 3. `src/components/chat/AIChatWrapper.tsx` — Render breadcrumb
 
-- When `gapSource === "Role"`, call `deriveFullRoleGaps` instead of `deriveGapsFromEmployee`
-- When `gapSource === "Project"`, keep existing `deriveGapsFromEmployee` behavior
-
-#### 4. `src/pages/My360.tsx` — Dotted-border pill for missing skills
-
-In the Skills & Gap grid rendering, when `row.level === "—"` (null current level):
-- Render the skill pill with `border-dashed border-muted-foreground/40` instead of a solid border
-- Show `—` in the proficiency badge
-- Target badge shows the required level as normal
-- Gap label shows "High gap" or "Medium gap" as computed
-
-#### 5. `src/lib/profileDataGenerator.ts` — Use role catalog for roleSkillsRequired
-
-The generator already derives `roleSkillsRequired` from the role's `requiredSkills`. Verify this is consistent with the catalog IDs. No change needed here — the `rolesById` lookup already works.
+- When rendering a user message that has `sourceBreadcrumb`, show a small muted line above the bubble:
+  ```
+  Role Snapshot › Explore more
+  ```
+- Style: `text-[11px] text-muted-foreground/60` with `ChevronRight` separators between segments
 
 ### Technical Details
 
-**New function signature in `skillUtils.ts`:**
+**My360 handleRoleExploreClick:**
 ```typescript
-export function deriveFullRoleGaps(
-  current: SkillEntry[],
-  roleRequired: SkillRequirement[]
-): GapResult[]
+const { handleSend, setIsOpen } = useAgentOne();
+
+const handleRoleExploreClick = () => {
+  handleSend("Tell me more about my role", "Role Snapshot › Explore more");
+  setIsOpen(true);
+};
 ```
 
-Iterates over `roleRequired`, looks up matching employee skill. Missing skills get `currentLevel: null` and gap computed from index -1 vs required index.
-
-**Role lookup in My360:**
+**AgentOneContext handleSend signature update:**
 ```typescript
-const employee = normalizedAccount?.employeesById[user.id];
-const role = employee?.roleId ? normalizedAccount?.rolesById[employee.roleId] : undefined;
+handleSend: (text: string, sourceBreadcrumb?: string) => void;
 ```
+
+The breadcrumb gets stored on the user `ChatMessage` and rendered by `AIChatWrapper`. The AI will receive the prompt and respond using the role context already available in `userContext` (which includes `roleDescription`, `roleDetailedDescription`, `roleName`).
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| `src/lib/skillUtils.ts` | Add `deriveFullRoleGaps` and `deriveFullRoleRadar` functions |
-| `src/pages/My360.tsx` | Dynamic role snapshot from catalog; use full role gap for Role filter; dotted-border pill for missing skills |
+| `src/pages/My360.tsx` | Replace `chatRef` with `useAgentOne()`, call `handleSend` + `setIsOpen(true)` |
+| `src/contexts/AgentOneContext.tsx` | Add `sourceBreadcrumb` to ChatMessage, extend `handleSend` signature |
+| `src/components/chat/AIChatWrapper.tsx` | Render breadcrumb above user messages that have one |
 

@@ -136,11 +136,19 @@ export default function My360() {
     [profileData?.roleSkillsCurrent]
   );
 
+  // Look up the employee's role from the catalog
+  const employee = normalizedAccount?.employeesById[user.id];
+  const role = employee?.roleId ? normalizedAccount?.rolesById?.[employee.roleId] : undefined;
+
+  // Dynamic role snapshot text and explore response
+  const roleSnapshotText = (role as any)?.snapshotText || profileData?.roleSnapshotText;
+  const roleExploreResponse = (role as any)?.description || (role as any)?.detailedDescription || FALLBACK_ROLE_EXPLORE_RESPONSE;
+
   // Derived radar data based on gap source
   const radarSkills = useMemo(() => {
     if (!profileData) return [];
     if (gapSource === "Role") {
-      return deriveRadarFromEmployee(profileData.roleSkillsCurrent, profileData.roleSkillsRequired);
+      return deriveFullRoleRadar(profileData.roleSkillsCurrent, profileData.roleSkillsRequired);
     }
     return deriveRadarFromEmployee(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
   }, [profileData, gapSource]);
@@ -149,8 +157,8 @@ export default function My360() {
   const allGapRows = useMemo(() => {
     if (!profileData) return [];
     const gaps = gapSource === "Role"
-      ? deriveGapsFromEmployee(profileData.roleSkillsCurrent, profileData.roleSkillsRequired)
-      : deriveGapsFromEmployee(profileData.projectSkillsCurrent, profileData.projectSkillsRequired);
+      ? deriveFullRoleGaps(profileData.roleSkillsCurrent || [], profileData.roleSkillsRequired || [])
+      : deriveGapsFromEmployee(profileData.projectSkillsCurrent || [], profileData.projectSkillsRequired || []);
     return deriveSkillGapRows(gaps);
   }, [profileData, gapSource]);
 

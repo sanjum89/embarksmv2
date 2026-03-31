@@ -220,7 +220,17 @@ export function AIChatWrapper() {
                     return (
                       <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
                         {msg.role === "user" ? (
-                          <div className="flex justify-end mb-1" ref={isLastUserMsg ? lastUserMsgRef : undefined}>
+                          <div className="flex flex-col items-end mb-1" ref={isLastUserMsg ? lastUserMsgRef : undefined}>
+                            {msg.sourceBreadcrumb && (
+                              <div className="flex items-center gap-0.5 text-[11px] text-muted-foreground/60 mb-1 mr-1">
+                                {msg.sourceBreadcrumb.split(" › ").map((seg, si, arr) => (
+                                  <Fragment key={si}>
+                                    <span>{seg}</span>
+                                    {si < arr.length - 1 && <ChevronRight className="h-3 w-3" />}
+                                  </Fragment>
+                                ))}
+                              </div>
+                            )}
                             <div className="rounded-2xl bg-primary text-primary-foreground px-3 py-2 text-[13px] max-w-[85%] shadow-sm">
                               {msg.content}
                             </div>

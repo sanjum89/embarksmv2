@@ -777,7 +777,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       setIsExpanded(false);
     }
 
-    const userMsg: ChatMessage = { role: "user", content: text };
+    const userMsg: ChatMessage = { role: "user", content: text, sourceBreadcrumb };
     const allMsgs = [...messagesRef.current, userMsg];
     setMessages(allMsgs);
     setInput("");

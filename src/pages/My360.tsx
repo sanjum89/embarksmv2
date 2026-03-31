@@ -640,15 +640,19 @@ export default function My360() {
                           <React.Fragment key={row.skill}>
                             {/* Skill name pill */}
                             <span className={cn(
-                              "inline-flex items-center rounded-full border pl-3 pr-1.5 py-1 text-xs font-medium gap-1.5 w-full min-w-0",
-                              row.hasGap
-                                ? "border-border text-foreground"
-                                : "border-success/30 text-foreground"
+                              "inline-flex items-center rounded-full pl-3 pr-1.5 py-1 text-xs font-medium gap-1.5 w-full min-w-0",
+                              row.level === "—"
+                                ? "border border-dashed border-muted-foreground/40 text-muted-foreground"
+                                : row.hasGap
+                                  ? "border border-border text-foreground"
+                                  : "border border-success/30 text-foreground"
                             )}>
                               <span className="truncate">{row.skill}</span>
                               <span className={cn(
                                 "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0 ml-auto",
-                                row.hasGap ? "bg-accent/15 text-accent" : "bg-success/15 text-success"
+                                row.level === "—"
+                                  ? "bg-muted text-muted-foreground"
+                                  : row.hasGap ? "bg-accent/15 text-accent" : "bg-success/15 text-success"
                               )}>
                                 {row.level}
                               </span>

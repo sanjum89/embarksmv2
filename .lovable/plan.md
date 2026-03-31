@@ -1,42 +1,72 @@
 
 
-## Replace Skills and Fix RoleIds for 9 Employees
+## Dynamic Role Snapshot + Role-Driven Gap Analysis in My360
 
-### What
+### Problem
 
-Convert 9 employees from the legacy plain-string skills format to the structured object format with `source` tags, using the exact skill lists provided. Also fix `roleId` prefixes to match the catalog.
+1. **Role Snapshot card** shows static text baked into `profileData.roleSnapshotText` at generation time rather than dynamically reading from the role catalog
+2. **Explore button** on Role Snapshot sends a hardcoded response about "Customer Support Executive L1" instead of the actual role's description
+3. **Skills & Gap (Role filter)** uses `deriveGapsFromEmployee` which only iterates over the employee's own skills — role-required skills the employee doesn't possess are invisible. They should appear with a dotted-border pill, a hyphen for proficiency, and the expected target level shown.
 
-### Database Updates (SQL via insert tool)
+### Changes
 
-**For each of the 9 employees**, replace the `skills` array with structured objects and remove the legacy `proficiency` map. Also fix `roleId` where needed.
+#### 1. `src/pages/My360.tsx` — Dynamic role snapshot and explore
 
-| Employee | ID | roleId Fix | Core Skills | Inferred Skills |
-|---|---|---|---|---|
-| Helena Fairchild | RAT-E001 | `RAT-ROLE-ADMIN` → `ROLE-ADMIN` | 12 (Platform Admin, Workflow Config, Data Quality Mgmt, etc.) | 4 (Cross-Functional Collab, Process Improvement, Training & Enablement, Operational Risk) |
-| Julian Ashcombe | RAT-E002 | `RAT-ROLE-DIRECTOR` → `ROLE-ID` | 12 (CRM Expert, Investment Comm Expert, etc.) | 4 (Stakeholder Mgmt Expert, Wealth Planning, Strategic Planning, Professional Integrity) |
-| Sophie Alder | RAT-E005 | `RAT-ROLE-IM` → `ROLE-GT` | 12 (CRM Beginner, Investment Comm Beginner, etc.) | 4 (Learning Agility Advanced, Adaptability, Client Admin, Collaboration) |
-| Harriet Cole | RAT-E006 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (CRM Advanced, Suitability Expert, etc.) | 4 (Mentoring Advanced, Knowledge Sharing, Wealth Planning, Professional Integrity Expert) |
-| Beatrice Long | RAT-E008 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (Regulatory Compliance Expert, Attention to Detail Expert, etc.) | 4 (Risk Governance, Knowledge Sharing, Process Improvement, Wealth Planning) |
-| Louis Everard | RAT-E009 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (Active Listening Expert, Relationship Building Expert, etc.) | 4 (Mentoring, Stakeholder Mgmt, Knowledge Sharing, Change Adoption) |
-| Amelia Forsyth | RAT-E010 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (Business Dev Intermediate, rest Advanced, etc.) | 4 (Mentoring, Wealth Planning, Stakeholder Mgmt, Leadership) |
-| Theo Redgrave | RAT-E011 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (CRM Intermediate, Research Advanced, etc.) | 4 (Resilience, Stakeholder Mgmt, Learning Agility, Presentation Confidence) |
-| Isla Marlowe | RAT-E012 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (Commercial Awareness Intermediate, Wealth Planning Collab Advanced, etc.) | 4 (Mentoring, Stakeholder Mgmt, Knowledge Sharing, Process Improvement) |
+- Import `normalizedAccount` (already available) and look up the employee's role via `normalizedAccount.rolesById[employee.roleId]`
+- Replace `profileData.roleSnapshotText` with `role?.snapshotText` (falling back to profileData)
+- Replace hardcoded `ROLE_EXPLORE_RESPONSE` with the role's `description` or `detailedDescription` from the catalog, formatted as markdown
+- Remove the static `ROLE_EXPLORE_PROMPT` / `ROLE_EXPLORE_RESPONSE` constants (or keep as fallback for the default account)
 
-**Format** for each skill entry (matching Clara/Elliot/Nathan/Felix):
-```json
-{ "skillName": "...", "proficiency": "...", "source": "core", "assessmentYear": 2026 }
+#### 2. `src/lib/skillUtils.ts` — New combined gap function
+
+Add a new function `deriveFullRoleGaps(employeeSkills, roleRequiredSkills)` that:
+- Starts from the **role's required skills** as the baseline
+- For each required skill, finds the employee's matching skill (if any)
+- If the employee has the skill → compute gap as normal
+- If the employee **doesn't** have the skill → return `currentLevel: null`, gap = difference from 0
+- This produces `GapResult[]` entries with `currentLevel: null` for missing skills
+
+Add a corresponding `deriveFullRoleRadar` that includes missing skills (score = 0).
+
+#### 3. `src/pages/My360.tsx` — Use new gap function for Role filter
+
+- When `gapSource === "Role"`, call `deriveFullRoleGaps` instead of `deriveGapsFromEmployee`
+- When `gapSource === "Project"`, keep existing `deriveGapsFromEmployee` behavior
+
+#### 4. `src/pages/My360.tsx` — Dotted-border pill for missing skills
+
+In the Skills & Gap grid rendering, when `row.level === "—"` (null current level):
+- Render the skill pill with `border-dashed border-muted-foreground/40` instead of a solid border
+- Show `—` in the proficiency badge
+- Target badge shows the required level as normal
+- Gap label shows "High gap" or "Medium gap" as computed
+
+#### 5. `src/lib/profileDataGenerator.ts` — Use role catalog for roleSkillsRequired
+
+The generator already derives `roleSkillsRequired` from the role's `requiredSkills`. Verify this is consistent with the catalog IDs. No change needed here — the `rolesById` lookup already works.
+
+### Technical Details
+
+**New function signature in `skillUtils.ts`:**
+```typescript
+export function deriveFullRoleGaps(
+  current: SkillEntry[],
+  roleRequired: SkillRequirement[]
+): GapResult[]
 ```
-Inferred skills omit `assessmentYear`.
 
-**Also**: Remove the legacy `proficiency` map from each employee record and fix `roleId` values.
+Iterates over `roleRequired`, looks up matching employee skill. Missing skills get `currentLevel: null` and gap computed from index -1 vs required index.
 
-### No Code Changes
-
-The parser and profile generator already handle structured skills with `source` tags correctly.
+**Role lookup in My360:**
+```typescript
+const employee = normalizedAccount?.employeesById[user.id];
+const role = employee?.roleId ? normalizedAccount?.rolesById[employee.roleId] : undefined;
+```
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| Database (SQL) | Replace skills arrays, remove proficiency maps, fix roleIds for 9 employees |
+| `src/lib/skillUtils.ts` | Add `deriveFullRoleGaps` and `deriveFullRoleRadar` functions |
+| `src/pages/My360.tsx` | Dynamic role snapshot from catalog; use full role gap for Role filter; dotted-border pill for missing skills |
 

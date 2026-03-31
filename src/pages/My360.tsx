@@ -38,6 +38,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { profileDataByUser as staticProfileData } from "@/data/mock";
 import { getProfileData, getEmployeeCohorts, getManagedCohorts, getCohortAssignment } from "@/lib/accountSelectors";
 import { cn } from "@/lib/utils";
+import { useAgentOne } from "@/contexts/AgentOneContext";
 import { useChartColors } from "@/hooks/useChartColors";
 import { proficiencyShort } from "@/types/learning";
 import { deriveGapsFromEmployee, deriveRadarFromEmployee, deriveFullRoleGaps, deriveFullRoleRadar, deriveSkillGapRows } from "@/lib/skillUtils";

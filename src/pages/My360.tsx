@@ -494,7 +494,7 @@ export default function My360() {
                     </button>
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    {profileData.roleSnapshotText}
+                    {roleSnapshotText}
                   </p>
                 </motion.div>
 

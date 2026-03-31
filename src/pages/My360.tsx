@@ -38,6 +38,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { profileDataByUser as staticProfileData } from "@/data/mock";
 import { getProfileData, getEmployeeCohorts, getManagedCohorts, getCohortAssignment } from "@/lib/accountSelectors";
 import { cn } from "@/lib/utils";
+import { useAgentOne } from "@/contexts/AgentOneContext";
 import { useChartColors } from "@/hooks/useChartColors";
 import { proficiencyShort } from "@/types/learning";
 import { deriveGapsFromEmployee, deriveRadarFromEmployee, deriveFullRoleGaps, deriveFullRoleRadar, deriveSkillGapRows } from "@/lib/skillUtils";
@@ -99,7 +100,7 @@ export default function My360() {
   const [showTour, setShowTour] = useState(false);
   const { user } = useUser();
   const { activeAccount, normalizedAccount } = useAccount();
-  const chatRef = useRef<any>(null);
+  const { handleSend: agentOneSend, setIsOpen: setAgentOneOpen } = useAgentOne();
   const [activeTab, setActiveTab] = useState<(typeof tabs)[number]>("Role & Skills");
   const [showMoreDetails, setShowMoreDetails] = useState(false);
   const [gapView, setGapView] = useState<"Gap View" | "Action Plan">("Gap View");
@@ -108,10 +109,6 @@ export default function My360() {
   const [gapFilter, setGapFilter] = useState<GapFilter>("All");
   const colors = useChartColors();
 
-  // Clear chat when profile changes
-  useEffect(() => {
-    chatRef.current?.clearMessages();
-  }, [user.id]);
 
   // Use normalized selector; for non-default accounts avoid static fallback
   const isDefaultAccount = normalizedAccount?.isDefault !== false;
@@ -188,19 +185,13 @@ export default function My360() {
 
 
   const handleRoleExploreClick = () => {
-    chatRef.current?.sendMessage(ROLE_EXPLORE_PROMPT, roleExploreResponse, [
-      { label: "Growth opportunities" },
-      { label: "Key stakeholders" },
-      { label: "Expected outcomes" },
-    ]);
+    agentOneSend("Tell me more about my role", "Role Snapshot › Explore more");
+    setAgentOneOpen(true);
   };
 
   const handleProjectExploreClick = () => {
-    chatRef.current?.sendMessage(PROJECT_EXPLORE_PROMPT, PROJECT_EXPLORE_RESPONSE, [
-      { label: "Explore Further" },
-      { label: "Your impact so far" },
-      { label: "Skills to build" },
-    ]);
+    agentOneSend("Tell me more about my current project", "Project Snapshot › Explore more");
+    setAgentOneOpen(true);
   };
 
   return (

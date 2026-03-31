@@ -28,6 +28,7 @@ const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/super
 interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
+  sourceBreadcrumb?: string;
 }
 
 function parseSuggestions(text: string): { clean: string; suggestions: string[] } {
@@ -91,7 +92,7 @@ interface AgentOneContextType {
   stage: string;
   isOpen: boolean;
   setIsOpen: (v: boolean) => void;
-  handleSend: (text: string) => void;
+  handleSend: (text: string, sourceBreadcrumb?: string) => void;
   handleReset: (pendingPrompt?: string) => void;
   showInlineAssessment: boolean;
   setShowInlineAssessment: (v: boolean) => void;
@@ -695,7 +696,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setIsStreaming(false);
   };
 
-  const handleSend = useCallback((text: string) => {
+  const handleSend = useCallback((text: string, sourceBreadcrumb?: string) => {
     if (!text.trim() || isStreaming) return;
 
     // Clear pending CTA prompt ref
@@ -719,7 +720,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
 
     const isAssessmentTrigger = lower.includes("assessment") || lower.includes("take the") || lower.includes("start my");
     if (stageRef.current === "pre-assessment" && !assessmentCompleted && isAssessmentTrigger) {
-      const userMsg: ChatMessage = { role: "user", content: text };
+      const userMsg: ChatMessage = { role: "user", content: text, sourceBreadcrumb };
       setMessages(prev => [...prev, userMsg]);
       setInput("");
       setShowInlineAssessment(true);
@@ -731,7 +732,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     if (persona) {
       const match = findDemoMatch(text, !!chapterContext);
       if (match) {
-        const userMsg: ChatMessage = { role: "user", content: text };
+        const userMsg: ChatMessage = { role: "user", content: text, sourceBreadcrumb };
         setMessages(prev => [...prev, userMsg]);
         setInput("");
 
@@ -776,7 +777,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       setIsExpanded(false);
     }
 
-    const userMsg: ChatMessage = { role: "user", content: text };
+    const userMsg: ChatMessage = { role: "user", content: text, sourceBreadcrumb };
     const allMsgs = [...messagesRef.current, userMsg];
     setMessages(allMsgs);
     setInput("");

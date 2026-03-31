@@ -1,50 +1,70 @@
 
 
-## Preserve `source` field through parser for Core vs Inferred skill separation
+## Fix Clara's My360: Skills Override Destroying Good Metadata
 
-### Problem
+### Root Cause
 
-`accountParser.ts` → `parseSkills()` drops the `source` field when parsing skill objects from the database JSON. Without `source: "core" | "inferred"`, the profile data generator can't distinguish core from inferred skills and falls back to legacy role-matching logic — mixing everything together.
+The merge in `AccountContext.tsx` does `{ ...staleProfileData, ...generatedProfileData }`, which completely replaces ALL fields. The generated profile has correct skills but inferior metadata:
 
-### Changes
+- **roleSnapshotText**: Generated = `"Team Member"` (no role catalog in DB) — Stale DB = `"Fastest likely ramp among the new hires..."` (good copy)
+- **projectSnapshotText**: Generated = `"No active projects"` — Stale DB = `"Assigned across investment portfolio..."` (good copy, but user confirmed no projects yet — so "No active projects" is acceptable)
+- **location**: Generated = `"—"` (hris.location not checked) — Stale DB = `"London"`
+- **roleSkillsCurrent**: Generated = correct 12 core skills — Stale DB = wrong 10 skills with wrong proficiencies
 
-#### 1. `src/lib/accountParser.ts` — `parseSkills` function
+The full merge overwrites the good metadata fields with the bad generated fallbacks.
 
-Add `source` field preservation when parsing object-format skills:
+### Fix (2 changes)
+
+#### 1. `src/contexts/AccountContext.tsx` — Selective merge
+
+Change the merge to only override **skill arrays** from generated data, preserving existing metadata (snapshots, location, team, etc.):
 
 ```typescript
-// Line 61-65: add source field
-return {
-  skillName: s?.skillName || s?.skill_name || s?.name,
-  proficiency: normalizeProficiency(s?.proficiency || s?.level),
-  assessmentYear: s?.assessmentYear || s?.assessment_year,
-  source: s?.source,  // ← ADD THIS LINE
-};
+// Only override skill-related fields, keep existing metadata
+const skillFields = ['roleSkillsCurrent', 'roleSkillsRequired', 'projectSkillsCurrent', 'projectSkillsRequired', 'otherSkills'];
+const skillOverrides: any = {};
+for (const key of skillFields) {
+  if (genProfile[key]) skillOverrides[key] = genProfile[key];
+}
+parsed.profileData[empId] = { ...parsed.profileData[empId], ...skillOverrides };
 ```
 
-Also handle string-array skills with a proficiency map — cross-reference proficiency from the map when skills are plain strings (line 54-59).
+This preserves `roleSnapshotText`, `projectSnapshotText`, `location`, `summary`, `team`, etc. from the existing profileData while replacing only the skill arrays with the correctly bucketed data from `generateProfileData`.
 
-#### 2. Database update — Rathbones account Clara (RAT-E003)
+#### 2. Database update — Fix stale skills in Rathbones profileData
 
-Update Clara's skills in the Rathbones account JSON to use object format with explicit `source` tags:
+Update `profileData.RAT-E003` in the Rathbones account to use the correct skill format (`skill_name`/`proficiency` with `source` tags):
 
-**Core (12 skills, assessmentYear: 2026):**
-Client Relationship Management — Advanced, Investment Communication — Advanced, Investment Research — Advanced, Portfolio Construction — Advanced, Portfolio Management — Advanced, Suitability and Documentation — Advanced, Regulatory Compliance — Advanced, Portfolio Risk Alignment — Advanced, Commercial Awareness — Advanced, Business Development — Intermediate, Relationship Building — Advanced, Active Listening — Advanced
+- **roleSkillsCurrent**: 12 core skills matching employee record (Business Development = Intermediate, rest = Advanced, all assessmentYear 2026, source "core")
+- **otherSkills**: 4 inferred skills (Intermediate, no assessmentYear, source "inferred")
+- Keep existing good metadata: roleSnapshotText, projectSnapshotText, location ("London"), etc.
 
-**Inferred (4 skills, no assessmentYear):**
-Mentoring and Coaching — Intermediate, Stakeholder Management — Intermediate, Process Improvement — Intermediate, Knowledge Sharing — Intermediate
+### What the user needs to provide (missing data)
+
+Based on the audit, the Rathbones account JSON is missing:
+
+| Data | Status | Impact |
+|---|---|---|
+| `rolesCatalog` | Missing | Role Snapshot falls back to stale profileData text (OK per user preference) |
+| `projects` + `projectAssignments` | Missing | Project Snapshot shows "No active projects", Skills & Gap (Project) empty (OK per user — "No projects yet") |
+| `employee.location` | Missing (only in `hris.location`) | Location shows "—" unless stale profileData has it (user said don't use hris fallback) |
+
+No additional data needed from the user for this fix — the selective merge + DB update will resolve all three visible issues.
 
 ### Result
 
-- Parser preserves `source` → generator correctly buckets core vs inferred
-- My360 "Core Skills" section shows 12 core skills
-- My360 "Inferred Skills" section shows 4 inferred skills
-- Skills & Gap matrix compares core skills against role requirements
+- Core Skills: 12 correct skills (11 Advanced + 1 Intermediate)
+- Inferred Skills: 4 correct skills
+- Role Snapshot: Shows the provided copy from profileData
+- Project Snapshot: "No active projects" (correct per user)
+- Location: "London" (preserved from stale profileData)
+- Skills & Gap (Role): Will show gap analysis once rolesCatalog is provided
+- Skills & Gap (Project): Empty until projects are added
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| `src/lib/accountParser.ts` | Add `source` field to object skill parsing |
-| Database (SQL) | Update Rathbones Clara's skills to object format with source tags |
+| `src/contexts/AccountContext.tsx` | Selective merge: only override skill arrays from generated data |
+| Database (SQL) | Update Rathbones profileData.RAT-E003 skills to correct format |
 

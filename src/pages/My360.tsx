@@ -49,7 +49,7 @@ const tabs = ["Role & Skills", "Career Timeline", "Growth Path"] as const;
 const ROLE_EXPLORE_PROMPT =
   "Tell me more about my current role, responsibilities, and what's expected of me.";
 
-const ROLE_EXPLORE_RESPONSE = `Here's an overview of your role
+const FALLBACK_ROLE_EXPLORE_RESPONSE = `Here's an overview of your role
 
 ## Customer Support Executive L1
 

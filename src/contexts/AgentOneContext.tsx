@@ -696,7 +696,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setIsStreaming(false);
   };
 
-  const handleSend = useCallback((text: string) => {
+  const handleSend = useCallback((text: string, sourceBreadcrumb?: string) => {
     if (!text.trim() || isStreaming) return;
 
     // Clear pending CTA prompt ref

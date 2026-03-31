@@ -720,7 +720,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
 
     const isAssessmentTrigger = lower.includes("assessment") || lower.includes("take the") || lower.includes("start my");
     if (stageRef.current === "pre-assessment" && !assessmentCompleted && isAssessmentTrigger) {
-      const userMsg: ChatMessage = { role: "user", content: text };
+      const userMsg: ChatMessage = { role: "user", content: text, sourceBreadcrumb };
       setMessages(prev => [...prev, userMsg]);
       setInput("");
       setShowInlineAssessment(true);

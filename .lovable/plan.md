@@ -1,63 +1,45 @@
 
 
-## Fix Role Snapshot "Explore More" Injection into Agent One
+## Populate All 5 Roles in Rathbones rolesCatalog
 
-### Problem
+### What
 
-`handleRoleExploreClick` in My360 calls `chatRef.current?.sendMessage(...)`, but `chatRef` points to nothing — My360 doesn't render an `AIChatPanel`. The global chat is powered by `AgentOneContext`, not a local ref.
+Single SQL UPDATE to replace the `rolesCatalog` array in the Rathbones account with 5 complete role entries using the exact text provided.
 
-### Solution
+### Database Update
 
-Replace the broken `chatRef` approach with the `AgentOneContext` API:
+One `UPDATE` on accounts table (ID `8e1ac19e-149b-4345-956d-eac65d2490bf`) setting `data = jsonb_set(data, '{rolesCatalog}', '[...]')` with all 5 roles.
 
-#### 1. `src/pages/My360.tsx`
+### Role Entries
 
-- Import `useAgentOne` from `@/contexts/AgentOneContext`
-- Remove `chatRef` entirely
-- Update `handleRoleExploreClick` to:
-  - Call `handleSend("Tell me more about my role")` from the AgentOne context
-  - Call `setIsOpen(true)` to open the floating chat panel
-- Update `handleProjectExploreClick` similarly
-- Remove the `useEffect` that calls `chatRef.current?.clearMessages()`
+| ID | Name | Required Skills Count |
+|---|---|---|
+| `ROLE-GT` | Graduate Trainee | 14 skills (Beginner–Intermediate) |
+| `ROLE-AIM` | Assistant Investment Manager | 15 skills (Intermediate–Advanced) |
+| `ROLE-IM` | Investment Manager | 16 skills (Intermediate–Advanced) |
+| `ROLE-ID` | Investment Director | 18 skills (Advanced–Expert) |
+| `ROLE-ADMIN` | Investment Management Platform Admin | 15 skills (Advanced–Expert) |
 
-#### 2. `src/contexts/AgentOneContext.tsx` — Add breadcrumb support
+Each entry contains:
+- `snapshotText` → Section 1 text (My360 card)
+- `description` → Section 2 "Explore More" text (injected into Agent One on click)
+- `detailedDescription` → Section 3 text (Agent One context for Q&A)
+- `requiredSkills` → `[{skillName, proficiency}]` from Section 2 skill lists
 
-- Add optional `sourceBreadcrumb` to user messages in the `ChatMessage` interface
-- Extend `handleSend` to accept an optional breadcrumb parameter: `handleSend(text: string, breadcrumb?: string)`
-- When breadcrumb is provided, attach it to the user message object
+### What This Fixes
 
-#### 3. `src/components/chat/AIChatWrapper.tsx` — Render breadcrumb
+- All 13 employees see correct, role-specific snapshot cards on My360
+- "Explore more" sends the right role description into Agent One
+- Agent One can answer detailed questions about any role using `detailedDescription`
+- Role-based gap analysis uses each role's actual `requiredSkills`
 
-- When rendering a user message that has `sourceBreadcrumb`, show a small muted line above the bubble:
-  ```
-  Role Snapshot › Explore more
-  ```
-- Style: `text-[11px] text-muted-foreground/60` with `ChevronRight` separators between segments
+### No Code Changes
 
-### Technical Details
-
-**My360 handleRoleExploreClick:**
-```typescript
-const { handleSend, setIsOpen } = useAgentOne();
-
-const handleRoleExploreClick = () => {
-  handleSend("Tell me more about my role", "Role Snapshot › Explore more");
-  setIsOpen(true);
-};
-```
-
-**AgentOneContext handleSend signature update:**
-```typescript
-handleSend: (text: string, sourceBreadcrumb?: string) => void;
-```
-
-The breadcrumb gets stored on the user `ChatMessage` and rendered by `AIChatWrapper`. The AI will receive the prompt and respond using the role context already available in `userContext` (which includes `roleDescription`, `roleDetailedDescription`, `roleName`).
+The parser and UI already consume `snapshotText`, `description`, `detailedDescription`, and `requiredSkills` dynamically from the rolesCatalog.
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| `src/pages/My360.tsx` | Replace `chatRef` with `useAgentOne()`, call `handleSend` + `setIsOpen(true)` |
-| `src/contexts/AgentOneContext.tsx` | Add `sourceBreadcrumb` to ChatMessage, extend `handleSend` signature |
-| `src/components/chat/AIChatWrapper.tsx` | Render breadcrumb above user messages that have one |
+| Database (SQL) | Replace `rolesCatalog` with 5 complete role entries for Rathbones account |
 

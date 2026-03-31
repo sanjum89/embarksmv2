@@ -1,46 +1,42 @@
 
 
-## Add Titles to All Rathbones Employees and Users
+## Replace Skills and Fix RoleIds for 9 Employees
 
-### Problem
+### What
 
-Only Felix Arden has a `title` field in the database. All other 12 employees and their corresponding user entries have `null` titles, so the profile switcher shows names without job titles.
+Convert 9 employees from the legacy plain-string skills format to the structured object format with `source` tags, using the exact skill lists provided. Also fix `roleId` prefixes to match the catalog.
 
-### Solution
+### Database Updates (SQL via insert tool)
 
-Update the database to add `title` to every employee and user record based on their role mapping.
+**For each of the 9 employees**, replace the `skills` array with structured objects and remove the legacy `proficiency` map. Also fix `roleId` where needed.
 
-### Database Updates (SQL)
+| Employee | ID | roleId Fix | Core Skills | Inferred Skills |
+|---|---|---|---|---|
+| Helena Fairchild | RAT-E001 | `RAT-ROLE-ADMIN` → `ROLE-ADMIN` | 12 (Platform Admin, Workflow Config, Data Quality Mgmt, etc.) | 4 (Cross-Functional Collab, Process Improvement, Training & Enablement, Operational Risk) |
+| Julian Ashcombe | RAT-E002 | `RAT-ROLE-DIRECTOR` → `ROLE-ID` | 12 (CRM Expert, Investment Comm Expert, etc.) | 4 (Stakeholder Mgmt Expert, Wealth Planning, Strategic Planning, Professional Integrity) |
+| Sophie Alder | RAT-E005 | `RAT-ROLE-IM` → `ROLE-GT` | 12 (CRM Beginner, Investment Comm Beginner, etc.) | 4 (Learning Agility Advanced, Adaptability, Client Admin, Collaboration) |
+| Harriet Cole | RAT-E006 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (CRM Advanced, Suitability Expert, etc.) | 4 (Mentoring Advanced, Knowledge Sharing, Wealth Planning, Professional Integrity Expert) |
+| Beatrice Long | RAT-E008 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (Regulatory Compliance Expert, Attention to Detail Expert, etc.) | 4 (Risk Governance, Knowledge Sharing, Process Improvement, Wealth Planning) |
+| Louis Everard | RAT-E009 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (Active Listening Expert, Relationship Building Expert, etc.) | 4 (Mentoring, Stakeholder Mgmt, Knowledge Sharing, Change Adoption) |
+| Amelia Forsyth | RAT-E010 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (Business Dev Intermediate, rest Advanced, etc.) | 4 (Mentoring, Wealth Planning, Stakeholder Mgmt, Leadership) |
+| Theo Redgrave | RAT-E011 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (CRM Intermediate, Research Advanced, etc.) | 4 (Resilience, Stakeholder Mgmt, Learning Agility, Presentation Confidence) |
+| Isla Marlowe | RAT-E012 | `RAT-ROLE-IM` → `ROLE-IM` | 12 (Commercial Awareness Intermediate, Wealth Planning Collab Advanced, etc.) | 4 (Mentoring, Stakeholder Mgmt, Knowledge Sharing, Process Improvement) |
 
-Update `title` on each employee and user entry in the Rathbones account JSONB:
+**Format** for each skill entry (matching Clara/Elliot/Nathan/Felix):
+```json
+{ "skillName": "...", "proficiency": "...", "source": "core", "assessmentYear": 2026 }
+```
+Inferred skills omit `assessmentYear`.
 
-| Employee | ID | Title |
-|---|---|---|
-| Helena Fairchild | RAT-E001 | Investment Management Platform Admin |
-| Julian Ashcombe | RAT-E002 | Investment Director |
-| Clara Wren | RAT-E003 | Investment Manager |
-| Elliot March | RAT-E004 | Investment Manager |
-| Sophie Alder | RAT-E005 | Graduate Trainee |
-| Harriet Cole | RAT-E006 | Investment Manager |
-| Nathan Vale | RAT-E007 | Investment Manager |
-| Beatrice Long | RAT-E008 | Investment Manager |
-| Louis Everard | RAT-E009 | Investment Manager |
-| Amelia Forsyth | RAT-E010 | Investment Manager |
-| Theo Redgrave | RAT-E011 | Investment Manager |
-| Isla Marlowe | RAT-E012 | Investment Manager |
-| Felix Arden | RAT-E013 | Assistant Investment Manager (already set) |
-
-Also update the `users` array entries (RAT-E001, RAT-E002, RAT-E003) with their corresponding titles.
-
-**Note**: Sophie's roleId is `RAT-ROLE-IM` but per the approved mapping she should be Graduate Trainee. This will also fix her roleId to `ROLE-GT` (pending the 5-role catalog update). For now, her title will be set to "Graduate Trainee" as mapped.
+**Also**: Remove the legacy `proficiency` map from each employee record and fix `roleId` values.
 
 ### No Code Changes
 
-The UI already renders `u.title` — it just needs data.
+The parser and profile generator already handle structured skills with `source` tags correctly.
 
 ### Files Modified
 
 | File | Change |
 |---|---|
-| Database (SQL) | Add `title` to all 12 employees + 3 users in Rathbones account |
+| Database (SQL) | Replace skills arrays, remove proficiency maps, fix roleIds for 9 employees |
 

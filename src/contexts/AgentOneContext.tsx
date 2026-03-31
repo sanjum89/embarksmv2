@@ -28,6 +28,7 @@ const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/super
 interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
+  sourceBreadcrumb?: string;
 }
 
 function parseSuggestions(text: string): { clean: string; suggestions: string[] } {

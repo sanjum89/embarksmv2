@@ -60,6 +60,15 @@ function normalizeFromLegacy(acct: Account): NormalizedAccount {
       // Auto-generate profileData when missing so every uploaded employee can open My360 safely
       if (Object.keys(parsed.profileData).length === 0 && Object.values(parsed.employeesById).length > 0) {
         parsed.profileData = generateProfileData(parsed);
+      } else if (Object.values(parsed.employeesById).length > 0) {
+        // Override profileData for employees with source-tagged skills (structured data takes precedence over stale static entries)
+        const generated = generateProfileData(parsed);
+        for (const [empId, genProfile] of Object.entries(generated)) {
+          const emp = parsed.employeesById[empId];
+          if (emp?.skills?.some((s) => s.source)) {
+            parsed.profileData[empId] = { ...parsed.profileData[empId], ...genProfile };
+          }
+        }
       }
       // Auto-derive reflections from employee data when none provided
       if (!parsed.reflections?.length) {

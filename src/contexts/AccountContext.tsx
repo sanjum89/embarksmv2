@@ -66,7 +66,13 @@ function normalizeFromLegacy(acct: Account): NormalizedAccount {
         for (const [empId, genProfile] of Object.entries(generated)) {
           const emp = parsed.employeesById[empId];
           if (emp?.skills?.some((s) => s.source)) {
-            parsed.profileData[empId] = { ...parsed.profileData[empId], ...genProfile };
+            // Only override skill arrays, preserve existing metadata (snapshots, location, etc.)
+            const skillFields = ['roleSkillsCurrent', 'roleSkillsRequired', 'projectSkillsCurrent', 'projectSkillsRequired', 'otherSkills'] as const;
+            const skillOverrides: any = {};
+            for (const key of skillFields) {
+              if ((genProfile as any)[key]) skillOverrides[key] = (genProfile as any)[key];
+            }
+            parsed.profileData[empId] = { ...parsed.profileData[empId], ...skillOverrides };
           }
         }
       }

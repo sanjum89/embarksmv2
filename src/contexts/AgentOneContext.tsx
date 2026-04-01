@@ -280,7 +280,12 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     title: user.title,
     tenure,
     skills: userProfile?.roleSkillsCurrent?.map((s: any) => s.skill_name) || [],
-    reportsTo: (employee as any)?.reportsTo || null,
+    reportsTo: (() => {
+      const managerId = (employee as any)?.reportsTo;
+      if (!managerId) return null;
+      const mgr = normalizedAccount?.employeesById?.[managerId];
+      return mgr ? mgr.name : managerId;
+    })(),
     accountName: normalizedAccount?.branding?.name || activeAccount?.name,
     lockedTargets,
     isFreshGraduate: isSophie,

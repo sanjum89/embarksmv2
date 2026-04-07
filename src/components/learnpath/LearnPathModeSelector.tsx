@@ -1,5 +1,5 @@
 import { useLearnPath, type LearningMode } from "@/contexts/LearnPathContext";
-import { Eye, BookOpen, Headphones, Wrench, Layers, ArrowLeft } from "lucide-react";
+import { Eye, BookOpen, Headphones, Wrench, Layers, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -11,30 +11,51 @@ const modes: { mode: LearningMode; label: string; icon: React.ElementType }[] = 
   { mode: "combined", label: "Combined", icon: Layers },
 ];
 
-export function LearnPathModeSelector() {
+interface Props {
+  moduleTitle?: string;
+}
+
+export function LearnPathModeSelector({ moduleTitle }: Props) {
   const { learningMode, setLearningMode, closeModule } = useLearnPath();
 
   return (
-    <div className="px-4 py-2 border-b border-border flex items-center gap-3">
-      <Button variant="ghost" size="sm" onClick={closeModule} className="gap-1 text-xs shrink-0">
-        <ArrowLeft className="h-3.5 w-3.5" /> Back
-      </Button>
-      <div className="flex-1 flex items-center gap-1 overflow-x-auto">
-        {modes.map(({ mode, label, icon: Icon }) => (
-          <button
-            key={mode}
-            onClick={() => setLearningMode(mode)}
-            className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap",
-              learningMode === mode
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            )}
-          >
-            <Icon className="h-3.5 w-3.5" />
-            {label}
-          </button>
-        ))}
+    <div className="border-b border-border">
+      {/* Top bar: title + All Modules */}
+      <div className="px-4 py-3 flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-foreground truncate">
+          {moduleTitle ?? "Module"}
+        </h2>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={closeModule}
+          className="gap-1.5 text-xs shrink-0"
+        >
+          <LayoutGrid className="h-3.5 w-3.5" />
+          All Modules
+        </Button>
+      </div>
+
+      {/* Mode selector row */}
+      <div className="px-4 pb-2.5 flex items-center gap-2 overflow-x-auto">
+        <span className="text-xs text-muted-foreground whitespace-nowrap">Viewing in:</span>
+        <div className="flex items-center gap-1">
+          {modes.map(({ mode, label, icon: Icon }) => (
+            <button
+              key={mode}
+              onClick={() => setLearningMode(mode)}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors whitespace-nowrap",
+                learningMode === mode
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              )}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );

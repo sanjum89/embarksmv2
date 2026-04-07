@@ -1,59 +1,31 @@
 
-Goal
 
-Fix LearnPath so Clara opens the actual first assigned chapter on the right, keep the “no learning path yet” experience for users without assigned content, and remove the redundant floating AI launcher on `/learnpath`.
+## Fix "Module not found" — DB steps have no matching catalog modules
 
-What I found
+### Root Cause
 
-- The right panel is failing because LearnPath currently resolves modules from a fixed mock catalog instead of the active account’s learning modules.
-- The AI/chat side is sending an `open_module` action with ids like `RAT-INTRO-LM-001`, but the content panel is searching a different module source, so it falls through to “Module not found.”
-- LearnPath is also using the raw step reference too directly; for custom account data, that needs a safer resolver.
-- The floating AI icon comes from the global `AIChatWrapper`, which is hidden on `/chat` but not on `/learnpath`.
-- No redesign is needed: once the correct module resolves, the existing right-side LearnPath UI can show the experience you want.
+The Rathbones account data in the database has skill target steps with IDs like `RAT-INTRO-LM-001`, `RAT-INTRO-LM-002`, etc. These steps do NOT have a `referenceId` pointing to `m-rb*` mock modules. The account parser (line 606) falls back to `step.id` when `referenceId` is missing, so both `id` and `referenceId` end up as `RAT-INTRO-LM-001`.
 
-Implementation plan
+The resolver then searches for `RAT-INTRO-LM-001` in the catalog — which contains mock modules like `m-rb1` and account modules like `RAT-LM-001` — but no module with ID `RAT-INTRO-LM-001` exists anywhere. Result: `undefined` → "Module not found."
 
-1. Make LearnPath use the active account’s module library
-- Switch LearnPath to read `normalizedAccount.learningModules` first, with fallback to the built-in mock modules only when needed.
-- Add one shared LearnPath resolver so chat, auto-resume, cards, and assessment all use the same module lookup logic.
+The DB steps DO contain content metadata (title, description, contentType, minutes) but no corresponding `LearningModule` entry exists in any catalog.
 
-2. Fix module resolution for assigned skill-target steps
-- Resolve each module step against the real module catalog by:
-  - `referenceId` first
-  - then step/module id
-  - then title as a safe fallback
-- Use the resolved module’s real id everywhere LearnPath opens content.
+### Fix
 
-3. Fix chat + auto-resume to open the actual first chapter
-- Update `LearnPathChat` so the AI action uses the resolved module id, not just the raw step identifier.
-- Update `LearnPathContent` auto-resume so it opens the first available/in-progress chapter from the assigned skill target using that same resolved id.
-- This will make “Introduction to Rathbones → Our Heritage & Values” open correctly on the right.
+Update `resolveModule` in `src/lib/learnPathModuleResolver.ts` to synthesize a `LearningModule` from the step data when no catalog match is found. After the existing lookup attempts, scan skill target steps for a matching step ID and build a module from the step's own fields (title, description as transcript, contentType, duration).
 
-4. Keep the empty-state behavior, but base it on resolvable modules
-- If a user truly has no assigned/resolvable module content, keep the current empty state:
-  - left: explain no learning path exists yet
-  - right: show skill gaps and suggested targets
-- If the user does have valid module content, skip the empty state and open the first relevant chapter.
+### Changes
 
-5. Remove the floating AI icon on this page
-- Update the global floating chat wrapper so it does not render on `/learnpath`.
-- Leave the rest of the app unchanged.
+**`src/lib/learnPathModuleResolver.ts`** — Add a step 3 to `resolveModule`:
+- After direct match and referenceId resolution both fail, find the matching step in `skillTargets`
+- Build a synthetic `LearningModule` from the step's `title`, `description` (as transcript), `contentType` (default `"document"`), `duration`, and `contentUrl` (placeholder)
+- Return the synthetic module so the content panel can render it
 
-Files likely involved
+This is a single-file change of about 15 lines. No other files need modification — the rest of the pipeline (auto-resume, action protocol, content renderer) already works once the resolver returns a valid module.
 
-- `src/components/learnpath/LearnPathChat.tsx`
-- `src/components/learnpath/LearnPathContent.tsx`
-- `src/components/learnpath/LearnPathAssessment.tsx`
-- `src/components/chat/AIChatWrapper.tsx`
-- likely one small shared LearnPath module-resolution helper
+### Files Modified
 
-Technical detail
+| File | Change |
+|---|---|
+| `src/lib/learnPathModuleResolver.ts` | Add synthetic module fallback from step data when no catalog match found |
 
-The main issue is a data wiring mismatch, not the page layout itself: the chat is opening a module id from the assigned skill-target data, while the content panel is searching the wrong catalog. Fixing the source-of-truth for module resolution will fix Clara’s case and make custom account data work reliably.
-
-QA after implementation
-
-- Clara: `/learnpath` opens “Our Heritage & Values” on the right, no “Module not found”
-- User with no assigned path: left chat explains it, right panel shows gaps and suggested targets
-- Custom account modules still resolve correctly
-- Floating AI icon is absent on `/learnpath`

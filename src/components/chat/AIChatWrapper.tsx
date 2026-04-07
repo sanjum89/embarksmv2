@@ -45,6 +45,15 @@ export function AIChatWrapper() {
   const location = useLocation();
   const navigate = useNavigate();
   const { skillTargets } = useSkillTargets();
+
+  // Guard: if context is unavailable (HMR edge case), render nothing
+  let agentOne: ReturnType<typeof useAgentOne> | null = null;
+  try {
+    agentOne = useAgentOne();
+  } catch {
+    return null;
+  }
+
   const {
     messages,
     suggestions,

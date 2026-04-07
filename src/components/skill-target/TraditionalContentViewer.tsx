@@ -6,6 +6,8 @@ import { st2BaselineAssessment, st2MidAssessment, st2FinalAssessment } from "@/d
 import { useAccount } from "@/contexts/AccountContext";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { resolveModule } from "@/lib/learnPathModuleResolver";
+import ReactMarkdown from "react-markdown";
 import type { StepItem, Assessment } from "@/types/learning";
 
 interface TraditionalContentViewerProps {

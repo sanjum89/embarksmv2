@@ -1,25 +1,32 @@
 import { useLearnPath } from "@/contexts/LearnPathContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useUser } from "@/contexts/UserContext";
-import { expandedModules } from "@/data/contentModules";
+import { mockLearningModules } from "@/data/mock";
 import { LearnPathModuleCard } from "./LearnPathModuleCard";
 import { LearnPathModuleContent } from "./LearnPathModuleContent";
 import { LearnPathAssessment } from "./LearnPathAssessment";
 import { LearnPathModeSelector } from "./LearnPathModeSelector";
-import { BookOpen, GraduationCap, Sparkles } from "lucide-react";
+import { BookOpen, GraduationCap, Sparkles, AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { getRecommendationsForUser } from "@/lib/skillRecommendations";
+import { useAccount } from "@/contexts/AccountContext";
+import { useEffect, useRef } from "react";
 
 export function LearnPathContent() {
-  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid } = useLearnPath();
+  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule } = useLearnPath();
   const { skillTargets } = useSkillTargets();
   const { user } = useUser();
+  const { normalizedAccount } = useAccount();
+  const navigate = useNavigate();
+  const autoResumedRef = useRef(false);
 
   // Gather all module steps from skill targets
   const moduleSteps = skillTargets.flatMap((st) =>
     st.steps
       .filter((s) => s.type === "module")
       .map((s) => {
-        const mod = expandedModules.find((m) => m.id === s.referenceId);
+        const mod = mockLearningModules.find((m) => m.id === s.referenceId);
         return {
           moduleId: s.referenceId,
           title: mod?.title ?? s.title,
@@ -34,12 +41,30 @@ export function LearnPathContent() {
       })
   );
 
+  const hasModules = moduleSteps.length > 0;
+
+  // Auto-resume: open first incomplete module on mount
+  useEffect(() => {
+    if (autoResumedRef.current || !hasModules || contentView !== "welcome") return;
+    autoResumedRef.current = true;
+    const resume = moduleSteps.find((m) => m.status === "in_progress") ?? moduleSteps.find((m) => m.status === "available");
+    if (resume) {
+      openModule(resume.moduleId, resume.skillTargetId);
+    }
+  }, [hasModules, contentView]);
+
+  // Get skill gap recommendations for empty state
+  const profileData = normalizedAccount?.employees?.find(
+    (e: any) => e.id === user.id || e.name === user.name
+  );
+  const { groups: recommendationGroups } = getRecommendationsForUser(profileData);
+
   if (contentView === "assessment" && assessmentModuleId) {
     return <LearnPathAssessment moduleId={assessmentModuleId} />;
   }
 
   if (contentView === "module" && activeModuleId) {
-    const mod = expandedModules.find((m) => m.id === activeModuleId);
+    const mod = mockLearningModules.find((m) => m.id === activeModuleId);
     if (!mod) {
       return (
         <div className="h-full flex items-center justify-center text-muted-foreground">
@@ -79,7 +104,55 @@ export function LearnPathContent() {
     );
   }
 
-  // Welcome
+  // Empty state — no skill targets assigned
+  if (!hasModules) {
+    return (
+      <div className="h-full overflow-y-auto">
+        <div className="max-w-lg mx-auto px-6 py-10 space-y-6">
+          <div className="text-center space-y-3">
+            <div className="mx-auto w-14 h-14 rounded-2xl bg-muted flex items-center justify-center">
+              <AlertTriangle className="h-7 w-7 text-muted-foreground" />
+            </div>
+            <h1 className="text-xl font-bold text-foreground">No Learning Path Yet</h1>
+            <p className="text-sm text-muted-foreground">
+              You don't have any skill targets assigned. Based on your profile, here are some skill gaps you could work on.
+            </p>
+          </div>
+
+          {recommendationGroups.length > 0 ? (
+            <div className="space-y-4">
+              {recommendationGroups.map((group) => (
+                <div key={group.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
+                  <h3 className="text-sm font-semibold text-foreground">{group.title}</h3>
+                  <p className="text-xs text-muted-foreground">{group.subtitle}</p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {group.skills.map((skill) => (
+                      <span key={skill} className="text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-border bg-card p-4">
+              <p className="text-sm text-muted-foreground text-center">
+                No skill gaps detected. Speak with your manager to get skill targets assigned.
+              </p>
+            </div>
+          )}
+
+          <Button onClick={() => navigate("/")} className="w-full gap-2">
+            <ArrowRight className="h-4 w-4" />
+            Go to Dashboard to Add Skill Targets
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Welcome (has modules but hasn't navigated yet — shouldn't typically show due to auto-resume)
   return (
     <div className="h-full flex items-center justify-center">
       <div className="max-w-md text-center space-y-4 px-6">

@@ -2,7 +2,7 @@ import { useLearnPath } from "@/contexts/LearnPathContext";
 import { LearnPathAudioPlayer } from "./LearnPathAudioPlayer";
 import type { LearningModule } from "@/types/learning";
 import ReactMarkdown from "react-markdown";
-import { Video, FileText, Eye, BookOpen, Headphones, Wrench, Layers } from "lucide-react";
+import { Eye, BookOpen, Headphones, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";

@@ -54,9 +54,16 @@ Rules for actions:
 - You can include multiple actions in one response
 - If the learner just opened LearnPath (system message), welcome them and suggest their first incomplete module with an open_module action
 
+## When No Modules Are Assigned
+If the learner has no modules assigned, do NOT suggest opening modules. Instead:
+1. Welcome them warmly and explain they don't have a learning path yet
+2. Explain that skill gaps have been identified based on their profile (the right panel shows these)
+3. Suggest they visit their Dashboard to browse and add skill targets
+4. Once skill targets with modules are added, LearnPath will automatically pick them up
+5. Do NOT use any open_module or show_modules actions when there are no modules
+
 ## Important
 - Never fabricate module IDs — only reference modules from the list above
-- If no modules are assigned, welcome them and suggest they speak with their manager
 - Adapt your language complexity to the learner's level`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

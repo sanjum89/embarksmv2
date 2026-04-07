@@ -8,7 +8,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useLearnPath } from "@/contexts/LearnPathContext";
 import { LearnPathActionButton } from "./LearnPathActionButton";
-import { expandedModules } from "@/data/contentModules";
+import { mockLearningModules } from "@/data/mock";
 
 interface ChatMessage {
   id: string;
@@ -53,7 +53,7 @@ export function LearnPathChat() {
       st.steps
         .filter((s) => s.type === "module")
         .map((s) => {
-          const mod = expandedModules.find((m) => m.id === s.referenceId);
+          const mod = mockLearningModules.find((m) => m.id === s.referenceId);
           return {
             moduleId: s.referenceId,
             title: mod?.title ?? s.title,
@@ -65,6 +65,9 @@ export function LearnPathChat() {
         })
     );
 
+    // Find the first incomplete module for auto-resume hint
+    const resumeModule = moduleSteps.find((m) => m.status === "in_progress") ?? moduleSteps.find((m) => m.status === "available");
+
     return {
       userName: user.name,
       userRole: user.role,
@@ -73,6 +76,10 @@ export function LearnPathChat() {
       currentView: learnPath.contentView,
       activeModuleId: learnPath.activeModuleId,
       learningMode: learnPath.learningMode,
+      hasModules: moduleSteps.length > 0,
+      resumeModuleId: resumeModule?.moduleId ?? null,
+      resumeModuleTitle: resumeModule?.title ?? null,
+      resumeSkillTargetId: resumeModule?.skillTargetId ?? null,
     };
   }, [user, skillTargets, learnPath]);
 
@@ -173,10 +180,13 @@ export function LearnPathChat() {
   useEffect(() => {
     if (hasGreeted || messages.length > 0) return;
     setHasGreeted(true);
+    const ctx = buildContext();
     const greetMsg: ChatMessage = {
       id: "greet-system",
       role: "user",
-      content: "[SYSTEM] The learner just opened LearnPath. Send a warm welcome greeting.",
+      content: ctx.hasModules
+        ? `[SYSTEM] The learner just opened LearnPath. They have ${ctx.modules.length} module(s) assigned. ${ctx.resumeModuleId ? `Suggest resuming with "${ctx.resumeModuleTitle}" (moduleId: ${ctx.resumeModuleId}, skillTargetId: ${ctx.resumeSkillTargetId}) and use an open_module action to open it.` : "Welcome them and suggest browsing modules."}`
+        : "[SYSTEM] The learner just opened LearnPath but has NO modules or skill targets assigned. Welcome them warmly, explain that they don't have a learning path yet, and suggest they explore their skill gaps and add skill targets from their dashboard to get started.",
     };
     sendToAI([greetMsg]);
   }, [hasGreeted, messages.length, sendToAI]);

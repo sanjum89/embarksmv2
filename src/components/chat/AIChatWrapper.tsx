@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { resolvePillAction } from "@/lib/pillActionResolver";
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Fragment } from "react";
 import ReactMarkdown from "react-markdown";
-import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";
+import { AgentOneContext, parseSuggestions } from "@/contexts/AgentOneContext";
 import { InlineAssessment } from "@/components/chat/InlineAssessment";
 import { RichContentBlock } from "@/components/chat/RichContentBlock";
 import { CollapsedBlockCard } from "@/components/chat/CollapsedBlockCard";
@@ -45,14 +45,13 @@ export function AIChatWrapper() {
   const location = useLocation();
   const navigate = useNavigate();
   const { skillTargets } = useSkillTargets();
+  const ctx = useContext(AgentOneContext);
 
-  // Guard: if context is unavailable (HMR edge case), render nothing
-  let agentOne: ReturnType<typeof useAgentOne> | null = null;
-  try {
-    agentOne = useAgentOne();
-  } catch {
-    return null;
-  }
+  // Hide floating chat on pages where a dedicated chat is rendered inline
+  const isChatPage = location.pathname === "/chat" || location.pathname === "/learnpath";
+
+  // If context is unavailable (HMR edge case) or on chat/learnpath page, render nothing
+  if (!ctx || isChatPage) return null;
 
   const {
     messages,
@@ -74,7 +73,7 @@ export function AIChatWrapper() {
     isExpanded,
     toggleBlockCollapse,
     setIsExpanded,
-  } = useAgentOne();
+  } = ctx;
 
   // Hide floating chat on pages where a dedicated chat is rendered inline
   const isChatPage = location.pathname === "/chat" || location.pathname === "/learnpath";

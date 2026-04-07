@@ -30,6 +30,7 @@ import ManagerSkillTargetDetail from "./pages/ManagerSkillTargetDetail";
 
 import ProgramContextPage from "./pages/ProgramContextPage";
 import AdminView from "./pages/AdminView";
+import LearnPath from "./pages/LearnPath";
 import NotFound from "./pages/NotFound";
 
 
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/manager/skill-targets" element={<ManagerSkillTargets />} />
               <Route path="/manager/skill-target/:id" element={<ManagerSkillTargetDetail />} />
               <Route path="/manager/programs" element={<ProgramContextPage />} />
+              <Route path="/learnpath" element={<LearnPath />} />
               <Route path="/admin" element={<AdminView />} />
             </Route>
             <Route path="*" element={<NotFound />} />

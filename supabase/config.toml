@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.reflection-questions]
 verify_jwt = false
+
+[functions.learnpath-chat]
+verify_jwt = false
+
+[functions.elevenlabs-tts]
+verify_jwt = false

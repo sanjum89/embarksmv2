@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { resolvePillAction } from "@/lib/pillActionResolver";
@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { Fragment } from "react";
 import ReactMarkdown from "react-markdown";
-import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";
+import { AgentOneContext, parseSuggestions } from "@/contexts/AgentOneContext";
 import { InlineAssessment } from "@/components/chat/InlineAssessment";
 import { RichContentBlock } from "@/components/chat/RichContentBlock";
 import { CollapsedBlockCard } from "@/components/chat/CollapsedBlockCard";
@@ -42,6 +42,16 @@ function ThinkingIndicator() {
 }
 
 export function AIChatWrapper() {
+  const ctx = useContext(AgentOneContext);
+  const location = useLocation();
+  const isChatPage = location.pathname === "/chat" || location.pathname === "/learnpath";
+
+  if (!ctx || isChatPage) return null;
+
+  return <AIChatWrapperInner />;
+}
+
+function AIChatWrapperInner() {
   const location = useLocation();
   const navigate = useNavigate();
   const { skillTargets } = useSkillTargets();
@@ -65,10 +75,7 @@ export function AIChatWrapper() {
     isExpanded,
     toggleBlockCollapse,
     setIsExpanded,
-  } = useAgentOne();
-
-  // Hide floating chat on pages where a dedicated chat is rendered inline
-  const isChatPage = location.pathname === "/chat" || location.pathname === "/learnpath";
+  } = useContext(AgentOneContext)!;
 
 
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -125,7 +132,7 @@ export function AIChatWrapper() {
   const panelWidth = isExpanded ? 720 : 400;
   const panelHeight = isExpanded ? 700 : 600;
 
-  if (isChatPage) return null;
+  
 
   return (
     <>

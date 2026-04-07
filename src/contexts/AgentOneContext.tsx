@@ -113,7 +113,7 @@ interface AgentOneContextType {
   reflectionContext: ReflectionContextData | null;
 }
 
-const AgentOneContext = createContext<AgentOneContextType>(null!);
+export const AgentOneContext = createContext<AgentOneContextType>(null!);
 
 export function AgentOneProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();

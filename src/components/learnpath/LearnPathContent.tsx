@@ -1,7 +1,8 @@
 import { useLearnPath } from "@/contexts/LearnPathContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useUser } from "@/contexts/UserContext";
-import { mockLearningModules } from "@/data/mock";
+import { useAccount } from "@/contexts/AccountContext";
+import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
 import { LearnPathModuleCard } from "./LearnPathModuleCard";
 import { LearnPathModuleContent } from "./LearnPathModuleContent";
 import { LearnPathAssessment } from "./LearnPathAssessment";
@@ -10,7 +11,6 @@ import { BookOpen, GraduationCap, Sparkles, AlertTriangle, ArrowRight } from "lu
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getRecommendationsForUser } from "@/lib/skillRecommendations";
-import { useAccount } from "@/contexts/AccountContext";
 import { useEffect, useRef } from "react";
 
 export function LearnPathContent() {
@@ -21,14 +21,16 @@ export function LearnPathContent() {
   const navigate = useNavigate();
   const autoResumedRef = useRef(false);
 
+  const catalog = buildCatalog(normalizedAccount?.learningModules);
+
   // Gather all module steps from skill targets
   const moduleSteps = skillTargets.flatMap((st) =>
     st.steps
       .filter((s) => s.type === "module")
       .map((s) => {
-        const mod = mockLearningModules.find((m) => m.id === s.referenceId);
+        const mod = resolveModule(s.referenceId ?? s.id, skillTargets, normalizedAccount?.learningModules);
         return {
-          moduleId: s.referenceId,
+          moduleId: mod?.id ?? s.referenceId ?? s.id,
           title: mod?.title ?? s.title,
           description: mod?.transcript?.slice(0, 120) ?? s.description,
           duration: mod?.duration ?? s.duration,
@@ -62,7 +64,7 @@ export function LearnPathContent() {
   }
 
   if (contentView === "module" && activeModuleId) {
-    const mod = mockLearningModules.find((m) => m.id === activeModuleId);
+    const mod = resolveModule(activeModuleId, skillTargets, normalizedAccount?.learningModules);
     if (!mod) {
       return (
         <div className="h-full flex items-center justify-center text-muted-foreground">

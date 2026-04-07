@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useLearnPath } from "@/contexts/LearnPathContext";
-import { expandedModules } from "@/data/contentModules";
+import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { useAccount } from "@/contexts/AccountContext";
+import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
@@ -47,7 +49,9 @@ function generateQuestions(moduleTitle: string) {
 
 export function LearnPathAssessment({ moduleId }: { moduleId: string }) {
   const { closeAssessment } = useLearnPath();
-  const module = expandedModules.find((m) => m.id === moduleId);
+  const { skillTargets } = useSkillTargets();
+  const { normalizedAccount } = useAccount();
+  const module = resolveModule(moduleId, skillTargets, normalizedAccount?.learningModules);
   const questions = generateQuestions(module?.title ?? "this module");
 
   const [answers, setAnswers] = useState<Record<string, number>>({});

@@ -42,17 +42,19 @@ function ThinkingIndicator() {
 }
 
 export function AIChatWrapper() {
+  const ctx = useContext(AgentOneContext);
+  const location = useLocation();
+  const isChatPage = location.pathname === "/chat" || location.pathname === "/learnpath";
+
+  if (!ctx || isChatPage) return null;
+
+  return <AIChatWrapperInner />;
+}
+
+function AIChatWrapperInner() {
   const location = useLocation();
   const navigate = useNavigate();
   const { skillTargets } = useSkillTargets();
-  const ctx = useContext(AgentOneContext);
-
-  // Hide floating chat on pages where a dedicated chat is rendered inline
-  const isChatPage = location.pathname === "/chat" || location.pathname === "/learnpath";
-
-  // If context is unavailable (HMR edge case) or on chat/learnpath page, render nothing
-  if (!ctx || isChatPage) return null;
-
   const {
     messages,
     suggestions,
@@ -73,10 +75,7 @@ export function AIChatWrapper() {
     isExpanded,
     toggleBlockCollapse,
     setIsExpanded,
-  } = ctx;
-
-  // Hide floating chat on pages where a dedicated chat is rendered inline
-  const isChatPage = location.pathname === "/chat" || location.pathname === "/learnpath";
+  } = useContext(AgentOneContext)!;
 
 
   const chatEndRef = useRef<HTMLDivElement>(null);

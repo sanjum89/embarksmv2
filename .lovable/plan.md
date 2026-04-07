@@ -1,54 +1,58 @@
 
 
-## Redesign LearnPath Right Panel to Match Reference Layout
+## Generate Rich Content for All Rathbones Skill Target Modules
 
-### What changes
+### Problem
 
-The reference image shows a polished module viewer layout with:
-1. **Top bar**: Module title on left, "All Modules" button on right
-2. **Mode selector row**: "Viewing in:" label followed by mode tabs (Visual, Reading, Listening, Hands-on, Combined) as pill buttons
-3. **Module header card**: Icon + title + subtitle + metadata badges (duration, "Full Module")
-4. **Mode banner**: A colored banner indicating the active mode with a description (e.g. "Hands-on Mode — Work through scenarios...")
-5. **Content area**: The actual mode-specific content below
+The DB stores skill target steps with IDs like `RAT-INTRO-LM-001`, `RAT-LM-001`, etc. — but there are no matching modules in the catalog. The resolver's fallback synthesizes a module using only `step.description` (a one-liner), so clicking any chapter shows a generic placeholder instead of detailed training content.
 
-Currently, the layout is simpler — a basic back button + mode tabs, then content. The redesign makes it more structured and informative.
+There are **21 unique module steps** across 5 skill targets. Only 10 transcripts exist (keyed as `intro-heritage`, `m-rb1`, etc.) but they're mapped to different module IDs (`m-rb-intro-heritage`, `m-rb1`). The DB step IDs never match.
 
-### Files to change
+### Solution
+
+Two changes:
+
+**1. Add DB-step-ID modules to the mock catalog** (`src/data/mock.ts`)
+
+Add module entries with IDs matching the DB step IDs so the resolver finds them directly. Map to existing transcripts where content matches, and to new transcripts for the rest.
+
+Mapping of DB step IDs to existing transcripts:
+- `RAT-INTRO-LM-001` → `intro-heritage` (Our Heritage & Values)
+- `RAT-INTRO-LM-002` → `intro-invest` (How We Invest)
+- `RAT-INTRO-LM-003` → `intro-90days` (Your First 90 Days)
+- `RAT-LM-001` → reuse/adapt `m-rb1` (Rathbones Proposition & Client Outcomes)
+- `RAT-LM-003` → reuse/adapt `m-rb3` (Portfolio Alignment & Suitability)
+- `RAT-LM-005` (Investment Process) → reuse/adapt `m-rb5`
+
+New transcripts needed (~15 modules):
+- `RAT-LM-002`: Understanding Client Risk Profiles and Objectives
+- `RAT-LM-004`: Asset Classes and Their Role in Client Portfolios
+- `RAT-LM-006`: Market Context and Economic Indicators for IMs
+- `RAT-LM-007`: Regulatory Conduct & Consumer Duty Obligations
+- `RAT-LM-008`: Documenting Investment Decisions and Rationale
+- `RAT-LM-009`: Fee Structures, Costs, and Value Assessment
+- `RAT-LM-010`: Handling Market Volatility Conversations with Clients
+- `RAT-BR-LM-001`: Investment Management Vocabulary and Core Concepts
+- `RAT-BR-LM-002`: How Rathbones IMs Work with Client Objectives
+- `RAT-BR-LM-003`: Portfolio Basics, Risk, and Suitability Foundations
+- `RAT-BR-LM-004`: Adjacent Financial Experience vs. IM Expectations
+- ST-002 modules (Business Dev): `RAT-LM-004` (Business Development Pipeline), `RAT-LM-005` (Presenting the Rathbones Proposition)
+- ST-003 modules (Mentoring): `RAT-LM-006` (Supporting Junior Team Members), `RAT-LM-007` (Contributing to Internal Forums)
+
+Note: Some IDs (RAT-LM-004 through RAT-LM-007) are reused across skill targets with different titles. The resolver matches by step ID within the specific skill target context, so the synthesized module approach will handle these — but for direct catalog matches, we'll need to use the ST-001 versions as primary and let the synthesizer handle the alternates with richer descriptions.
+
+**2. Expand `rathbonesTranscripts.ts`** with ~15 new 800-1200 word transcripts
+
+Each transcript will be realistic, Rathbones-specific training content covering the module topic in depth — similar quality to the existing `intro-heritage` transcript. Video modules will be written as narration transcripts.
+
+### Files Changed
 
 | File | Change |
 |---|---|
-| `src/components/learnpath/LearnPathModeSelector.tsx` | Replace with top bar (title + "All Modules" button) and a "Viewing in:" mode selector row |
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Add module header card (icon, title, description, duration/type badges) and a colored mode banner above each mode's content. Remove the redundant `h2` title. |
-| `src/components/learnpath/LearnPathContent.tsx` | Pass the full module step info (description, skillTargetTitle) down to `LearnPathModuleContent` so the header card can show it |
+| `src/data/rathbonesTranscripts.ts` | Add ~15 new transcript entries keyed by DB step ID |
+| `src/data/mock.ts` | Add ~18 module entries with DB step IDs pointing to transcript content |
 
-### Layout structure (top to bottom)
+### Content generation approach
 
-```text
-┌─────────────────────────────────────────────┐
-│ Module Title                  🔲 All Modules │  ← top bar
-├─────────────────────────────────────────────┤
-│ Viewing in: [Visual][Reading][Listen][H-on][Combined] │ ← mode tabs
-├─────────────────────────────────────────────┤
-│ 📄 Module Title                              │
-│    Subtitle / description                    │  ← module header card
-│    ⏱ 15 min   📄 Full Module                 │
-├─────────────────────────────────────────────┤
-│ 🔧 Hands-on Mode — Work through scenarios... │  ← mode banner
-├─────────────────────────────────────────────┤
-│                                              │
-│  (mode-specific content: scenarios, text,    │
-│   audio player, visual summary, etc.)        │
-│                                              │
-└─────────────────────────────────────────────┘
-```
-
-### Mode banner colors
-- Visual: blue/accent tint
-- Reading: green tint
-- Listening: purple tint
-- Hands-on: warm orange/red tint (matches reference)
-- Combined: neutral/accent tint
-
-### Hands-on content enhancement
-The reference shows interactive decision-point scenarios inline (not just buttons to role-play bank). Generate scenario content for each module's hands-on mode with decision points and multiple-choice options rendered inline, similar to the reference image.
+Research-grounded content using Rathbones public information (2024 Annual Report, FCA Consumer Duty requirements, wealth management industry practices) to make each transcript realistic and specific to Rathbones' operating model.
 

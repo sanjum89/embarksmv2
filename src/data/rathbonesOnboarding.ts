@@ -462,9 +462,9 @@ export const introToRathbones: SkillTarget = {
     { name: "Investment Approach", current: "Beginner", target: "Intermediate" },
   ],
   steps: [
-    { id: "RAT-INTRO-001", type: "module", title: "Our Heritage & Values", description: "Learn about Rathbones' 280+ year heritage, core values, and commitment to responsible wealth management.", order: 1, skippable: false, status: "available", duration: "15 min", referenceId: "m-rb1" },
-    { id: "RAT-INTRO-002", type: "module", title: "How We Invest", description: "An overview of Rathbones' investment philosophy, approach to portfolio management, and how we deliver client outcomes.", order: 2, skippable: false, status: "locked", duration: "15 min", referenceId: "m-rb5" },
-    { id: "RAT-INTRO-003", type: "module", title: "Your First 90 Days", description: "What to expect during your first three months — key milestones, support available, and how to make the most of your onboarding.", order: 3, skippable: false, status: "locked", duration: "10 min", referenceId: "m-rb7" },
+    { id: "RAT-INTRO-001", type: "module", title: "Our Heritage & Values", description: "Learn about Rathbones' 280+ year heritage, core values, and commitment to responsible wealth management.", order: 1, skippable: false, status: "available", duration: "15 min", referenceId: "m-rb-intro-heritage" },
+    { id: "RAT-INTRO-002", type: "module", title: "How We Invest", description: "An overview of Rathbones' investment philosophy, approach to portfolio management, and how we deliver client outcomes.", order: 2, skippable: false, status: "locked", duration: "15 min", referenceId: "m-rb-intro-invest" },
+    { id: "RAT-INTRO-003", type: "module", title: "Your First 90 Days", description: "What to expect during your first three months — key milestones, support available, and how to make the most of your onboarding.", order: 3, skippable: false, status: "locked", duration: "10 min", referenceId: "m-rb-intro-90days" },
   ],
 };
 

@@ -1,99 +1,45 @@
 
 
-## Add LearnPath — AI-Guided Multi-Mode Learning Experience
+## Fix LearnPath Module Resolution and Add Empty-State Skill Gap View
 
-### What This Is
+### Problem
 
-A new sidebar page at `/learnpath` that brings the Ascend AI Coach's full split-pane learning experience into this project. An AI Manager (left panel) drives a content panel (right panel), opening modules, switching learning modes, running assessments, and guiding the learner through their assigned skill targets/modules.
+1. **"Module not found"**: LearnPath imports `expandedModules` (IDs `m20`-`m119`) but Rathbones skill targets reference `m-rb1` through `m-rb7`, which live in `mockLearningModules` from `mock.ts`. The module lookup fails silently.
 
-### Key Decisions (Based on Your Answers)
+2. **No empty state for users without skill targets**: Users with no assigned skill targets see a generic welcome screen with no guidance.
 
-- **Data**: Use this project's existing learning modules, users, and account context — NOT the Ascend project's Pinnacle Capital data
-- **Learning modes**: Keep the 5-mode UI (visual/reading/listening/hands-on/combined) and generate multi-mode content for modules using AI at build time
-- **Manager view**: LearnPath is learner-only; manager oversight stays in existing Team mode
-- **Role-plays**: Link to this project's existing Role Play Bank data
-- **Audio/TTS**: Bring the ElevenLabs TTS integration (requires ELEVENLABS_API_KEY secret)
-- **User/account switching**: Use existing UserContext and AccountContext — no separate learner switcher
+3. **No auto-resume**: Users returning to LearnPath always start from the welcome screen instead of resuming where they left off.
 
-### Architecture
+### Changes
 
-```text
-┌─────────────────────────────────────────────────┐
-│  /learnpath                                     │
-│  ┌──────────────────┬──────────────────────────┐│
-│  │  AI Manager Chat  │   Content Panel          ││
-│  │  (55% / 35%)      │   (remaining)            ││
-│  │                   │                          ││
-│  │  - Streaming chat │   - Welcome screen       ││
-│  │  - Action buttons │   - Module grid          ││
-│  │  - User context   │   - Module content       ││
-│  │  from account     │   - Learning mode toggle ││
-│  │                   │   - Assessments          ││
-│  │                   │   - Role-play links      ││
-│  └──────────────────┴──────────────────────────┘│
-└─────────────────────────────────────────────────┘
-```
+#### 1. Fix module lookup — use `mockLearningModules` instead of `expandedModules`
 
-### Prerequisites
+**Files**: `LearnPathContent.tsx`, `LearnPathModuleContent.tsx`, `LearnPathChat.tsx`
 
-**ELEVENLABS_API_KEY** — The TTS feature needs this secret configured. I'll request it before implementing the TTS edge function.
+Replace `import { expandedModules } from "@/data/contentModules"` with `import { mockLearningModules } from "@/data/mock"` in all three files. The `mockLearningModules` array already includes both `expandedModules` (spread) and the `m-rb*` Rathbones modules.
 
-### Files to Create
+#### 2. Add empty-state view with skill gaps and recommended skill targets
 
-| File | Purpose |
-|---|---|
-| `src/pages/LearnPath.tsx` | Main page — split pane layout, chat left, content right |
-| `src/contexts/LearnPathContext.tsx` | Context: learning mode, active module, content view state |
-| `src/components/learnpath/LearnPathChat.tsx` | AI Command Center — streaming chat with `<!--ACTION:...-->` parsing, builds context from UserContext/AccountContext/SkillTargetsContext |
-| `src/components/learnpath/LearnPathContent.tsx` | Content panel — welcome, module grid, module viewer, assessment |
-| `src/components/learnpath/LearnPathModuleCard.tsx` | Module card with progress badge |
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Multi-mode content renderer (visual/reading/listening/hands-on/combined) with markdown rendering, interactive choices, role-play links |
-| `src/components/learnpath/LearnPathModeSelector.tsx` | 5-mode toggle bar |
-| `src/components/learnpath/LearnPathAssessment.tsx` | Quiz component (adapted from Ascend's ModuleAssessment) |
-| `src/components/learnpath/LearnPathActionButton.tsx` | Action buttons parsed from AI responses |
-| `src/components/learnpath/LearnPathAudioPlayer.tsx` | Audio player with ElevenLabs TTS + browser speech fallback |
-| `supabase/functions/learnpath-chat/index.ts` | Edge function — AI Manager persona with action protocol, receives learner context (user profile, assigned modules, progress, role, skills) |
-| `supabase/functions/elevenlabs-tts/index.ts` | Edge function — ElevenLabs TTS proxy |
+**File**: `LearnPathContent.tsx` — new branch in the welcome/modules view
 
-### Files to Modify
+When `skillTargets` has zero module-type steps:
+- Left chat: AI Manager greets user, explains no learning path is assigned, and suggests skill targets based on their gaps
+- Right panel: Show the user's skill gaps (from `skillRecommendations.ts`) and link to the Dashboard's "Browse" or "Create Skill Target" actions. Once a skill target is added, LearnPath auto-populates.
+
+#### 3. Auto-resume: open the first incomplete module on load
+
+**File**: `LearnPathChat.tsx` — modify the auto-greet system message
+
+Include in the system message context which module the user should resume (first step with status `available` or `in_progress`). The AI will use an `open_module` action tag to auto-navigate to it. The edge function system prompt already supports this — it just needs the right hint in the context.
+
+**File**: `LearnPathContent.tsx` — on initial mount, if there are module steps and user has progress, auto-set `contentView` to `module` with the resume module.
+
+### Files Modified
 
 | File | Change |
 |---|---|
-| `src/App.tsx` | Add `/learnpath` route |
-| `src/components/layout/AppSidebar.tsx` | Add "LearnPath" nav item with `GraduationCap` icon for learner role |
-
-### How Data Flows (No Ascend Data)
-
-1. **Modules**: LearnPath reads from `SkillTargetsContext` to get the current user's assigned skill targets and their steps. Each step of type `"module"` maps to a `LearningModule` from `contentModules.ts`.
-2. **User context**: `UserContext` provides the active user's name, role, title. `AccountContext` + normalized account provides role descriptions, skills, etc.
-3. **Progress**: Read from `SkillTargetsContext` step statuses (completed/in_progress/available).
-4. **Role-plays**: Steps of type `"role_play"` in skill targets link to existing `RolePlay` data.
-5. **Multi-mode content**: Since existing modules only have a `transcript` field, we'll generate visual/reading/listening/hands-on/combined content from the transcript using the AI gateway at build time for a representative subset (~10-15 modules), storing results in a new `src/data/learnpathContent.ts` file. Remaining modules fall back to rendering the transcript in all modes.
-
-### AI Manager Behavior
-
-The `learnpath-chat` edge function receives:
-- User profile (name, role, title, skills)
-- Assigned skill targets with step statuses and progress
-- Current learning mode and active module
-- Role/project descriptions from the account
-
-The AI Manager:
-- Welcomes by name, references their actual role and skills
-- Suggests next incomplete module based on skill target progress
-- Uses `<!--ACTION:{"type":"open_module","moduleId":"m42"}-->` tags to control the content panel
-- Can switch learning modes, trigger assessments, show the module grid
-- References role-play scenarios from the user's skill targets
-
-### Implementation Order
-
-1. Create LearnPathContext and page shell
-2. Create LearnPathChat + learnpath-chat edge function
-3. Create LearnPathContent (welcome, module grid, module viewer)
-4. Create LearnPathModeSelector + LearnPathModuleContent (multi-mode renderer)
-5. Create LearnPathAssessment
-6. Create LearnPathAudioPlayer + elevenlabs-tts edge function (after API key configured)
-7. Generate multi-mode content for ~10-15 modules using AI gateway
-8. Add route and sidebar entry
-9. Wire action protocol (chat controls content panel)
+| `src/components/learnpath/LearnPathContent.tsx` | Use `mockLearningModules`, add empty-state skill gap view, add auto-resume logic |
+| `src/components/learnpath/LearnPathModuleContent.tsx` | Use `mockLearningModules` instead of `expandedModules` |
+| `src/components/learnpath/LearnPathChat.tsx` | Use `mockLearningModules`, add resume hint to context, add empty-state context hint |
+| `supabase/functions/learnpath-chat/index.ts` | Add handling for "no modules assigned" scenario in system prompt (suggest skill targets) |
 

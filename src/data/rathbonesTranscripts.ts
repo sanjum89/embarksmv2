@@ -631,4 +631,600 @@ Ownership means taking personal responsibility for the quality of your work, the
 
 Professional integrity, meticulous attention to detail, and a strong sense of ownership are not abstract concepts at Rathbones. They are the tangible behaviours that define our daily operations, ensure we maintain client trust, comply with our regulatory obligations, and ultimately, protect and grow the £109.7 billion entrusted to our care. Embrace these qualities, and you will thrive as a valued Investment Manager within our storied firm.`,
 
+  // ── New transcripts keyed by DB step IDs ──
+
+  "RAT-LM-002": `## Suitability, Risk Profiling, and Documentation
+
+Welcome to this module on Suitability, Risk Profiling, and Documentation. As an Investment Manager at Rathbones, your ability to assess a client's suitability for investment is not just a regulatory requirement — it is the cornerstone of delivering good client outcomes under the FCA's Consumer Duty framework.
+
+### The Three Pillars of Suitability
+
+The FCA requires that every investment recommendation you make is suitable for the individual client. This assessment rests on three pillars:
+
+1. **Knowledge and Experience:** Does the client understand the risks associated with the investments you are recommending? A retired teacher with no prior investment experience requires a very different conversation than a serial entrepreneur who has managed their own portfolio for decades.
+
+2. **Financial Situation:** Can the client afford to take the level of risk involved? This encompasses their income, expenditure, assets, liabilities, and critically, their **capacity for loss** — the amount they could lose without materially impacting their standard of living.
+
+3. **Investment Objectives:** What is the client trying to achieve? Capital growth, income generation, capital preservation, or a combination? Over what time horizon? Are there specific milestones (school fees, retirement, property purchase)?
+
+### Risk Profiling: A Conversation, Not a Questionnaire
+
+At Rathbones, we use a structured risk profiling process, but the questionnaire is only the starting point. The real work happens in conversation.
+
+*   **Attitude to Risk (ATR):** This is the client's emotional and psychological comfort with investment volatility. It's subjective and can change over time, particularly following major life events or market shocks. Explore this through open-ended questions: "How did you feel during the COVID-19 market crash in 2020? Did you check your portfolio daily, or were you comfortable riding it out?"
+
+*   **Capacity for Loss (CFL):** This is objective and quantifiable. A client may have a high ATR but low CFL if they are dependent on their portfolio for income. Conversely, a young professional with a high salary and no dependants may have high CFL but a conservative ATR. **Where ATR and CFL conflict, CFL must take precedence.**
+
+*   **Risk Needed:** Sometimes clients need to take a certain level of risk to achieve their stated objectives. If the return required to meet a goal exceeds what their risk profile supports, you must have an honest conversation about adjusting expectations rather than increasing risk.
+
+### Documenting Risk Conversations
+
+Every risk profiling conversation must be documented meticulously in Xplan. Your documentation should capture:
+
+*   The questions asked and answers given
+*   Your assessment of the client's ATR and CFL
+*   Any discrepancies between ATR, CFL, and risk needed
+*   How those discrepancies were resolved
+*   The agreed risk mandate and any exclusions or preferences
+
+**Critical principle:** Document the *why*, not just the *what*. Regulators and compliance reviewers want to see your reasoning process, not just the outcome. A note saying "Client agreed to balanced mandate" is insufficient. Instead: "Client expressed concern about short-term volatility but confirmed a 10+ year horizon and no reliance on the portfolio for income. Discussed the difference between short-term fluctuation and permanent capital loss. Client comfortable with balanced mandate given their long time horizon and substantial pension provision."
+
+### Ongoing Suitability
+
+Suitability is not a one-time assessment. You must review suitability:
+
+*   At every annual review meeting
+*   When you become aware of a material change in client circumstances (divorce, inheritance, retirement, health diagnosis)
+*   Before making significant changes to the portfolio strategy
+*   When market conditions change materially enough to affect the client's capacity for loss
+
+### Common Pitfalls
+
+1. **Over-reliance on questionnaires:** The questionnaire score is a guide, not a definitive answer. Always validate with conversation.
+2. **Failing to reassess:** Clients' lives change. A risk profile set five years ago may no longer be appropriate.
+3. **Anchoring to the client's stated preference:** Some clients say they want high growth but cannot tolerate the associated volatility. Your job is to test and validate, not simply accept at face value.
+4. **Poor documentation:** If it isn't recorded, it didn't happen. In a regulatory review, your documentation is your defence.
+5. **Ignoring capacity for loss:** This is the most common failing identified by the FCA. Always quantify CFL independently of ATR.
+
+### The Consumer Duty Lens
+
+Under Consumer Duty, you must evidence that you are delivering good outcomes. For suitability, this means:
+
+*   Clients understand the risks they are taking
+*   The investment strategy is aligned with their genuine needs and circumstances
+*   You have taken reasonable steps to avoid foreseeable harm
+*   Your ongoing monitoring catches and addresses changes that could make the current strategy unsuitable
+
+Suitability assessment is where your technical knowledge, interpersonal skills, and professional judgment come together. Master this, and you will serve your clients well while maintaining the highest regulatory standards.`,
+
+  "RAT-LM-004": `## Client Communication and Relationship Management
+
+Welcome to this module on Client Communication and Relationship Management. At Rathbones, our entire business model rests on the quality of the one-to-one relationship between you and your clients. This module covers advanced communication techniques for investment managers who need to explain complex concepts, deliver difficult messages, and build enduring trust.
+
+### The Communication Framework: Context → Content → Action
+
+Every client communication — whether a meeting, a call, a letter, or an email — should follow this structure:
+
+1. **Context:** Why are you communicating? What's the background the client needs to understand the message? "Given the recent rise in UK gilt yields and its impact on fixed-income holdings..."
+2. **Content:** What is the specific information, recommendation, or update? "Your portfolio has seen a short-term decline of approximately 2.3% this quarter, primarily driven by..."
+3. **Action:** What happens next? What do you need from the client, or what will you do? "I'd like to schedule a call next week to discuss whether any adjustments to your fixed-income allocation are appropriate."
+
+### Explaining Performance
+
+Performance attribution is one of the most important — and most challenging — conversations you will have with clients.
+
+*   **Lead with objectives, not benchmarks:** "Your portfolio returned 4.2% over the past year, which is ahead of the return needed to meet your stated income and growth objectives." This is more meaningful than "Your portfolio underperformed the FTSE 100 by 1.3%."
+
+*   **Explain the drivers:** Don't just present numbers. Explain *why* the portfolio performed as it did. Which asset classes contributed positively? Which detracted? Were there specific holdings that had an outsized impact?
+
+*   **Be honest about underperformance:** If performance has been disappointing, acknowledge it directly. Don't bury bad news or make excuses. "The portfolio underperformed this quarter. The primary driver was our overweight position in UK mid-cap equities, which have been impacted by rising interest rates. Here's why we maintain conviction in that position for the medium term..."
+
+*   **Use visuals:** Charts, pie charts, and waterfall diagrams are far more effective than tables of numbers for most clients.
+
+### Handling Difficult Conversations
+
+Market downturns, underperformance, and unexpected losses are inevitable. How you handle these conversations defines your relationship.
+
+**Before the conversation:**
+*   Prepare thoroughly. Know the numbers, the causes, and the outlook.
+*   Anticipate questions and objections.
+*   Have a clear message: what happened, why, what you're doing about it, and why you believe the strategy remains sound (or what changes you're recommending).
+
+**During the conversation:**
+*   Be proactive. Call them before they call you.
+*   Lead with empathy: "I know this is concerning, and I want to walk you through exactly what's happening."
+*   Avoid jargon. "The correlation between asset classes increased during the sell-off" means nothing to most clients. Instead: "During the market decline, most types of investments fell together, which reduced the usual benefit of diversification."
+*   Listen actively. Let the client express their concerns fully before responding.
+*   Reaffirm the long-term plan: "Your portfolio is designed for a 10+ year horizon. Short-term volatility, while uncomfortable, is expected and accounted for in our strategy."
+
+**After the conversation:**
+*   Document everything in Xplan.
+*   Follow up with a written summary if appropriate.
+*   Schedule a check-in for the following week or month.
+
+### Building Long-Term Trust
+
+Trust is built through consistency, competence, and genuine care. Key behaviours:
+
+*   **Be reliable:** If you say you'll call on Tuesday, call on Tuesday.
+*   **Be transparent:** Share information proactively, including information clients might not want to hear.
+*   **Remember the person:** Note personal details — children's names, upcoming holidays, health concerns. Reference them naturally in conversation. This demonstrates genuine interest.
+*   **Add value beyond the portfolio:** Share relevant articles, invite clients to events, connect them with other professionals in your network when appropriate.
+*   **Communicate regularly:** Don't only call when there's a problem. Regular check-ins, even brief ones, maintain connection.
+
+### The Annual Review
+
+The annual review is the most important scheduled client interaction. Prepare meticulously:
+
+*   Review the client's file in detail beforehand
+*   Update their risk profile and suitability assessment
+*   Prepare a clear performance report with attribution
+*   Identify any changes in their circumstances
+*   Have recommendations ready for discussion
+*   Allow ample time for the client's questions
+
+### Digital Communication
+
+Increasingly, clients expect digital touchpoints alongside traditional meetings:
+
+*   **Email:** Professional, concise, and always proofread. Avoid sensitive discussions by email — use it for scheduling, sharing documents, and brief updates.
+*   **Video calls:** Treat with the same professionalism as in-person meetings. Ensure your background is appropriate and your technology works.
+*   **Client portal:** Encourage clients to use the online portal for real-time portfolio viewing, reducing anxiety during volatile periods.
+
+Effective communication is not a soft skill — it is a core competency that directly impacts client retention, satisfaction, and outcomes. Master it, and you will build relationships that endure for generations.`,
+
+  "RAT-LM-005": `## Internal Collaboration — Financial Planning and Portfolio Management
+
+Welcome to this module on Internal Collaboration. At Rathbones, the Investment Manager is the conductor of a broader advisory orchestra. You don't work in isolation — your ability to collaborate effectively with Financial Planners, Portfolio Managers, and Client Support teams directly determines the quality of outcomes you deliver for your clients.
+
+### The Advisory Team Structure
+
+At Rathbones, client service is delivered through an integrated team model:
+
+*   **Investment Manager (IM) — You:** The primary relationship owner. You understand the client, set the investment strategy, and are accountable for the overall client experience.
+*   **Financial Planner (FP):** Provides specialist advice on tax planning, pensions, estate planning, and cash flow modelling. Their analysis informs your investment strategy.
+*   **Portfolio Manager (PM):** Supports the IM with portfolio analytics, trade execution, and monitoring. In larger teams, PMs may handle day-to-day portfolio adjustments within the agreed mandate.
+*   **Client Support / Operations:** Handles administrative tasks — account opening, transfers, reporting, correspondence distribution, and regulatory filings.
+
+### When to Involve Financial Planning
+
+Financial Planning should be involved whenever a client's situation extends beyond pure investment management:
+
+*   **Pension planning:** Drawdown strategies, lifetime allowance (LTA) considerations, defined benefit transfers, and SIPP management
+*   **Tax planning:** Capital gains tax management, income tax optimisation, and ISA/pension contribution strategies
+*   **Estate planning:** Inheritance tax (IHT) mitigation, trust structures, gift planning, and power of attorney
+*   **Cash flow modelling:** Retirement projections, spending analysis, and sustainability of withdrawal rates
+*   **Life events:** Divorce settlements, business sales, inheritance, or property transactions
+
+**Best practice:** Involve the Financial Planner early in the relationship, not as an afterthought. A joint introductory meeting signals to the client that they are receiving a holistic service.
+
+### Effective Handoffs
+
+Poor handoffs between IM and FP create confusion and erode client confidence. Follow these principles:
+
+1. **Warm introduction:** Don't just email the FP's contact details. Introduce them personally, explaining their role and what the client can expect.
+2. **Shared briefing:** Before a joint meeting, ensure both IM and FP are aligned on the client's situation, objectives, and any sensitivities.
+3. **Clear ownership:** Define who owns what. The IM owns the relationship and investment strategy. The FP owns the financial plan and tax recommendations. Neither should operate in the other's domain without coordination.
+4. **Unified recommendations:** Present a single, coherent set of recommendations to the client. Internal disagreements should be resolved before the client meeting, not during it.
+
+### Working with Portfolio Managers
+
+If your team includes a dedicated PM, establish clear protocols:
+
+*   **Mandate definition:** Ensure the PM understands the client's risk profile, restrictions, and any specific instructions (e.g., no tobacco stocks, income requirements).
+*   **Delegation boundaries:** Define what the PM can execute autonomously (e.g., rebalancing within agreed bands) and what requires IM approval (e.g., adding a new asset class).
+*   **Regular check-ins:** Weekly or fortnightly portfolio reviews to discuss performance, positioning, and upcoming actions.
+*   **Attribution clarity:** When reporting to the client, be clear about who made which decisions and why.
+
+### Client Support Excellence
+
+Your Client Support team is the backbone of operational delivery. Treat them as partners, not subordinates:
+
+*   **Timely instructions:** Provide clear, complete instructions for account openings, transfers, and payments. Incomplete instructions cause delays and frustrate clients.
+*   **Feedback loop:** If a client reports an operational issue, follow up promptly and close the loop with both the client and the support team.
+*   **Documentation standards:** Maintain consistent documentation so that if you are unavailable, the support team can handle basic client queries by reviewing the file.
+
+### Joint Client Meetings
+
+The most effective client meetings often involve multiple team members. Tips for success:
+
+*   **Assign roles in advance:** Who leads the meeting? Who presents the financial plan? Who handles questions?
+*   **Practice transitions:** Smooth handoffs between speakers project professionalism. "I'll now hand over to Sarah, our Financial Planner, who will walk you through the tax implications of the pension consolidation we discussed."
+*   **One voice:** If a client asks a question that could be answered by either the IM or FP, have a pre-agreed protocol for who responds. Conflicting answers destroy confidence.
+*   **Follow-up coordination:** After the meeting, the IM should send a consolidated summary covering both investment and planning actions.
+
+### The Integrated Value Proposition
+
+When collaboration works well, it creates a powerful differentiator. A client who receives seamless advice across investments, tax, pensions, and estate planning from a coordinated team is far less likely to leave than one who receives excellent investment management alone.
+
+Position this to clients: "At Rathbones, you're not just getting an Investment Manager — you're getting an integrated team of specialists who work together to optimise every aspect of your financial life."
+
+### Common Collaboration Failures
+
+*   **Silos:** IM and FP working independently, leading to misaligned advice
+*   **Delayed referrals:** IM failing to involve FP until a problem has already materialised
+*   **Ego conflicts:** Disagreements about who owns the client relationship
+*   **Poor communication:** Not sharing meeting notes or client updates across the team
+
+Effective collaboration requires humility, clear communication, and a shared commitment to the client's best interests. Get this right, and you'll deliver outcomes that no individual advisor could achieve alone.`,
+
+  "RAT-LM-006": `## Professional Standards, Integrity, and Ownership
+
+Welcome to this module on Professional Standards, Integrity, and Ownership. These aren't soft values — they are the non-negotiable foundation of your career as an Investment Manager at Rathbones and the bedrock of client trust, regulatory compliance, and the firm's 280-year reputation.
+
+### The Regulatory Framework: Your Personal Accountability
+
+As an Investment Manager, you operate under the Senior Managers & Certification Regime (SMCR). This means you are personally accountable for your conduct and competence.
+
+**The FCA Conduct Rules apply to you directly:**
+
+1. **Act with integrity** — Honesty, fairness, and ethical behaviour in all dealings
+2. **Act with due skill, care, and diligence** — Competence in your role, thorough preparation, and careful execution
+3. **Be open and cooperative with the FCA, PRA, and other regulators** — Transparency in regulatory interactions
+4. **Pay due regard to the interests of customers and treat them fairly** — The client's interest comes first
+5. **Observe proper standards of market conduct** — No insider trading, market manipulation, or abuse of information
+
+Breaches of these rules have personal consequences: fines, public censure, and prohibition from the industry. They also damage the firm and harm clients.
+
+### Integrity in Practice
+
+Integrity is not an abstract virtue — it manifests in specific, daily behaviours:
+
+*   **Fee transparency:** Always explain fees fully and honestly. If a client asks "What am I paying for?", you should be able to give a clear, confident answer that demonstrates value.
+*   **Conflict management:** Disclose any potential conflicts of interest immediately. If you're recommending a fund managed by a Rathbones-affiliated entity, ensure the client understands this and that the recommendation is genuinely in their interest.
+*   **Error handling:** When you make a mistake — and you will — own it immediately. Report it through the proper channels, inform the client transparently, and take corrective action. Cover-ups are career-ending.
+*   **Personal account dealing:** Follow the firm's personal account dealing policy strictly. Pre-clear all trades. Never trade on information obtained through your role.
+*   **Gifts and hospitality:** Follow the firm's policy. Declare everything. When in doubt, decline.
+
+### Attention to Detail
+
+In wealth management, small errors have outsized consequences:
+
+*   **A decimal point error** in a trade instruction could mean buying £1 million of stock instead of £100,000
+*   **A name misspelling** on a legal document could invalidate a trust arrangement
+*   **A missed suitability flag** could result in an inappropriate investment for a vulnerable client
+
+Build habits that prevent errors:
+
+*   **Double-check every number** before sending a report or executing a trade
+*   **Read every document** before signing or approving
+*   **Use checklists** for complex processes (account opening, annual reviews, compliance submissions)
+*   **Take your time** — rushing is the enemy of accuracy
+*   **Proofread all client correspondence** — spelling errors and grammatical mistakes undermine professionalism
+
+### Documentation Standards
+
+Your documentation in Xplan is both your professional diary and your regulatory defence:
+
+*   **Record every client interaction** — meetings, calls, emails, even brief conversations
+*   **Capture the rationale** for every investment decision: why you bought, why you sold, why you held
+*   **Note changes in client circumstances** — health, employment, family situation, financial changes
+*   **Document risk discussions** — what was discussed, what was agreed, any concerns raised
+*   **Be contemporaneous** — document at the time of the interaction, not days later when details have faded
+
+### Ownership Mindset
+
+Ownership at Rathbones means:
+
+*   **Your clients' outcomes are your responsibility.** Not the market's fault, not the research team's fault, not operations' fault. You are accountable.
+*   **If you see something wrong, fix it.** Don't wait for someone else to notice. Whether it's a compliance concern, a process failure, or a client issue — take action.
+*   **Follow through on commitments.** If you promise a client a call, make the call. If you commit to a colleague to review a file, review it. Reliability builds trust.
+*   **Invest in your own development.** Stay current with regulatory changes, market developments, and industry best practices. Your competence is your responsibility.
+
+### Speaking Up
+
+Rathbones maintains a culture where speaking up is valued and protected:
+
+*   If you observe conduct that concerns you — whether from a colleague, a manager, or a client — report it
+*   Use the appropriate channels: line manager, compliance, HR, or the confidential whistleblowing line
+*   You will be supported, not penalised, for raising genuine concerns
+*   Failure to report known wrongdoing is itself a breach of conduct rules
+
+### Continuous Professional Development
+
+The financial services industry evolves constantly. Your obligations:
+
+*   Meet all CPD requirements set by the FCA and relevant professional bodies
+*   Stay current with regulatory changes (Consumer Duty updates, SMCR developments)
+*   Deepen your investment knowledge through research, reading, and industry events
+*   Develop complementary skills: communication, leadership, technology literacy
+
+Professional standards are not a constraint on your performance — they are the foundation that enables it. Clients trust you with their wealth because they believe you will act with integrity, competence, and genuine care. Uphold that trust, and you will build a career that honours Rathbones' 280-year legacy.`,
+
+  "RAT-LM-007": `## Communicating Clearly with Clients and Internal Partners
+
+Welcome to this module on clear communication. At Rathbones, your ability to communicate complex financial concepts in accessible language is as important as your investment acumen. This module covers written communication, verbal delivery, and internal collaboration — all through the lens of Consumer Duty's requirement that clients must *understand* the information they receive.
+
+### The Plain Language Imperative
+
+The FCA's Consumer Duty requires that communications enable clients to make informed decisions. This means:
+
+*   **No jargon without explanation.** If you must use a technical term, define it immediately. "We recommend a tactical overweight to duration — meaning we'd increase the portfolio's sensitivity to interest rate changes by holding longer-dated bonds, which we expect to benefit from falling rates."
+*   **Short sentences.** Complex ideas should be broken into digestible pieces.
+*   **Active voice.** "We recommend selling the holding" not "It is recommended that the holding be sold."
+*   **Concrete examples.** "A 1% rise in interest rates could reduce the value of your bond holdings by approximately £15,000" is far more useful than "There is interest rate risk."
+
+### Writing Suitability Letters
+
+The suitability letter is your most important piece of written communication. It documents why a recommendation is suitable for the specific client. A good suitability letter:
+
+1. **Opens with context:** Remind the client of their objectives, risk profile, and any relevant circumstances discussed
+2. **States the recommendation clearly:** What you propose, in plain language
+3. **Explains the rationale:** Why this recommendation is suitable for *this client specifically*
+4. **Addresses risks:** What could go wrong and how likely that is
+5. **Covers costs:** The total cost of implementing the recommendation
+6. **Includes a call to action:** What happens next, and what the client needs to do (if anything)
+
+**Common mistakes:**
+*   Using template language that doesn't reflect the individual client
+*   Focusing on the product rather than the client's need
+*   Burying key information in dense paragraphs
+*   Omitting downside scenarios
+
+### Delivering Annual Reviews
+
+The annual review meeting is a structured conversation that covers:
+
+1. **Personal update:** Has anything changed in their life, health, family, or financial situation?
+2. **Portfolio performance:** Attribution, comparison to objectives (not just benchmarks), and context
+3. **Strategy review:** Does the current strategy remain appropriate given their circumstances and market outlook?
+4. **Risk reassessment:** Is the agreed risk mandate still suitable?
+5. **Costs and charges:** Annual summary of fees paid and value received
+6. **Forward look:** What to expect in the coming year, any recommended changes
+
+**Delivery tips:**
+*   Send materials in advance so the client can prepare questions
+*   Lead with what matters to *them*, not what's easiest for you to present
+*   Use visual aids — a simple chart communicates more than a page of text
+*   Allocate at least 30% of the meeting time for client questions
+*   Document the meeting thoroughly in Xplan within 24 hours
+
+### Handling Media-Driven Anxiety
+
+When financial news dominates headlines — Brexit, COVID, banking crises, inflation spikes — clients will worry. Your communication should:
+
+*   **Be proactive:** Don't wait for clients to call you. Send a brief, calm update within 24-48 hours of a major market event
+*   **Acknowledge the situation:** "The recent market reaction to [event] has been significant, and I want to share our perspective."
+*   **Provide context:** "Corrections of this magnitude have occurred [X] times in the past 20 years. Historically, portfolios with your risk profile have recovered within [Y] months."
+*   **Reaffirm the strategy:** "Your portfolio is positioned for the long term. We built in resilience precisely for periods like this."
+*   **Be available:** "Please don't hesitate to call me directly if you'd like to discuss your portfolio."
+
+### Internal Communication
+
+Clear communication within Rathbones is equally important:
+
+*   **Meeting notes:** Send concise summaries within 24 hours, with clear action items and owners
+*   **Escalations:** When escalating an issue, provide context, what you've already tried, and what you need from the recipient
+*   **Cross-team requests:** Be specific about what you need and when. "Could you review client X's tax position and provide recommendations by Friday?" is better than "Can you look into client X's tax?"
+*   **Feedback:** When providing feedback to colleagues, be specific, constructive, and timely. "The suitability letter for Client Y was thorough, but the risk section could be clearer — shall we discuss?" is more helpful than "Good job" or "This needs work."
+
+### Adapting to Your Audience
+
+Different clients require different communication styles:
+
+*   **Sophisticated investors:** May want more technical detail and market analysis
+*   **Novice investors:** Need more explanation of fundamentals and reassurance
+*   **Business owners:** Often appreciate efficiency and directness
+*   **Elderly clients:** May prefer face-to-face or telephone over digital communication
+*   **Next generation:** Often more comfortable with digital channels and may have different priorities (ESG, impact investing)
+
+Read the room. Adjust your vocabulary, pace, and level of detail accordingly. The goal is always client understanding, not impressive-sounding communication.
+
+Clear communication is not optional — it is a regulatory requirement, a competitive advantage, and the foundation of every lasting client relationship at Rathbones.`,
+
+  "RAT-BR-001": `## From Financial Services to Wealth Management
+
+Welcome, and congratulations on joining Rathbones. This module is specifically designed for professionals like you who bring valuable experience from adjacent areas of financial services — banking, insurance, asset management, financial advisory, or fintech — and are transitioning into discretionary wealth management.
+
+### What's Different About Wealth Management?
+
+If you're coming from retail banking, corporate finance, insurance, or another area of financial services, you already have a strong foundation. However, discretionary wealth management at Rathbones operates differently in several key ways:
+
+**1. Relationship Model:**
+*   **Other FS sectors:** Often transactional or product-driven. A mortgage advisor processes applications; an insurance broker places policies; a retail banker manages accounts.
+*   **At Rathbones:** The relationship is ongoing, deeply personal, and multi-generational. You are managing someone's life savings, their children's future, their retirement security. The relationship is the product.
+
+**2. Client Interaction:**
+*   **Other FS sectors:** Interactions may be frequent but shallow — processing requests, handling queries, selling products.
+*   **At Rathbones:** Fewer clients, deeper relationships. You might manage 100-200 client families. Each interaction matters enormously, and you're expected to know their personal circumstances in detail.
+
+**3. Decision Authority:**
+*   **Other FS sectors:** Decisions often follow rigid criteria (credit scoring, underwriting guidelines, product rules).
+*   **At Rathbones:** You have significant autonomy. Within your mandate, you make investment decisions on behalf of your clients. This is empowering but carries enormous responsibility.
+
+**4. Regulatory Framework:**
+*   **Other FS sectors:** Regulated, but the specific regulations differ (PRA for banking, Lloyd's for insurance).
+*   **At Rathbones:** FCA-regulated, with specific requirements around suitability, best execution, Consumer Duty, SMCR, and fiduciary obligation. The regulatory bar is high and personal accountability is explicit.
+
+### Mapping Your Existing Skills
+
+Your existing experience is valuable — here's how it translates:
+
+| Your Background | Relevant Skills | How They Apply at Rathbones |
+|---|---|---|
+| **Retail Banking** | Client service, product knowledge, compliance awareness | Client relationship management, regulatory understanding, operational discipline |
+| **Corporate Finance** | Financial analysis, deal structuring, commercial awareness | Portfolio analysis, understanding complex client situations, business-owner clients |
+| **Insurance** | Risk assessment, client needs analysis, claims management | Risk profiling, capacity for loss assessment, managing client expectations |
+| **Asset Management** | Investment analysis, portfolio theory, market knowledge | Direct investment selection, understanding of asset classes, market context |
+| **Financial Advisory** | Client-facing advice, suitability, financial planning | Core IM competencies — you're closest to the role already |
+| **Fintech** | Technology literacy, data analysis, digital communication | Leveraging our technology platforms, understanding digital client expectations |
+
+### What You Need to Learn
+
+Regardless of your background, there are specific areas where you'll need to develop:
+
+1. **Bespoke Portfolio Construction:** You must learn how Rathbones builds portfolios from scratch for individual clients — not model portfolios, not fund selections, but genuinely bespoke mandates.
+
+2. **The Rathbones Investment Process:** How our Investment Committee operates, how the house view is formed and communicated, and how you translate that into client-specific portfolios.
+
+3. **Discretionary Management Obligations:** The legal and regulatory framework specific to discretionary investment management, including the mandate structure, reporting obligations, and best execution requirements.
+
+4. **Client Segmentation:** Understanding the needs of Rathbones' client base — high-net-worth individuals, charities, trusts, pensions — and how each segment requires different approaches.
+
+5. **Cultural Integration:** Rathbones' culture of independence, integrity, and client-centricity. This is not just a marketing message — it genuinely shapes how we work.
+
+### Your Advantage
+
+Don't underestimate what you bring:
+
+*   **Fresh perspective:** You may spot opportunities for improvement that long-serving staff have become blind to
+*   **Cross-industry knowledge:** Understanding how other financial sectors work helps you serve clients with complex financial lives
+*   **Client empathy:** If you've served retail clients, you understand what it's like to deal with financial anxiety
+*   **Resilience:** Financial services professionals understand pressure, regulation, and accountability
+
+### The Transition Timeline
+
+Expect the transition to take 6-12 months before you feel fully confident. The first 90 days (covered in a separate module) focus on orientation and foundational learning. Months 3-6 involve supervised client work. By month 12, you should be managing your client book with increasing independence.
+
+Be patient with yourself. Ask questions freely. Lean on your buddy, your manager, and your peers. Everyone at Rathbones started somewhere, and the firm invests in people who show commitment and intellectual curiosity.
+
+Welcome to wealth management. Your experience has prepared you well — now it's time to apply it in a new context.`,
+
+  "RAT-BR-002": `## Rathbones Investment Approach and Portfolio Philosophy
+
+Welcome to this deep dive into the Rathbones investment approach. For those of you joining from other firms or sectors, understanding *how* and *why* we invest the way we do is essential to representing the firm credibly to clients and making sound portfolio decisions.
+
+### The Rathbones Investment Philosophy: Core Principles
+
+Our investment philosophy rests on five principles:
+
+**1. Bespoke, Not Model:**
+Every portfolio is constructed individually. While we have a central investment view (the "house view"), its application is always tailored to the individual client's objectives, risk profile, time horizon, tax situation, and personal preferences. No two portfolios are identical.
+
+**2. Long-Term Orientation:**
+We invest for the long term. While we actively manage portfolios and make tactical adjustments, our fundamental approach is built around multi-year and multi-decade horizons. We do not chase short-term performance or react emotionally to market noise.
+
+**3. Research-Led:**
+Every investment decision is grounded in rigorous research. Our central research team produces fundamental analysis on individual companies, sectors, and asset classes. Investment Managers are expected to understand and apply this research, not simply follow it blindly.
+
+**4. Risk-Aware:**
+Risk management is embedded in everything we do — from the strategic asset allocation framework to individual security selection. We think about risk in multiple dimensions: market risk, credit risk, liquidity risk, concentration risk, and operational risk.
+
+**5. Responsible:**
+ESG (Environmental, Social, and Governance) considerations are integrated into our investment process. This is not a separate overlay — it is part of our fundamental analysis. We believe that companies with strong governance and sustainable practices are better long-term investments.
+
+### The Investment Committee
+
+The Investment Committee (IC) is the engine room of our investment process:
+
+*   **Composition:** Senior investment professionals, strategists, economists, and sector specialists
+*   **Meeting cadence:** Weekly for tactical views, quarterly for strategic asset allocation reviews
+*   **Output:** A "house view" that covers asset class weightings (equities vs bonds vs alternatives vs cash), regional preferences, sector tilts, and specific investment themes
+*   **Authority:** The IC sets the strategic framework. Individual IMs apply it to client portfolios within each client's mandate.
+
+### Strategic vs Tactical Asset Allocation
+
+**Strategic Asset Allocation (SAA):**
+*   The long-term, baseline portfolio structure for each risk profile
+*   Typically reviewed annually
+*   Example: A balanced mandate might have an SAA of 55% equities, 30% fixed income, 10% alternatives, 5% cash
+
+**Tactical Asset Allocation (TAA):**
+*   Short-to-medium term deviations from the SAA based on market conditions
+*   The IC might recommend moving to 60% equities if they see a buying opportunity, or increasing cash to 10% ahead of expected volatility
+*   TAA changes are communicated through research notes and IC meeting minutes
+
+**Your role:** Apply the SAA and TAA to each client's specific mandate, adjusting for their individual circumstances (e.g., a client needing income may hold more fixed income than the standard SAA suggests; a client with significant property wealth may hold less in alternatives).
+
+### Portfolio Construction Process
+
+1. **Define the mandate:** Agree the risk profile, return objective, income requirements, time horizon, and any restrictions with the client
+2. **Set the asset allocation:** Apply the SAA framework, adjusted for TAA views and client-specific factors
+3. **Select investments:** Choose specific holdings — direct equities, bonds, funds, ETFs, or alternatives — based on research and suitability
+4. **Implement:** Execute trades, considering best execution obligations, market impact, and timing
+5. **Monitor:** Ongoing monitoring of performance, risk, and alignment with the mandate
+6. **Rebalance:** Periodically adjust the portfolio to maintain alignment with the target allocation, or to implement TAA changes
+
+### How We Differ from Other Firms
+
+*   **vs. Model Portfolio firms:** We construct individually, not from templates. This means more work but better alignment with client needs.
+*   **vs. Fund-of-funds approaches:** We can hold direct equities and bonds, giving us greater control and transparency. We use funds selectively where they provide access to asset classes that are difficult to hold directly (e.g., emerging market debt, property).
+*   **vs. Passive/index firms:** We actively manage, which means we can over- or underweight sectors, avoid companies we have concerns about, and position for our macro views.
+*   **vs. Private banks:** We focus on investment management rather than lending, structured products, or banking services. Our service is deeper but narrower.
+
+### The Role of Research
+
+Our research team produces:
+*   **Company notes:** Detailed analysis of individual companies, including financial forecasts, valuation assessments, and ESG evaluations
+*   **Sector reviews:** Analysis of industry trends, competitive dynamics, and investment opportunities
+*   **Macro commentary:** Economic outlook, interest rate expectations, and geopolitical analysis
+*   **Recommended lists:** Curated lists of approved investments for different asset classes
+
+You are expected to read, understand, and critically evaluate research — not just implement recommendations uncritically. Your knowledge of your clients means you are best placed to decide whether a research recommendation is suitable for a specific portfolio.
+
+Understanding our investment philosophy is not optional — it is the foundation of every conversation you have with clients, every portfolio decision you make, and every suitability assessment you conduct. Internalise these principles, and they will guide you well.`,
+
+  "RAT-BR-003": `## Translating Your Experience — Client Conversation Role Play
+
+This module prepares you for a role play exercise in which you will practice explaining Rathbones' investment approach to a prospective client, demonstrating that you understand the firm's philosophy while leveraging your own professional background.
+
+### The Scenario
+
+You are meeting a prospective client — James Whitfield, a recently retired CFO of a FTSE 250 company. He has £2.5 million to invest. He is financially sophisticated, has managed his own portfolio through an online platform, and is considering Rathbones because he wants professional management as he enters retirement.
+
+James will challenge you on:
+*   Why he should pay for active management when passive funds are cheaper
+*   How Rathbones differs from the wealth management arm of his former company's bank
+*   Whether your personal background qualifies you to manage his money
+*   How you would handle a 20% market decline
+
+### Preparation Framework
+
+Before the role play, consider how you would address each of these areas. Use the following structure:
+
+**1. Opening — Build Rapport:**
+*   Acknowledge his experience and sophistication
+*   Ask about his retirement plans, income needs, and concerns
+*   Listen actively — don't jump to selling
+
+**2. Explaining Rathbones' Approach:**
+*   Bespoke portfolios tailored to *his* specific situation
+*   Direct relationship with you as his Investment Manager
+*   Access to institutional-grade research and a dedicated advisory team
+*   Long-term partnership model, not transactional
+
+**3. Addressing the Active vs Passive Challenge:**
+*   Acknowledge that passive has a role and is cost-effective for certain exposures
+*   Explain the limitations of passive in a bespoke context: no tax optimisation, no ethical screening, no adjustment for individual circumstances
+*   Position active management as risk management: the ability to avoid companies or sectors you have concerns about, and to adjust positioning for market conditions
+*   Be honest: active management doesn't guarantee outperformance, but it provides personalisation, flexibility, and oversight
+
+**4. Differentiating from Bank Wealth Management:**
+*   Rathbones' sole focus is investment management — not cross-selling banking products
+*   Bespoke portfolios vs model-based approaches typically used by banks
+*   Independence of investment decisions — no pressure to recommend proprietary products
+*   Heritage and track record — 280 years of managing wealth through every market cycle
+
+**5. Positioning Your Background:**
+*   Be authentic about your transition
+*   Frame your previous experience as an asset: "My background in [sector] gives me a practical understanding of [relevant area] that enhances how I serve clients like you"
+*   Emphasise the training and support structure at Rathbones
+*   Focus on what you've already learned and how you're applying it
+
+**6. Handling the Market Decline Question:**
+*   Acknowledge the emotional reality of losses
+*   Explain the portfolio construction process and how resilience is built in
+*   Describe your communication approach: proactive, honest, context-providing
+*   Reference historical recoveries and the importance of staying invested
+*   Reaffirm the long-term nature of the mandate
+
+### Key Principles for the Role Play
+
+*   **Listen more than you talk** — especially in the first half of the meeting
+*   **Lead with the client's needs**, not Rathbones' features
+*   **Be confident but humble** — you're joining a strong firm with a proven approach
+*   **Use plain language** — even with a sophisticated client, clarity wins over jargon
+*   **Show genuine curiosity** about James's situation and goals
+
+### After the Role Play
+
+You will receive feedback on:
+*   How well you demonstrated understanding of Rathbones' investment approach
+*   The quality of your listening and questioning
+*   How effectively you handled challenges and objections
+*   Your authenticity and confidence level
+*   Areas for further development
+
+This role play is a safe space to practice. The goal is not perfection but progress. Every great Investment Manager at Rathbones started by learning to articulate our approach with conviction — and that starts here.`,
+
 };

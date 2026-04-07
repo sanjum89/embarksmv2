@@ -67,8 +67,8 @@ export function AIChatWrapper() {
     setIsExpanded,
   } = useAgentOne();
 
-  // Hide floating chat on the /chat page (Agent One is rendered inline there)
-  const isChatPage = location.pathname === "/chat";
+  // Hide floating chat on pages where a dedicated chat is rendered inline
+  const isChatPage = location.pathname === "/chat" || location.pathname === "/learnpath";
 
 
   const chatEndRef = useRef<HTMLDivElement>(null);

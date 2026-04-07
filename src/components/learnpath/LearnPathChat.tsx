@@ -8,7 +8,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useLearnPath } from "@/contexts/LearnPathContext";
 import { LearnPathActionButton } from "./LearnPathActionButton";
-import { mockLearningModules } from "@/data/mock";
+import { resolveModule } from "@/lib/learnPathModuleResolver";
 
 interface ChatMessage {
   id: string;
@@ -49,13 +49,14 @@ export function LearnPathChat() {
   }, [messages]);
 
   const buildContext = useCallback(() => {
+    const acctModules = normalizedAccount?.learningModules;
     const moduleSteps = skillTargets.flatMap((st) =>
       st.steps
         .filter((s) => s.type === "module")
         .map((s) => {
-          const mod = mockLearningModules.find((m) => m.id === s.referenceId);
+          const mod = resolveModule(s.referenceId ?? s.id, skillTargets, acctModules);
           return {
-            moduleId: s.referenceId,
+            moduleId: mod?.id ?? s.referenceId ?? s.id,
             title: mod?.title ?? s.title,
             status: s.status,
             skillTargetId: st.id,
@@ -146,15 +147,19 @@ export function LearnPathChat() {
 
         // Process actions from final content
         const { actions } = parseActions(full);
+        const acctModules = normalizedAccount?.learningModules;
         for (const action of actions) {
           if (action.type === "open_module" && action.moduleId) {
-            learnPath.openModule(action.moduleId, action.skillTargetId);
+            // Resolve the module ID through our catalog (handles step IDs too)
+            const resolved = resolveModule(action.moduleId, skillTargets, acctModules);
+            learnPath.openModule(resolved?.id ?? action.moduleId, action.skillTargetId);
           } else if (action.type === "show_modules") {
             learnPath.showModuleGrid();
           } else if (action.type === "set_mode" && action.mode) {
             learnPath.setLearningMode(action.mode);
           } else if (action.type === "open_assessment" && action.moduleId) {
-            learnPath.openAssessment(action.moduleId);
+            const resolved = resolveModule(action.moduleId, skillTargets, acctModules);
+            learnPath.openAssessment(resolved?.id ?? action.moduleId);
           }
         }
 

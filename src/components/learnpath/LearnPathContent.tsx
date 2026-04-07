@@ -54,9 +54,7 @@ export function LearnPathContent() {
   }, [hasModules, contentView]);
 
   // Get skill gap recommendations for empty state
-  const profileData = normalizedAccount?.employees?.find(
-    (e: any) => e.id === user.id || e.name === user.name
-  );
+  const profileData = normalizedAccount?.profileData?.[user.id];
   const { groups: recommendationGroups } = getRecommendationsForUser(profileData);
 
   if (contentView === "assessment" && assessmentModuleId) {

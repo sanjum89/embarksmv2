@@ -28,7 +28,22 @@ export function resolveModule(
     }
   }
 
-  // 3. Title-based fuzzy fallback (unlikely but safe)
+  // 3. Synthesize a module from the step's own metadata
+  for (const st of skillTargets) {
+    for (const step of st.steps) {
+      if (step.id === moduleId && step.type === "module") {
+        return {
+          id: moduleId,
+          title: step.title,
+          contentType: (step as any).contentType === "video" ? "video" : "document",
+          contentUrl: "",
+          transcript: step.description || `Content for ${step.title}.`,
+          duration: step.duration ?? "5 min",
+        } satisfies LearningModule;
+      }
+    }
+  }
+
   return undefined;
 }
 

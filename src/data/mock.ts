@@ -9,6 +9,7 @@ import type {
   SkillRequirement,
 } from "@/types/learning";
 import { expandedModules } from "@/data/contentModules";
+import { rathbonesTranscripts } from "@/data/rathbonesTranscripts";
 
 /* ─── Users ─── */
 export const currentUser: User = {

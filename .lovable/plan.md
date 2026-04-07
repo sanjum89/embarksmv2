@@ -1,45 +1,59 @@
 
+Goal
 
-## Fix LearnPath Module Resolution and Add Empty-State Skill Gap View
+Fix LearnPath so Clara opens the actual first assigned chapter on the right, keep the “no learning path yet” experience for users without assigned content, and remove the redundant floating AI launcher on `/learnpath`.
 
-### Problem
+What I found
 
-1. **"Module not found"**: LearnPath imports `expandedModules` (IDs `m20`-`m119`) but Rathbones skill targets reference `m-rb1` through `m-rb7`, which live in `mockLearningModules` from `mock.ts`. The module lookup fails silently.
+- The right panel is failing because LearnPath currently resolves modules from a fixed mock catalog instead of the active account’s learning modules.
+- The AI/chat side is sending an `open_module` action with ids like `RAT-INTRO-LM-001`, but the content panel is searching a different module source, so it falls through to “Module not found.”
+- LearnPath is also using the raw step reference too directly; for custom account data, that needs a safer resolver.
+- The floating AI icon comes from the global `AIChatWrapper`, which is hidden on `/chat` but not on `/learnpath`.
+- No redesign is needed: once the correct module resolves, the existing right-side LearnPath UI can show the experience you want.
 
-2. **No empty state for users without skill targets**: Users with no assigned skill targets see a generic welcome screen with no guidance.
+Implementation plan
 
-3. **No auto-resume**: Users returning to LearnPath always start from the welcome screen instead of resuming where they left off.
+1. Make LearnPath use the active account’s module library
+- Switch LearnPath to read `normalizedAccount.learningModules` first, with fallback to the built-in mock modules only when needed.
+- Add one shared LearnPath resolver so chat, auto-resume, cards, and assessment all use the same module lookup logic.
 
-### Changes
+2. Fix module resolution for assigned skill-target steps
+- Resolve each module step against the real module catalog by:
+  - `referenceId` first
+  - then step/module id
+  - then title as a safe fallback
+- Use the resolved module’s real id everywhere LearnPath opens content.
 
-#### 1. Fix module lookup — use `mockLearningModules` instead of `expandedModules`
+3. Fix chat + auto-resume to open the actual first chapter
+- Update `LearnPathChat` so the AI action uses the resolved module id, not just the raw step identifier.
+- Update `LearnPathContent` auto-resume so it opens the first available/in-progress chapter from the assigned skill target using that same resolved id.
+- This will make “Introduction to Rathbones → Our Heritage & Values” open correctly on the right.
 
-**Files**: `LearnPathContent.tsx`, `LearnPathModuleContent.tsx`, `LearnPathChat.tsx`
+4. Keep the empty-state behavior, but base it on resolvable modules
+- If a user truly has no assigned/resolvable module content, keep the current empty state:
+  - left: explain no learning path exists yet
+  - right: show skill gaps and suggested targets
+- If the user does have valid module content, skip the empty state and open the first relevant chapter.
 
-Replace `import { expandedModules } from "@/data/contentModules"` with `import { mockLearningModules } from "@/data/mock"` in all three files. The `mockLearningModules` array already includes both `expandedModules` (spread) and the `m-rb*` Rathbones modules.
+5. Remove the floating AI icon on this page
+- Update the global floating chat wrapper so it does not render on `/learnpath`.
+- Leave the rest of the app unchanged.
 
-#### 2. Add empty-state view with skill gaps and recommended skill targets
+Files likely involved
 
-**File**: `LearnPathContent.tsx` — new branch in the welcome/modules view
+- `src/components/learnpath/LearnPathChat.tsx`
+- `src/components/learnpath/LearnPathContent.tsx`
+- `src/components/learnpath/LearnPathAssessment.tsx`
+- `src/components/chat/AIChatWrapper.tsx`
+- likely one small shared LearnPath module-resolution helper
 
-When `skillTargets` has zero module-type steps:
-- Left chat: AI Manager greets user, explains no learning path is assigned, and suggests skill targets based on their gaps
-- Right panel: Show the user's skill gaps (from `skillRecommendations.ts`) and link to the Dashboard's "Browse" or "Create Skill Target" actions. Once a skill target is added, LearnPath auto-populates.
+Technical detail
 
-#### 3. Auto-resume: open the first incomplete module on load
+The main issue is a data wiring mismatch, not the page layout itself: the chat is opening a module id from the assigned skill-target data, while the content panel is searching the wrong catalog. Fixing the source-of-truth for module resolution will fix Clara’s case and make custom account data work reliably.
 
-**File**: `LearnPathChat.tsx` — modify the auto-greet system message
+QA after implementation
 
-Include in the system message context which module the user should resume (first step with status `available` or `in_progress`). The AI will use an `open_module` action tag to auto-navigate to it. The edge function system prompt already supports this — it just needs the right hint in the context.
-
-**File**: `LearnPathContent.tsx` — on initial mount, if there are module steps and user has progress, auto-set `contentView` to `module` with the resume module.
-
-### Files Modified
-
-| File | Change |
-|---|---|
-| `src/components/learnpath/LearnPathContent.tsx` | Use `mockLearningModules`, add empty-state skill gap view, add auto-resume logic |
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Use `mockLearningModules` instead of `expandedModules` |
-| `src/components/learnpath/LearnPathChat.tsx` | Use `mockLearningModules`, add resume hint to context, add empty-state context hint |
-| `supabase/functions/learnpath-chat/index.ts` | Add handling for "no modules assigned" scenario in system prompt (suggest skill targets) |
-
+- Clara: `/learnpath` opens “Our Heritage & Values” on the right, no “Module not found”
+- User with no assigned path: left chat explains it, right panel shows gaps and suggested targets
+- Custom account modules still resolve correctly
+- Floating AI icon is absent on `/learnpath`

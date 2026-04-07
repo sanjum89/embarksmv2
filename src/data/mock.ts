@@ -341,6 +341,20 @@ export const mockLearningModules: LearningModule[] = [
   { id: "m-rb-intro-heritage", title: "Our Heritage & Values", contentType: "document", contentUrl: "https://example.com/rathbones-heritage.pdf", duration: "15 min", transcript: rathbonesTranscripts["intro-heritage"] },
   { id: "m-rb-intro-invest", title: "How We Invest", contentType: "document", contentUrl: "https://example.com/rathbones-how-we-invest.pdf", duration: "15 min", transcript: rathbonesTranscripts["intro-invest"] },
   { id: "m-rb-intro-90days", title: "Your First 90 Days", contentType: "document", contentUrl: "https://example.com/rathbones-first-90-days.pdf", duration: "10 min", transcript: rathbonesTranscripts["intro-90days"] },
+  // ── DB-step-ID aliases — resolve directly when referenceId is missing in DB data ──
+  { id: "RAT-INTRO-001", title: "Our Heritage & Values", contentType: "document", contentUrl: "", duration: "15 min", transcript: rathbonesTranscripts["intro-heritage"] },
+  { id: "RAT-INTRO-002", title: "How We Invest", contentType: "document", contentUrl: "", duration: "15 min", transcript: rathbonesTranscripts["intro-invest"] },
+  { id: "RAT-INTRO-003", title: "Your First 90 Days", contentType: "document", contentUrl: "", duration: "10 min", transcript: rathbonesTranscripts["intro-90days"] },
+  { id: "RAT-LM-001", title: "Investment Proposition and Client Outcomes", contentType: "document", contentUrl: "", duration: "25 min", transcript: rathbonesTranscripts["m-rb1"] },
+  { id: "RAT-LM-002", title: "Suitability, Risk Profiling, and Documentation", contentType: "document", contentUrl: "", duration: "20 min", transcript: rathbonesTranscripts["RAT-LM-002"] },
+  { id: "RAT-LM-003", title: "Portfolio Construction and Asset Allocation", contentType: "document", contentUrl: "", duration: "25 min", transcript: rathbonesTranscripts["m-rb5"] },
+  { id: "RAT-LM-004", title: "Client Communication and Relationship Management", contentType: "video", contentUrl: "", duration: "25 min", transcript: rathbonesTranscripts["RAT-LM-004"] },
+  { id: "RAT-LM-005", title: "Internal Collaboration — Financial Planning and Portfolio Management", contentType: "video", contentUrl: "", duration: "25 min", transcript: rathbonesTranscripts["RAT-LM-005"] },
+  { id: "RAT-LM-006", title: "Professional Standards, Integrity, and Ownership", contentType: "document", contentUrl: "", duration: "15 min", transcript: rathbonesTranscripts["RAT-LM-006"] },
+  { id: "RAT-LM-007", title: "Communicating Clearly with Clients and Internal Partners", contentType: "video", contentUrl: "", duration: "25 min", transcript: rathbonesTranscripts["RAT-LM-007"] },
+  { id: "RAT-BR-001", title: "From Financial Services to Wealth Management", contentType: "document", contentUrl: "", duration: "20 min", transcript: rathbonesTranscripts["RAT-BR-001"] },
+  { id: "RAT-BR-002", title: "Rathbones Investment Approach and Portfolio Philosophy", contentType: "document", contentUrl: "", duration: "25 min", transcript: rathbonesTranscripts["RAT-BR-002"] },
+  { id: "RAT-BR-003", title: "Translating Your Experience — Client Conversation", contentType: "document", contentUrl: "", duration: "15 min", transcript: rathbonesTranscripts["RAT-BR-003"] },
 ];
 
 /* ─── Skill Targets ─── */

@@ -365,7 +365,15 @@ function DefaultContentViewer({
   onNavigateToStep: (step: StepItem) => void;
 }) {
   const [completed, setCompleted] = useState(step.status === "completed");
-  const { updateSkillTarget } = useSkillTargets();
+  const { updateSkillTarget, skillTargets } = useSkillTargets();
+  const { normalizedAccount } = useAccount();
+
+  // Resolve the module to get transcript content
+  const moduleId = step.referenceId ?? step.id;
+  const resolvedModule = step.type === "module"
+    ? resolveModule(moduleId, skillTargets, normalizedAccount?.learningModules)
+    : undefined;
+  const transcript = resolvedModule?.transcript;
 
   const handleMarkComplete = () => {
     setCompleted(true);
@@ -377,7 +385,6 @@ function DefaultContentViewer({
         return s;
       });
 
-      // Unlock the next locked step
       const sortedSteps = [...updatedSteps].sort((a, b) => a.order - b.order);
       const currentOrder = step.order;
       const nextLocked = sortedSteps.find((s) => s.order > currentOrder && s.status === "locked");
@@ -428,18 +435,10 @@ function DefaultContentViewer({
 
   return (
     <>
-      <div className="aspect-video bg-muted/30 flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-16 w-16 mx-auto mb-3 rounded-xl bg-primary/10 flex items-center justify-center">
-            <span className="text-2xl">▶</span>
-          </div>
-          <p className="text-sm text-muted-foreground">Content preview</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">{step.description}</p>
-        </div>
-      </div>
-      <div className="px-5 py-4">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-xs text-muted-foreground">cornerstone</p>
+      {/* Header with title and Mark as Complete */}
+      <div className="px-5 py-4 border-b border-border">
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-semibold text-foreground">{step.title}</h3>
           <button
             onClick={handleMarkComplete}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity"
@@ -447,7 +446,44 @@ function DefaultContentViewer({
             <CheckCircle2 className="h-3.5 w-3.5" /> Mark as Complete
           </button>
         </div>
-        <div className="flex items-center gap-3">
+        {step.duration && <p className="text-xs text-muted-foreground mt-1">Duration: {step.duration}</p>}
+      </div>
+
+      {/* Video / preview placeholder */}
+      <div className="aspect-video bg-muted/30 flex items-center justify-center">
+        <div className="text-center">
+          <div className="h-12 w-12 mx-auto mb-2 rounded-full bg-background shadow-md flex items-center justify-center">
+            <span className="text-lg ml-0.5">▶</span>
+          </div>
+          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Preview</p>
+        </div>
+      </div>
+
+      {/* Transcript / content section */}
+      <div className="px-5 py-5">
+        {transcript ? (
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h4 className="text-sm font-semibold text-foreground mb-3">Transcript</h4>
+            <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
+              <ReactMarkdown>{transcript}</ReactMarkdown>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border bg-card p-5">
+            <h4 className="text-sm font-semibold text-foreground mb-2">Transcript</h4>
+            <p className="text-sm text-muted-foreground">
+              {step.description || `This module covers ${step.title}.`}
+            </p>
+            <p className="text-sm text-muted-foreground mt-3">Key Topics:</p>
+            <ol className="text-sm text-muted-foreground list-decimal list-inside mt-1 space-y-1">
+              <li>Core concepts and fundamentals</li>
+              <li>Practical techniques and frameworks</li>
+              <li>Real-world application scenarios</li>
+            </ol>
+          </div>
+        )}
+
+        <div className="flex items-center gap-3 mt-4">
           <button className="text-muted-foreground hover:text-foreground transition-colors">
             <ThumbsUp className="h-4 w-4" />
           </button>
@@ -455,8 +491,6 @@ function DefaultContentViewer({
             <ThumbsDown className="h-4 w-4" />
           </button>
         </div>
-        <h3 className="text-base font-semibold text-foreground mt-3">{step.title}</h3>
-        {step.duration && <p className="text-xs text-muted-foreground mt-1">Duration: {step.duration}</p>}
       </div>
     </>
   );

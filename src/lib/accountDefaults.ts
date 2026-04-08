@@ -1024,6 +1024,28 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
 }
 
 /**
+ * Build a "Pinnacle Capital" account — a clone of the default Rathbones
+ * account with name substitutions applied at render time.
+ */
+export function buildPinnacleNormalized(id: string): NormalizedAccount {
+  const base = buildDefaultNormalized(id);
+  return {
+    ...base,
+    isDefault: false,
+    branding: {
+      ...base.branding,
+      name: "Pinnacle Capital",
+    },
+    contentNameMap: {
+      "Rathbones": "Pinnacle Capital",
+      "rathbones": "pinnacle capital",
+      "RATHBONES": "PINNACLE CAPITAL",
+    },
+  };
+}
+
+
+/**
  * Fill missing fields in uploaded JSON with sensible synthetic fallback data.
  */
 export function generateFallbackData(partial: Partial<AccountData>): AccountData {

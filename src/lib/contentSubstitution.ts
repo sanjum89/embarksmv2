@@ -10,7 +10,7 @@ export function applyContentNames(text: string, nameMap: Record<string, string>)
   let result = text;
   for (const [oldName, newName] of Object.entries(nameMap)) {
     if (!oldName) continue;
-    result = result.replaceAll(oldName, newName);
+    result = result.split(oldName).join(newName);
   }
   return result;
 }

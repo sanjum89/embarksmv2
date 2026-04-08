@@ -28,6 +28,7 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
   const [errorMsg, setErrorMsg] = useState("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const seekingRef = useRef(false);
 
   const fullText = scriptToText(script);
 

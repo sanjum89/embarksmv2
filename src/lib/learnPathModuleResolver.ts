@@ -18,15 +18,20 @@ export function resolveModule(
   let mod = catalog.find((m) => m.id === moduleId);
   if (mod) return mod;
 
-  // 2. Maybe moduleId is a step's referenceId — resolve via step.id in catalog
-  //    (URLs use step.referenceId, but catalog entries may be keyed by step.id)
+  // 2. Normalize common ID patterns (DB uses RAT-INTRO-LM-*, RAT-BR-LM-* but catalog may use RAT-INTRO-*, RAT-BR-*)
+  const normalized = normalizeRathbonesId(moduleId);
+  if (normalized !== moduleId) {
+    mod = catalog.find((m) => m.id === normalized);
+    if (mod) return mod;
+  }
+
+  // 3. Maybe moduleId is a step's referenceId — resolve via step.id in catalog
   for (const st of skillTargets) {
     for (const step of st.steps) {
       if (step.referenceId === moduleId && step.id !== moduleId) {
         mod = catalog.find((m) => m.id === step.id);
         if (mod) return mod;
       }
-      // Or moduleId is a step ID — resolve via referenceId in catalog
       if (step.id === moduleId && step.referenceId) {
         mod = catalog.find((m) => m.id === step.referenceId);
         if (mod) return mod;
@@ -34,7 +39,19 @@ export function resolveModule(
     }
   }
 
-  // 3. Synthesize a module from the step's own metadata
+  // 4. Title-based match: find a step with this ID, then look for a catalog entry with the same title
+  for (const st of skillTargets) {
+    for (const step of st.steps) {
+      if (step.id === moduleId || step.referenceId === moduleId) {
+        const titleMatch = catalog.find(
+          (m) => m.title.toLowerCase() === step.title.toLowerCase() && m.transcript && m.transcript.length > 50
+        );
+        if (titleMatch) return titleMatch;
+      }
+    }
+  }
+
+  // 5. Synthesize a module from the step's own metadata (last resort)
   for (const st of skillTargets) {
     for (const step of st.steps) {
       const match = step.id === moduleId || step.referenceId === moduleId;
@@ -52,6 +69,19 @@ export function resolveModule(
   }
 
   return undefined;
+}
+
+/** Normalize Rathbones DB IDs to catalog IDs */
+function normalizeRathbonesId(id: string): string {
+  // RAT-INTRO-LM-001 → RAT-INTRO-001
+  if (/^RAT-INTRO-LM-(\d+)$/.test(id)) {
+    return id.replace("RAT-INTRO-LM-", "RAT-INTRO-");
+  }
+  // RAT-BR-LM-001 → RAT-BR-001
+  if (/^RAT-BR-LM-(\d+)$/.test(id)) {
+    return id.replace("RAT-BR-LM-", "RAT-BR-");
+  }
+  return id;
 }
 
 /**

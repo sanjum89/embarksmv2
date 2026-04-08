@@ -1227,4 +1227,241 @@ You will receive feedback on:
 
 This role play is a safe space to practice. The goal is not perfection but progress. Every great Investment Manager at Rathbones started by learning to articulate our approach with conviction — and that starts here.`,
 
+  "RAT-LM-008": `## Documenting Investment Decisions and Rationale
+
+Good morning. This module — 'Documenting Investment Decisions and Rationale' — addresses one of the most critical yet often underappreciated aspects of your role as an Investment Manager at Rathbones. Proper documentation is not bureaucracy; it is the bedrock of regulatory compliance, client protection, and your own professional defence.
+
+### Why Documentation Matters
+
+In a discretionary wealth management environment, you make investment decisions on behalf of your clients every day. Each decision — whether to buy, sell, hold, or rebalance — carries implications for client outcomes. The FCA expects firms to demonstrate that every action taken was suitable, well-reasoned, and in the client's best interest. Without robust documentation, you cannot prove this.
+
+*   **Regulatory Requirement:** Under MiFID II, Consumer Duty, and SMCR, Rathbones must maintain comprehensive records of all investment decisions, the rationale behind them, and the client context that informed them. Failure to do so exposes both you and the firm to regulatory risk.
+*   **Client Protection:** If a client queries a past decision or raises a complaint, your documentation is the primary evidence that the decision was appropriate at the time it was made. Markets move, and hindsight can be unkind — your contemporaneous notes are your shield.
+*   **Professional Development:** Reviewing your own decision-making records over time helps you identify patterns, improve your process, and learn from outcomes — both positive and negative.
+
+### What to Document
+
+Every investment decision should be accompanied by a clear record that covers the following elements:
+
+1.  **Client Context:** What are the client's current objectives, risk profile, capacity for loss, and any recent changes to their circumstances? Reference the most recent suitability assessment.
+2.  **Market Context:** What is the current market environment? Reference the Investment Committee's latest house view, any relevant macro-economic data, or sector-specific developments that informed your thinking.
+3.  **Decision Rationale:** Why are you making this specific decision? What is the investment thesis? How does this holding or action fit within the client's overall portfolio strategy?
+4.  **Alternatives Considered:** Did you consider other options? Why was this choice preferred over alternatives?
+5.  **Risk Assessment:** What are the key risks associated with this decision? How are they being mitigated within the portfolio context?
+6.  **Expected Outcome:** What is the intended outcome of this action? Over what timeframe?
+
+### Documentation Standards at Rathbones
+
+*   **Use Xplan:** All client-related documentation must be recorded in Xplan, our primary CRM and record-keeping system. Free-text notes, emails, and meeting summaries should all be logged against the relevant client record.
+*   **Timeliness:** Document decisions as close to the point of action as possible. Retrospective documentation is less reliable and less credible in a regulatory review.
+*   **Clarity and Precision:** Write clearly and concisely. Avoid jargon where possible. Your notes should be understandable to a compliance reviewer, an auditor, or a colleague who may need to review the file.
+*   **Consistency:** Follow the firm's templates and frameworks for suitability letters, annual review summaries, and trade rationale notes. Consistency makes files easier to review and demonstrates institutional discipline.
+
+### Common Pitfalls
+
+*   **Under-documentation:** Recording only the action ("Bought 500 shares of XYZ") without the rationale. This is insufficient.
+*   **Boilerplate Language:** Using generic phrases like "in line with the client's risk profile" without specific detail. Be concrete.
+*   **Delayed Documentation:** Waiting days or weeks to document decisions. Memory fades, and the regulatory expectation is for contemporaneous records.
+*   **Inconsistent Filing:** Saving notes in personal files, emails, or spreadsheets instead of Xplan. If it's not in Xplan, it doesn't exist for compliance purposes.
+
+### Practical Exercise
+
+Consider a scenario: You decide to reduce a client's equity allocation by 5% and increase allocation to investment-grade corporate bonds, based on the IC's recent recommendation to de-risk balanced portfolios ahead of anticipated interest rate changes.
+
+Draft a decision rationale note covering: client context, market context, decision rationale, alternatives considered, risk assessment, and expected outcome. Discuss with your supervisor and compare against our best-practice template.
+
+Documentation is not glamorous, but it is essential. At Rathbones, we view it as a fundamental expression of our values of integrity, accountability, and client-centricity. Make it a habit from day one.`,
+
+  "RAT-LM-009": `## Fee Structures, Costs, and Value Assessment
+
+Welcome. This module — 'Fee Structures, Costs, and Value Assessment' — covers an area that is increasingly under regulatory scrutiny and directly impacts client outcomes. Understanding how Rathbones charges for its services, what costs clients bear, and how we demonstrate value is essential knowledge for every Investment Manager.
+
+### The Regulatory Landscape
+
+The FCA's Consumer Duty has placed 'fair value' at the centre of regulatory expectations. Under the Price and Value outcome, firms must ensure that the price consumers pay for products and services is reasonable relative to the benefits they receive. This is not just about being competitive; it's about demonstrating that our fees represent genuine value for our clients.
+
+### Rathbones Fee Structure
+
+Rathbones operates a tiered fee structure based on the value of assets under management (AUM). The standard fee schedule is:
+
+*   **First £500,000:** Typically 1.00% per annum (plus VAT where applicable)
+*   **Next £500,000 to £1 million:** Typically 0.75% per annum
+*   **Above £1 million:** Typically 0.50% per annum
+
+These are indicative rates. Actual fees may vary based on the complexity of the client's requirements, the nature of the portfolio (e.g., equity-heavy vs. multi-asset), and any negotiated arrangements. All fees are agreed with the client at onboarding and documented in the Investment Management Agreement (IMA).
+
+### Understanding Total Cost to Client
+
+The management fee is only one component of the total cost to the client. You must be able to articulate and explain all costs transparently:
+
+1.  **Management Fee:** The annual charge for our discretionary investment management service.
+2.  **Custody and Administration Fees:** Charges for holding and administering the client's assets. These are typically charged separately.
+3.  **Transaction Costs:** Costs incurred when buying and selling investments, including broker commissions, stamp duty, and bid-offer spreads. These are variable and depend on portfolio activity.
+4.  **Underlying Fund Charges:** If the portfolio includes collective investment schemes (e.g., OEICs, ETFs, investment trusts), these have their own ongoing charges (OCF/TER) which are borne by the client indirectly.
+5.  **Financial Planning Fees:** If the client uses our financial planning service, there may be separate charges for advice on pensions, tax, or estate planning.
+
+### Communicating Fees to Clients
+
+Transparency is paramount. Under MiFID II and Consumer Duty:
+
+*   **Ex-ante Disclosure:** Before providing the service, we must provide the client with a clear breakdown of all anticipated costs and charges, expressed both as a monetary amount and as a percentage.
+*   **Ex-post Disclosure:** After each year, we provide an annual costs and charges statement showing the actual costs incurred.
+*   **Ongoing Dialogue:** Don't wait for the annual statement. Discuss fees proactively during reviews. If a client asks about value, be prepared to articulate what they receive for their fees.
+
+### Demonstrating Value
+
+Value is not just about performance. It encompasses the entire client experience:
+
+*   **Bespoke Service:** Our one-to-one relationship model means clients receive genuinely personalised attention — not a call-centre experience.
+*   **Access to Expertise:** Clients benefit from our Investment Committee's research, our financial planning capabilities, and our operational infrastructure.
+*   **Peace of Mind:** Knowing that a dedicated professional is actively managing their wealth, navigating market complexity, and ensuring regulatory compliance provides significant intangible value.
+*   **Tax Efficiency:** Active management allows for tax-loss harvesting, CGT management, and ISA/pension optimisation that passive or model-based approaches often cannot achieve.
+*   **Performance:** While performance is not guaranteed, our track record of delivering consistent, risk-adjusted returns within client mandates is a key component of our value proposition.
+
+### Internal Value Assessment Process
+
+Rathbones conducts regular internal value assessments as required by the FCA. These reviews examine whether our fees are fair relative to:
+*   The quality and range of services provided
+*   Our performance track record
+*   Comparable services in the market
+*   The costs we incur in delivering the service
+
+As an Investment Manager, you may be asked to contribute to these assessments by providing insight into the qualitative aspects of client service delivery.
+
+### Handling Fee Conversations
+
+Fee discussions can be sensitive. Key principles:
+
+*   **Be Confident:** Our fees reflect the quality of our bespoke service. Don't be apologetic.
+*   **Be Transparent:** Never obscure or minimise costs. Full disclosure builds trust.
+*   **Be Contextual:** Always discuss fees in the context of the value delivered and the outcomes achieved.
+*   **Be Prepared:** Know the numbers. Be ready to break down costs and explain each component.
+*   **Listen:** If a client expresses concern about fees, listen carefully. Understand their perspective before responding.
+
+Understanding and communicating our fee structure with confidence and transparency is a core competency for every Rathbones Investment Manager. It reflects our values of integrity and client-centricity.`,
+
+  "RAT-LM-010": `## Handling Market Volatility Conversations with Clients
+
+Good afternoon. This module — 'Handling Market Volatility Conversations with Clients' — addresses one of the most challenging aspects of client relationship management. Markets are inherently volatile, and how you communicate during periods of turbulence can make or break client trust and retention.
+
+### Why This Matters
+
+Market corrections, crashes, and periods of sustained volatility are inevitable. History shows us that significant drawdowns occur with regularity — the 2008 Global Financial Crisis, the 2020 COVID crash, the 2022 inflation-driven sell-off. During these periods, clients experience fear, anxiety, and sometimes panic. Your role as their Investment Manager is to be a source of calm, clarity, and confidence.
+
+### The Psychology of Loss
+
+Behavioural finance tells us that losses feel approximately twice as painful as equivalent gains feel pleasurable — a phenomenon known as 'loss aversion.' This means a 10% decline in portfolio value causes significantly more emotional distress than a 10% gain provides satisfaction. Understanding this psychological reality is essential for managing client conversations during downturns.
+
+*   **Emotional Responses:** Clients may express fear, anger, frustration, or a desire to 'do something' — typically meaning sell everything and move to cash. These are natural human responses, not irrational ones.
+*   **Recency Bias:** Clients may extrapolate recent losses into the future, believing that declines will continue indefinitely. This can lead to panic selling at the worst possible time.
+*   **Anchoring:** Clients often anchor to peak portfolio values, viewing any decline from that point as a 'loss,' even if the portfolio is still significantly above its original value or performing well relative to benchmarks.
+
+### Proactive Communication: Don't Wait for the Call
+
+One of the most effective strategies during volatile periods is proactive communication. Don't wait for anxious clients to call you — reach out first.
+
+*   **Market Updates:** When significant market events occur, send a timely communication to your client base explaining what has happened, why, and what (if anything) we are doing in response. Our central communications team typically drafts firm-wide market commentary, but you should supplement this with personalised messages to your key clients.
+*   **Portfolio-Specific Context:** Beyond generic market commentary, provide context specific to each client's portfolio. How is their portfolio positioned? What is the actual impact? How does this compare to the broader market? This specificity demonstrates that you are actively monitoring their wealth.
+*   **Availability:** Make yourself available. Let clients know they can reach you if they have concerns. Sometimes the mere knowledge that their Investment Manager is accessible provides significant reassurance.
+
+### The Volatility Conversation Framework
+
+When speaking with an anxious client, follow this structured approach:
+
+1.  **Acknowledge:** Start by acknowledging their feelings. "I understand this is concerning, and it's completely natural to feel uneasy when markets are falling." Never dismiss or minimise their emotions.
+2.  **Contextualise:** Provide historical context. "Markets have experienced similar corrections before — in 2020, markets fell sharply but recovered within months. This is part of the normal cycle of investing." Use specific data points relevant to their situation.
+3.  **Explain:** Explain what is driving the volatility and our view on it. "The current sell-off is driven by [specific factor]. Our Investment Committee's view is that [perspective]. We believe this is [transient/structural] and our positioning reflects this."
+4.  **Reassure:** Highlight the resilience built into their portfolio. "Your portfolio is diversified across [asset classes/geographies]. The fixed-income allocation is providing stability, and the quality of the equity holdings means we're invested in companies with strong balance sheets that can weather economic uncertainty."
+5.  **Recommend:** Provide a clear recommendation. "Our recommendation is to stay the course / make modest adjustments to [specific action]. Selling into a declining market locks in losses and removes the opportunity for recovery."
+6.  **Follow Up:** Set a specific time to follow up. "Let's speak again next week once we've had more data. I'll send you an updated valuation beforehand."
+
+### What NOT to Do
+
+*   **Don't Guarantee:** Never promise that markets will recover quickly or that losses are temporary. You don't know that, and such statements are misleading.
+*   **Don't Blame:** Don't blame external factors without taking responsibility for the portfolio's positioning. Clients want to hear what you're doing, not excuses.
+*   **Don't Panic:** Your emotional state is contagious. If you sound worried, clients will be terrified. Maintain calm professionalism even if you share their concerns privately.
+*   **Don't Ignore:** The worst response to market volatility is silence. An unreturned call during a crash can permanently damage a client relationship.
+*   **Don't Over-Trade:** Resist the temptation to make dramatic portfolio changes to demonstrate activity. Thoughtful, measured responses are always preferable to knee-jerk reactions.
+
+### Documenting Volatility Conversations
+
+All conversations during volatile periods must be documented in Xplan, including:
+*   The client's emotional state and concerns
+*   The context and reassurance you provided
+*   Any specific instructions from the client (e.g., "Don't sell anything" or "I want to add more cash")
+*   Any agreed follow-up actions and timelines
+
+This documentation protects both you and the client and demonstrates our adherence to Consumer Duty principles of good communication and client support.
+
+### Building Long-Term Resilience
+
+The best volatility conversations happen long before volatility strikes. During calm markets, set expectations with clients about the reality of market fluctuations. Discuss their emotional tolerance for losses alongside their financial capacity for loss. Build a shared understanding that volatility is the price of long-term returns, not a sign that something has gone wrong.
+
+At Rathbones, navigating volatility with empathy, expertise, and clear communication is a hallmark of our client service. It's in these moments that the value of a dedicated, personal relationship truly shines.`,
+
+  "RAT-BR-LM-004": `## The Difference Between Adjacent Financial Experience and Investment Manager Expectations
+
+Welcome to this important module. If you've joined Rathbones from a background in banking, insurance, financial advice, or another area of financial services, you bring valuable skills and perspectives. However, the role of a discretionary Investment Manager at Rathbones has specific demands and expectations that may differ significantly from your previous experience. This module helps you understand those differences and bridge the gap effectively.
+
+### Common Adjacent Backgrounds
+
+Investment Managers at Rathbones come from diverse financial services backgrounds, including:
+
+*   **Retail or Private Banking:** Relationship management, lending, and basic investment product distribution
+*   **Independent Financial Advice (IFA):** Holistic financial planning, product recommendation, and advisory investment management
+*   **Insurance and Pensions:** Product manufacturing, actuarial analysis, and pension scheme management
+*   **Fund Management:** Institutional asset management, fund selection, or multi-manager roles
+*   **Stockbroking:** Execution-only or advisory share dealing services
+
+Each of these backgrounds provides useful foundational knowledge, but none is identical to the discretionary wealth management model at Rathbones.
+
+### Key Differences to Understand
+
+**1. Discretionary vs. Advisory:**
+In many adjacent roles, you may have operated on an advisory basis — recommending actions that clients must approve before execution. At Rathbones, you operate on a fully discretionary basis. Clients delegate decision-making authority to you within an agreed mandate. This is a significant shift in responsibility, autonomy, and accountability.
+
+*   **What this means:** You don't seek client approval for individual trades. You must be confident in your investment process and comfortable making decisions independently, while maintaining rigorous documentation and adherence to the client's agreed mandate.
+
+**2. Bespoke vs. Model/Product-Based:**
+Many financial services roles involve recommending pre-packaged products or model portfolios. At Rathbones, every portfolio is built from scratch for each client. There are no off-the-shelf solutions.
+
+*   **What this means:** You need a deeper understanding of individual securities, asset allocation theory, and portfolio construction. You can't rely on a product provider's research or a centralised model team to make all the decisions.
+
+**3. Depth of Client Relationship:**
+While relationship management exists in banking and IFA, the depth and duration of a Rathbones client relationship is typically more intensive. You may manage a client's wealth across multiple generations.
+
+*   **What this means:** You need exceptional listening skills, emotional intelligence, and the ability to understand complex family dynamics, business structures, and long-term aspirations — not just immediate financial needs.
+
+**4. Regulatory Framework:**
+While all financial services roles are regulated, the specific regulatory requirements for discretionary investment management under MiFID II, Consumer Duty, and SMCR are distinct. The emphasis on suitability documentation, best execution, and ongoing monitoring is more intensive than in many adjacent roles.
+
+**5. Investment Depth:**
+In advisory or product distribution roles, investment knowledge may be broad but shallow — understanding asset classes and fund categories rather than individual securities. At Rathbones, you are expected to develop deep knowledge of specific companies, bonds, and alternative investments.
+
+### Leveraging Your Existing Skills
+
+Your previous experience is not a disadvantage — it's an asset when properly channelled:
+
+*   **From Banking:** Client relationship management, understanding of credit and lending, knowledge of banking products that clients may hold alongside their Rathbones portfolio
+*   **From IFA:** Holistic financial planning perspective, experience with pensions and tax planning, understanding of the advice process
+*   **From Insurance:** Risk assessment skills, understanding of protection needs, analytical rigour
+*   **From Fund Management:** Deep market knowledge, analytical frameworks, understanding of institutional investment processes
+*   **From Stockbroking:** Market awareness, trading mechanics, experience with direct equity analysis
+
+### Bridging the Gap
+
+To transition effectively:
+
+1.  **Invest in Learning:** Engage fully with the Rathbones training programme. Don't assume your existing knowledge covers all requirements. Be humble about what you don't know.
+2.  **Shadow Experienced IMs:** Observe how seasoned Rathbones Investment Managers interact with clients, construct portfolios, and document decisions. Ask questions about their thought process.
+3.  **Understand the House View:** Familiarise yourself deeply with the Investment Committee's process and output. This is the foundation upon which you build bespoke portfolios.
+4.  **Practice Documentation:** The standard of documentation at Rathbones may be higher than in your previous role. Practice writing clear, comprehensive suitability letters and decision rationale notes.
+5.  **Seek Feedback:** Proactively ask your line manager, mentor, and colleagues for feedback on your transition. Identify blind spots early.
+
+### The Rathbones Mindset
+
+Ultimately, the transition to a Rathbones Investment Manager requires a mindset shift: from product distributor or adviser to wealth steward. You are not selling a product or recommending a solution — you are taking personal responsibility for the long-term management of a client's financial wellbeing. This is a privilege and a profound responsibility.
+
+Your diverse background enriches Rathbones. The key is to integrate your existing expertise within our framework of bespoke, discretionary, client-centric wealth management.`,
+
 };

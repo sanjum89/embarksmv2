@@ -13,6 +13,7 @@ import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import type { StepItem } from "@/types/learning";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 
 export default function SkillTargetDetail() {
   const { id } = useParams();
@@ -22,6 +23,7 @@ export default function SkillTargetDetail() {
   const target = skillTargets.find((st) => st.id === id);
   const [activeStep, setActiveStep] = useState<StepItem | null>(null);
   const [activeTab, setActiveTab] = useState<"conversation" | "chapters">("conversation");
+  const { substitute } = useContentSubstitution();
 
   const isTraditional = styleTheme === "traditional";
   const isPreview = searchParams.get("preview") === "true" && target?.locked;
@@ -58,7 +60,7 @@ export default function SkillTargetDetail() {
           {/* Title bar */}
           <div className="px-6 py-3 border-b border-border">
             <p className="text-sm font-medium text-foreground truncate">
-              {target.title}
+              {substitute(target.title)}
             </p>
           </div>
 
@@ -121,7 +123,7 @@ export default function SkillTargetDetail() {
                         <span className="text-xs font-medium text-muted-foreground w-5 shrink-0">
                           {isCompleted ? "✓" : isSkipped ? "—" : idx + 1}
                         </span>
-                        <span className={cn("text-sm truncate", (isCompleted || isSkipped) && "line-through opacity-70")}>{step.title}</span>
+                        <span className={cn("text-sm truncate", (isCompleted || isSkipped) && "line-through opacity-70")}>{substitute(step.title)}</span>
                       </button>
                     );
                   })}
@@ -149,7 +151,7 @@ export default function SkillTargetDetail() {
           ) : (
             <TraditionalActivitiesPanel
               steps={target.steps}
-              skillTargetTitle={target.title}
+              skillTargetTitle={substitute(target.title)}
               onActivityClick={(step) => setActiveStep(step)}
               activeStepId={activeStep?.id}
             />
@@ -209,9 +211,9 @@ export default function SkillTargetDetail() {
                 </div>
 
                 <h1 className="font-display text-xl font-bold text-foreground mb-1.5">
-                  {target.title}
+                  {substitute(target.title)}
                 </h1>
-                <p className="text-sm text-muted-foreground mb-4">{target.description}</p>
+                <p className="text-sm text-muted-foreground mb-4">{substitute(target.description)}</p>
 
                 <div className="flex items-center gap-3">
                   <Progress value={target.progress} className="h-2 flex-1" />

@@ -6,6 +6,7 @@ import type { SkillTarget, StepType } from "@/types/learning";
 import { proficiencyShort } from "@/types/learning";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { cn } from "@/lib/utils";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 import {
   Dialog,
   DialogContent,
@@ -29,6 +30,7 @@ interface SkillTargetCardProps {
 export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
   const navigate = useNavigate();
   const { skillTargets } = useSkillTargets();
+  const { substitute } = useContentSubstitution();
   const completedSteps = target.steps.filter((s) => s.status === "completed" || s.status === "skipped").length;
   const totalSteps = target.steps.length;
   const [skillsDialogOpen, setSkillsDialogOpen] = useState(false);
@@ -67,10 +69,10 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
               <Lock className="h-4 w-4 text-muted-foreground" />
             </div>
             <h4 className="font-display text-base font-semibold text-foreground mb-1.5">
-              {target.title}
+              {substitute(target.title)}
             </h4>
             <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-              {target.description}
+              {substitute(target.description)}
             </p>
 
             {skills.length > 0 && (
@@ -113,7 +115,7 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
               <div className="flex items-center gap-2 rounded-lg bg-secondary/80 px-3 py-2 flex-1 min-w-0">
                 <Lock className="h-3 w-3 text-muted-foreground shrink-0" />
                 <span className="text-xs text-muted-foreground truncate">
-                  Complete <strong className="text-foreground">{prerequisite.title}</strong> to unlock
+                  Complete <strong className="text-foreground">{substitute(prerequisite.title)}</strong> to unlock
                 </span>
               </div>
             )}
@@ -156,10 +158,10 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
 
           {/* Title */}
           <h4 className="font-display text-base font-semibold text-foreground mb-1.5 group-hover:text-primary transition-colors">
-            {target.title}
+            {substitute(target.title)}
           </h4>
           <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-            {target.description}
+            {substitute(target.description)}
           </p>
 
           {/* Skills being developed */}
@@ -206,7 +208,7 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
                     </div>
                   );
                 })()}
-                <span className="text-xs font-medium text-foreground truncate">{nextStep.title}</span>
+                <span className="text-xs font-medium text-foreground truncate">{substitute(nextStep.title)}</span>
                 {nextStep.duration && (
                   <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground ml-auto whitespace-nowrap">
                     <Clock className="h-2.5 w-2.5" />

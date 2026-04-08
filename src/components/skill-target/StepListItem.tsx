@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { StepItem, StepType } from "@/types/learning";
 import { cn } from "@/lib/utils";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 
 const stepTypeIcons: Record<string, React.ElementType> = {
   assessment: ClipboardCheck,
@@ -35,6 +36,7 @@ interface StepListItemProps {
 }
 
 export function StepListItem({ step, index, skillTargetId, isLast, showAccentLine }: StepListItemProps) {
+  const { substitute } = useContentSubstitution();
   const TypeIcon = stepTypeIcons[step.type] || BookOpen;
   const isClickable = step.status === "available" || step.status === "in_progress" || step.status === "completed" || step.status === "skipped";
   const routeSegment = stepTypeRoutes[step.type] || "module";
@@ -109,7 +111,7 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
               step.status === "available" && "text-foreground group-hover:text-accent"
             )}
           >
-            {step.title}
+            {substitute(step.title)}
           </h4>
           {step.duration && (
             <span className="inline-flex items-center gap-1 text-xs text-muted-foreground whitespace-nowrap">
@@ -122,7 +124,7 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
           "mt-0.5 text-xs",
           step.status === "locked" ? "text-muted-foreground/60" : "text-muted-foreground"
         )}>
-          {step.description}
+          {substitute(step.description)}
         </p>
 
         {/* Badges */}

@@ -42,6 +42,7 @@ import { useAgentOne } from "@/contexts/AgentOneContext";
 import { useChartColors } from "@/hooks/useChartColors";
 import { proficiencyShort } from "@/types/learning";
 import { deriveGapsFromEmployee, deriveRadarFromEmployee, deriveFullRoleGaps, deriveFullRoleRadar, deriveSkillGapRows } from "@/lib/skillUtils";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 
 const proficiencyLabels = ["", "B", "I", "A", "E", "M"];
 
@@ -108,6 +109,7 @@ export default function My360() {
   const [gapSource, setGapSource] = useState<GapSource>("Role");
   const [gapFilter, setGapFilter] = useState<GapFilter>("All");
   const colors = useChartColors();
+  const { substitute } = useContentSubstitution();
 
 
   // Use normalized selector; for non-default accounts avoid static fallback
@@ -251,7 +253,7 @@ export default function My360() {
                 </div>
                 {profileData.program && (
                   <div className="mt-0.5 text-sm text-muted-foreground">
-                    Program: <span className="text-foreground">{profileData.program}</span>
+                    Program: <span className="text-foreground">{substitute(profileData.program)}</span>
                   </div>
                 )}
                 <button
@@ -292,7 +294,7 @@ export default function My360() {
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      {profileData.summary}
+                      {substitute(profileData.summary)}
                     </p>
                   </div>
                 </motion.div>
@@ -533,7 +535,7 @@ export default function My360() {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                   <BookOpen className="h-3.5 w-3.5 text-muted-foreground" />
-                                  <span className="text-sm font-medium text-foreground">{cohort.name}</span>
+                                  <span className="text-sm font-medium text-foreground">{substitute(cohort.name)}</span>
                                 </div>
                                 {cohort.type && (
                                   <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground capitalize">

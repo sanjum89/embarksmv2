@@ -13,6 +13,7 @@ import { proficiencyNumeric, type Proficiency } from "@/types/learning";
 import type { RichBlock } from "@/components/chat/RichContentBlock";
 import { chapterSummaries, agentOneContent, onboardingSuggestionPills, isDemoLearner, getDemoPersona, findDemoMatch, MANAGER_MILESTONES } from "@/data/rathbonesOnboarding";
 import { emitEvent } from "@/lib/agentOneEventEmitter";
+import { applyContentNames } from "@/lib/contentSubstitution";
 
 /* ─── Stage-based Reflection Triggers (derived from cohort) ─── */
 import { investmentManagerCohort } from "@/data/rathbonesOnboarding";
@@ -275,6 +276,13 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
 
   const employeeRole = useMemo(() => normalizedAccount ? getRoleForEmployee(normalizedAccount, user.id) : null, [normalizedAccount, user.id]);
 
+  const nameMap = normalizedAccount?.contentNameMap;
+  const sub = useCallback((t: string | null | undefined): string => {
+    if (!t) return t ?? "";
+    if (!nameMap || Object.keys(nameMap).length === 0) return t;
+    return applyContentNames(t, nameMap);
+  }, [nameMap]);
+
   const userContext = {
     name: user.name,
     role: user.role,
@@ -287,25 +295,25 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       const mgr = normalizedAccount?.employeesById?.[managerId];
       return mgr ? mgr.name : managerId;
     })(),
-    accountName: normalizedAccount?.branding?.name || activeAccount?.name,
-    lockedTargets,
+    accountName: sub(normalizedAccount?.branding?.name || activeAccount?.name),
+    lockedTargets: lockedTargets?.map((t: any) => ({ ...t, title: sub(t.title), category: sub(t.category) })),
     isFreshGraduate: isSophie,
-    targetTitle: firstTarget?.title || null,
+    targetTitle: sub(firstTarget?.title) || null,
     targetId: firstTarget?.id || null,
-    targetSteps,
+    targetSteps: targetSteps?.map((s: any) => ({ ...s, title: sub(s.title) })),
     hasBridgeTarget,
     bridgeTargetId: bridgeTarget?.id || null,
-    bridgeTargetTitle: bridgeTarget?.title || null,
+    bridgeTargetTitle: sub(bridgeTarget?.title) || null,
     bridgeCompleted,
     introCompleted,
-    introTargetTitle: introTarget?.title || null,
+    introTargetTitle: sub(introTarget?.title) || null,
     currentPage,
-    currentSkillTargetProgress,
+    currentSkillTargetProgress: currentSkillTargetProgress ? { ...currentSkillTargetProgress, title: sub(currentSkillTargetProgress.title) } : null,
     skillsDetailed,
-    skillTargetsSummary,
+    skillTargetsSummary: skillTargetsSummary?.map((s: any) => ({ ...s, title: sub(s.title) })),
     inboxSummary,
     skillGaps,
-    chapterContext,
+    chapterContext: chapterContext ? { ...chapterContext, title: sub(chapterContext.title), summary: sub(chapterContext.summary) } : null,
     reflectionContext: reflectionContext || undefined,
     roleDescription: employeeRole?.description || null,
     roleDetailedDescription: employeeRole?.detailedDescription || null,
@@ -829,7 +837,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
         saveConversation(updated, "post-assessment");
         return updated;
       });
-      setSuggestions(["Start Introduction to Rathbones", "Why were modules skipped?", "Show me my next steps"]);
+      setSuggestions([sub("Start Introduction to Rathbones"), "Why were modules skipped?", "Show me my next steps"]);
       return;
     }
 
@@ -926,7 +934,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
       if (persona === "elliot" && moduleMatch[1] === "RAT-ST-BRIDGE-001") {
         return [
           "Summarise this chapter",
-          "Why does this matter at Rathbones?",
+          sub("Why does this matter at Rathbones?"),
           "What should I focus on here?",
           "Give me a simple example",
         ];

@@ -354,6 +354,15 @@ function AssessmentViewer({
 }
 
 // ── Default content viewer for modules/role plays ──
+
+const modeOptions: { value: LearningMode; icon: React.ElementType; label: string }[] = [
+  { value: "reading", icon: BookOpen, label: "Reading" },
+  { value: "visual", icon: Eye, label: "Visual" },
+  { value: "listening", icon: Headphones, label: "Listening" },
+  { value: "hands-on", icon: Wrench, label: "Hands-On" },
+  { value: "combined", icon: Layers, label: "Combined" },
+];
+
 function DefaultContentViewer({
   step,
   skillTargetId,
@@ -366,6 +375,7 @@ function DefaultContentViewer({
   onNavigateToStep: (step: StepItem) => void;
 }) {
   const [completed, setCompleted] = useState(step.status === "completed");
+  const [learningMode, setLearningMode] = useState<LearningMode>("reading");
   const { updateSkillTarget, skillTargets } = useSkillTargets();
   const { normalizedAccount } = useAccount();
 
@@ -374,7 +384,6 @@ function DefaultContentViewer({
   const resolvedModule = step.type === "module"
     ? resolveModule(moduleId, skillTargets, normalizedAccount?.learningModules)
     : undefined;
-  const transcript = resolvedModule?.transcript;
 
   const handleMarkComplete = () => {
     setCompleted(true);
@@ -434,8 +443,6 @@ function DefaultContentViewer({
     );
   }
 
-  const isDocument = resolvedModule?.contentType === "document";
-
   return (
     <>
       {/* Header with title and Mark as Complete */}
@@ -452,45 +459,50 @@ function DefaultContentViewer({
         {step.duration && <p className="text-xs text-muted-foreground mt-1">Duration: {step.duration}</p>}
       </div>
 
-      {/* Video preview — only for video content */}
-      {!isDocument && (
-        <div className="aspect-video bg-muted/30 flex items-center justify-center">
-          <div className="text-center">
-            <div className="h-12 w-12 mx-auto mb-2 rounded-full bg-background shadow-md flex items-center justify-center">
-              <span className="text-lg ml-0.5">▶</span>
-            </div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Preview</p>
-          </div>
+      {/* Learning Mode Selector */}
+      <div className="px-5 py-3 border-b border-border">
+        <div className="flex items-center gap-1.5 overflow-x-auto">
+          {modeOptions.map((mode) => {
+            const Icon = mode.icon;
+            const isActive = learningMode === mode.value;
+            return (
+              <button
+                key={mode.value}
+                onClick={() => setLearningMode(mode.value)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {mode.label}
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
 
-      {/* Content section */}
-      <div className="px-5 py-5">
-        {transcript ? (
-          <div className="rounded-xl border border-border bg-card p-5">
-            {!isDocument && <h4 className="text-sm font-semibold text-foreground mb-3">Transcript</h4>}
-            <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
-              <ReactMarkdown>{transcript}</ReactMarkdown>
-            </div>
-          </div>
-        ) : (
+      {/* Content — use rich LearnPathModuleContent if module resolved */}
+      {resolvedModule ? (
+        <LearnPathModuleContent
+          module={resolvedModule}
+          learningModeOverride={learningMode}
+          skillTargetId={skillTargetId}
+          stepId={step.id}
+          onComplete={handleMarkComplete}
+        />
+      ) : (
+        <div className="px-5 py-5">
           <div className="rounded-xl border border-border bg-card p-5">
             <h4 className="text-sm font-semibold text-foreground mb-2">Content</h4>
             <p className="text-sm text-muted-foreground">
               {step.description || `This module covers ${step.title}.`}
             </p>
           </div>
-        )}
-
-        <div className="flex items-center gap-3 mt-4">
-          <button className="text-muted-foreground hover:text-foreground transition-colors">
-            <ThumbsUp className="h-4 w-4" />
-          </button>
-          <button className="text-muted-foreground hover:text-foreground transition-colors">
-            <ThumbsDown className="h-4 w-4" />
-          </button>
         </div>
-      </div>
+      )}
     </>
   );
 }

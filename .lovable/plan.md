@@ -1,49 +1,33 @@
-
-
-## Pre-Create Role Plays for All Skill Target Chapters
+## Fix Pinnacle "Heritage & Values" Content and Audio
 
 ### Problem
-1. Many modules in hands-on mode share the same few role plays or have none (`RAT-LM-008` has `rolePlayIds: []`).
-2. When a role play ID isn't found in `mockRolePlayBank`, `RolePlaySession.tsx` shows a generic "Practice Scenario" placeholder with "A realistic practice partner" — no meaningful content.
-3. The user wants every skill target chapter to have a dedicated, contextual role play in the bank.
+1. **Reading/visual content**: Already substituted via `substitute()` on line 49 of `LearnPathModuleContent.tsx` — this should work. If still showing "Rathbones", need to verify.
+2. **Podcast transcript text**: The `podcastScript` lines are raw from `podcastTranscripts.ts` — `substitute()` is NOT applied to them before passing to `LearnPathPodcastPlayer`.
+3. **Pre-generated audio**: The static MP3 (`m-rb-intro-heritage.mp3`) contains spoken "Rathbones" — Pinnacle needs its own audio file.
 
-### Plan
+### Changes
 
-#### 1. Add new role plays to `mockRolePlayBank` in `src/data/mock.ts`
+#### 1. Apply `substitute()` to podcast script lines (`LearnPathModuleContent.tsx`)
+Before passing `podcastScript` to `LearnPathPodcastPlayer`, map over each line and apply `substitute()` to `speaker`, `role`, and `text` fields. This fixes the visible transcript in listening mode.
 
-Create unique role plays for modules that currently share or lack role plays. Each new entry will have a contextual persona and scenario derived from the module's topic. New IDs will follow the pattern `rp-rb-{topic}`. Approximate additions:
+#### 2. Account-aware static audio URL resolution (`LearnPathModuleContent.tsx`)
+When the active account has a `contentNameMap` (i.e., Pinnacle), do NOT use the Rathbones static MP3. Instead:
+- Check for a Pinnacle-specific static URL (e.g., `pinnacle-heritage.mp3` in the `podcast-audio` bucket)
+- If not found, pass `staticAudioUrl={undefined}` so the player falls back to on-demand TTS generation using the already-substituted transcript text
 
-- **RAT-LM-001** → `rp-rb-value-articulation` (prospect challenging fee justification)
-- **RAT-LM-002** → `rp-rb-risk-profiling` (client risk profile reassessment)
-- **RAT-LM-003** → `rp-rb-portfolio-construction` (concentrated position discussion)
-- **RAT-LM-005** → `rp-rb-internal-collab` (divorce case multi-team coordination)
-- **RAT-LM-007** → `rp-rb-clear-communication` (explaining alternatives to non-financial client)
-- **RAT-LM-008** → `rp-rb-documentation` (documenting under pressure)
-- **RAT-LM-009** → `rp-rb-fee-discussion` (fee challenge at annual review)
-- **RAT-BR-001** → `rp-rb-domain-vocab` (bridging banking terminology)
-- **RAT-BR-002** → `rp-rb-bespoke-vs-product` (explaining bespoke vs product distribution)
-- **RAT-BR-003** → `rp-rb-rate-impact` (explaining rate impact on bonds)
-- **RAT-BR-LM-004** → `rp-rb-gap-recognition` (recognising knowledge gaps as domain-bridge joiner)
+#### 3. Generate Pinnacle audio file
+Call the existing `generate-podcast` edge function with the Pinnacle-substituted transcript to create `pinnacle-heritage.mp3` in the `podcast-audio` storage bucket. Then add it to `staticPodcastUrls` with an account-aware lookup.
 
-Each will have unique persona names, backgrounds, and detailed context (similar quality to existing Rathbones role plays).
-
-#### 2. Update `moduleRolePlayMap` in `src/data/mock.ts`
-
-Point each module to its new dedicated role play ID instead of sharing existing ones. All alias IDs (RAT-INTRO-LM-*, RAT-BR-LM-*) will also be updated.
-
-#### 3. Update `handsOnScenarios` `rolePlayIds` in `src/data/handsOnScenarios.ts`
-
-Update every entry's `rolePlayIds` array to reference the new dedicated role play for that module. Fix the empty `RAT-LM-008` entry.
-
-#### 4. Improve fallback in `RolePlaySession.tsx`
-
-Instead of the generic "Practice Scenario" placeholder, derive context from the skill target step data (title, description) when a role play isn't found in the bank. This ensures even edge cases show meaningful content.
+#### 4. Update `podcastTranscripts.ts` — account-aware static URL helper
+Modify `getStaticPodcastUrl` to accept an optional account name parameter. When account is "Pinnacle Capital", return the Pinnacle MP3 URL instead of the Rathbones one.
 
 ### Files Changed
 
 | File | Change |
 |---|---|
-| `src/data/mock.ts` | Add ~11 new role plays to `mockRolePlayBank`; update `moduleRolePlayMap` entries |
-| `src/data/handsOnScenarios.ts` | Update `rolePlayIds` arrays to reference new dedicated role plays |
-| `src/pages/RolePlaySession.tsx` | Improve fallback to derive persona/scenario from skill target step context |
+| `src/components/learnpath/LearnPathModuleContent.tsx` | Apply `substitute()` to each podcast script line's text; pass account-aware static URL |
+| `src/data/podcastTranscripts.ts` | Add Pinnacle static audio URLs; update `getStaticPodcastUrl` to accept account context |
+| `supabase/functions/generate-podcast/index.ts` | No changes needed — will invoke existing function to generate Pinnacle audio |
 
+### Approach for Audio Generation
+After code changes are deployed, invoke the `generate-podcast` edge function with the Pinnacle-branded script text to produce `pinnacle-heritage.mp3`. This will be uploaded to the `podcast-audio` storage bucket automatically by the edge function, making it available via public URL.

@@ -21,17 +21,91 @@ const DEFAULT_VOICES: Record<string, string> = {
 const FALLBACK_VOICE = "JBFqnCBsd6RMkjVDRZzb";
 
 /**
- * Request PCM (raw 16-bit signed LE, mono, 44100 Hz) from ElevenLabs.
- * PCM segments can be trivially concatenated and wrapped in a WAV header
- * to produce a perfectly seekable file.
+ * Strip ID3v2 tags from the start of an MP3 buffer.
+ * ID3v2 headers start with "ID3" and contain a syncsafe size.
+ * Removing them from all-but-the-first segment prevents the browser
+ * from misreading duration when concatenated MP3 segments each have headers.
  */
-async function generateTurnPCM(
+function stripID3v2(data: Uint8Array): Uint8Array {
+  // Check for ID3v2 header: starts with "ID3"
+  if (data.length < 10) return data;
+  if (data[0] !== 0x49 || data[1] !== 0x44 || data[2] !== 0x33) return data;
+
+  // Syncsafe integer at bytes 6-9
+  const size =
+    ((data[6] & 0x7f) << 21) |
+    ((data[7] & 0x7f) << 14) |
+    ((data[8] & 0x7f) << 7) |
+    (data[9] & 0x7f);
+  const headerSize = 10 + size;
+
+  if (headerSize >= data.length) return data;
+  return data.slice(headerSize);
+}
+
+/**
+ * Find and remove any Xing/Info VBR header frame from MP3 data.
+ * These frames are placed by encoders and can confuse duration calculation
+ * when multiple files are concatenated.
+ */
+function stripXingFrame(data: Uint8Array): Uint8Array {
+  // Look for "Xing" or "Info" marker in the first 512 bytes
+  for (let i = 0; i < Math.min(data.length - 4, 512); i++) {
+    if (
+      (data[i] === 0x58 && data[i+1] === 0x69 && data[i+2] === 0x6E && data[i+3] === 0x67) || // "Xing"
+      (data[i] === 0x49 && data[i+1] === 0x6E && data[i+2] === 0x66 && data[i+3] === 0x6F)    // "Info"
+    ) {
+      // Found Xing/Info — we need to find the MPEG frame that contains it
+      // Walk backwards to find the frame sync (0xFF 0xE? or 0xFF 0xF?)
+      let frameStart = i;
+      while (frameStart > 0) {
+        if (data[frameStart] === 0xFF && (data[frameStart + 1] & 0xE0) === 0xE0) {
+          break;
+        }
+        frameStart--;
+      }
+      // Skip this entire frame (typically 417 or 418 bytes for 128kbps 44100Hz)
+      // Calculate frame length from header
+      const frameLen = getMpegFrameLength(data, frameStart);
+      if (frameLen > 0 && frameStart + frameLen <= data.length) {
+        const before = data.slice(0, frameStart);
+        const after = data.slice(frameStart + frameLen);
+        const result = new Uint8Array(before.length + after.length);
+        result.set(before, 0);
+        result.set(after, before.length);
+        return result;
+      }
+      break;
+    }
+  }
+  return data;
+}
+
+function getMpegFrameLength(data: Uint8Array, offset: number): number {
+  if (offset + 4 > data.length) return 0;
+  const h = (data[offset] << 24) | (data[offset+1] << 16) | (data[offset+2] << 8) | data[offset+3];
+  
+  const bitrateIdx = (h >> 12) & 0x0F;
+  const sampleRateIdx = (h >> 10) & 0x03;
+  const padding = (h >> 9) & 0x01;
+  
+  const bitrates = [0,32,40,48,56,64,80,96,112,128,160,192,224,256,320,0];
+  const sampleRates = [44100, 48000, 32000, 0];
+  
+  const bitrate = bitrates[bitrateIdx];
+  const sampleRate = sampleRates[sampleRateIdx];
+  
+  if (!bitrate || !sampleRate) return 0;
+  return Math.floor(144000 * bitrate / sampleRate) + padding;
+}
+
+async function generateTurnAudio(
   text: string,
   voiceId: string,
   apiKey: string,
 ): Promise<Uint8Array> {
   const resp = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=pcm_44100`,
+    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
     {
       method: "POST",
       headers: {
@@ -50,47 +124,6 @@ async function generateTurnPCM(
     throw new Error(`ElevenLabs error ${resp.status}: ${errText}`);
   }
   return new Uint8Array(await resp.arrayBuffer());
-}
-
-/** Build a valid WAV header for raw PCM data (16-bit mono 44100 Hz). */
-function buildWavHeader(pcmLength: number): Uint8Array {
-  const sampleRate = 44100;
-  const numChannels = 1;
-  const bitsPerSample = 16;
-  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
-  const blockAlign = numChannels * (bitsPerSample / 8);
-  const dataChunkSize = pcmLength;
-  const fileSize = 36 + dataChunkSize; // 44 - 8 (RIFF header) + data
-
-  const header = new ArrayBuffer(44);
-  const view = new DataView(header);
-
-  // RIFF chunk
-  writeString(view, 0, "RIFF");
-  view.setUint32(4, fileSize, true);
-  writeString(view, 8, "WAVE");
-
-  // fmt sub-chunk
-  writeString(view, 12, "fmt ");
-  view.setUint32(16, 16, true); // sub-chunk size
-  view.setUint16(20, 1, true);  // PCM format
-  view.setUint16(22, numChannels, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, byteRate, true);
-  view.setUint16(32, blockAlign, true);
-  view.setUint16(34, bitsPerSample, true);
-
-  // data sub-chunk
-  writeString(view, 36, "data");
-  view.setUint32(40, dataChunkSize, true);
-
-  return new Uint8Array(header);
-}
-
-function writeString(view: DataView, offset: number, str: string) {
-  for (let i = 0; i < str.length; i++) {
-    view.setUint8(offset + i, str.charCodeAt(i));
-  }
 }
 
 serve(async (req) => {
@@ -121,40 +154,40 @@ serve(async (req) => {
 
     const voices = { ...DEFAULT_VOICES, ...(voiceMap || {}) };
 
-    // Generate PCM for each turn sequentially
+    // Generate audio for each turn sequentially
     const segments: Uint8Array[] = [];
     for (let i = 0; i < script.length; i++) {
       const line = script[i];
       const voice = line.voiceId || voices[line.speaker] || FALLBACK_VOICE;
       console.log(`Generating turn ${i + 1}/${script.length}: ${line.speaker} (voice ${voice})`);
-      const pcm = await generateTurnPCM(line.text, voice, ELEVENLABS_API_KEY);
-      segments.push(pcm);
+      let audio = await generateTurnAudio(line.text, voice, ELEVENLABS_API_KEY);
+      
+      // Strip ID3v2 tags and Xing/Info VBR headers from every segment
+      // so the concatenated result has clean MPEG frames only
+      audio = stripID3v2(audio);
+      audio = stripXingFrame(audio);
+      
+      segments.push(audio);
     }
 
-    // Concatenate all PCM segments
-    const totalPCMLength = segments.reduce((sum, s) => sum + s.length, 0);
-    const pcmData = new Uint8Array(totalPCMLength);
+    // Concatenate clean MP3 frames
+    const totalLength = segments.reduce((sum, s) => sum + s.length, 0);
+    const combined = new Uint8Array(totalLength);
     let offset = 0;
     for (const seg of segments) {
-      pcmData.set(seg, offset);
+      combined.set(seg, offset);
       offset += seg.length;
     }
 
-    // Build WAV = header + PCM data
-    const wavHeader = buildWavHeader(totalPCMLength);
-    const wavFile = new Uint8Array(wavHeader.length + pcmData.length);
-    wavFile.set(wavHeader, 0);
-    wavFile.set(pcmData, wavHeader.length);
-
-    // Upload to storage as .wav
+    // Upload to storage
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const filePath = `${moduleId}.wav`;
+    const filePath = `${moduleId}.mp3`;
     const { error: uploadError } = await supabase.storage
       .from("podcast-audio")
-      .upload(filePath, wavFile, { contentType: "audio/wav", upsert: true });
+      .upload(filePath, combined, { contentType: "audio/mpeg", upsert: true });
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
@@ -174,8 +207,7 @@ serve(async (req) => {
         publicUrl: urlData.publicUrl,
         moduleId,
         turns: script.length,
-        sizeBytes: wavFile.length,
-        format: "wav",
+        sizeBytes: combined.length,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

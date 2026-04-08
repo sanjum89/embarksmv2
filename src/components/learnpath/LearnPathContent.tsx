@@ -40,6 +40,7 @@ export function LearnPathContent() {
           skillTargetTitle: st.title,
           progress: st.progress,
           learningFormat: s.learningFormat,
+          stepId: s.id,
         };
       })
   );
@@ -78,7 +79,13 @@ export function LearnPathContent() {
       <div className="h-full flex flex-col">
         <LearnPathModeSelector moduleTitle={mod.title} />
         <div className="flex-1 overflow-y-auto">
-          <LearnPathModuleContent module={mod} skillTargetTitle={stepInfo?.skillTargetTitle} learningFormat={stepInfo?.learningFormat} />
+          <LearnPathModuleContent
+            module={mod}
+            skillTargetTitle={stepInfo?.skillTargetTitle}
+            learningFormat={stepInfo?.learningFormat}
+            skillTargetId={stepInfo?.skillTargetId}
+            stepId={stepInfo?.stepId}
+          />
         </div>
       </div>
     );

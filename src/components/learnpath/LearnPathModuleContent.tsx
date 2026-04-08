@@ -1,5 +1,6 @@
 import { useLearnPath, type LearningMode } from "@/contexts/LearnPathContext";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
+import { useAccount } from "@/contexts/AccountContext";
 import { LearnPathPodcastPlayer } from "./LearnPathPodcastPlayer";
 import { ScenarioQuestion } from "./ScenarioQuestion";
 import { HandsOnRolePlayCard } from "./HandsOnRolePlayCard";
@@ -44,7 +45,8 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
   const openAssessment = learnPathCtx.openAssessment;
   const { skillTargets, updateSkillTarget } = useSkillTargets();
   const navigate = useNavigate();
-  const { substitute } = useContentSubstitution();
+  const { substitute, substituteDeep } = useContentSubstitution();
+  const { normalizedAccount } = useAccount();
   const isMicro = learningFormat === "micro";
   const transcript = substitute(module.transcript ?? "No content available for this module.");
   const [microExpanded, setMicroExpanded] = useState(false);
@@ -72,10 +74,12 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
   })();
 
   const banner = modeBanners[learningMode];
-  const podcastScript = getPodcastTranscript(module.id);
-  const handsOnData = getHandsOnScenarios(module.id);
+  const rawPodcastScript = getPodcastTranscript(module.id);
+  const podcastScript = rawPodcastScript ? substituteDeep(rawPodcastScript) : undefined;
+  const rawHandsOnData = getHandsOnScenarios(module.id);
+  const handsOnData = rawHandsOnData ? substituteDeep(rawHandsOnData) : undefined;
   const rpIds = moduleRolePlayMap[module.id] ?? [];
-  const rolePlays = rpIds.map((id) => mockRolePlayBank.find((rp) => rp.id === id)).filter(Boolean);
+  const rolePlays = rpIds.map((id) => mockRolePlayBank.find((rp) => rp.id === id)).filter(Boolean).map((rp) => substituteDeep(rp));
 
   const wordCount = transcript.split(/\s+/).length;
   const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
@@ -297,7 +301,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
   /* ═══ LISTENING MODE ═══ */
   const renderListening = () => {
     if (podcastScript) {
-      const staticUrl = getStaticPodcastUrl(module.id);
+      const staticUrl = getStaticPodcastUrl(module.id, normalizedAccount?.name);
       return <LearnPathPodcastPlayer script={podcastScript} staticAudioUrl={staticUrl} />;
     }
     return (

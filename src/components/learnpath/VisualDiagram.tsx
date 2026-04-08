@@ -69,7 +69,7 @@ const curatedFlowCharts: Record<string, FlowChartData[]> = {
   heritage: [
     {
       title: "Company Foundation",
-      root: "Heritage (est. 1742)",
+      root: "Rathbones (est. 1742)",
       children: ["Integrity", "Empowerment", "Independent Thinking", "Client-Centricity"],
       bottom: "280-Year Legacy",
     },

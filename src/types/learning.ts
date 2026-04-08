@@ -12,6 +12,7 @@ export interface User {
 
 export type StepType = "assessment" | "role_play" | "module";
 export type StepStatus = "locked" | "available" | "in_progress" | "completed" | "skipped";
+export type LearningFormat = "full" | "micro" | "auto_skip";
 
 export interface StepItem {
   id: string;

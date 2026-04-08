@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, Mic } from "lucide-react";
 import type { RolePlay } from "@/types/learning";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 
 interface Props {
   rolePlay: RolePlay;
@@ -9,6 +10,7 @@ interface Props {
 
 export function HandsOnRolePlayCard({ rolePlay }: Props) {
   const navigate = useNavigate();
+  const { substitute } = useContentSubstitution();
   const initials = rolePlay.aiCloneConfig?.persona
     ? rolePlay.aiCloneConfig.persona
         .split(",")[0]
@@ -21,10 +23,11 @@ export function HandsOnRolePlayCard({ rolePlay }: Props) {
 
   const personaName = rolePlay.aiCloneConfig?.persona?.split(",")[0] ?? "AI Character";
   const personaRole = rolePlay.aiCloneConfig?.persona?.split(",").slice(1).join(",").trim() ?? "";
-  const personaDesc =
+  const personaDesc = substitute(
     rolePlay.aiCloneConfig?.context?.slice(0, 180) ??
     rolePlay.scenario?.slice(0, 180) ??
-    "";
+    ""
+  );
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 flex flex-col gap-3">

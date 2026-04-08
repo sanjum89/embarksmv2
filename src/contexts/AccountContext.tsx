@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, ty
 import type { Account, AccountData } from "@/types/account";
 import type { NormalizedAccount } from "@/types/account-v2";
 import { supabase } from "@/integrations/supabase/client";
-import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized } from "@/lib/accountDefaults";
+import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized, buildPinnacleNormalized } from "@/lib/accountDefaults";
 import { seedDemoNotifications, bootstrapInitialNotifications } from "@/data/agentOneSeeds";
 import { parseAccountJSON } from "@/lib/accountParser";
 import { generateProfileData } from "@/lib/profileDataGenerator";
@@ -247,10 +247,46 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // Seed Pinnacle Capital account if missing
+    const hasPinnacle = accts.some((a) => a.name === "Pinnacle Capital");
+    if (!hasPinnacle) {
+      const { data: pinnacleInserted, error: pinnacleError } = await supabase
+        .from("accounts")
+        .insert({
+          name: "Pinnacle Capital",
+          logo: null,
+          accent_color: null,
+          use_case_context: null,
+          is_default: false,
+          data: {} as any,
+        })
+        .select()
+        .single();
+
+      if (!pinnacleError && pinnacleInserted) {
+        const pAcct: Account = {
+          id: (pinnacleInserted as any).id,
+          name: "Pinnacle Capital",
+          logo: null,
+          logo_superlight: null,
+          accent_color: null,
+          use_case_context: null,
+          is_default: false,
+          data: {} as AccountData,
+          created_at: (pinnacleInserted as any).created_at,
+        };
+        accts.push(pAcct);
+      }
+    }
+
     // Build normalized cache
     const cache: Record<string, NormalizedAccount> = {};
     for (const acct of accts) {
-      cache[acct.id] = normalizeFromLegacy(acct);
+      if (acct.name === "Pinnacle Capital") {
+        cache[acct.id] = buildPinnacleNormalized(acct.id);
+      } else {
+        cache[acct.id] = normalizeFromLegacy(acct);
+      }
     }
     setNormalizedCache(cache);
     setAccounts(accts);

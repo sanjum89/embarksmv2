@@ -1,4 +1,5 @@
 import { useLearnPath, type LearningMode } from "@/contexts/LearnPathContext";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { LearnPathPodcastPlayer } from "./LearnPathPodcastPlayer";
 import { ScenarioQuestion } from "./ScenarioQuestion";
 import { HandsOnRolePlayCard } from "./HandsOnRolePlayCard";
@@ -41,8 +42,9 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
   const openAssessment = learnPathCtx.openAssessment;
   const { skillTargets, updateSkillTarget } = useSkillTargets();
   const navigate = useNavigate();
+  const { substitute } = useContentSubstitution();
   const isMicro = learningFormat === "micro";
-  const transcript = module.transcript ?? "No content available for this module.";
+  const transcript = substitute(module.transcript ?? "No content available for this module.");
   const [microExpanded, setMicroExpanded] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [showAllBullets, setShowAllBullets] = useState(false);
@@ -109,7 +111,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
         <FileText className="h-5 w-5 text-accent" />
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-foreground text-base">{module.title}</h3>
+        <h3 className="font-semibold text-foreground text-base">{substitute(module.title)}</h3>
         {skillTargetTitle && <p className="text-xs text-muted-foreground mt-0.5">{skillTargetTitle}</p>}
         <div className="flex items-center gap-3 mt-2">
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
@@ -205,7 +207,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
       <div className="space-y-5">
         {/* Reading header card */}
         <div className="bg-card rounded-xl border border-border p-6">
-          <h2 className="text-2xl font-bold text-foreground">{module.title}</h2>
+          <h2 className="text-2xl font-bold text-foreground">{substitute(module.title)}</h2>
           {skillTargetTitle && <p className="text-sm text-muted-foreground mt-1">{skillTargetTitle}</p>}
           <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">

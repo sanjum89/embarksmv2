@@ -162,8 +162,8 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
 
   /* ═══ VISUAL MODE ═══ */
   const renderVisual = () => {
-    const flowCharts = extractFlowCharts(transcript);
-    const diagramNodes = parseTranscriptToDiagram(transcript);
+    const flowCharts = substituteDeep(extractFlowCharts(transcript));
+    const diagramNodes = substituteDeep(parseTranscriptToDiagram(transcript));
     const bullets = transcript.match(/^\*\s+.+$/gm)?.slice(0, 8) ?? [];
     const visibleBullets = showAllBullets ? bullets : bullets.slice(0, 6);
 
@@ -340,8 +340,8 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
 
   /* ═══ COMBINED MODE — Curated Blend ═══ */
   const renderCombined = () => {
-    const flowCharts = extractFlowCharts(transcript);
-    const diagramNodes = parseTranscriptToDiagram(transcript);
+    const flowCharts = substituteDeep(extractFlowCharts(transcript));
+    const diagramNodes = substituteDeep(parseTranscriptToDiagram(transcript));
 
     // Extract a condensed summary: first 2 paragraphs of transcript
     const paragraphs = transcript.split("\n\n").filter(p => p.trim() && !p.startsWith("#"));

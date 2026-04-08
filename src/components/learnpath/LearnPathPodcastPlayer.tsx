@@ -84,9 +84,10 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
   const startProgressTracking = useCallback((audio: HTMLAudioElement) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
-      if (audio.duration) {
-        setProgress((audio.currentTime / audio.duration) * 100);
-        setCurrentTime(formatTime(audio.currentTime));
+      if (audio.duration && !seekingRef.current) {
+        const clamped = Math.min(audio.currentTime, audio.duration);
+        setProgress((clamped / audio.duration) * 100);
+        setCurrentTime(formatTime(clamped));
       }
     }, 200);
   }, []);
@@ -173,13 +174,22 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
     }
   }, [fullText, status, speed, cleanup, startProgressTracking, isStatic]);
 
-  const handleSeek = useCallback((value: number[]) => {
+  const handleSeekVisual = useCallback((value: number[]) => {
+    seekingRef.current = true;
+    setProgress(value[0]);
     if (audioRef.current && audioRef.current.duration) {
-      const time = (value[0] / 100) * audioRef.current.duration;
+      setCurrentTime(formatTime((value[0] / 100) * audioRef.current.duration));
+    }
+  }, []);
+
+  const handleSeekCommit = useCallback((value: number[]) => {
+    if (audioRef.current && audioRef.current.duration) {
+      const time = Math.min((value[0] / 100) * audioRef.current.duration, audioRef.current.duration);
       audioRef.current.currentTime = time;
       setProgress(value[0]);
       setCurrentTime(formatTime(time));
     }
+    seekingRef.current = false;
   }, []);
 
   const handleRestart = useCallback(() => {
@@ -220,7 +230,8 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
           max={100}
           step={0.5}
           className="cursor-pointer"
-          onValueChange={handleSeek}
+          onValueChange={handleSeekVisual}
+          onValueCommit={handleSeekCommit}
           disabled={!isReady}
         />
 

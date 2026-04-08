@@ -16,6 +16,7 @@ export function LearnPathAudioPlayer({ text }: Props) {
   const [errorMsg, setErrorMsg] = useState("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const seekingRef = useRef(false);
 
   const cleanup = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -70,8 +71,9 @@ export function LearnPathAudioPlayer({ text }: Props) {
       };
 
       intervalRef.current = setInterval(() => {
-        if (audio.duration) {
-          setProgress((audio.currentTime / audio.duration) * 100);
+        if (audio.duration && !seekingRef.current) {
+          const clamped = Math.min(audio.currentTime, audio.duration);
+          setProgress((clamped / audio.duration) * 100);
         }
       }, 200);
 
@@ -125,7 +127,20 @@ export function LearnPathAudioPlayer({ text }: Props) {
             max={100}
             step={1}
             className="cursor-pointer"
-            disabled
+            disabled={status !== "playing" && status !== "paused"}
+            onValueChange={(vals) => {
+              seekingRef.current = true;
+              setProgress(vals[0]);
+            }}
+            onValueCommit={(vals) => {
+              if (audioRef.current && audioRef.current.duration) {
+                audioRef.current.currentTime = Math.min(
+                  (vals[0] / 100) * audioRef.current.duration,
+                  audioRef.current.duration
+                );
+              }
+              seekingRef.current = false;
+            }}
           />
         </div>
       </div>

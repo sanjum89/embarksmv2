@@ -380,6 +380,7 @@ function DefaultContentViewer({
   const [learningMode, setLearningMode] = useState<LearningMode>("reading");
   const { updateSkillTarget, skillTargets } = useSkillTargets();
   const { normalizedAccount } = useAccount();
+  const { substitute } = useContentSubstitution();
 
   // Resolve the module to get transcript content
   const moduleId = step.referenceId ?? step.id;

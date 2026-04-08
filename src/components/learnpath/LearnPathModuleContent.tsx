@@ -26,6 +26,8 @@ interface Props {
   skillTargetId?: string;
   stepId?: string;
   onComplete?: () => void;
+  /** When true, suppresses the inner module header card + mode banner (parent renders its own) */
+  hideHeader?: boolean;
 }
 
 const modeBanners: Record<string, { icon: React.ElementType; label: string; desc: string; className: string }> = {
@@ -33,10 +35,10 @@ const modeBanners: Record<string, { icon: React.ElementType; label: string; desc
   reading: { icon: BookOpen, label: "Reading Mode", desc: "Full written content for deep, self-paced study.", className: "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" },
   listening: { icon: Headphones, label: "Listening Mode", desc: "Podcast-style conversation — learn hands-free.", className: "bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800" },
   "hands-on": { icon: Wrench, label: "Hands-On Mode", desc: "Interactive scenarios and role-play practice.", className: "bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800" },
-  combined: { icon: Layers, label: "Combined Mode", desc: "All learning modes in one comprehensive view.", className: "bg-primary/10 text-primary border-primary/20" },
+  combined: { icon: Layers, label: "Combined Mode", desc: "A curated blend of reading, visuals, and practice.", className: "bg-primary/10 text-primary border-primary/20" },
 };
 
-export function LearnPathModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete }: Props) {
+export function LearnPathModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader }: Props) {
   const learnPathCtx = useLearnPath();
   const learningMode = learningModeOverride ?? learnPathCtx.learningMode;
   const openAssessment = learnPathCtx.openAssessment;

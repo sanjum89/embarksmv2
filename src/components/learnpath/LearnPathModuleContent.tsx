@@ -2,7 +2,8 @@ import { useLearnPath } from "@/contexts/LearnPathContext";
 import { LearnPathPodcastPlayer } from "./LearnPathPodcastPlayer";
 import { ScenarioQuestion } from "./ScenarioQuestion";
 import { HandsOnRolePlayCard } from "./HandsOnRolePlayCard";
-import { VisualDiagram, parseTranscriptToDiagram } from "./VisualDiagram";
+import { VisualDiagram, parseTranscriptToDiagram, extractFlowCharts } from "./VisualDiagram";
+import { FlowDiagram } from "./FlowDiagram";
 import type { LearningModule } from "@/types/learning";
 import ReactMarkdown from "react-markdown";
 import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users } from "lucide-react";
@@ -78,11 +79,22 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
 
   /* ═══ VISUAL MODE ═══ */
   const renderVisual = () => {
+    const flowCharts = extractFlowCharts(transcript);
     const diagramNodes = parseTranscriptToDiagram(transcript);
     const bullets = transcript.match(/^\*\s+.+$/gm)?.slice(0, 8) ?? [];
 
     return (
       <div className="space-y-5">
+        {/* Flow-chart diagrams */}
+        {flowCharts.length > 0 && (
+          <div className="space-y-6">
+            {flowCharts.map((chart, i) => (
+              <div key={i} className="bg-card rounded-xl border border-border p-6 flex justify-center">
+                <FlowDiagram chart={chart} />
+              </div>
+            ))}
+          </div>
+        )}
         {/* Concept Map — section cards */}
         {diagramNodes.length > 0 && (
           <VisualDiagram title="Concept Map" nodes={diagramNodes} />

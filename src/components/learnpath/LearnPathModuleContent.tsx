@@ -433,23 +433,13 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-4" ref={scrollRef} onScroll={handleScroll}>
-      {renderModuleHeader()}
-      {renderModeBanner()}
+      {!hideHeader && renderModuleHeader()}
+      {!hideHeader && renderModeBanner()}
       {learningMode === "visual" && renderVisual()}
       {learningMode === "reading" && renderReading()}
       {learningMode === "listening" && renderListening()}
       {learningMode === "hands-on" && renderHandsOn()}
       {learningMode === "combined" && renderCombined()}
-
-      {/* Mark as Complete — sticky bottom bar */}
-      {(skillTargetId || onComplete) && (
-        <div className="sticky bottom-0 pt-4 pb-2 bg-gradient-to-t from-background via-background to-transparent">
-          <Button onClick={handleMarkComplete} className="w-full gap-2">
-            <CheckCircle2 className="h-4 w-4" />
-            Mark as Complete
-          </Button>
-        </div>
-      )}
     </div>
   );
 }

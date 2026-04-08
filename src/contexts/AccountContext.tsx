@@ -281,11 +281,35 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
     // Build normalized cache
     const cache: Record<string, NormalizedAccount> = {};
+    // First pass: normalize all non-Pinnacle accounts
+    for (const acct of accts) {
+      if (acct.name !== "Pinnacle Capital") {
+        cache[acct.id] = normalizeFromLegacy(acct);
+      }
+    }
+    // Second pass: build Pinnacle by cloning the Rathbones normalized data
     for (const acct of accts) {
       if (acct.name === "Pinnacle Capital") {
-        cache[acct.id] = buildPinnacleNormalized(acct.id);
-      } else {
-        cache[acct.id] = normalizeFromLegacy(acct);
+        // Find the Rathbones account to clone from
+        const rathbonesEntry = Object.values(cache).find((n) => n.branding.name === "Rathbones");
+        if (rathbonesEntry) {
+          cache[acct.id] = {
+            ...JSON.parse(JSON.stringify(rathbonesEntry)),
+            isDefault: false,
+            branding: {
+              ...rathbonesEntry.branding,
+              name: "Pinnacle Capital",
+            },
+            contentNameMap: {
+              "Rathbones": "Pinnacle Capital",
+              "rathbones": "pinnacle capital",
+              "RATHBONES": "PINNACLE CAPITAL",
+            },
+          };
+        } else {
+          // Fallback to default if Rathbones not found
+          cache[acct.id] = buildPinnacleNormalized(acct.id);
+        }
       }
     }
     setNormalizedCache(cache);

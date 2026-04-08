@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X, ChevronRight, ChevronLeft, SkipForward, Upload, CheckCircle2,

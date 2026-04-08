@@ -18,7 +18,8 @@ function scriptToText(script: PodcastScript): string {
 }
 
 export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
-  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "playing" | "paused" | "error">("idle");
+  const isStatic = !!staticAudioUrl;
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "playing" | "paused" | "error">(isStatic ? "loading" : "idle");
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState("--:--");
   const [currentTime, setCurrentTime] = useState("0:00");
@@ -97,7 +98,7 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
       return;
     }
 
-    // Resume
+    // Resume or play pre-loaded static audio
     if ((status === "paused" || status === "ready") && audioRef.current) {
       audioRef.current.playbackRate = speed;
       startProgressTracking(audioRef.current);
@@ -106,7 +107,20 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
       return;
     }
 
-    // Generate on-demand (non-static)
+    // Static audio still loading — wait, don't call API
+    if (isStatic && status === "loading") {
+      return;
+    }
+
+    // Static audio but idle shouldn't happen (preload sets loading on mount),
+    // but guard against it — never call API for static modules
+    if (isStatic) {
+      setErrorMsg("Pre-generated audio failed to load. Try refreshing.");
+      setStatus("error");
+      return;
+    }
+
+    // Generate on-demand (non-static modules only)
     setStatus("loading");
     setErrorMsg("");
     cleanup();
@@ -156,7 +170,7 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
         setErrorMsg("Audio not available.");
       }
     }
-  }, [fullText, status, speed, cleanup, startProgressTracking]);
+  }, [fullText, status, speed, cleanup, startProgressTracking, isStatic]);
 
   const handleSeek = useCallback((value: number[]) => {
     if (audioRef.current && audioRef.current.duration) {
@@ -184,7 +198,6 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
   }, [speed]);
 
   const isReady = status === "ready" || status === "playing" || status === "paused";
-  const isStatic = !!staticAudioUrl;
 
   return (
     <div className="space-y-3">

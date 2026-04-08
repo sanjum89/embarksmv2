@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ProgramContext } from "@/data/mock";
+import BackButton from "@/components/layout/BackButton";
 
 export default function ProgramContextPage() {
   const { normalizedAccount, activeAccount } = useAccount();
@@ -27,6 +28,7 @@ export default function ProgramContextPage() {
 
   return (
     <div className="p-6">
+      <BackButton />
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-between mb-6">
           <div>

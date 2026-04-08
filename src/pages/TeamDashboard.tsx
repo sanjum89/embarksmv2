@@ -8,6 +8,7 @@ import LearningSkillsPanel from "@/components/admin/LearningSkillsPanel";
 import WorkSignalsPanel from "@/components/admin/WorkSignalsPanel";
 import ReflectionsPanel from "@/components/admin/ReflectionsPanel";
 import { getScopedAccount } from "@/lib/accountSelectors";
+import BackButton from "@/components/layout/BackButton";
 
 export default function TeamDashboard() {
   const { normalizedAccount } = useAccount();
@@ -32,6 +33,7 @@ export default function TeamDashboard() {
 
   return (
     <div className="flex-1 overflow-y-auto p-6">
+      <BackButton />
       <div className="mb-6">
         <h1 className="font-display text-2xl font-bold text-foreground">Team Dashboard</h1>
         <p className="mt-1 text-sm text-muted-foreground">

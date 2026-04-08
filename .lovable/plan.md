@@ -1,32 +1,47 @@
 
+No — we do not need to rebuild all the skill targets. The detailed Rathbones content already exists in the codebase. The bug is in how the live Clara data is being resolved.
 
-## Fix LearningModulePage to Show Rich Content for All Chapters
+What’s actually failing
+- The live route is using IDs like `RAT-INTRO-LM-001`.
+- The rich module catalog is keyed under IDs like `m-rb-intro-heritage` and `RAT-INTRO-001`.
+- In `src/lib/accountParser.ts`, if a step has no `referenceId`, it gets replaced with `step.id`.
+- In `src/lib/learnPathModuleResolver.ts`, that means the resolver only sees the live DB ID, fails to find a catalog match, and falls back to `step.description`.
+- That fallback is exactly the one-line placeholder text you’re seeing.
+- Also, `src/components/skill-target/TraditionalContentViewer.tsx` still shows a generic preview shell for document/PDF modules, so the right panel can still look blank/placeholder there.
 
-### Root Cause
+Implementation plan
+1. Fix the resolver, not the content
+- Update `src/lib/learnPathModuleResolver.ts` so that when an exact catalog ID is missing, it tries smarter recovery before synthesizing:
+  - matched step’s `id` and `referenceId`
+  - normalized Rathbones aliases (for example `RAT-INTRO-LM-001` -> `RAT-INTRO-001`)
+  - exact/normalized title match such as `Our Heritage & Values`
+- Keep the current synthetic fallback only as the last resort.
 
-`LearningModulePage.tsx` does NOT use the shared `resolveModule()` function. Instead it has its own lookup logic (line 16-35) that:
-1. Checks only account modules OR mock modules (not both merged)
-2. Falls back to synthesizing a module from `step.description` — a one-liner — producing the placeholder text the user sees
+2. Make both viewers use the same rich resolved module
+- `src/pages/LearningModulePage.tsx`: keep rendering the resolved module content directly.
+- `src/components/skill-target/TraditionalContentViewer.tsx`: switch to document-first rendering:
+  - video = preview + full transcript
+  - document/PDF = full markdown content inline, no placeholder preview
 
-The rich transcripts for `RAT-LM-001` etc. already exist in `mockLearningModules` (added in the previous change to `mock.ts`). The shared `resolveModule()` function in `learnPathModuleResolver.ts` correctly merges account + mock catalogs and would find them. This page just doesn't call it.
+3. Keep progress updates working
+- Preserve completion logic against the actual step `id` / `referenceId` so Clara, Elliot, and Sophie can still complete chapters normally even if the displayed content came from an alias/title match.
 
-Additionally, document-type modules show a faux-PDF skeleton instead of rendering the actual content inline.
+Why previous attempts failed
+- They fixed the page rendering, but not the real live-data mismatch.
+- The key missing piece is handling the DB IDs that do not match the authored module catalog IDs.
 
-### Changes
+Files to update
+- `src/lib/learnPathModuleResolver.ts`
+- `src/components/skill-target/TraditionalContentViewer.tsx`
+- `src/pages/LearningModulePage.tsx`
 
-**File: `src/pages/LearningModulePage.tsx`**
+Expected result
+- Clara’s chapters will show the full authored Rathbones content.
+- Elliot and Sophie will inherit the same fix automatically.
+- PDF/document chapters will render the full content inline instead of showing a blank placeholder.
+- No need to recreate the skill targets from scratch.
 
-1. Replace the manual module lookup (lines 11-35) with a call to `resolveModule(mid, skillTargets, normalizedAccount?.learningModules)` from `learnPathModuleResolver.ts`
-2. For `contentType === "document"` modules: remove the PDF skeleton placeholder (lines 172-192) and render the transcript/content directly using `ReactMarkdown` in a clean reading layout
-3. For `contentType === "video"` modules: keep the video preview, render transcript below using `ReactMarkdown` instead of plain `whitespace-pre-line` text
-4. Update the "Mark as Complete" handler to match steps by both `step.id === mid` and `step.referenceId === mid` (lines 52, 55) so progress works regardless of which ID format the URL uses
-5. Add `react-markdown` import
-
-No other files need changes — the resolver, transcripts, and mock catalog entries are already in place from previous work.
-
-### Expected Result
-- Clara's chapters show the full 800-1200 word realistic training content
-- Document chapters render content inline (no blank PDF placeholder)
-- Video chapters show preview + formatted transcript
-- Mark-as-complete still works correctly
-
+QA
+- Test `/skill-target/RAT-ST-INTRO-001/module/RAT-INTRO-LM-001`
+- Test opening the same chapter from the skill target right panel
+- Test one document module and one video module for Clara, then spot-check Elliot and Sophie

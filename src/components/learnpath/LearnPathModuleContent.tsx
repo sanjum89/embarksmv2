@@ -6,7 +6,8 @@ import { VisualDiagram, parseTranscriptToDiagram, extractFlowCharts } from "./Vi
 import { FlowDiagram } from "./FlowDiagram";
 import type { LearningModule, LearningFormat } from "@/types/learning";
 import ReactMarkdown from "react-markdown";
-import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users } from "lucide-react";
+import { useState } from "react";
+import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users, Zap, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";

@@ -14,13 +14,19 @@ export function resolveModule(
 ): LearningModule | undefined {
   const catalog = buildCatalog(accountLearningModules);
 
-  // 1. Direct match
+  // 1. Direct match by module ID
   let mod = catalog.find((m) => m.id === moduleId);
   if (mod) return mod;
 
-  // 2. Maybe moduleId is a step ID — resolve via referenceId
+  // 2. Maybe moduleId is a step's referenceId — resolve via step.id in catalog
+  //    (URLs use step.referenceId, but catalog entries may be keyed by step.id)
   for (const st of skillTargets) {
     for (const step of st.steps) {
+      if (step.referenceId === moduleId && step.id !== moduleId) {
+        mod = catalog.find((m) => m.id === step.id);
+        if (mod) return mod;
+      }
+      // Or moduleId is a step ID — resolve via referenceId in catalog
       if (step.id === moduleId && step.referenceId) {
         mod = catalog.find((m) => m.id === step.referenceId);
         if (mod) return mod;
@@ -31,7 +37,8 @@ export function resolveModule(
   // 3. Synthesize a module from the step's own metadata
   for (const st of skillTargets) {
     for (const step of st.steps) {
-      if (step.id === moduleId && step.type === "module") {
+      const match = step.id === moduleId || step.referenceId === moduleId;
+      if (match && step.type === "module") {
         return {
           id: moduleId,
           title: step.title,
@@ -54,7 +61,13 @@ export function buildCatalog(accountLearningModules?: LearningModule[]): Learnin
   if (!accountLearningModules || accountLearningModules.length === 0) {
     return mockLearningModules;
   }
-  const accountIds = new Set(accountLearningModules.map((m) => m.id));
+
+  // Only keep account modules that have real content (non-empty transcript).
+  // Empty account entries should NOT shadow richer mock catalog entries.
+  const richAccountModules = accountLearningModules.filter(
+    (m) => m.transcript && m.transcript.trim().length > 50
+  );
+  const accountIds = new Set(richAccountModules.map((m) => m.id));
   const fallback = mockLearningModules.filter((m) => !accountIds.has(m.id));
-  return [...accountLearningModules, ...fallback];
+  return [...richAccountModules, ...fallback];
 }

@@ -115,7 +115,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold text-foreground text-base">{substitute(module.title)}</h3>
         {skillTargetTitle && <p className="text-xs text-muted-foreground mt-0.5">{skillTargetTitle}</p>}
-        <div className="flex items-center gap-3 mt-2">
+        <div className="flex items-center gap-3 mt-2 flex-wrap">
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
             <Clock className="h-3 w-3" /> {module.duration}
           </span>
@@ -129,6 +129,16 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
           )}
         </div>
       </div>
+      <Button
+        size="sm"
+        variant={completed ? "ghost" : "default"}
+        disabled={completed}
+        onClick={handleMarkComplete}
+        className={cn("shrink-0 gap-1.5 text-xs", completed && "text-emerald-600")}
+      >
+        <CheckCircle2 className="h-3.5 w-3.5" />
+        {completed ? "Completed" : "Mark as Complete"}
+      </Button>
     </div>
   );
 

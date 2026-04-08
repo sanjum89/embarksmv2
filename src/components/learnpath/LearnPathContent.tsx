@@ -77,7 +77,7 @@ export function LearnPathContent() {
     const stepInfo = moduleSteps.find((ms) => ms.moduleId === activeModuleId);
     return (
       <div className="h-full flex flex-col">
-        <LearnPathModeSelector moduleTitle={mod.title} />
+        <LearnPathModeSelector skillTargetTitle={stepInfo?.skillTargetTitle} />
         <div className="flex-1 overflow-y-auto">
           <LearnPathModuleContent
             module={mod}

@@ -12,18 +12,18 @@ const modes: { mode: LearningMode; label: string; icon: React.ElementType }[] = 
 ];
 
 interface Props {
-  moduleTitle?: string;
+  skillTargetTitle?: string;
 }
 
-export function LearnPathModeSelector({ moduleTitle }: Props) {
+export function LearnPathModeSelector({ skillTargetTitle }: Props) {
   const { learningMode, setLearningMode, closeModule } = useLearnPath();
 
   return (
     <div className="border-b border-border">
-      {/* Top bar: title + All Modules */}
+      {/* Top bar: skill target name + All Modules */}
       <div className="px-4 py-3 flex items-center justify-between">
         <h2 className="text-sm font-semibold text-foreground truncate">
-          {moduleTitle ?? "Module"}
+          {skillTargetTitle ?? "Learning Path"}
         </h2>
         <Button
           variant="outline"

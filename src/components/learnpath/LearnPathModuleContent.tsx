@@ -221,21 +221,6 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
     const headings = transcript.match(/^#{1,3}\s+.+$/gm) ?? [];
     return (
       <div className="space-y-5">
-        {/* Reading header card */}
-        <div className="bg-card rounded-xl border border-border p-6">
-          <h2 className="text-2xl font-bold text-foreground">{substitute(module.title)}</h2>
-          {skillTargetTitle && <p className="text-sm text-muted-foreground mt-1">{skillTargetTitle}</p>}
-          <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-            <span className="inline-flex items-center gap-1">
-              <BookOpenCheck className="h-3.5 w-3.5" /> ~{readingMinutes} min read
-            </span>
-            <span>•</span>
-            <span>{wordCount} words</span>
-            <span>•</span>
-            <span>{module.duration}</span>
-          </div>
-        </div>
-
         {/* Reading progress bar */}
         <div className="sticky top-0 z-10 h-1 bg-muted rounded-full overflow-hidden">
           <div
@@ -247,7 +232,12 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
         {/* Table of contents */}
         {headings.length > 2 && (
           <div className="rounded-xl border border-border bg-muted/30 p-5">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Table of Contents</h4>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Table of Contents</h4>
+              <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
+                <BookOpenCheck className="h-3 w-3" /> ~{readingMinutes} min · {wordCount} words
+              </span>
+            </div>
             <ul className="space-y-1.5">
               {headings.map((h, i) => {
                 const level = (h.match(/^#+/) ?? [""])[0].length;

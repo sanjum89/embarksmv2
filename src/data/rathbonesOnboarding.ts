@@ -1200,7 +1200,12 @@ export const MANAGER_MILESTONES: ManagerMilestone[] = [
  * ═══════════════════════════════════════════════════════════ */
 
 export function getRathbonesTargetsForUser(userId: string): SkillTarget[] {
-  const targets: SkillTarget[] = [introToRathbones];
+  const personaMap: Record<string, "clara" | "elliot" | "sophie"> = {
+    u12: "clara", u13: "elliot", u14: "sophie",
+  };
+  const persona = personaMap[userId];
+  const intro = buildIntroToRathbones(persona);
+  const targets: SkillTarget[] = [intro];
 
   if (userId === "u12") {
     targets.push(claraSkillTarget2);

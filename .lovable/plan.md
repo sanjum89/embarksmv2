@@ -1,88 +1,56 @@
 
 
-## Comprehensive Content Rendering Overhaul
+## Duplicate Rathbones Account as "Pinnacle Capital"
 
-### Problems to Fix
+### Approach
 
-1. **Skill Target chapters have no learning mode selector** — When viewing a module via Skill Target > Chapters, it renders plain markdown with no Visual/Reading/Listening/Hands-On/Combined mode options.
-2. **LearnPath modules have no "Mark as Complete" button** — Users cannot progress through modules in LearnPath without the AI chat triggering it.
-3. **Combined mode is unreadable** — The banner text (image 1) is washed out/invisible, and the combined layout dumps all modes sequentially with no visual hierarchy.
-4. **Excessive whitespace** — The Concept Map card (image 2) only uses ~50% of horizontal space, leaving a large empty right column.
+The Rathbones content is deeply embedded across ~15 source files (transcripts, scenarios, role descriptions, module titles, onboarding data). Rather than duplicating all those files, we'll use a **runtime name-substitution** system: clone the default account structure but store a `contentNameMap` in the account data that replaces "Rathbones" with "Pinnacle Capital" everywhere content is rendered.
 
-### Plan
+### Implementation
 
-**1. Add learning modes to Skill Target chapter viewer**
+**1. Add `contentNameMap` support to the account model**
 
-In `TraditionalContentViewer.tsx` `DefaultContentViewer`, replace the plain ReactMarkdown rendering with the same `LearnPathModuleContent` component used in LearnPath. Add a mode selector bar (Visual/Reading/Listening/Hands-On/Combined) above the content. This requires wrapping the content area in a `LearnPathProvider` so `useLearnPath()` works, or extracting the mode state locally without the context.
+Add an optional `contentNameMap: Record<string, string>` field to `NormalizedAccount` (in `types/account-v2.ts`). When set, all content rendering (transcripts, scenarios, module titles, role descriptions) will apply these substitutions before display.
 
-Approach: Add local `learningMode` state + a compact mode selector directly in `DefaultContentViewer`, then render `LearnPathModuleContent` with the resolved module. The `LearnPathModuleContent` component will need a small refactor to accept `learningMode` as a prop (optional override) instead of always reading from context, so it works in both LearnPath and Skill Target contexts.
+**2. Create `buildPinnacleAccount()` in `accountDefaults.ts`**
 
-| File | Change |
-|---|---|
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Accept optional `learningMode` prop, fall back to context |
-| `src/components/skill-target/TraditionalContentViewer.tsx` | Import mode selector + LearnPathModuleContent, add mode state, render rich content |
+A new function that calls `buildDefaultNormalized()` then:
+- Sets `branding.name` to "Pinnacle Capital"
+- Sets `isDefault` to false
+- Adds `contentNameMap: { "Rathbones": "Pinnacle Capital", "rathbones": "pinnacle capital" }`
+- Keeps all employees, skills, skill targets, role plays, assessments identical
 
-**2. Add "Mark as Complete" to LearnPath module view**
+**3. Seed the Pinnacle Capital account on startup**
 
-Add a sticky bottom bar or top-right button in the LearnPath module content area with "Mark as Complete" that updates the skill target step status (same logic as `DefaultContentViewer.handleMarkComplete`), then auto-advances to the next module.
+In `AccountContext.tsx`, after loading/seeding the default account, check if a "Pinnacle Capital" account exists. If not, insert it into the `accounts` table using the Pinnacle builder. This mirrors the existing default-account seeding pattern.
 
-| File | Change |
-|---|---|
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Add Mark as Complete button + completion logic |
-| `src/components/learnpath/LearnPathContent.tsx` | Pass `skillTargetId` and step info to content component for completion updates |
+**4. Add content substitution utility**
 
-**3. Fix Combined mode readability**
+Create `src/lib/contentSubstitution.ts` with a `applyContentNames(text: string, nameMap: Record<string, string>): string` function that does a global case-preserving replacement.
 
-- Replace the washed-out banner with a properly contrasted one using `bg-gradient-to-r from-primary/10 to-accent/10` with solid text colors.
-- Instead of dumping all modes sequentially, render Combined as a **tabbed accordion** — each section (Visual Summary, Full Reading, Listen, Practice) is a collapsible section with a colored header. Only one expanded at a time by default, or all expandable.
-- Add section number badges and smooth expand/collapse animations.
+**5. Wire substitution into content rendering**
 
-| File | Change |
-|---|---|
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Rewrite `renderCombined()` with accordion sections; fix combined banner colors |
+Apply `applyContentNames()` in these rendering points (only when `contentNameMap` is set on the active account):
+- `LearnPathModuleContent.tsx` — before rendering transcript/markdown content
+- `VisualDiagram.tsx` — when parsing section titles and flow chart labels
+- `HandsOnRolePlayCard.tsx` / `ScenarioQuestion.tsx` — scenario text
+- `TraditionalContentViewer.tsx` — content display
+- `LearningModulePage.tsx` — module title display
 
-**4. Fix whitespace — make content full-width**
+This is a lightweight hook: `useContentSubstitution()` that reads `contentNameMap` from the active normalized account and returns a `substitute(text)` function.
 
-- In `VisualDiagram.tsx`, change the grid from `md:grid-cols-2` to `grid-cols-1` so section cards span full width — the content is text-heavy and benefits from wider reading space.
-- In `LearnPathModuleContent.tsx`, ensure the outer container uses `max-w-4xl mx-auto` for comfortable reading width rather than being constrained by a narrow column.
-- In `SectionCard`, increase padding and use `leading-relaxed` for description text.
+### Files to create/modify
 
 | File | Change |
 |---|---|
-| `src/components/learnpath/VisualDiagram.tsx` | Full-width cards, better spacing |
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Add `max-w-4xl mx-auto` wrapper |
-
-**5. Content rendering rules — enhanced readability**
-
-**Visual Mode rules:**
-- Flow diagrams centered with generous padding (p-8)
-- Section cards render full-width (single column) with left accent border
-- Each card has a fade-in animation (staggered by index × 80ms)
-- Bullet children use `leading-relaxed` with proper `text-sm` sizing
-- Key Takeaways section uses alternating subtle background tints
-- Max 6 takeaways shown, with "Show more" if exceeded
-
-**Reading Mode rules:**
-- Content card uses `max-w-prose mx-auto` for optimal 65-character line length
-- `prose-lg` base size with `leading-8` line height for body text
-- H2 headings get a decorative left border accent (4px primary) instead of just bottom border
-- Blockquotes get a subtle gradient left border
-- Add a floating "reading progress" bar at the top of the scroll container
-- Table of Contents entries are clickable (scroll to heading)
-
-**Combined Mode rules:**
-- Each section rendered inside a collapsible card with icon + title header
-- Default: first section (Visual) expanded, rest collapsed
-- Smooth height animation on expand/collapse
-- Section dividers replaced with proper spacing (py-6)
-- Each section header has the mode's color accent
-
-### Files summary
-
-| File | Change |
-|---|---|
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Accept optional learningMode prop; add Mark as Complete; rewrite renderCombined as accordion; add max-w-4xl wrapper; enhance renderVisual with staggered animations; enhance renderReading with progress bar and better typography |
-| `src/components/learnpath/VisualDiagram.tsx` | Full-width single-column cards; increased padding; fade-in animations |
-| `src/components/learnpath/LearnPathContent.tsx` | Pass skillTargetId and step status info for completion tracking |
-| `src/components/skill-target/TraditionalContentViewer.tsx` | Add learning mode selector and use LearnPathModuleContent for rich rendering |
+| `src/types/account-v2.ts` | Add optional `contentNameMap` field to `NormalizedAccount` |
+| `src/lib/contentSubstitution.ts` | **NEW** — `applyContentNames()` utility + `useContentSubstitution()` hook |
+| `src/lib/accountDefaults.ts` | Add `buildPinnacleNormalized()` function |
+| `src/contexts/AccountContext.tsx` | Seed Pinnacle Capital account on first load if missing |
+| `src/components/learnpath/LearnPathModuleContent.tsx` | Apply content substitution to rendered text |
+| `src/components/learnpath/VisualDiagram.tsx` | Apply substitution to parsed labels |
+| `src/components/learnpath/HandsOnRolePlayCard.tsx` | Apply substitution to scenario text |
+| `src/components/learnpath/ScenarioQuestion.tsx` | Apply substitution to question text |
+| `src/components/skill-target/TraditionalContentViewer.tsx` | Apply substitution |
+| `src/pages/LearningModulePage.tsx` | Apply substitution to title |
 

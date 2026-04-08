@@ -108,7 +108,7 @@ export function parseTranscriptToDiagram(transcript: string): DiagramNode[] {
   for (const line of lines) {
     const h2Match = line.match(/^##\s+(.+)$/);
     const h3Match = line.match(/^###\s+(.+)$/);
-    const bulletMatch = line.match(/^\*\s+\*?\*?(.+?)\*?\*?\s*[-–:]?\s*(.*)$/);
+    const bulletMatch = line.match(/^\*\s+(?:\*\*)?(.+?)(?:\*\*)?\s*[-–:]?\s*(.*)$/);
 
     if (h2Match) {
       currentH2 = { title: h2Match[1].replace(/\*\*/g, ""), children: [] };

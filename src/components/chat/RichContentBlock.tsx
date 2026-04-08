@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Minimize2, BarChart3, Target, Inbox, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 
 export interface RichBlock {
   id: string;

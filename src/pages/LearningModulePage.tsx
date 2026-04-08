@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Play, FileText, CheckCircle2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
-import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useTheme } from "@/contexts/ThemeContext";

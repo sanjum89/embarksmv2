@@ -1,18 +1,30 @@
 
 
-## Fix "Rathbones" Showing in My 360 Team Field for Pinnacle
+## Fix Audio Seeking in Both Players
 
 ### Problem
-In `src/pages/My360.tsx`, the `team` field (line 251) is displayed raw without content substitution, so Pinnacle Capital users see "Rathbones Investment Management Pod" instead of "Pinnacle Capital Investment Management Pod".
+Two issues:
+
+1. **PodcastPlayer**: `onValueChange` fires continuously during drag, but the 200ms progress interval overwrites `progress` state from `audio.currentTime`, causing a tug-of-war. The slider snaps back. Also, the `onended` event may not fire correctly if `currentTime` exceeds `duration` due to floating-point issues, causing playback to "continue beyond the end" (3:32 / 3:26 as shown).
+
+2. **AudioPlayer**: Slider has `disabled` hardcoded — seeking is impossible.
 
 ### Fix
-Wrap `profileData.team` in the existing `substitute()` call — same pattern already used for `profileData.program` on line 256.
 
-### File: `src/pages/My360.tsx`
-- Line 251: Change `{profileData.team}` → `{substitute(profileData.team)}`
+**File: `src/components/learnpath/LearnPathPodcastPlayer.tsx`**
+- Add a `seekingRef = useRef(false)`
+- Change Slider from `onValueChange={handleSeek}` to:
+  - `onValueChange` — set `seekingRef.current = true` and update visual progress only (no audio seek)
+  - `onValueCommit` — perform actual `audio.currentTime` seek, then set `seekingRef.current = false`
+- In `startProgressTracking` interval, skip updates when `seekingRef.current === true`
+- In `onended` handler and the interval, clamp `currentTime` to not exceed `duration` to prevent the "beyond end" display bug
 
-Also check `src/components/onboarding/FirstLoginTour.tsx` line 195 for the same issue — the team field there also needs `substitute()`.
+**File: `src/components/learnpath/LearnPathAudioPlayer.tsx`**
+- Remove `disabled` from the Slider
+- Add a `seekingRef` with the same `onValueChange`/`onValueCommit` pattern
+- In the progress interval, skip updates when seeking
+- Only allow interaction when status is `playing` or `paused`
 
 ### Scope
-One-line change per file. The `substitute()` function and `useContentSubstitution` hook are already imported and used in My360. For FirstLoginTour, the hook may need to be imported.
+Two files, no new dependencies.
 

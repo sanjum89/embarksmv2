@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Maximize2, X, ThumbsUp, ThumbsDown, RotateCcw, CheckCircle2, ArrowRight, Eye, BookOpen, Headphones, Wrench, Layers } from "lucide-react";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { motion } from "framer-motion";
 import { mockAssessments as defaultAssessments } from "@/data/mock";
 import { st2BaselineAssessment, st2MidAssessment, st2FinalAssessment } from "@/data/rathbonesOnboarding";
@@ -20,6 +21,7 @@ interface TraditionalContentViewerProps {
 }
 
 export function TraditionalContentViewer({ step, onClose, skillTargetId, allSteps, onNavigateToStep }: TraditionalContentViewerProps) {
+  const { substitute } = useContentSubstitution();
   const isAssessment = step.type === "assessment";
   const { normalizedAccount } = useAccount();
   const rathbonesAssessments = [st2BaselineAssessment, st2MidAssessment, st2FinalAssessment];
@@ -33,7 +35,7 @@ export function TraditionalContentViewer({ step, onClose, skillTargetId, allStep
       {/* Header */}
       <div className="px-5 py-4 border-b border-border">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">{step.title}</h2>
+          <h2 className="text-sm font-semibold text-foreground">{substitute(step.title)}</h2>
           <div className="flex items-center gap-2">
             <button className="text-muted-foreground hover:text-foreground transition-colors">
               <Maximize2 className="h-4 w-4" />
@@ -448,7 +450,7 @@ function DefaultContentViewer({
       {/* Header with title and Mark as Complete */}
       <div className="px-5 py-4 border-b border-border">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-foreground">{step.title}</h3>
+          <h3 className="text-base font-semibold text-foreground">{substitute(step.title)}</h3>
           <button
             onClick={handleMarkComplete}
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity"

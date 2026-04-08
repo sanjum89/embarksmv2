@@ -13,16 +13,91 @@ interface ScriptLine {
   voiceId?: string;
 }
 
-/**
- * Default voice map — used when no per-line voiceId is provided.
- * Maps speaker names to ElevenLabs voice IDs.
- */
 const DEFAULT_VOICES: Record<string, string> = {
-  "Sarah Chen": "EXAVITQu4vr4xnSDxMaL",   // Sarah
-  "James Morton": "JBFqnCBsd6RMkjVDRZzb",  // George
-  "Eleanor Webb": "FGY2WhTYpPnrIDTdsKH5",  // Laura
+  "Sarah Chen": "EXAVITQu4vr4xnSDxMaL",
+  "James Morton": "JBFqnCBsd6RMkjVDRZzb",
+  "Eleanor Webb": "FGY2WhTYpPnrIDTdsKH5",
 };
-const FALLBACK_VOICE = "JBFqnCBsd6RMkjVDRZzb"; // George
+const FALLBACK_VOICE = "JBFqnCBsd6RMkjVDRZzb";
+
+/**
+ * Strip ID3v2 tags from the start of an MP3 buffer.
+ * ID3v2 headers start with "ID3" and contain a syncsafe size.
+ * Removing them from all-but-the-first segment prevents the browser
+ * from misreading duration when concatenated MP3 segments each have headers.
+ */
+function stripID3v2(data: Uint8Array): Uint8Array {
+  // Check for ID3v2 header: starts with "ID3"
+  if (data.length < 10) return data;
+  if (data[0] !== 0x49 || data[1] !== 0x44 || data[2] !== 0x33) return data;
+
+  // Syncsafe integer at bytes 6-9
+  const size =
+    ((data[6] & 0x7f) << 21) |
+    ((data[7] & 0x7f) << 14) |
+    ((data[8] & 0x7f) << 7) |
+    (data[9] & 0x7f);
+  const headerSize = 10 + size;
+
+  if (headerSize >= data.length) return data;
+  return data.slice(headerSize);
+}
+
+/**
+ * Find and remove any Xing/Info VBR header frame from MP3 data.
+ * These frames are placed by encoders and can confuse duration calculation
+ * when multiple files are concatenated.
+ */
+function stripXingFrame(data: Uint8Array): Uint8Array {
+  // Look for "Xing" or "Info" marker in the first 512 bytes
+  for (let i = 0; i < Math.min(data.length - 4, 512); i++) {
+    if (
+      (data[i] === 0x58 && data[i+1] === 0x69 && data[i+2] === 0x6E && data[i+3] === 0x67) || // "Xing"
+      (data[i] === 0x49 && data[i+1] === 0x6E && data[i+2] === 0x66 && data[i+3] === 0x6F)    // "Info"
+    ) {
+      // Found Xing/Info — we need to find the MPEG frame that contains it
+      // Walk backwards to find the frame sync (0xFF 0xE? or 0xFF 0xF?)
+      let frameStart = i;
+      while (frameStart > 0) {
+        if (data[frameStart] === 0xFF && (data[frameStart + 1] & 0xE0) === 0xE0) {
+          break;
+        }
+        frameStart--;
+      }
+      // Skip this entire frame (typically 417 or 418 bytes for 128kbps 44100Hz)
+      // Calculate frame length from header
+      const frameLen = getMpegFrameLength(data, frameStart);
+      if (frameLen > 0 && frameStart + frameLen <= data.length) {
+        const before = data.slice(0, frameStart);
+        const after = data.slice(frameStart + frameLen);
+        const result = new Uint8Array(before.length + after.length);
+        result.set(before, 0);
+        result.set(after, before.length);
+        return result;
+      }
+      break;
+    }
+  }
+  return data;
+}
+
+function getMpegFrameLength(data: Uint8Array, offset: number): number {
+  if (offset + 4 > data.length) return 0;
+  const h = (data[offset] << 24) | (data[offset+1] << 16) | (data[offset+2] << 8) | data[offset+3];
+  
+  const bitrateIdx = (h >> 12) & 0x0F;
+  const sampleRateIdx = (h >> 10) & 0x03;
+  const padding = (h >> 9) & 0x01;
+  
+  const bitrates = [0,32,40,48,56,64,80,96,112,128,160,192,224,256,320,0];
+  const sampleRates = [44100, 48000, 32000, 0];
+  
+  const bitrate = bitrates[bitrateIdx];
+  const sampleRate = sampleRates[sampleRateIdx];
+  
+  if (!bitrate || !sampleRate) return 0;
+  return Math.floor(144000 * bitrate / sampleRate) + padding;
+}
 
 async function generateTurnAudio(
   text: string,
@@ -77,7 +152,6 @@ serve(async (req) => {
       );
     }
 
-    // Merge provided voiceMap with defaults
     const voices = { ...DEFAULT_VOICES, ...(voiceMap || {}) };
 
     // Generate audio for each turn sequentially
@@ -86,11 +160,17 @@ serve(async (req) => {
       const line = script[i];
       const voice = line.voiceId || voices[line.speaker] || FALLBACK_VOICE;
       console.log(`Generating turn ${i + 1}/${script.length}: ${line.speaker} (voice ${voice})`);
-      const audio = await generateTurnAudio(line.text, voice, ELEVENLABS_API_KEY);
+      let audio = await generateTurnAudio(line.text, voice, ELEVENLABS_API_KEY);
+      
+      // Strip ID3v2 tags and Xing/Info VBR headers from every segment
+      // so the concatenated result has clean MPEG frames only
+      audio = stripID3v2(audio);
+      audio = stripXingFrame(audio);
+      
       segments.push(audio);
     }
 
-    // Concatenate MP3 segments (MP3 frames are self-describing so simple concat works)
+    // Concatenate clean MP3 frames
     const totalLength = segments.reduce((sum, s) => sum + s.length, 0);
     const combined = new Uint8Array(totalLength);
     let offset = 0;

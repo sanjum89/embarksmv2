@@ -9,13 +9,19 @@ const VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"; // George
 
 interface Props {
   script: PodcastScript;
-  /** If provided, audio loads from this URL instantly (no TTS API call) */
   staticAudioUrl?: string;
 }
 
 function scriptToText(script: PodcastScript): string {
   return script.map((line) => `${line.speaker}: ${line.text}`).join("\n\n");
 }
+
+const formatTime = (s: number) => {
+  if (!isFinite(s) || s < 0) return "0:00";
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+};
 
 export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
   const isStatic = !!staticAudioUrl;
@@ -27,27 +33,39 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
   const [showTranscript, setShowTranscript] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const seekingRef = useRef(false);
 
   const fullText = scriptToText(script);
 
-  const formatTime = (s: number) => {
-    const m = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${m}:${sec.toString().padStart(2, "0")}`;
-  };
-
-  const cleanup = useCallback(() => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (audioRef.current) {
-      audioRef.current.pause();
-      // Only revoke blob URLs, not static URLs
-      if (audioRef.current.src.startsWith("blob:")) {
-        URL.revokeObjectURL(audioRef.current.src);
+  /** Attach native event listeners to an audio element */
+  const attachEvents = useCallback((audio: HTMLAudioElement, isOnDemand = false) => {
+    audio.addEventListener("loadedmetadata", () => {
+      if (isFinite(audio.duration)) {
+        setDuration(formatTime(audio.duration));
       }
-      audioRef.current = null;
-    }
+    });
+
+    audio.addEventListener("timeupdate", () => {
+      if (seekingRef.current) return;
+      if (!isFinite(audio.duration) || audio.duration === 0) return;
+      const clamped = Math.min(audio.currentTime, audio.duration);
+      setProgress((clamped / audio.duration) * 100);
+      setCurrentTime(formatTime(clamped));
+    });
+
+    audio.addEventListener("ended", () => {
+      setStatus(isOnDemand ? "idle" : "ready");
+      setProgress(0);
+      setCurrentTime("0:00");
+    });
+
+    audio.addEventListener("seeked", () => {
+      // After browser finishes seeking, sync UI
+      if (!isFinite(audio.duration) || audio.duration === 0) return;
+      const clamped = Math.min(audio.currentTime, audio.duration);
+      setProgress((clamped / audio.duration) * 100);
+      setCurrentTime(formatTime(clamped));
+    });
   }, []);
 
   // Pre-load static audio on mount
@@ -58,64 +76,44 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
     audio.preload = "auto";
     audioRef.current = audio;
 
-    audio.onloadedmetadata = () => {
-      setDuration(formatTime(audio.duration));
-      setStatus("ready");
-    };
+    attachEvents(audio);
 
-    audio.onended = () => {
-      setStatus("ready");
-      setProgress(0);
-      setCurrentTime("0:00");
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
+    audio.addEventListener("canplaythrough", () => {
+      setStatus((prev) => (prev === "loading" ? "ready" : prev));
+    }, { once: true });
 
-    audio.onerror = () => {
+    audio.addEventListener("error", () => {
       setStatus("error");
       setErrorMsg("Failed to load pre-generated audio.");
-    };
+    }, { once: true });
+
+    // Also handle loadedmetadata for quick ready state
+    audio.addEventListener("loadedmetadata", () => {
+      setStatus((prev) => (prev === "loading" ? "ready" : prev));
+    }, { once: true });
 
     return () => {
       audio.pause();
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      audioRef.current = null;
     };
-  }, [staticAudioUrl]);
-
-  const startProgressTracking = useCallback((audio: HTMLAudioElement) => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
-      if (audio.duration && !seekingRef.current) {
-        const clamped = Math.min(audio.currentTime, audio.duration);
-        setProgress((clamped / audio.duration) * 100);
-        setCurrentTime(formatTime(clamped));
-      }
-    }, 200);
-  }, []);
+  }, [staticAudioUrl, attachEvents]);
 
   const handlePlay = useCallback(async () => {
-    // Pause
     if (status === "playing") {
       audioRef.current?.pause();
       setStatus("paused");
       return;
     }
 
-    // Resume or play pre-loaded static audio
     if ((status === "paused" || status === "ready") && audioRef.current) {
       audioRef.current.playbackRate = speed;
-      startProgressTracking(audioRef.current);
       await audioRef.current.play();
       setStatus("playing");
       return;
     }
 
-    // Static audio still loading — wait, don't call API
-    if (isStatic && status === "loading") {
-      return;
-    }
+    if (isStatic && status === "loading") return;
 
-    // Static audio but idle shouldn't happen (preload sets loading on mount),
-    // but guard against it — never call API for static modules
     if (isStatic) {
       setErrorMsg("Pre-generated audio failed to load. Try refreshing.");
       setStatus("error");
@@ -125,7 +123,13 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
     // Generate on-demand (non-static modules only)
     setStatus("loading");
     setErrorMsg("");
-    cleanup();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      if (audioRef.current.src.startsWith("blob:")) {
+        URL.revokeObjectURL(audioRef.current.src);
+      }
+      audioRef.current = null;
+    }
 
     try {
       const resp = await fetch(TTS_URL, {
@@ -146,15 +150,8 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
       audio.playbackRate = speed;
       audioRef.current = audio;
 
-      audio.onloadedmetadata = () => setDuration(formatTime(audio.duration));
-      audio.onended = () => {
-        setStatus("idle");
-        setProgress(0);
-        setCurrentTime("0:00");
-        cleanup();
-      };
+      attachEvents(audio, true);
 
-      startProgressTracking(audio);
       await audio.play();
       setStatus("playing");
     } catch {
@@ -172,22 +169,20 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
         setErrorMsg("Audio not available.");
       }
     }
-  }, [fullText, status, speed, cleanup, startProgressTracking, isStatic]);
+  }, [fullText, status, speed, isStatic, attachEvents]);
 
   const handleSeekVisual = useCallback((value: number[]) => {
     seekingRef.current = true;
     setProgress(value[0]);
-    if (audioRef.current && audioRef.current.duration) {
+    if (audioRef.current && isFinite(audioRef.current.duration)) {
       setCurrentTime(formatTime((value[0] / 100) * audioRef.current.duration));
     }
   }, []);
 
   const handleSeekCommit = useCallback((value: number[]) => {
-    if (audioRef.current && audioRef.current.duration) {
+    if (audioRef.current && isFinite(audioRef.current.duration)) {
       const time = Math.min((value[0] / 100) * audioRef.current.duration, audioRef.current.duration);
       audioRef.current.currentTime = time;
-      setProgress(value[0]);
-      setCurrentTime(formatTime(time));
     }
     seekingRef.current = false;
   }, []);
@@ -212,7 +207,6 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* Player card */}
       <div className="bg-card rounded-xl border border-border p-4 space-y-3">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Volume2 className="h-3.5 w-3.5" />
@@ -261,7 +255,6 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
         )}
       </div>
 
-      {/* Collapsible transcript */}
       <button
         onClick={() => setShowTranscript(!showTranscript)}
         className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full"

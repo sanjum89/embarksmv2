@@ -185,7 +185,6 @@ export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
   }, [speed]);
 
   const isReady = status === "ready" || status === "playing" || status === "paused";
-  const isStatic = !!staticAudioUrl;
 
   return (
     <div className="space-y-3">

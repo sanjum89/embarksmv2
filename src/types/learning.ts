@@ -25,6 +25,7 @@ export interface StepItem {
   status: StepStatus;
   duration?: string;
   referenceId: string; // links to Assessment, RolePlay, or LearningModule
+  learningFormat?: LearningFormat;
 }
 
 export interface SkillProficiencyTarget {

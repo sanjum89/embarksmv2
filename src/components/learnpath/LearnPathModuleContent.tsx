@@ -36,6 +36,15 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
   const navigate = useNavigate();
   const isMicro = learningFormat === "micro";
   const transcript = module.transcript ?? "No content available for this module.";
+  const [microExpanded, setMicroExpanded] = useState(false);
+
+  // For micro mode: truncate to ~30% of content
+  const microTranscript = (() => {
+    if (!isMicro || microExpanded) return transcript;
+    const lines = transcript.split("\n");
+    const cutoff = Math.max(8, Math.ceil(lines.length * 0.3));
+    return lines.slice(0, cutoff).join("\n") + "\n\n---\n\n*This is a condensed view. Expand to see the full content.*";
+  })();
 
   const banner = modeBanners[learningMode];
   const podcastScript = getPodcastTranscript(module.id);

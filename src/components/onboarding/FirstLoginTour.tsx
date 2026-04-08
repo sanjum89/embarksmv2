@@ -60,6 +60,7 @@ function splitProfileData(profileData: ProfileData) {
 export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
   const { user } = useUser();
   const { activeAccount, normalizedAccount } = useAccount();
+  const { substitute } = useContentSubstitution();
   const [step, setStep] = useState(0);
   const [editing, setEditing] = useState(false);
   const [uploading, setUploading] = useState(false);

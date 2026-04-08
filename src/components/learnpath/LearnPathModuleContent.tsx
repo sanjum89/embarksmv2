@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { cn } from "@/lib/utils";
-import { getPodcastTranscript } from "@/data/podcastTranscripts";
+import { getPodcastTranscript, staticPodcastUrls } from "@/data/podcastTranscripts";
 import { getHandsOnScenarios } from "@/data/handsOnScenarios";
 import { mockRolePlayBank, moduleRolePlayMap } from "@/data/mock";
 
@@ -193,7 +193,8 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
   /* ═══ LISTENING MODE ═══ */
   const renderListening = () => {
     if (podcastScript) {
-      return <LearnPathPodcastPlayer script={podcastScript} />;
+      const staticUrl = staticPodcastUrls[module.id];
+      return <LearnPathPodcastPlayer script={podcastScript} staticAudioUrl={staticUrl} />;
     }
     return (
       <div className="space-y-4">

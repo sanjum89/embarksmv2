@@ -433,6 +433,8 @@ function DefaultContentViewer({
     );
   }
 
+  const isDocument = resolvedModule?.contentType === "document";
+
   return (
     <>
       {/* Header with title and Mark as Complete */}
@@ -449,37 +451,33 @@ function DefaultContentViewer({
         {step.duration && <p className="text-xs text-muted-foreground mt-1">Duration: {step.duration}</p>}
       </div>
 
-      {/* Video / preview placeholder */}
-      <div className="aspect-video bg-muted/30 flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-12 w-12 mx-auto mb-2 rounded-full bg-background shadow-md flex items-center justify-center">
-            <span className="text-lg ml-0.5">▶</span>
+      {/* Video preview — only for video content */}
+      {!isDocument && (
+        <div className="aspect-video bg-muted/30 flex items-center justify-center">
+          <div className="text-center">
+            <div className="h-12 w-12 mx-auto mb-2 rounded-full bg-background shadow-md flex items-center justify-center">
+              <span className="text-lg ml-0.5">▶</span>
+            </div>
+            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Preview</p>
           </div>
-          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Preview</p>
         </div>
-      </div>
+      )}
 
-      {/* Transcript / content section */}
+      {/* Content section */}
       <div className="px-5 py-5">
         {transcript ? (
           <div className="rounded-xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-3">Transcript</h4>
+            {!isDocument && <h4 className="text-sm font-semibold text-foreground mb-3">Transcript</h4>}
             <div className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
               <ReactMarkdown>{transcript}</ReactMarkdown>
             </div>
           </div>
         ) : (
           <div className="rounded-xl border border-border bg-card p-5">
-            <h4 className="text-sm font-semibold text-foreground mb-2">Transcript</h4>
+            <h4 className="text-sm font-semibold text-foreground mb-2">Content</h4>
             <p className="text-sm text-muted-foreground">
               {step.description || `This module covers ${step.title}.`}
             </p>
-            <p className="text-sm text-muted-foreground mt-3">Key Topics:</p>
-            <ol className="text-sm text-muted-foreground list-decimal list-inside mt-1 space-y-1">
-              <li>Core concepts and fundamentals</li>
-              <li>Practical techniques and frameworks</li>
-              <li>Real-world application scenarios</li>
-            </ol>
           </div>
         )}
 

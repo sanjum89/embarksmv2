@@ -355,6 +355,19 @@ export const mockLearningModules: LearningModule[] = [
   { id: "RAT-BR-001", title: "From Financial Services to Wealth Management", contentType: "document", contentUrl: "", duration: "20 min", transcript: rathbonesTranscripts["RAT-BR-001"] },
   { id: "RAT-BR-002", title: "Rathbones Investment Approach and Portfolio Philosophy", contentType: "document", contentUrl: "", duration: "25 min", transcript: rathbonesTranscripts["RAT-BR-002"] },
   { id: "RAT-BR-003", title: "Translating Your Experience — Client Conversation", contentType: "document", contentUrl: "", duration: "15 min", transcript: rathbonesTranscripts["RAT-BR-003"] },
+  // ── DB-step-ID aliases for INTRO steps (DB uses RAT-INTRO-LM-* not RAT-INTRO-*) ──
+  { id: "RAT-INTRO-LM-001", title: "Our Heritage & Values", contentType: "document", contentUrl: "", duration: "15 min", transcript: rathbonesTranscripts["intro-heritage"] },
+  { id: "RAT-INTRO-LM-002", title: "How We Invest", contentType: "document", contentUrl: "", duration: "15 min", transcript: rathbonesTranscripts["intro-invest"] },
+  { id: "RAT-INTRO-LM-003", title: "Your First 90 Days", contentType: "document", contentUrl: "", duration: "10 min", transcript: rathbonesTranscripts["intro-90days"] },
+  // ── DB-step-ID aliases for additional ST-001 modules ──
+  { id: "RAT-LM-008", title: "Documenting Investment Decisions and Rationale", contentType: "document", contentUrl: "", duration: "20 min", transcript: rathbonesTranscripts["RAT-LM-008"] },
+  { id: "RAT-LM-009", title: "Fee Structures, Costs, and Value Assessment", contentType: "document", contentUrl: "", duration: "20 min", transcript: rathbonesTranscripts["RAT-LM-009"] },
+  { id: "RAT-LM-010", title: "Handling Market Volatility Conversations with Clients", contentType: "video", contentUrl: "", duration: "25 min", transcript: rathbonesTranscripts["RAT-LM-010"] },
+  // ── DB-step-ID aliases for Bridge modules (DB uses RAT-BR-LM-* not RAT-BR-*) ──
+  { id: "RAT-BR-LM-001", title: "Investment Management Vocabulary and Core Concepts", contentType: "document", contentUrl: "", duration: "20 min", transcript: rathbonesTranscripts["RAT-BR-001"] },
+  { id: "RAT-BR-LM-002", title: "How Rathbones Investment Managers Work with Client Objectives", contentType: "document", contentUrl: "", duration: "25 min", transcript: rathbonesTranscripts["RAT-BR-002"] },
+  { id: "RAT-BR-LM-003", title: "Portfolio Basics, Risk, and Suitability Foundations", contentType: "document", contentUrl: "", duration: "15 min", transcript: rathbonesTranscripts["RAT-BR-003"] },
+  { id: "RAT-BR-LM-004", title: "The Difference Between Adjacent Financial Experience and Investment Manager Expectations", contentType: "document", contentUrl: "", duration: "20 min", transcript: rathbonesTranscripts["RAT-BR-LM-004"] },
 ];
 
 /* ─── Skill Targets ─── */

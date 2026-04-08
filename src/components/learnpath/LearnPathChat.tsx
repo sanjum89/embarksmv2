@@ -193,6 +193,8 @@ export function LearnPathChat() {
         ? `[SYSTEM] The learner just opened LearnPath. They have ${ctx.modules.length} module(s) assigned. ${ctx.resumeModuleId ? `Suggest resuming with "${ctx.resumeModuleTitle}" (moduleId: ${ctx.resumeModuleId}, skillTargetId: ${ctx.resumeSkillTargetId}) and use an open_module action to open it.` : "Welcome them and suggest browsing modules."}`
         : "[SYSTEM] The learner just opened LearnPath but has NO modules or skill targets assigned. Welcome them warmly, explain that they don't have a learning path yet, and suggest they explore their skill gaps and add skill targets from their dashboard to get started.",
     };
+    // Add greet to state so conversation history stays consistent for subsequent turns
+    setMessages([greetMsg]);
     sendToAI([greetMsg]);
   }, [hasGreeted, messages.length, sendToAI]);
 

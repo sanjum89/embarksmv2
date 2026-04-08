@@ -3,6 +3,7 @@ import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { LearnPathModuleCard } from "./LearnPathModuleCard";
 import { LearnPathModuleContent } from "./LearnPathModuleContent";
 import { LearnPathAssessment } from "./LearnPathAssessment";
@@ -19,6 +20,7 @@ export function LearnPathContent() {
   const { user } = useUser();
   const { normalizedAccount } = useAccount();
   const navigate = useNavigate();
+  const { substitute } = useContentSubstitution();
   const autoResumedRef = useRef(false);
 
   const catalog = buildCatalog(normalizedAccount?.learningModules);
@@ -31,13 +33,13 @@ export function LearnPathContent() {
         const mod = resolveModule(s.referenceId ?? s.id, skillTargets, normalizedAccount?.learningModules);
         return {
           moduleId: mod?.id ?? s.referenceId ?? s.id,
-          title: mod?.title ?? s.title,
-          description: mod?.transcript?.slice(0, 120) ?? s.description,
+          title: substitute(mod?.title ?? s.title),
+          description: substitute(mod?.transcript?.slice(0, 120) ?? s.description),
           duration: mod?.duration ?? s.duration,
           contentType: mod?.contentType ?? "document",
           status: s.status,
           skillTargetId: st.id,
-          skillTargetTitle: st.title,
+          skillTargetTitle: substitute(st.title),
           progress: st.progress,
           learningFormat: s.learningFormat,
           stepId: s.id,

@@ -15,7 +15,7 @@ import { getRecommendationsForUser } from "@/lib/skillRecommendations";
 import { useEffect, useRef } from "react";
 
 export function LearnPathContent() {
-  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule } = useLearnPath();
+  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, notifyModuleCompleted } = useLearnPath();
   const { skillTargets } = useSkillTargets();
   const { user } = useUser();
   const { normalizedAccount } = useAccount();
@@ -77,6 +77,19 @@ export function LearnPathContent() {
       );
     }
     const stepInfo = moduleSteps.find((ms) => ms.moduleId === activeModuleId);
+
+    const handleModuleComplete = () => {
+      const currentIdx = moduleSteps.findIndex((ms) => ms.moduleId === activeModuleId);
+      const nextIncomplete = moduleSteps.slice(currentIdx + 1).find((ms) => ms.status !== "completed");
+      notifyModuleCompleted({
+        moduleId: activeModuleId,
+        moduleTitle: stepInfo?.title ?? mod.title ?? activeModuleId,
+        nextModuleId: nextIncomplete?.moduleId,
+        nextModuleTitle: nextIncomplete?.title,
+        skillTargetId: nextIncomplete?.skillTargetId ?? stepInfo?.skillTargetId,
+      });
+    };
+
     return (
       <div className="h-full flex flex-col">
         <LearnPathModeSelector skillTargetTitle={stepInfo?.skillTargetTitle} />
@@ -87,6 +100,7 @@ export function LearnPathContent() {
             learningFormat={stepInfo?.learningFormat}
             skillTargetId={stepInfo?.skillTargetId}
             stepId={stepInfo?.stepId}
+            onComplete={handleModuleComplete}
           />
         </div>
       </div>

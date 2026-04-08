@@ -194,8 +194,8 @@ export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
               <div className="flex justify-between text-sm"><span className="text-muted-foreground">Title</span><span className="font-medium text-foreground">{profileData.title}</span></div>
               <div className="flex justify-between text-sm"><span className="text-muted-foreground">Location</span><span className="font-medium text-foreground">{profileData.location}</span></div>
               <div className="flex justify-between text-sm"><span className="text-muted-foreground">Manager</span><span className="font-medium text-foreground">{profileData.manager}</span></div>
-              {profileData.team && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Team</span><span className="font-medium text-foreground">{profileData.team}</span></div>}
-              {profileData.program && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Program</span><span className="font-medium text-foreground">{profileData.program}</span></div>}
+              {profileData.team && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Team</span><span className="font-medium text-foreground">{substitute(profileData.team)}</span></div>}
+              {profileData.program && <div className="flex justify-between text-sm"><span className="text-muted-foreground">Program</span><span className="font-medium text-foreground">{substitute(profileData.program)}</span></div>}
             </div>
 
             {/* Skills */}

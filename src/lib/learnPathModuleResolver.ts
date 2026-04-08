@@ -61,7 +61,13 @@ export function buildCatalog(accountLearningModules?: LearningModule[]): Learnin
   if (!accountLearningModules || accountLearningModules.length === 0) {
     return mockLearningModules;
   }
-  const accountIds = new Set(accountLearningModules.map((m) => m.id));
+
+  // Only keep account modules that have real content (non-empty transcript).
+  // Empty account entries should NOT shadow richer mock catalog entries.
+  const richAccountModules = accountLearningModules.filter(
+    (m) => m.transcript && m.transcript.trim().length > 50
+  );
+  const accountIds = new Set(richAccountModules.map((m) => m.id));
   const fallback = mockLearningModules.filter((m) => !accountIds.has(m.id));
-  return [...accountLearningModules, ...fallback];
+  return [...richAccountModules, ...fallback];
 }

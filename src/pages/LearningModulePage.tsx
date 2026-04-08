@@ -6,6 +6,7 @@ import { ArrowLeft, CheckCircle2, Eye, BookOpen, Headphones, Wrench, Layers } fr
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule } from "@/lib/learnPathModuleResolver";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { LearnPathModuleContent } from "@/components/learnpath/LearnPathModuleContent";
 import type { LearningMode } from "@/contexts/LearnPathContext";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ export default function LearningModulePage() {
   const { normalizedAccount } = useAccount();
   const { updateSkillTarget, skillTargets } = useSkillTargets();
   const [learningMode, setLearningMode] = useState<LearningMode>("reading");
+  const { substitute } = useContentSubstitution();
 
   const module = mid
     ? resolveModule(mid, skillTargets, normalizedAccount?.learningModules)
@@ -103,7 +105,7 @@ export default function LearningModulePage() {
               </h2>
               <p className="text-sm text-muted-foreground mb-6">
                 You've completed{" "}
-                <span className="font-medium text-foreground">{module.title}</span>
+                <span className="font-medium text-foreground">{substitute(module.title)}</span>
               </p>
               <Link
                 to={`/skill-target/${skillTargetId}`}
@@ -130,7 +132,7 @@ export default function LearningModulePage() {
                         <span className="text-xs text-muted-foreground">{module.duration}</span>
                       )}
                     </div>
-                    <h1 className="font-display text-lg font-bold text-foreground">{module.title}</h1>
+                    <h1 className="font-display text-lg font-bold text-foreground">{substitute(module.title)}</h1>
                   </div>
                   <button
                     onClick={handleMarkComplete}

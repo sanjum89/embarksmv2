@@ -1,37 +1,20 @@
 
 
-## Pre-Generate Multi-Persona Pinnacle Heritage Podcast
+## Fix Reading Mode Across All Chapters & Accounts
 
-### Problem
-The current on-demand TTS fallback (used when no static MP3 exists) sends the entire transcript as a single text block to a single voice — producing a monotone narration instead of a multi-persona conversation. The `generate-podcast` edge function already supports per-speaker voice mapping but is not being invoked for Pinnacle.
+### Changes
 
-### Plan
+**File: `src/components/learnpath/LearnPathModuleContent.tsx`**
 
-**Step 1 — Generate the Pinnacle Heritage MP3 (one-time)**
-- Call the existing `generate-podcast` edge function with:
-  - `moduleId: "pinnacle-heritage"` 
-  - `script`: the Heritage transcript with all "Rathbones" replaced by "Pinnacle Capital"
-  - The function's `DEFAULT_VOICES` already maps "Sarah Chen" → Sarah voice and "James Morton" → George voice, so each turn will use the correct persona voice
-- The function concatenates per-turn MP3 segments and uploads to the `podcast-audio` storage bucket as `pinnacle-heritage.mp3`
+1. **Remove the duplicate reading header card** — Delete lines 224-237 (the card showing title, skill target subtitle, word count, read time). The module header card rendered by `renderModuleHeader()` already displays this information. Move the read-time/word-count stats into the TOC section as a small detail row so the info isn't lost entirely.
 
-**Step 2 — Add Pinnacle static URL mapping**
-- In `src/data/podcastTranscripts.ts`, update `getStaticPodcastUrl` to return the Pinnacle Heritage MP3 URL when the account is "Pinnacle Capital" and the module is a Heritage alias (`m-rb-intro-heritage`, `RAT-INTRO-001`, `RAT-INTRO-LM-001`)
-- All other modules/accounts remain unchanged (on-demand TTS or no audio)
+2. **Fix heading rendering** — The TOC extracts headings from the raw transcript using `/^#{1,3}\s+.+$/gm`, so headings exist in the source markdown. ReactMarkdown should render them as `<h2>`/`<h3>` elements, and the existing prose classes should style them. The likely issue is that `ReactMarkdown` is receiving properly formatted markdown but some transcripts (from `contentModules.ts`) are single-line strings with no headings at all — for those, the TOC correctly won't appear (requires `headings.length > 2`). For transcripts that DO have headings (like `rathbonesTranscripts`), I'll verify the prose heading styles are applied and visible by ensuring the `prose-h2` and `prose-h3` Tailwind classes render distinctly (proper font size, weight, and the left border accent on h2).
 
-### What This Achieves
-- Play button loads a pre-generated, multi-persona podcast — zero API calls at runtime
-- Sarah Chen and James Morton have distinct voices throughout the conversation
-- Only Heritage chapter is pre-generated; all other chapters keep current behavior
+3. **Ensure this applies universally** — The `renderReading()` function is already shared across all modules and accounts. By removing the duplicate card here, every chapter in every account benefits. No account-specific or module-specific branching needed.
 
-### Files Changed
+### Technical Details
 
-| File | Change |
-|---|---|
-| `src/data/podcastTranscripts.ts` | Add Pinnacle Heritage static URL; update `getStaticPodcastUrl` to return it for Pinnacle + Heritage module IDs |
-
-### Generation Details
-The `generate-podcast` function will be invoked once via `curl_edge_functions` with the branded script. The function already:
-- Iterates each `ScriptLine` and calls ElevenLabs TTS with the speaker's mapped voice
-- Concatenates MP3 frames into one file
-- Uploads to `podcast-audio` bucket with `upsert: true`
+- Delete the "Reading header card" div (lines 224-237)
+- Optionally move `~X min read · Y words` into the TOC block as a small metadata line
+- Verify prose heading classes work by checking there's no CSS override stripping heading styles
 

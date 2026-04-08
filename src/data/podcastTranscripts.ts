@@ -11,6 +11,14 @@ export interface PodcastLine {
 
 export type PodcastScript = PodcastLine[];
 
+/**
+ * Static audio URLs for pre-generated podcast episodes.
+ * These modules load instantly with zero API calls.
+ */
+export const staticPodcastUrls: Record<string, string> = {
+  "m-rb-intro-heritage": `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/podcast-audio/m-rb-intro-heritage.mp3`,
+};
+
 export const podcastTranscripts: Record<string, PodcastScript> = {
   /* ═══ RATHBONES INTRO MODULES ═══ */
 

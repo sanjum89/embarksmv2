@@ -16,15 +16,15 @@ export type PodcastScript = PodcastLine[];
  * These modules load instantly with zero API calls.
  */
 const STORAGE_BASE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/podcast-audio`;
-const HERITAGE_MP3 = `${STORAGE_BASE}/m-rb-intro-heritage.mp3`;
-const PINNACLE_HERITAGE_MP3 = `${STORAGE_BASE}/pinnacle-heritage.mp3`;
+const HERITAGE_WAV = `${STORAGE_BASE}/m-rb-intro-heritage.wav`;
+const PINNACLE_HERITAGE_WAV = `${STORAGE_BASE}/pinnacle-heritage.wav`;
 
 const HERITAGE_ALIASES = new Set(["m-rb-intro-heritage", "RAT-INTRO-001", "RAT-INTRO-LM-001"]);
 
 export const staticPodcastUrls: Record<string, string> = {
-  "m-rb-intro-heritage": HERITAGE_MP3,
-  "RAT-INTRO-001": HERITAGE_MP3,
-  "RAT-INTRO-LM-001": HERITAGE_MP3,
+  "m-rb-intro-heritage": HERITAGE_WAV,
+  "RAT-INTRO-001": HERITAGE_WAV,
+  "RAT-INTRO-LM-001": HERITAGE_WAV,
 };
 
 /**
@@ -33,8 +33,8 @@ export const staticPodcastUrls: Record<string, string> = {
  */
 export function getStaticPodcastUrl(moduleId: string, accountName?: string): string | undefined {
   if (HERITAGE_ALIASES.has(moduleId)) {
-    if (accountName === "Pinnacle Capital") return PINNACLE_HERITAGE_MP3;
-    return HERITAGE_MP3;
+    if (accountName === "Pinnacle Capital") return PINNACLE_HERITAGE_WAV;
+    return HERITAGE_WAV;
   }
   // Non-heritage modules: only serve static for Rathbones (or no account)
   if (accountName && accountName !== "Rathbones") return undefined;

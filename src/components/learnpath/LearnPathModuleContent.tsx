@@ -83,14 +83,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
 
     return (
       <div className="space-y-5">
-        {/* Large module title card */}
-        <div className="bg-card rounded-xl border border-border p-6 text-center">
-          <div className="text-4xl mb-3">📊</div>
-          <h3 className="text-xl font-bold text-foreground">{module.title}</h3>
-          <p className="text-sm text-muted-foreground mt-1">{module.duration} • {wordCount} words</p>
-        </div>
-
-        {/* Concept Diagrams */}
+        {/* Concept Map — section cards */}
         {diagramNodes.length > 0 && (
           <VisualDiagram title="Concept Map" nodes={diagramNodes} />
         )}
@@ -101,32 +94,16 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
             <h4 className="font-semibold mb-3 text-foreground flex items-center gap-2 text-sm">
               💡 Key Takeaways
             </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               {bullets.map((b, i) => (
                 <div key={i} className="rounded-lg bg-muted/50 px-3 py-2.5 text-sm text-foreground flex items-start gap-2">
-                  <span className="text-primary font-bold mt-0.5">→</span>
+                  <span className="text-primary font-bold mt-0.5 shrink-0">→</span>
                   <span>{b.replace(/^\*\s*/, "").replace(/\*\*/g, "")}</span>
                 </div>
               ))}
             </div>
           </div>
         )}
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-card rounded-lg p-4 border text-center">
-            <div className="text-2xl mb-1">📚</div>
-            <p className="text-xs text-muted-foreground">{module.duration}</p>
-          </div>
-          <div className="bg-card rounded-lg p-4 border text-center">
-            <div className="text-2xl mb-1">{module.contentType === "video" ? "🎥" : "📄"}</div>
-            <p className="text-xs text-muted-foreground">{module.contentType === "video" ? "Video" : "Document"}</p>
-          </div>
-          <div className="bg-card rounded-lg p-4 border text-center">
-            <div className="text-2xl mb-1">📝</div>
-            <p className="text-xs text-muted-foreground">{wordCount} words</p>
-          </div>
-        </div>
       </div>
     );
   };
@@ -173,15 +150,18 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
         )}
 
         {/* Content */}
-        <div className="bg-card rounded-xl border border-border p-6 md:p-8">
-          <div className="prose prose-sm dark:prose-invert max-w-none
+        <div className="bg-card rounded-xl border border-border p-6 md:p-10">
+          <div className="prose prose-base dark:prose-invert max-w-none
             prose-headings:text-foreground prose-headings:font-bold
-            prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-2
-            prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3
-            prose-p:text-muted-foreground prose-p:leading-7 prose-p:text-sm
-            prose-li:text-muted-foreground prose-li:text-sm
-            prose-strong:text-foreground
-            prose-ul:space-y-1
+            prose-h1:text-2xl prose-h1:mt-6 prose-h1:mb-4
+            prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-3
+            prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3
+            prose-p:text-muted-foreground prose-p:leading-8 prose-p:mb-4
+            prose-li:text-muted-foreground prose-li:leading-7
+            prose-strong:text-foreground prose-strong:font-semibold
+            prose-ul:space-y-2 prose-ul:my-4
+            prose-ol:space-y-2 prose-ol:my-4
+            prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:py-1 prose-blockquote:px-4
           ">
             <ReactMarkdown>{transcript}</ReactMarkdown>
           </div>

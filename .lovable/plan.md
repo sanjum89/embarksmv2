@@ -1,30 +1,35 @@
 
+Goal: Fix heritage podcast seeking so clicking or dragging the scrubber lands on the correct spoken moment in both Rathbones and Pinnacle.
 
-## Fix Audio Seeking in Both Players
+Root cause
+- The remaining bug is not mainly the slider math anymore.
+- The heritage podcast is a pre-generated conversation track, and the saved audio is currently stitched by raw MP3 byte concatenation in `supabase/functions/generate-podcast/index.ts`.
+- That kind of file will often play, but browser time-based seeking becomes inaccurate: the UI can show the middle of the episode while the audio actually jumps to much earlier dialogue, and playback can appear to run past the end.
+- Because both Rathbones and Pinnacle heritage episodes are pre-generated this way, both accounts inherit the same problem.
 
-### Problem
-Two issues:
+Plan
+1. Fix the generation pipeline at the source
+- Update the podcast generator so it produces a true seek-safe single audio file instead of raw concatenated MP3 segments.
+- Keep the existing multi-persona voices and transcript order exactly as-is.
 
-1. **PodcastPlayer**: `onValueChange` fires continuously during drag, but the 200ms progress interval overwrites `progress` state from `audio.currentTime`, causing a tug-of-war. The slider snaps back. Also, the `onended` event may not fire correctly if `currentTime` exceeds `duration` due to floating-point issues, causing playback to "continue beyond the end" (3:32 / 3:26 as shown).
+2. Rebuild the saved heritage podcast files
+- Regenerate and replace the two stored heritage episodes:
+  - Rathbones heritage
+  - Pinnacle heritage
+- Keep them as pre-generated cloud-stored assets so pressing Play still avoids runtime TTS calls.
 
-2. **AudioPlayer**: Slider has `disabled` hardcoded — seeking is impossible.
+3. Lightly harden the player
+- In `src/components/learnpath/LearnPathPodcastPlayer.tsx`, keep the current seek UX but switch the displayed timer/progress to native audio events (`loadedmetadata`, `timeupdate`, `ended`, `seeked`) instead of relying mostly on the interval.
+- Ensure seek state is cleared cleanly after click-to-seek, drag-to-seek, and end-of-track.
 
-### Fix
+Files likely involved
+- `supabase/functions/generate-podcast/index.ts`
+- `src/components/learnpath/LearnPathPodcastPlayer.tsx`
+- `src/data/podcastTranscripts.ts` only if the regenerated heritage asset name or extension changes
 
-**File: `src/components/learnpath/LearnPathPodcastPlayer.tsx`**
-- Add a `seekingRef = useRef(false)`
-- Change Slider from `onValueChange={handleSeek}` to:
-  - `onValueChange` — set `seekingRef.current = true` and update visual progress only (no audio seek)
-  - `onValueCommit` — perform actual `audio.currentTime` seek, then set `seekingRef.current = false`
-- In `startProgressTracking` interval, skip updates when `seekingRef.current === true`
-- In `onended` handler and the interval, clamp `currentTime` to not exceed `duration` to prevent the "beyond end" display bug
-
-**File: `src/components/learnpath/LearnPathAudioPlayer.tsx`**
-- Remove `disabled` from the Slider
-- Add a `seekingRef` with the same `onValueChange`/`onValueCommit` pattern
-- In the progress interval, skip updates when seeking
-- Only allow interaction when status is `playing` or `paused`
-
-### Scope
-Two files, no new dependencies.
-
+Validation
+- Test heritage in both Rathbones and Pinnacle.
+- Click the scrubber at 25%, 50%, and 75% and confirm the spoken content matches the displayed position.
+- Confirm playback ends exactly at the real end.
+- Confirm Play for heritage uses only the saved static file and does not call the TTS function.
+- Confirm other chapters still behave as they do today and are not accidentally made pre-generated.

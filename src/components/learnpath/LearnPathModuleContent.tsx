@@ -180,20 +180,32 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
 
         {/* Content */}
         <div className="bg-card rounded-xl border border-border p-6 md:p-10">
-          <div className="prose prose-base dark:prose-invert max-w-none
-            prose-headings:text-foreground prose-headings:font-bold
-            prose-h1:text-2xl prose-h1:mt-6 prose-h1:mb-4
-            prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-3
-            prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3
-            prose-p:text-muted-foreground prose-p:leading-8 prose-p:mb-4
-            prose-li:text-muted-foreground prose-li:leading-7
-            prose-strong:text-foreground prose-strong:font-semibold
-            prose-ul:space-y-2 prose-ul:my-4
-            prose-ol:space-y-2 prose-ol:my-4
-            prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:py-1 prose-blockquote:px-4
-          ">
-            <ReactMarkdown>{transcript}</ReactMarkdown>
+          <div className={cn(
+            "prose prose-base dark:prose-invert max-w-none",
+            "prose-headings:text-foreground prose-headings:font-bold",
+            "prose-h1:text-2xl prose-h1:mt-6 prose-h1:mb-4",
+            "prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-3",
+            "prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3",
+            "prose-p:text-muted-foreground prose-p:leading-8 prose-p:mb-4",
+            "prose-li:text-muted-foreground prose-li:leading-7",
+            "prose-strong:text-foreground prose-strong:font-semibold",
+            "prose-ul:space-y-2 prose-ul:my-4",
+            "prose-ol:space-y-2 prose-ol:my-4",
+            "prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:py-1 prose-blockquote:px-4",
+          )}>
+            <ReactMarkdown>{isMicro ? microTranscript : transcript}</ReactMarkdown>
           </div>
+          {isMicro && !microExpanded && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setMicroExpanded(true)}
+              className="mt-4 gap-1.5 w-full"
+            >
+              <ChevronDown className="h-3.5 w-3.5" />
+              View Full Content
+            </Button>
+          )}
         </div>
       </div>
     );

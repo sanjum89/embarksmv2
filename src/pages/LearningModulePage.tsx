@@ -2,37 +2,24 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Play, FileText, CheckCircle2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { AIChatPanel } from "@/components/chat/AIChatPanel";
-import { mockLearningModules as defaultLearningModules } from "@/data/mock";
+import { resolveModule } from "@/lib/learnPathModuleResolver";
 
 export default function LearningModulePage() {
   const { mid, id: skillTargetId } = useParams();
   const { normalizedAccount } = useAccount();
-  const learningModules = normalizedAccount?.learningModules?.length ? normalizedAccount.learningModules : defaultLearningModules;
-  const foundModule = learningModules.find((m) => m.id === mid);
   const { updateSkillTarget, skillTargets } = useSkillTargets();
   const { styleTheme } = useTheme();
   const isNewUI = styleTheme === "new";
 
-  // Generate fallback module from skill target step data when not found in mock catalog
-  const module = foundModule ?? (() => {
-    const target = skillTargets.find((st) => st.id === skillTargetId);
-    const step = target?.steps.find((s) => s.referenceId === mid);
-    if (!step) return null;
-    return {
-      id: mid!,
-      title: step.title,
-      contentType: "video" as const,
-      contentUrl: "",
-      duration: step.duration || "20 min",
-      transcript: `This module covers ${step.title}. ${step.description}\n\nKey Topics:\n\n1. Core concepts and fundamentals\n2. Practical techniques and frameworks\n3. Real-world application scenarios\n4. Best practices and common pitfalls\n5. Summary and key takeaways\n\nBy completing this module, you'll have a solid understanding of ${step.title.toLowerCase()} and be ready to apply these skills in your day-to-day work.`,
-    };
-  })();
+  const module = mid
+    ? resolveModule(mid, skillTargets, normalizedAccount?.learningModules)
+    : undefined;
 
   const [completed, setCompleted] = useState(false);
 
@@ -49,15 +36,19 @@ export default function LearningModulePage() {
 
     updateSkillTarget(skillTargetId, (target) => {
       const sorted = [...target.steps].sort((a, b) => a.order - b.order);
-      const stepIndex = sorted.findIndex((s) => s.referenceId === mid);
+      const stepIndex = sorted.findIndex(
+        (s) => s.referenceId === mid || s.id === mid
+      );
 
       const updatedSteps = target.steps.map((step) => {
-        if (step.referenceId === mid) {
+        if (step.referenceId === mid || step.id === mid) {
           return { ...step, status: "completed" as const };
         }
         if (stepIndex >= 0) {
           const currentOrder = sorted[stepIndex].order;
-          const nextLocked = sorted.find((s) => s.order > currentOrder && s.status === "locked");
+          const nextLocked = sorted.find(
+            (s) => s.order > currentOrder && s.status === "locked"
+          );
           if (nextLocked && step.id === nextLocked.id) {
             return { ...step, status: "available" as const };
           }
@@ -99,7 +90,10 @@ export default function LearningModulePage() {
               Module Complete!
             </h2>
             <p className="text-sm text-muted-foreground mb-6">
-              You've completed <span className="font-medium text-foreground">{module.title}</span>
+              You've completed{" "}
+              <span className="font-medium text-foreground">
+                {module.title}
+              </span>
             </p>
             <Link
               to={`/skill-target/${skillTargetId}`}
@@ -129,7 +123,9 @@ export default function LearningModulePage() {
                       </span>
                     )}
                     {module.duration && (
-                      <span className="text-xs text-muted-foreground">{module.duration}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {module.duration}
+                      </span>
                     )}
                   </div>
                   <h1 className="font-display text-lg font-bold text-foreground">
@@ -145,65 +141,68 @@ export default function LearningModulePage() {
               </div>
             </motion.div>
 
-            {/* Content viewer */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="rounded-xl bg-card border border-border overflow-hidden shadow-card mb-6"
-            >
-              {module.contentType === "video" ? (
-                <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-accent/15">
-                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,hsl(var(--background)/0.4))]" />
-                  <div className="absolute top-4 left-4 flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
-                    <span className="text-xs font-medium text-foreground/70">PREVIEW</span>
-                  </div>
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-secondary">
-                    <div className="h-full w-1/3 bg-accent rounded-r-full" />
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-lg border border-border">
-                      <Play className="h-7 w-7 text-accent ml-1" />
+            {module.contentType === "video" ? (
+              <>
+                {/* Video preview */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="rounded-xl bg-card border border-border overflow-hidden shadow-card mb-6"
+                >
+                  <div className="aspect-video relative overflow-hidden bg-gradient-to-br from-primary/20 via-primary/10 to-accent/15">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_40%,hsl(var(--background)/0.4))]" />
+                    <div className="absolute top-4 left-4 flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
+                      <span className="text-xs font-medium text-foreground/70">
+                        PREVIEW
+                      </span>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-secondary">
+                      <div className="h-full w-1/3 bg-accent rounded-r-full" />
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm shadow-lg border border-border">
+                        <Play className="h-7 w-7 text-accent ml-1" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="aspect-[3/4] max-h-[500px] bg-background relative overflow-hidden p-8">
-                  <div className="space-y-3">
-                    <div className="h-6 w-2/3 rounded bg-muted" />
-                    <div className="h-px w-full bg-border" />
-                    <div className="space-y-2 mt-4">
-                      {Array.from({ length: 12 }).map((_, i) => (
-                        <div key={i} className="h-3 rounded bg-muted/60" style={{ width: `${65 + Math.sin(i) * 25}%` }} />
-                      ))}
-                    </div>
-                    <div className="h-px w-full bg-border mt-4" />
-                    <div className="space-y-2 mt-2">
-                      {Array.from({ length: 8 }).map((_, i) => (
-                        <div key={i} className="h-3 rounded bg-muted/60" style={{ width: `${70 + Math.cos(i) * 20}%` }} />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="absolute top-3 right-3">
-                    <FileText className="h-5 w-5 text-muted-foreground/40" />
-                  </div>
-                </div>
-              )}
-            </motion.div>
+                </motion.div>
 
-            {/* Transcript */}
-            {module.transcript && (
+                {/* Video transcript */}
+                {module.transcript && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="rounded-xl bg-card border border-border p-5 shadow-card mb-6"
+                  >
+                    <h3 className="font-display text-sm font-semibold text-foreground mb-3">
+                      Transcript
+                    </h3>
+                    <div className="prose prose-sm max-w-none text-muted-foreground">
+                      <ReactMarkdown>{module.transcript}</ReactMarkdown>
+                    </div>
+                  </motion.div>
+                )}
+              </>
+            ) : (
+              /* Document content — render inline */
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="rounded-xl bg-card border border-border p-5 shadow-card mb-6"
+                transition={{ delay: 0.1 }}
+                className="rounded-xl bg-card border border-border p-6 shadow-card mb-6"
               >
-                <h3 className="font-display text-sm font-semibold text-foreground mb-3">Transcript</h3>
-                <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
-                  {module.transcript}
-                </div>
+                {module.transcript ? (
+                  <div className="prose prose-sm max-w-none text-foreground">
+                    <ReactMarkdown>{module.transcript}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No content available for this document.
+                  </p>
+                )}
               </motion.div>
             )}
           </>
@@ -212,7 +211,6 @@ export default function LearningModulePage() {
     </div>
   );
 
-  // Both UIs: just content, no side panel chat
   if (isNewUI) {
     return (
       <div className="flex flex-1 min-h-0 h-full overflow-hidden">
@@ -221,7 +219,6 @@ export default function LearningModulePage() {
     );
   }
 
-  // Traditional UI: just content (global FAB chat handles the rest)
   return (
     <div className="flex flex-1 min-h-0">
       {contentArea}

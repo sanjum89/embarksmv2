@@ -4,7 +4,7 @@ import { ScenarioQuestion } from "./ScenarioQuestion";
 import { HandsOnRolePlayCard } from "./HandsOnRolePlayCard";
 import { VisualDiagram, parseTranscriptToDiagram, extractFlowCharts } from "./VisualDiagram";
 import { FlowDiagram } from "./FlowDiagram";
-import type { LearningModule } from "@/types/learning";
+import type { LearningModule, LearningFormat } from "@/types/learning";
 import ReactMarkdown from "react-markdown";
 import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { mockRolePlayBank, moduleRolePlayMap } from "@/data/mock";
 interface Props {
   module: LearningModule;
   skillTargetTitle?: string;
+  learningFormat?: LearningFormat;
 }
 
 const modeBanners: Record<string, { icon: React.ElementType; label: string; desc: string; className: string }> = {
@@ -28,10 +29,11 @@ const modeBanners: Record<string, { icon: React.ElementType; label: string; desc
   combined: { icon: Layers, label: "Combined Mode", desc: "All learning modes in one comprehensive view.", className: "bg-accent/10 text-accent-foreground border-accent/20" },
 };
 
-export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
+export function LearnPathModuleContent({ module, skillTargetTitle, learningFormat }: Props) {
   const { learningMode, openAssessment } = useLearnPath();
   const { skillTargets } = useSkillTargets();
   const navigate = useNavigate();
+  const isMicro = learningFormat === "micro";
   const transcript = module.transcript ?? "No content available for this module.";
 
   const banner = modeBanners[learningMode];

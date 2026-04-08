@@ -641,7 +641,48 @@ export const mockRolePlayBank: RolePlay[] = [
   { id: "rp11", title: "Warranty Claim — Cracked Screen", scenario: "A customer's iPhone screen cracked after a minor drop. They believe it should be covered under warranty. The device is 10 months old but has no AppleCare+.", difficulty: "advanced", isPrivate: false, tags: ["support", "apple", "warranty", "escalation"], aiCloneConfig: { persona: "Upset iPhone owner", context: "Cracked screen, no AppleCare+, device 10 months old, expects free repair" } },
   { id: "rp12", title: "Subscription Cancellation — Apple One", scenario: "A customer wants to cancel their Apple One family plan. They feel it's too expensive and only use Apple Music. They need guidance on what they'll lose and alternatives.", difficulty: "beginner", isPrivate: false, tags: ["support", "billing", "apple", "retention"], aiCloneConfig: { persona: "Cost-conscious family plan subscriber", context: "Paying $32.95/mo for Apple One Family, only uses Music, wants to downgrade" } },
   { id: "rp13", title: "Live Customer Call Simulation — Apple L1", scenario: "A customer calls with a complex issue involving Apple ID recovery, iCloud sync problems, and a billing dispute. Handle the full interaction end-to-end following Apple support protocols.", difficulty: "advanced", isPrivate: false, tags: ["support", "apple", "live-sim", "L1"], aiCloneConfig: { persona: "Frustrated Apple customer with multiple issues", context: "Apple ID locked, iCloud not syncing, unexpected charge on account, wants all resolved in one call" } },
+  // ── Module-specific role plays for LearnPath hands-on mode ──
+  { id: "rp-rb-heritage", title: "Prospective Client Asks About Rathbones' Heritage", scenario: "A prospective HNW client is considering moving from a large bank's wealth management arm. They want to understand what makes Rathbones genuinely different. Draw on our 280-year heritage and values.", difficulty: "beginner", isPrivate: false, tags: ["wealth-management", "heritage", "rathbones", "prospecting"], assignedTo: ["u12", "u13", "u14"], aiCloneConfig: { persona: "Carolyn Reeves, 55, retired CFO with £1.5M portfolio currently at Barclays Wealth", context: "Carolyn is analytical and direct. She's tired of feeling like 'just a number' at her current bank. She wants to understand Rathbones' history, values, and what genuinely differentiates the service. She will ask pointed questions about firm stability, the Investec merger, and how values translate into daily client experience. She respects substance over salesmanship." } },
+  { id: "rp-rb-integrity", title: "Navigating an Ethical Dilemma with a Client", scenario: "A long-standing client asks you to make a trade that you believe isn't in their best interest — they want to concentrate their portfolio in a sector based on a 'hot tip.' Navigate the conversation with integrity.", difficulty: "intermediate", isPrivate: false, tags: ["wealth-management", "integrity", "ethics", "rathbones"], assignedTo: ["u12", "u13", "u14"], aiCloneConfig: { persona: "Gerald Hammond, 68, retired engineer with £900k portfolio, client for 5 years", context: "Gerald received a tip from a golf partner about a 'can't miss' biotech company. He wants to invest £200k (22% of his portfolio) in this single stock. He's enthusiastic and will push back if you resist. He respects expertise but can be stubborn. You need to maintain the relationship while exercising your professional duty." } },
+  { id: "rp-rb-volatility", title: "Calming an Anxious Client During Market Turmoil", scenario: "Markets have fallen sharply over the past week. A nervous client calls demanding you sell their entire equity position. Help them navigate their anxiety while providing sound advice.", difficulty: "intermediate", isPrivate: false, tags: ["wealth-management", "volatility", "client-communication", "rathbones"], assignedTo: ["u12", "u13", "u14"], aiCloneConfig: { persona: "Patricia Yates, 61, recently widowed, portfolio of £700k, moderate risk profile", context: "Patricia inherited the portfolio from her late husband and is now managing finances alone for the first time. She's been watching financial news constantly and is terrified of losing money. She will be emotional, mention her late husband's wishes, and insist on selling. She needs empathy, reassurance, and clear data — not condescension. If handled well, she'll trust your judgment; if handled poorly, she'll escalate." } },
 ];
+
+/** Maps module IDs to related role play IDs for hands-on mode */
+export const moduleRolePlayMap: Record<string, string[]> = {
+  "m-rb-intro-heritage": ["rp-rb-heritage"],
+  "RAT-INTRO-001": ["rp-rb-heritage"],
+  "RAT-INTRO-LM-001": ["rp-rb-heritage"],
+  "m-rb-intro-invest": ["rp-rb2"],
+  "RAT-INTRO-002": ["rp-rb2"],
+  "RAT-INTRO-LM-002": ["rp-rb2"],
+  "m-rb-intro-90days": ["rp-rb1"],
+  "RAT-INTRO-003": ["rp-rb1"],
+  "RAT-INTRO-LM-003": ["rp-rb1"],
+  "m-rb1": ["rp-rb1"],
+  "m-rb2": ["rp-rb5"],
+  "m-rb3": ["rp-rb4"],
+  "m-rb4": ["rp-rb3"],
+  "m-rb5": ["rp-rb2"],
+  "m-rb6": ["rp-rb4"],
+  "m-rb7": ["rp-rb-integrity"],
+  "RAT-LM-001": ["rp-rb4"],
+  "RAT-LM-002": ["rp-rb4"],
+  "RAT-LM-003": ["rp-rb2"],
+  "RAT-LM-004": ["rp-rb-volatility"],
+  "RAT-LM-005": ["rp-rb3"],
+  "RAT-LM-006": ["rp-rb-integrity"],
+  "RAT-LM-007": ["rp-rb4"],
+  "RAT-LM-008": [],
+  "RAT-LM-009": ["rp-rb4"],
+  "RAT-LM-010": ["rp-rb-volatility"],
+  "RAT-BR-001": ["rp-rb1"],
+  "RAT-BR-LM-001": ["rp-rb1"],
+  "RAT-BR-002": ["rp-rb5"],
+  "RAT-BR-LM-002": ["rp-rb5"],
+  "RAT-BR-003": ["rp-rb1"],
+  "RAT-BR-LM-003": ["rp-rb1"],
+  "RAT-BR-LM-004": ["rp-rb1"],
+};
 
 /* ─── People Graph Signals ─── */
 export const mockPeopleGraphSignals: PeopleGraphSignal[] = [

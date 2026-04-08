@@ -108,19 +108,20 @@ export function parseTranscriptToDiagram(transcript: string): DiagramNode[] {
   for (const line of lines) {
     const h2Match = line.match(/^##\s+(.+)$/);
     const h3Match = line.match(/^###\s+(.+)$/);
-    const bulletMatch = line.match(/^\*\s+\*{0,2}([^*]+?)\*{0,2}\s*[:–-]\s+(.*)$/) || line.match(/^\*\s+\*{0,2}([^*]+?)\*{0,2}\s*$/);
+    const bulletRaw = line.match(/^\*\s+(.+)$/);
 
     if (h2Match) {
       currentH2 = { title: h2Match[1].replace(/\*\*/g, ""), children: [] };
       roots.push(currentH2);
     } else if (h3Match && currentH2) {
-      // H3 becomes a child of H2
       currentH2.children = currentH2.children ?? [];
       currentH2.children.push({ title: h3Match[1].replace(/\*\*/g, "") });
-    } else if (bulletMatch && currentH2) {
-      // Bullets become children of the current H2 (rolled up)
-      const title = bulletMatch[1].replace(/\*\*/g, "").trim();
-      const desc = bulletMatch[2]?.replace(/\*\*/g, "").trim();
+    } else if (bulletRaw && currentH2) {
+      // Strip bold markers first, then split on first colon/dash separator
+      const clean = bulletRaw[1].replace(/\*\*/g, "").trim();
+      const sepMatch = clean.match(/^(.+?)\s*[:–-]\s+(.+)$/);
+      const title = sepMatch ? sepMatch[1].trim() : clean;
+      const desc = sepMatch ? sepMatch[2].trim() : undefined;
       currentH2.children = currentH2.children ?? [];
       currentH2.children.push({ title, description: desc || undefined });
     }

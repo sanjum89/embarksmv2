@@ -301,7 +301,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
   /* ═══ LISTENING MODE ═══ */
   const renderListening = () => {
     if (podcastScript) {
-      const staticUrl = getStaticPodcastUrl(module.id, normalizedAccount?.name);
+      const staticUrl = getStaticPodcastUrl(module.id, normalizedAccount?.branding?.name);
       return <LearnPathPodcastPlayer script={podcastScript} staticAudioUrl={staticUrl} />;
     }
     return (

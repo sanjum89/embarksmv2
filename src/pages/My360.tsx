@@ -248,7 +248,7 @@ export default function My360() {
                     <span className="underline text-foreground">{profileData.manager}</span>
                   </span>
                   {profileData.team && (
-                    <span>Team: <span className="text-foreground">{profileData.team}</span></span>
+                    <span>Team: <span className="text-foreground">{substitute(profileData.team)}</span></span>
                   )}
                 </div>
                 {profileData.program && (

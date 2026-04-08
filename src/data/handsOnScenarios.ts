@@ -242,7 +242,7 @@ export const handsOnScenarios: Record<string, ModuleHandsOn> = {
         ],
       },
     ],
-    rolePlayIds: ["rp-rb4"],
+    rolePlayIds: ["rp-rb-value-articulation"],
   },
 
   "RAT-LM-002": {
@@ -259,7 +259,7 @@ export const handsOnScenarios: Record<string, ModuleHandsOn> = {
         ],
       },
     ],
-    rolePlayIds: ["rp-rb4"],
+    rolePlayIds: ["rp-rb-risk-profiling"],
   },
 
   "RAT-LM-003": {
@@ -276,7 +276,7 @@ export const handsOnScenarios: Record<string, ModuleHandsOn> = {
         ],
       },
     ],
-    rolePlayIds: ["rp-rb2"],
+    rolePlayIds: ["rp-rb-portfolio-construction"],
   },
 
   "RAT-LM-004": {
@@ -310,7 +310,7 @@ export const handsOnScenarios: Record<string, ModuleHandsOn> = {
         ],
       },
     ],
-    rolePlayIds: ["rp-rb3"],
+    rolePlayIds: ["rp-rb-internal-collab"],
   },
 
   "RAT-LM-006": {
@@ -344,7 +344,7 @@ export const handsOnScenarios: Record<string, ModuleHandsOn> = {
         ],
       },
     ],
-    rolePlayIds: ["rp-rb4"],
+    rolePlayIds: ["rp-rb-clear-communication"],
   },
 
   "RAT-LM-008": {
@@ -361,7 +361,7 @@ export const handsOnScenarios: Record<string, ModuleHandsOn> = {
         ],
       },
     ],
-    rolePlayIds: [],
+    rolePlayIds: ["rp-rb-documentation"],
   },
 
   "RAT-LM-009": {
@@ -378,7 +378,7 @@ export const handsOnScenarios: Record<string, ModuleHandsOn> = {
         ],
       },
     ],
-    rolePlayIds: ["rp-rb4"],
+    rolePlayIds: ["rp-rb-fee-discussion"],
   },
 
   "RAT-LM-010": {
@@ -414,7 +414,7 @@ export const handsOnScenarios: Record<string, ModuleHandsOn> = {
         ],
       },
     ],
-    rolePlayIds: ["rp-rb1"],
+    rolePlayIds: ["rp-rb-domain-vocab"],
   },
 
   "RAT-BR-002": {
@@ -431,7 +431,7 @@ export const handsOnScenarios: Record<string, ModuleHandsOn> = {
         ],
       },
     ],
-    rolePlayIds: ["rp-rb5"],
+    rolePlayIds: ["rp-rb-bespoke-vs-product"],
   },
 
   "RAT-BR-003": {
@@ -448,7 +448,7 @@ export const handsOnScenarios: Record<string, ModuleHandsOn> = {
         ],
       },
     ],
-    rolePlayIds: ["rp-rb1"],
+    rolePlayIds: ["rp-rb-rate-impact"],
   },
 
   "RAT-BR-LM-004": {
@@ -465,7 +465,7 @@ export const handsOnScenarios: Record<string, ModuleHandsOn> = {
         ],
       },
     ],
-    rolePlayIds: ["rp-rb1"],
+    rolePlayIds: ["rp-rb-gap-recognition"],
   },
 };
 

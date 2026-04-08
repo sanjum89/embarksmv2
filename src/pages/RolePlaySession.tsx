@@ -71,17 +71,35 @@ export default function RolePlaySession() {
 
   // Generate fallback role play from skill target step data when not in mock bank
   const rolePlay = foundRolePlay ?? (() => {
-    // Import dynamically would be complex, so create inline fallback
+    // Try to derive context from skill target step data
+    let fallbackTitle = "Practice Scenario";
+    let fallbackScenario = "Engage naturally with the AI persona and apply the techniques you've learned.";
+    let fallbackPersona = "A knowledgeable practice partner in your field";
+    let fallbackContext = "General practice scenario for skill development";
+
+    if (skillTargetId) {
+      const st = skillTargets.find((t) => t.id === skillTargetId);
+      if (st) {
+        const step = st.steps.find((s) => s.referenceId === rid);
+        if (step) {
+          fallbackTitle = step.title || fallbackTitle;
+          fallbackScenario = `Practice scenario for "${step.title}". ${step.description || "Apply the concepts from this module in a realistic conversation."}`;
+          fallbackPersona = `A senior colleague helping you practice: ${step.title}`;
+          fallbackContext = `This role play is part of the "${st.title}" skill target. The learner is working on: ${step.title}. ${step.description || ""}`;
+        }
+      }
+    }
+
     return {
       id: rid || "",
-      title: "Practice Scenario",
-      scenario: "This is a practice role-play scenario designed to help you build and demonstrate your skills. Engage naturally with the AI persona and apply the techniques you've learned.",
+      title: fallbackTitle,
+      scenario: fallbackScenario,
       difficulty: "intermediate" as const,
       isPrivate: false,
       tags: ["practice", "skills"],
       aiCloneConfig: {
-        persona: "A realistic practice partner",
-        context: "General practice scenario for skill development",
+        persona: fallbackPersona,
+        context: fallbackContext,
       },
     };
   })();

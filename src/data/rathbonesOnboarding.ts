@@ -309,7 +309,7 @@ export const st2FinalAssessment: Assessment = {
  * Per-learner variants: Clara/Elliot get baseline assessment, Sophie does not
  * ═══════════════════════════════════════════════════════════ */
 
-const ST2_MODULES: Omit<StepItem, "order" | "status">[] = [
+const ST2_MODULES: Omit<StepItem, "order" | "status" | "learningFormat">[] = [
   { id: "RAT-LM-001", type: "module", title: "Investment Proposition and Client Outcomes", description: "Understanding the discretionary wealth management model and what good client outcomes look like.", skippable: true, skipCondition: "Baseline assessment score > 80%", duration: "25 min", referenceId: "m-rb1" },
   { id: "RAT-LM-002", type: "module", title: "Suitability, Risk Profiling, and Documentation", description: "FCA suitability requirements, risk appetite assessment, and documentation best practice.", skippable: true, skipCondition: "Baseline assessment score > 80%", duration: "20 min", referenceId: "m-rb3" },
   { id: "RAT-LM-003", type: "module", title: "Portfolio Construction and Asset Allocation", description: "Strategic and tactical asset allocation, portfolio construction, and rebalancing principles.", skippable: true, skipCondition: "Baseline assessment score > 80%", duration: "25 min", referenceId: "m-rb5" },
@@ -448,25 +448,45 @@ export const elliotDomainBridge: SkillTarget = {
  * INTRODUCTION TO RATHBONES TARGET (RAT-ST-INTRO-001)
  * ═══════════════════════════════════════════════════════════ */
 
-export const introToRathbones: SkillTarget = {
-  id: "RAT-ST-INTRO-001",
-  title: "Introduction to Rathbones",
-  description: "A short onboarding path covering Rathbones' heritage, investment approach, and what to expect in your first 90 days.",
-  category: "Rathbones Wealth Management",
-  assignedTo: ["u12", "u13", "u14"],
-  progress: 0,
-  dueDate: "2026-04-01",
-  locked: false,
-  skills: [
-    { name: "Rathbones Heritage", current: "Beginner", target: "Intermediate" },
-    { name: "Investment Approach", current: "Beginner", target: "Intermediate" },
-  ],
-  steps: [
-    { id: "RAT-INTRO-001", type: "module", title: "Our Heritage & Values", description: "Learn about Rathbones' 280+ year heritage, core values, and commitment to responsible wealth management.", order: 1, skippable: false, status: "available", duration: "15 min", referenceId: "m-rb-intro-heritage" },
-    { id: "RAT-INTRO-002", type: "module", title: "How We Invest", description: "An overview of Rathbones' investment philosophy, approach to portfolio management, and how we deliver client outcomes.", order: 2, skippable: false, status: "locked", duration: "15 min", referenceId: "m-rb-intro-invest" },
-    { id: "RAT-INTRO-003", type: "module", title: "Your First 90 Days", description: "What to expect during your first three months — key milestones, support available, and how to make the most of your onboarding.", order: 3, skippable: false, status: "locked", duration: "10 min", referenceId: "m-rb-intro-90days" },
-  ],
-};
+export function buildIntroToRathbones(learnerId?: "clara" | "elliot" | "sophie"): SkillTarget {
+  // Default formats based on persona experience
+  const formatMap: Record<string, Record<string, "full" | "micro" | "auto_skip">> = {
+    clara:  { "RAT-INTRO-001": "auto_skip", "RAT-INTRO-002": "auto_skip", "RAT-INTRO-003": "micro" },
+    elliot: { "RAT-INTRO-001": "micro",     "RAT-INTRO-002": "full",      "RAT-INTRO-003": "full" },
+    sophie: { "RAT-INTRO-001": "full",       "RAT-INTRO-002": "full",      "RAT-INTRO-003": "full" },
+  };
+  const formats = learnerId ? formatMap[learnerId] ?? {} : {};
+
+  const getStatus = (stepId: string): "available" | "skipped" | "locked" => {
+    const fmt = formats[stepId];
+    if (fmt === "auto_skip") return "skipped";
+    if (stepId === "RAT-INTRO-001") return "available";
+    return "locked";
+  };
+
+  return {
+    id: "RAT-ST-INTRO-001",
+    title: "Introduction to Rathbones",
+    description: "A short onboarding path covering Rathbones' heritage, investment approach, and what to expect in your first 90 days.",
+    category: "Rathbones Wealth Management",
+    assignedTo: ["u12", "u13", "u14"],
+    progress: 0,
+    dueDate: "2026-04-01",
+    locked: false,
+    skills: [
+      { name: "Rathbones Heritage", current: "Beginner", target: "Intermediate" },
+      { name: "Investment Approach", current: "Beginner", target: "Intermediate" },
+    ],
+    steps: [
+      { id: "RAT-INTRO-001", type: "module", title: "Our Heritage & Values", description: "Learn about Rathbones' 280+ year heritage, core values, and commitment to responsible wealth management.", order: 1, skippable: false, status: getStatus("RAT-INTRO-001"), duration: "15 min", referenceId: "m-rb-intro-heritage", learningFormat: formats["RAT-INTRO-001"] ?? "full" },
+      { id: "RAT-INTRO-002", type: "module", title: "How We Invest", description: "An overview of Rathbones' investment philosophy, approach to portfolio management, and how we deliver client outcomes.", order: 2, skippable: false, status: getStatus("RAT-INTRO-002"), duration: "15 min", referenceId: "m-rb-intro-invest", learningFormat: formats["RAT-INTRO-002"] ?? "full" },
+      { id: "RAT-INTRO-003", type: "module", title: "Your First 90 Days", description: "What to expect during your first three months — key milestones, support available, and how to make the most of your onboarding.", order: 3, skippable: false, status: getStatus("RAT-INTRO-003"), duration: "10 min", referenceId: "m-rb-intro-90days", learningFormat: formats["RAT-INTRO-003"] ?? "full" },
+    ],
+  };
+}
+
+// Backwards compat — default (no persona = Sophie-like full path)
+export const introToRathbones = buildIntroToRathbones();
 
 /* ═══════════════════════════════════════════════════════════
  * CHAPTER SUMMARIES — for Agent One in-context use

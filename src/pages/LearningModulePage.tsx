@@ -174,6 +174,7 @@ export default function LearningModulePage() {
                 stepId={step?.id}
                 onComplete={handleMarkComplete}
                 learningFormat={step?.learningFormat}
+                hideHeader
               />
             </>
           )}

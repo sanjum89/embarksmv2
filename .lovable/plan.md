@@ -1,45 +1,20 @@
 
 
-## Fix LearnPath Header & Mark as Complete Placement
+## Apply Content Substitution Across All Skill Target Views
 
 ### Problem
-1. The top header in `LearnPathModeSelector` shows the **module title** — user wants it to show the **skill target name** instead.
-2. The "Mark as Complete" button should be inside the **module header card** (the card with icon, title, duration badges), not elsewhere.
+When viewing the Pinnacle Capital account, skill target titles, descriptions, and step titles still show "Rathbones" because the `substitute()` function from `useContentSubstitution` is not applied in several components.
 
 ### Changes
 
-**File: `src/components/learnpath/LearnPathModeSelector.tsx`**
-- Change the `moduleTitle` prop to `skillTargetTitle` (or accept both and display skill target name in the top bar header).
-- The top bar `<h2>` displays the skill target name instead of the module name.
-
-**File: `src/components/learnpath/LearnPathContent.tsx`** (line 80)
-- Pass `stepInfo?.skillTargetTitle` to `LearnPathModeSelector` instead of `mod.title`.
-- Pass an `onComplete` handler to `LearnPathModuleContent` so the module header card can render the button.
-
-**File: `src/components/learnpath/LearnPathModuleContent.tsx`**
-- In `renderModuleHeader()` (lines 110-133): Add the "Mark as Complete" button inline within the header card, right-aligned or below the badges.
-- The button calls `handleMarkComplete` and shows a check icon when completed.
-- Remove any other "Mark as Complete" button placements if they exist outside this card.
-
-### Summary of UI after changes
-
-```text
-┌─────────────────────────────────────────┐
-│ Introduction to Rathbones   [All Modules]│  ← skill target name
-│ Viewing in: ● Reading  ○ Visual  ...    │
-├─────────────────────────────────────────┤
-│ 📄 Our Heritage & Values                │
-│    Introduction to Rathbones             │
-│    ⏱ 15 min  📄 Full Module             │
-│                        [Mark as Complete]│  ← button inside card
-├─────────────────────────────────────────┤
-│ (content below)                          │
-└─────────────────────────────────────────┘
-```
-
 | File | Change |
 |---|---|
-| `src/components/learnpath/LearnPathModeSelector.tsx` | Accept + display skill target title in top bar |
-| `src/components/learnpath/LearnPathContent.tsx` | Pass skill target title to selector; pass onComplete to module content |
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Add "Mark as Complete" button inside renderModuleHeader card |
+| `src/pages/SkillTargetDetail.tsx` | Import and use `useContentSubstitution`; wrap all `target.title`, `target.description`, and `step.title` renders with `substitute()` |
+| `src/components/skill-target/SkillTargetCard.tsx` | Import and use `useContentSubstitution`; wrap `target.title`, `target.description`, and step titles with `substitute()` |
+| `src/components/skill-target/SkillTargetListItem.tsx` | Import and use `useContentSubstitution`; wrap displayed text with `substitute()` |
+| `src/components/skill-target/StepListItem.tsx` | Import and use `useContentSubstitution`; wrap `step.title` with `substitute()` |
+| `src/components/skill-target/TraditionalActivitiesPanel.tsx` | Import and use `useContentSubstitution`; wrap `skillTargetTitle` and `step.title` with `substitute()` |
+| `src/pages/Dashboard.tsx` | Import and use `useContentSubstitution`; wrap any skill target titles/descriptions rendered on the dashboard with `substitute()` |
+
+Each file follows the same pattern: import the hook, call `const { substitute } = useContentSubstitution()`, and wrap every rendered string that could contain "Rathbones" with `substitute(...)`.
 

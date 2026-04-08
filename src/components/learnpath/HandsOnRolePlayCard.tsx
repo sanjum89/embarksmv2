@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { MessageSquare, Mic } from "lucide-react";
 import type { RolePlay } from "@/types/learning";
 
 interface Props {
@@ -20,33 +21,46 @@ export function HandsOnRolePlayCard({ rolePlay }: Props) {
     : "RP";
 
   const personaName = rolePlay.aiCloneConfig?.persona?.split(",")[0] ?? "AI Character";
+  const personaRole = rolePlay.aiCloneConfig?.persona?.split(",").slice(1).join(",").trim() ?? "";
   const personaDesc =
-    rolePlay.aiCloneConfig?.context?.slice(0, 120) ??
-    rolePlay.scenario?.slice(0, 120) ??
+    rolePlay.aiCloneConfig?.context?.slice(0, 180) ??
+    rolePlay.scenario?.slice(0, 180) ??
     "";
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 flex items-start gap-4">
-      <div className="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center shrink-0 text-sm font-bold text-accent">
-        {initials}
+    <div className="rounded-xl border border-border bg-card p-5 flex flex-col gap-3">
+      {/* Header row */}
+      <div className="flex items-start gap-3">
+        <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-xs font-bold text-primary">
+          {initials}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h4 className="text-sm font-semibold text-foreground leading-tight">{personaName}</h4>
+          {personaRole && (
+            <p className="text-xs text-muted-foreground mt-0.5">{personaRole}</p>
+          )}
+        </div>
       </div>
-      <div className="flex-1 min-w-0 space-y-2">
-        <div>
-          <h4 className="text-sm font-semibold text-foreground">{personaName}</h4>
-          <p className="text-xs text-muted-foreground line-clamp-2">{personaDesc}</p>
-        </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            size="sm"
-            className="gap-1.5 text-xs"
-            onClick={() => navigate(`/role-play-bank/${rolePlay.id}`)}
-          >
-            🎭 Chat Role Play
-          </Button>
-          <Badge variant="secondary" className="text-[10px]">
-            Voice: Soon
-          </Badge>
-        </div>
+
+      {/* Description */}
+      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+        {personaDesc}
+      </p>
+
+      {/* Actions */}
+      <div className="flex items-center gap-2 flex-wrap pt-1">
+        <Button
+          size="sm"
+          className="gap-1.5 text-xs bg-accent text-accent-foreground hover:bg-accent/90"
+          onClick={() => navigate(`/role-play-bank/${rolePlay.id}`)}
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+          Chat Role Play
+        </Button>
+        <Badge variant="secondary" className="text-[10px] gap-1">
+          <Mic className="h-2.5 w-2.5" />
+          Voice: Soon
+        </Badge>
       </div>
     </div>
   );

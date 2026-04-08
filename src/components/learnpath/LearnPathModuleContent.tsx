@@ -2,9 +2,10 @@ import { useLearnPath } from "@/contexts/LearnPathContext";
 import { LearnPathPodcastPlayer } from "./LearnPathPodcastPlayer";
 import { ScenarioQuestion } from "./ScenarioQuestion";
 import { HandsOnRolePlayCard } from "./HandsOnRolePlayCard";
+import { VisualDiagram, parseTranscriptToDiagram } from "./VisualDiagram";
 import type { LearningModule } from "@/types/learning";
 import ReactMarkdown from "react-markdown";
-import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck } from "lucide-react";
+import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
@@ -38,7 +39,6 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
   const rpIds = moduleRolePlayMap[module.id] ?? [];
   const rolePlays = rpIds.map((id) => mockRolePlayBank.find((rp) => rp.id === id)).filter(Boolean);
 
-  // Reading time estimate
   const wordCount = transcript.split(/\s+/).length;
   const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
@@ -78,46 +78,37 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
 
   /* ═══ VISUAL MODE ═══ */
   const renderVisual = () => {
-    // Extract headings from markdown for key concepts
-    const headings = transcript.match(/^#{1,3}\s+.+$/gm) ?? [];
+    const diagramNodes = parseTranscriptToDiagram(transcript);
     const bullets = transcript.match(/^\*\s+.+$/gm)?.slice(0, 8) ?? [];
 
     return (
-      <div className="space-y-4">
-        {/* Key Concepts Cards */}
-        <div className="bg-card rounded-xl p-5 border border-border">
-          <h4 className="font-medium mb-3 text-foreground flex items-center gap-2">
-            <span className="text-lg">🎯</span> Key Concepts
-          </h4>
-          {headings.length > 0 ? (
+      <div className="space-y-5">
+        {/* Large module title card */}
+        <div className="bg-card rounded-xl border border-border p-6 text-center">
+          <div className="text-4xl mb-3">📊</div>
+          <h3 className="text-xl font-bold text-foreground">{module.title}</h3>
+          <p className="text-sm text-muted-foreground mt-1">{module.duration} • {wordCount} words</p>
+        </div>
+
+        {/* Concept Diagrams */}
+        {diagramNodes.length > 0 && (
+          <VisualDiagram title="Concept Map" nodes={diagramNodes} />
+        )}
+
+        {/* Key Takeaways */}
+        {bullets.length > 0 && (
+          <div className="bg-card rounded-xl p-5 border border-border">
+            <h4 className="font-semibold mb-3 text-foreground flex items-center gap-2 text-sm">
+              💡 Key Takeaways
+            </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {headings.slice(0, 6).map((h, i) => (
-                <div key={i} className="rounded-lg bg-muted/50 px-3 py-2 text-sm text-foreground">
-                  {h.replace(/^#+\s*/, "")}
+              {bullets.map((b, i) => (
+                <div key={i} className="rounded-lg bg-muted/50 px-3 py-2.5 text-sm text-foreground flex items-start gap-2">
+                  <span className="text-primary font-bold mt-0.5">→</span>
+                  <span>{b.replace(/^\*\s*/, "").replace(/\*\*/g, "")}</span>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <ReactMarkdown>{transcript.slice(0, 600) + (transcript.length > 600 ? "..." : "")}</ReactMarkdown>
-            </div>
-          )}
-        </div>
-
-        {/* Key Points */}
-        {bullets.length > 0 && (
-          <div className="bg-card rounded-xl p-5 border border-border">
-            <h4 className="font-medium mb-3 text-foreground flex items-center gap-2">
-              <span className="text-lg">💡</span> Key Points
-            </h4>
-            <ul className="space-y-1.5">
-              {bullets.map((b, i) => (
-                <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                  <span className="text-accent mt-0.5">•</span>
-                  {b.replace(/^\*\s*/, "").replace(/\*\*/g, "")}
-                </li>
-              ))}
-            </ul>
           </div>
         )}
 
@@ -144,25 +135,35 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
   const renderReading = () => {
     const headings = transcript.match(/^#{1,3}\s+.+$/gm) ?? [];
     return (
-      <div className="space-y-4">
-        {/* Reading info bar */}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <BookOpenCheck className="h-3.5 w-3.5" />
-          <span>~{readingMinutes} min read</span>
-          <span>•</span>
-          <span>{wordCount} words</span>
+      <div className="space-y-5">
+        {/* Reading header card */}
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h2 className="text-2xl font-bold text-foreground">{module.title}</h2>
+          {skillTargetTitle && <p className="text-sm text-muted-foreground mt-1">{skillTargetTitle}</p>}
+          <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <BookOpenCheck className="h-3.5 w-3.5" /> ~{readingMinutes} min read
+            </span>
+            <span>•</span>
+            <span>{wordCount} words</span>
+            <span>•</span>
+            <span>{module.duration}</span>
+          </div>
         </div>
 
         {/* Table of contents */}
         {headings.length > 2 && (
-          <div className="rounded-lg border border-border bg-muted/30 p-4">
-            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Contents</h4>
-            <ul className="space-y-1">
+          <div className="rounded-xl border border-border bg-muted/30 p-5">
+            <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Table of Contents</h4>
+            <ul className="space-y-1.5">
               {headings.map((h, i) => {
                 const level = (h.match(/^#+/) ?? [""])[0].length;
                 const text = h.replace(/^#+\s*/, "");
                 return (
-                  <li key={i} className={cn("text-sm text-foreground", level > 2 && "ml-4 text-muted-foreground")}>
+                  <li key={i} className={cn(
+                    "text-sm",
+                    level <= 2 ? "text-foreground font-medium" : "ml-4 text-muted-foreground",
+                  )}>
                     {text}
                   </li>
                 );
@@ -172,8 +173,18 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
         )}
 
         {/* Content */}
-        <div className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-li:text-muted-foreground">
-          <ReactMarkdown>{transcript}</ReactMarkdown>
+        <div className="bg-card rounded-xl border border-border p-6 md:p-8">
+          <div className="prose prose-sm dark:prose-invert max-w-none
+            prose-headings:text-foreground prose-headings:font-bold
+            prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-2
+            prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3
+            prose-p:text-muted-foreground prose-p:leading-7 prose-p:text-sm
+            prose-li:text-muted-foreground prose-li:text-sm
+            prose-strong:text-foreground
+            prose-ul:space-y-1
+          ">
+            <ReactMarkdown>{transcript}</ReactMarkdown>
+          </div>
         </div>
       </div>
     );
@@ -184,7 +195,6 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
     if (podcastScript) {
       return <LearnPathPodcastPlayer script={podcastScript} />;
     }
-    // Fallback to basic audio player with transcript
     return (
       <div className="space-y-4">
         <div className="bg-card rounded-xl border border-border p-4">
@@ -199,11 +209,24 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
 
   /* ═══ HANDS-ON MODE ═══ */
   const renderHandsOn = () => (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {/* Intro */}
       <p className="text-sm text-muted-foreground">
         {handsOnData?.intro ?? "Practice what you've learned through interactive scenarios and role-play."}
       </p>
+
+      {/* Role Play Cards — before scenarios */}
+      {rolePlays.length > 0 && (
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Users className="h-4 w-4 text-primary" />
+            Role Play Scenarios
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {rolePlays.map((rp) => rp && <HandsOnRolePlayCard key={rp.id} rolePlay={rp} />)}
+          </div>
+        </div>
+      )}
 
       {/* Scenarios */}
       {handsOnData?.scenarios.map((scenario, idx) => (
@@ -215,16 +238,6 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
           options={scenario.options}
         />
       ))}
-
-      {/* Role Play Cards */}
-      {rolePlays.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-            <span>🎭</span> Practice Role Plays
-          </h4>
-          {rolePlays.map((rp) => rp && <HandsOnRolePlayCard key={rp.id} rolePlay={rp} />)}
-        </div>
-      )}
 
       {/* Assessment CTA */}
       <Button variant="outline" onClick={() => openAssessment(module.id)} className="gap-2 w-full">

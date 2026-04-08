@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Maximize2, X, ThumbsUp, ThumbsDown, RotateCcw, CheckCircle2, ArrowRight } from "lucide-react";
+import { Maximize2, X, ThumbsUp, ThumbsDown, RotateCcw, CheckCircle2, ArrowRight, Eye, BookOpen, Headphones, Wrench, Layers } from "lucide-react";
 import { motion } from "framer-motion";
 import { mockAssessments as defaultAssessments } from "@/data/mock";
 import { st2BaselineAssessment, st2MidAssessment, st2FinalAssessment } from "@/data/rathbonesOnboarding";
@@ -7,8 +7,9 @@ import { useAccount } from "@/contexts/AccountContext";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { resolveModule } from "@/lib/learnPathModuleResolver";
-import ReactMarkdown from "react-markdown";
+import { LearnPathModuleContent } from "@/components/learnpath/LearnPathModuleContent";
 import type { StepItem, Assessment } from "@/types/learning";
+import type { LearningMode } from "@/contexts/LearnPathContext";
 
 interface TraditionalContentViewerProps {
   step: StepItem;

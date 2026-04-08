@@ -325,6 +325,13 @@ function buildST2ForLearner(
 ): SkillTarget {
   const hasBaseline = learnerId !== "sophie";
 
+  // Per-persona learning format defaults for non-skippable modules
+  const microModules: Record<string, string[]> = {
+    clara: ["RAT-LM-004", "RAT-LM-005"],
+    elliot: [],
+    sophie: [],
+  };
+
   const steps: StepItem[] = [];
   let order = 1;
 
@@ -345,6 +352,7 @@ function buildST2ForLearner(
 
   // Learning modules
   for (const mod of ST2_MODULES) {
+    const isMicro = microModules[learnerId]?.includes(mod.id);
     steps.push({
       ...mod,
       order: order++,
@@ -352,6 +360,7 @@ function buildST2ForLearner(
       // Sophie: no skip logic — all modules required
       skippable: hasBaseline ? mod.skippable : false,
       skipCondition: hasBaseline ? mod.skipCondition : undefined,
+      learningFormat: isMicro ? "micro" : (hasBaseline && mod.skippable ? "auto_skip" : "full"),
     });
   }
 

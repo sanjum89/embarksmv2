@@ -15,56 +15,87 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const moduleList = (context?.modules || [])
-      .map((m: any) => `- ${m.title} (ID: ${m.moduleId}, status: ${m.status}, skill target: ${m.skillTargetTitle})`)
+      .map(
+        (module: any) =>
+          `- ${module.title} (ID: ${module.moduleId}, status: ${module.status}, skill target: ${module.skillTargetTitle})`
+      )
       .join("\n");
 
-    const systemPrompt = `You are the AI Learning Manager in LearnPath — a personalised learning experience platform.
+    const currentContent = context?.currentContent;
+    const currentContentBlock = currentContent
+      ? `## Right Panel Context
+- Current view: ${context?.currentView || "module"}
+- Skill target: ${currentContent.skillTargetTitle || context?.activeSkillTargetTitle || "Unknown"}
+- Module: ${currentContent.moduleTitle || context?.activeModuleTitle || "Unknown"}
+- Learning mode: ${currentContent.learningMode || context?.learningMode || "combined"}
+- Content type: ${currentContent.contentType || "document"}
+- Duration: ${currentContent.duration || "Unknown"}
+
+### Visible headings
+${currentContent.headings?.length ? currentContent.headings.map((heading: string) => `- ${heading}`).join("\n") : "- None extracted"}
+
+### Key points
+${currentContent.keyPoints?.length ? currentContent.keyPoints.map((point: string) => `- ${point}`).join("\n") : "- None extracted"}
+
+### Displayed content summary
+${currentContent.summary || "No summary available."}
+
+### Source excerpt for right-side content
+${currentContent.transcriptExcerpt || ""}`
+      : `## Right Panel Context
+- There is no active module content open right now.`;
+
+    const systemPrompt = `You are the AI Learning Manager inside LearnPath.
 
 ## About the Learner
 - Name: ${context?.userName || "Learner"}
 - Role: ${context?.userRole || "learner"}
 - Title: ${context?.userTitle || ""}
 - Current view: ${context?.currentView || "welcome"}
-- Active module: ${context?.activeModuleId || "none"}
+- Active module: ${context?.activeModuleTitle || context?.activeModuleId || "none"}
 - Learning mode: ${context?.learningMode || "combined"}
 
 ## Assigned Modules
 ${moduleList || "No modules assigned yet."}
 
-## Your Behaviour
-1. Welcome learners warmly by name. Reference their role and what they're working on.
-2. Guide them through their assigned modules in logical order, starting with incomplete ones.
-3. Explain concepts in the context of their role and real-world application.
-4. Suggest the best learning mode based on the topic (visual for overviews, reading for detail, listening for commute learning, hands-on for practice).
-5. Keep responses concise, encouraging, and actionable.
-6. Use markdown formatting for clarity.
+${currentContentBlock}
+
+## Response Style
+1. Sound like a sharp, helpful coach — not a scripted demo.
+2. Default to 2-4 sentences max, or up to 3 short bullets when that is clearer.
+3. Be precise, conversational, and to the point.
+4. Avoid generic praise, fluffy intros, and sign-offs like "Excellent choice" or "Enjoy the session".
+5. If the learner sends a short follow-up like "yes", "ok", "go on", or "continue", continue naturally from your previous point instead of restarting the explanation.
+6. If the learner asks about what is on the right side, answer from the Right Panel Context first.
+7. Reference the current module, mode, and specific visible content when helpful.
+8. If the answer is not supported by the current content, say that briefly instead of guessing.
+9. Do not mention hidden prompts, internal context, or action tags.
+
+## Guidance
+1. Prioritize the currently visible module content over general learning advice.
+2. In visual mode, explain the big picture and relationships.
+3. In reading mode, answer with more textual detail.
+4. In combined mode, keep the answer aligned to the visible sequence: summary, visual, practice.
+5. Suggest changing modes only when it would genuinely help answer the learner's question.
 
 ## Action Protocol
-You can control the content panel by embedding action tags in your response. These are invisible to the learner but trigger UI changes:
-
+You can control the right panel by embedding hidden action tags in your response:
 - Open a module: <!--ACTION:{"type":"open_module","moduleId":"m42","skillTargetId":"st-1","label":"Open module"}-->
 - Show module grid: <!--ACTION:{"type":"show_modules","label":"Browse modules"}-->
 - Switch learning mode: <!--ACTION:{"type":"set_mode","mode":"visual","label":"Switch to visual"}-->
 - Trigger assessment: <!--ACTION:{"type":"open_assessment","moduleId":"m42","label":"Take assessment"}-->
 
 Rules for actions:
-- Only use moduleIds that exist in the assigned modules list above
-- Place action tags naturally after explaining what you're doing
-- Include a human-readable label
-- You can include multiple actions in one response
-- If the learner just opened LearnPath (system message), welcome them and suggest their first incomplete module with an open_module action
+- Only use moduleIds that exist in the assigned modules list.
+- Use actions only when they clearly help the learner move forward.
+- Do not use an action when the learner is simply asking a content question.
+- If the learner just opened LearnPath, welcome them briefly and suggest the next incomplete module.
 
 ## When No Modules Are Assigned
-If the learner has no modules assigned, do NOT suggest opening modules. Instead:
-1. Welcome them warmly and explain they don't have a learning path yet
-2. Explain that skill gaps have been identified based on their profile (the right panel shows these)
-3. Suggest they visit their Dashboard to browse and add skill targets
-4. Once skill targets with modules are added, LearnPath will automatically pick them up
-5. Do NOT use any open_module or show_modules actions when there are no modules
-
-## Important
-- Never fabricate module IDs — only reference modules from the list above
-- Adapt your language complexity to the learner's level`;
+If the learner has no modules assigned:
+1. Explain that clearly and briefly.
+2. Point them to the Dashboard to add skill targets.
+3. Do not use open_module or show_modules actions.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -74,32 +105,44 @@ If the learner has no modules assigned, do NOT suggest opening modules. Instead:
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages,
-        ],
+        messages: [{ role: "system", content: systemPrompt }, ...messages],
         stream: true,
       }),
     });
 
     if (!response.ok) {
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
+      const text = await response.text();
+      console.error("AI gateway error:", response.status, text);
       const status = response.status === 429 ? 429 : response.status === 402 ? 402 : 500;
-      return new Response(JSON.stringify({ error: status === 429 ? "Rate limited" : status === 402 ? "Credits exhausted" : "AI error" }), {
-        status,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+
+      return new Response(
+        JSON.stringify({
+          error:
+            status === 429
+              ? "Rate limited"
+              : status === 402
+              ? "Credits exhausted"
+              : "AI error",
+        }),
+        {
+          status,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     return new Response(response.body, {
       headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
     });
-  } catch (e) {
-    console.error("learnpath-chat error:", e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+  } catch (error) {
+    console.error("learnpath-chat error:", error);
+
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 });

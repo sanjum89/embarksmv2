@@ -8,6 +8,8 @@ import {
   Check,
   SkipForward,
   Clock,
+  Zap,
+  FastForward,
 } from "lucide-react";
 import type { StepItem, StepType } from "@/types/learning";
 import { cn } from "@/lib/utils";
@@ -132,13 +134,25 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
             <TypeIcon className="h-3 w-3" />
             {step.type.replace("_", " ")}
           </span>
+          {step.learningFormat === "micro" && (
+            <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-300">
+              <Zap className="h-3 w-3" />
+              Microlearning
+            </span>
+          )}
+          {step.learningFormat === "auto_skip" && step.status !== "skipped" && (
+            <span className="inline-flex items-center gap-1 rounded-md bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:text-blue-300">
+              <FastForward className="h-3 w-3" />
+              Auto-skipped (experience)
+            </span>
+          )}
           {step.status === "skipped" && (
             <span className="inline-flex items-center gap-1 rounded-md bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
               <Check className="h-3 w-3" />
-              Skipped based on assessment
+              {step.learningFormat === "auto_skip" ? "Skipped — prior experience" : "Skipped based on assessment"}
             </span>
           )}
-          {step.skippable && step.skipCondition && step.status !== "skipped" && (
+          {step.skippable && step.skipCondition && step.status !== "skipped" && step.learningFormat !== "auto_skip" && (
             <span className="inline-flex items-center gap-1 rounded-md bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
               <SkipForward className="h-3 w-3" />
               {step.skipCondition}

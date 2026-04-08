@@ -4,9 +4,10 @@ import { ScenarioQuestion } from "./ScenarioQuestion";
 import { HandsOnRolePlayCard } from "./HandsOnRolePlayCard";
 import { VisualDiagram, parseTranscriptToDiagram, extractFlowCharts } from "./VisualDiagram";
 import { FlowDiagram } from "./FlowDiagram";
-import type { LearningModule } from "@/types/learning";
+import type { LearningModule, LearningFormat } from "@/types/learning";
 import ReactMarkdown from "react-markdown";
-import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users } from "lucide-react";
+import { useState } from "react";
+import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users, Zap, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
@@ -18,6 +19,7 @@ import { mockRolePlayBank, moduleRolePlayMap } from "@/data/mock";
 interface Props {
   module: LearningModule;
   skillTargetTitle?: string;
+  learningFormat?: LearningFormat;
 }
 
 const modeBanners: Record<string, { icon: React.ElementType; label: string; desc: string; className: string }> = {
@@ -28,11 +30,21 @@ const modeBanners: Record<string, { icon: React.ElementType; label: string; desc
   combined: { icon: Layers, label: "Combined Mode", desc: "All learning modes in one comprehensive view.", className: "bg-accent/10 text-accent-foreground border-accent/20" },
 };
 
-export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
+export function LearnPathModuleContent({ module, skillTargetTitle, learningFormat }: Props) {
   const { learningMode, openAssessment } = useLearnPath();
   const { skillTargets } = useSkillTargets();
   const navigate = useNavigate();
+  const isMicro = learningFormat === "micro";
   const transcript = module.transcript ?? "No content available for this module.";
+  const [microExpanded, setMicroExpanded] = useState(false);
+
+  // For micro mode: truncate to ~30% of content
+  const microTranscript = (() => {
+    if (!isMicro || microExpanded) return transcript;
+    const lines = transcript.split("\n");
+    const cutoff = Math.max(8, Math.ceil(lines.length * 0.3));
+    return lines.slice(0, cutoff).join("\n") + "\n\n---\n\n*This is a condensed view. Expand to see the full content.*";
+  })();
 
   const banner = modeBanners[learningMode];
   const podcastScript = getPodcastTranscript(module.id);
@@ -56,8 +68,13 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
             <Clock className="h-3 w-3" /> {module.duration}
           </span>
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-            <FileText className="h-3 w-3" /> {module.contentType === "video" ? "Video" : "Full Module"}
+            <FileText className="h-3 w-3" /> {isMicro ? "Microlearning" : (module.contentType === "video" ? "Video" : "Full Module")}
           </span>
+          {isMicro && (
+            <span className="inline-flex items-center gap-1 text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-medium">
+              <Zap className="h-3 w-3" /> Condensed
+            </span>
+          )}
         </div>
       </div>
     </div>
@@ -163,20 +180,32 @@ export function LearnPathModuleContent({ module, skillTargetTitle }: Props) {
 
         {/* Content */}
         <div className="bg-card rounded-xl border border-border p-6 md:p-10">
-          <div className="prose prose-base dark:prose-invert max-w-none
-            prose-headings:text-foreground prose-headings:font-bold
-            prose-h1:text-2xl prose-h1:mt-6 prose-h1:mb-4
-            prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-3
-            prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3
-            prose-p:text-muted-foreground prose-p:leading-8 prose-p:mb-4
-            prose-li:text-muted-foreground prose-li:leading-7
-            prose-strong:text-foreground prose-strong:font-semibold
-            prose-ul:space-y-2 prose-ul:my-4
-            prose-ol:space-y-2 prose-ol:my-4
-            prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:py-1 prose-blockquote:px-4
-          ">
-            <ReactMarkdown>{transcript}</ReactMarkdown>
+          <div className={cn(
+            "prose prose-base dark:prose-invert max-w-none",
+            "prose-headings:text-foreground prose-headings:font-bold",
+            "prose-h1:text-2xl prose-h1:mt-6 prose-h1:mb-4",
+            "prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-3",
+            "prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3",
+            "prose-p:text-muted-foreground prose-p:leading-8 prose-p:mb-4",
+            "prose-li:text-muted-foreground prose-li:leading-7",
+            "prose-strong:text-foreground prose-strong:font-semibold",
+            "prose-ul:space-y-2 prose-ul:my-4",
+            "prose-ol:space-y-2 prose-ol:my-4",
+            "prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:py-1 prose-blockquote:px-4",
+          )}>
+            <ReactMarkdown>{isMicro ? microTranscript : transcript}</ReactMarkdown>
           </div>
+          {isMicro && !microExpanded && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setMicroExpanded(true)}
+              className="mt-4 gap-1.5 w-full"
+            >
+              <ChevronDown className="h-3.5 w-3.5" />
+              View Full Content
+            </Button>
+          )}
         </div>
       </div>
     );

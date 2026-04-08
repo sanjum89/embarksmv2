@@ -1,56 +1,45 @@
 
 
-## Duplicate Rathbones Account as "Pinnacle Capital"
+## Fix LearnPath Header & Mark as Complete Placement
 
-### Approach
+### Problem
+1. The top header in `LearnPathModeSelector` shows the **module title** — user wants it to show the **skill target name** instead.
+2. The "Mark as Complete" button should be inside the **module header card** (the card with icon, title, duration badges), not elsewhere.
 
-The Rathbones content is deeply embedded across ~15 source files (transcripts, scenarios, role descriptions, module titles, onboarding data). Rather than duplicating all those files, we'll use a **runtime name-substitution** system: clone the default account structure but store a `contentNameMap` in the account data that replaces "Rathbones" with "Pinnacle Capital" everywhere content is rendered.
+### Changes
 
-### Implementation
+**File: `src/components/learnpath/LearnPathModeSelector.tsx`**
+- Change the `moduleTitle` prop to `skillTargetTitle` (or accept both and display skill target name in the top bar header).
+- The top bar `<h2>` displays the skill target name instead of the module name.
 
-**1. Add `contentNameMap` support to the account model**
+**File: `src/components/learnpath/LearnPathContent.tsx`** (line 80)
+- Pass `stepInfo?.skillTargetTitle` to `LearnPathModeSelector` instead of `mod.title`.
+- Pass an `onComplete` handler to `LearnPathModuleContent` so the module header card can render the button.
 
-Add an optional `contentNameMap: Record<string, string>` field to `NormalizedAccount` (in `types/account-v2.ts`). When set, all content rendering (transcripts, scenarios, module titles, role descriptions) will apply these substitutions before display.
+**File: `src/components/learnpath/LearnPathModuleContent.tsx`**
+- In `renderModuleHeader()` (lines 110-133): Add the "Mark as Complete" button inline within the header card, right-aligned or below the badges.
+- The button calls `handleMarkComplete` and shows a check icon when completed.
+- Remove any other "Mark as Complete" button placements if they exist outside this card.
 
-**2. Create `buildPinnacleAccount()` in `accountDefaults.ts`**
+### Summary of UI after changes
 
-A new function that calls `buildDefaultNormalized()` then:
-- Sets `branding.name` to "Pinnacle Capital"
-- Sets `isDefault` to false
-- Adds `contentNameMap: { "Rathbones": "Pinnacle Capital", "rathbones": "pinnacle capital" }`
-- Keeps all employees, skills, skill targets, role plays, assessments identical
-
-**3. Seed the Pinnacle Capital account on startup**
-
-In `AccountContext.tsx`, after loading/seeding the default account, check if a "Pinnacle Capital" account exists. If not, insert it into the `accounts` table using the Pinnacle builder. This mirrors the existing default-account seeding pattern.
-
-**4. Add content substitution utility**
-
-Create `src/lib/contentSubstitution.ts` with a `applyContentNames(text: string, nameMap: Record<string, string>): string` function that does a global case-preserving replacement.
-
-**5. Wire substitution into content rendering**
-
-Apply `applyContentNames()` in these rendering points (only when `contentNameMap` is set on the active account):
-- `LearnPathModuleContent.tsx` — before rendering transcript/markdown content
-- `VisualDiagram.tsx` — when parsing section titles and flow chart labels
-- `HandsOnRolePlayCard.tsx` / `ScenarioQuestion.tsx` — scenario text
-- `TraditionalContentViewer.tsx` — content display
-- `LearningModulePage.tsx` — module title display
-
-This is a lightweight hook: `useContentSubstitution()` that reads `contentNameMap` from the active normalized account and returns a `substitute(text)` function.
-
-### Files to create/modify
+```text
+┌─────────────────────────────────────────┐
+│ Introduction to Rathbones   [All Modules]│  ← skill target name
+│ Viewing in: ● Reading  ○ Visual  ...    │
+├─────────────────────────────────────────┤
+│ 📄 Our Heritage & Values                │
+│    Introduction to Rathbones             │
+│    ⏱ 15 min  📄 Full Module             │
+│                        [Mark as Complete]│  ← button inside card
+├─────────────────────────────────────────┤
+│ (content below)                          │
+└─────────────────────────────────────────┘
+```
 
 | File | Change |
 |---|---|
-| `src/types/account-v2.ts` | Add optional `contentNameMap` field to `NormalizedAccount` |
-| `src/lib/contentSubstitution.ts` | **NEW** — `applyContentNames()` utility + `useContentSubstitution()` hook |
-| `src/lib/accountDefaults.ts` | Add `buildPinnacleNormalized()` function |
-| `src/contexts/AccountContext.tsx` | Seed Pinnacle Capital account on first load if missing |
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Apply content substitution to rendered text |
-| `src/components/learnpath/VisualDiagram.tsx` | Apply substitution to parsed labels |
-| `src/components/learnpath/HandsOnRolePlayCard.tsx` | Apply substitution to scenario text |
-| `src/components/learnpath/ScenarioQuestion.tsx` | Apply substitution to question text |
-| `src/components/skill-target/TraditionalContentViewer.tsx` | Apply substitution |
-| `src/pages/LearningModulePage.tsx` | Apply substitution to title |
+| `src/components/learnpath/LearnPathModeSelector.tsx` | Accept + display skill target title in top bar |
+| `src/components/learnpath/LearnPathContent.tsx` | Pass skill target title to selector; pass onComplete to module content |
+| `src/components/learnpath/LearnPathModuleContent.tsx` | Add "Mark as Complete" button inside renderModuleHeader card |
 

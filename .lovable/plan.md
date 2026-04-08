@@ -1,33 +1,78 @@
-## Fix Pinnacle "Heritage & Values" Content and Audio
 
-### Problem
-1. **Reading/visual content**: Already substituted via `substitute()` on line 49 of `LearnPathModuleContent.tsx` — this should work. If still showing "Rathbones", need to verify.
-2. **Podcast transcript text**: The `podcastScript` lines are raw from `podcastTranscripts.ts` — `substitute()` is NOT applied to them before passing to `LearnPathPodcastPlayer`.
-3. **Pre-generated audio**: The static MP3 (`m-rb-intro-heritage.mp3`) contains spoken "Rathbones" — Pinnacle needs its own audio file.
+Goal
 
-### Changes
+Fix LearnPath so Pinnacle users never see raw Rathbones wording when switching between Visual, Hands-on, Combined, and Listening modes.
 
-#### 1. Apply `substitute()` to podcast script lines (`LearnPathModuleContent.tsx`)
-Before passing `podcastScript` to `LearnPathPodcastPlayer`, map over each line and apply `substitute()` to `speaker`, `role`, and `text` fields. This fixes the visible transcript in listening mode.
+Why this is happening
 
-#### 2. Account-aware static audio URL resolution (`LearnPathModuleContent.tsx`)
-When the active account has a `contentNameMap` (i.e., Pinnacle), do NOT use the Rathbones static MP3. Instead:
-- Check for a Pinnacle-specific static URL (e.g., `pinnacle-heritage.mp3` in the `podcast-audio` bucket)
-- If not found, pass `staticAudioUrl={undefined}` so the player falls back to on-demand TTS generation using the already-substituted transcript text
+- `src/components/learnpath/LearnPathModuleContent.tsx` currently substitutes only the main module transcript/title.
+- The mode-specific datasets are still raw:
+  - Listening: `getPodcastTranscript()` and the hard-wired static MP3
+  - Hands-on / Combined: `getHandsOnScenarios()` and role plays pulled from `mockRolePlayBank`
+- Downstream role-play pages can still show raw role play text after a user clicks a LearnPath card.
+- Visual mode mostly relies on the transcript already, but I should still make all mode content come from one branded source so nothing slips through.
 
-#### 3. Generate Pinnacle audio file
-Call the existing `generate-podcast` edge function with the Pinnacle-substituted transcript to create `pinnacle-heritage.mp3` in the `podcast-audio` storage bucket. Then add it to `staticPodcastUrls` with an account-aware lookup.
+Implementation
 
-#### 4. Update `podcastTranscripts.ts` — account-aware static URL helper
-Modify `getStaticPodcastUrl` to accept an optional account name parameter. When account is "Pinnacle Capital", return the Pinnacle MP3 URL instead of the Rathbones one.
+1. Centralize branded LearnPath mode data
+- Extend `src/lib/contentSubstitution.ts` with a small deep-substitution helper for nested objects/arrays, not just single strings.
+- In `src/components/learnpath/LearnPathModuleContent.tsx`, build branded versions of:
+  - transcript
+  - podcast script
+  - hands-on scenario data
+  - role plays
+- Feed every mode from those branded objects so Visual, Hands-on, Combined, and Listening all use the same transformed content.
 
-### Files Changed
+2. Stop LearnPath from using raw role play defaults
+- In `LearnPathModuleContent.tsx`, stop reading role plays directly from `mockRolePlayBank`.
+- Use the role play context/account-backed role plays instead, then apply branding before rendering.
+- This keeps LearnPath aligned with the actual role play bank and avoids stale raw Rathbones copy.
 
-| File | Change |
-|---|---|
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Apply `substitute()` to each podcast script line's text; pass account-aware static URL |
-| `src/data/podcastTranscripts.ts` | Add Pinnacle static audio URLs; update `getStaticPodcastUrl` to accept account context |
-| `supabase/functions/generate-podcast/index.ts` | No changes needed — will invoke existing function to generate Pinnacle audio |
+3. Fix the visible leaks inside Hands-on and Combined
+- Brand all nested hands-on fields before rendering:
+  - `intro`
+  - `scenario.title`
+  - `context`
+  - `option.text`
+  - `feedback`
+- Brand all role play card fields before rendering:
+  - title
+  - scenario
+  - persona
+  - context
+- Update `src/components/learnpath/HandsOnRolePlayCard.tsx` so persona/title text is branded too, not just the short description.
 
-### Approach for Audio Generation
-After code changes are deployed, invoke the `generate-podcast` edge function with the Pinnacle-branded script text to produce `pinnacle-heritage.mp3`. This will be uploaded to the `podcast-audio` storage bucket automatically by the edge function, making it available via public URL.
+4. Fix Listening mode properly
+- Pass branded podcast lines into `LearnPathPodcastPlayer` so the transcript UI and on-demand speech use Pinnacle wording.
+- Update `src/data/podcastTranscripts.ts` so `getStaticPodcastUrl()` is account-aware.
+- For Pinnacle, generate and map a dedicated Heritage & Values MP3 instead of reusing the Rathbones pre-generated file.
+- If no Pinnacle static file exists for a module, fall back to branded on-demand TTS rather than replaying Rathbones audio.
+
+5. Fix the role-play page opened from LearnPath
+- Update `src/pages/RolePlaySession.tsx` to apply the same branding to the selected role play’s title, scenario, persona, and context.
+- That prevents a branded LearnPath card from opening into an unbranded session screen.
+
+Technical details
+
+Files to update:
+- `src/lib/contentSubstitution.ts`
+- `src/components/learnpath/LearnPathModuleContent.tsx`
+- `src/components/learnpath/HandsOnRolePlayCard.tsx`
+- `src/pages/RolePlaySession.tsx`
+- `src/data/podcastTranscripts.ts`
+
+Likely no core changes needed in:
+- `src/components/learnpath/LearnPathPodcastPlayer.tsx`
+- `src/components/learnpath/ScenarioQuestion.tsx`
+
+Backend/data notes:
+- No database changes are needed.
+- Only the pre-generated audio asset needs a Pinnacle-specific replacement; all non-static listening content can be fixed by passing branded script text into the existing player.
+
+QA
+
+- In Pinnacle, open “Our Heritage & Values” and switch through Visual, Hands-on, Combined, and Listening.
+- Confirm no visible “Rathbones” remains in summaries, questions, feedback, role play cards, transcript text, or audio playback.
+- Click a role play from LearnPath and confirm the session page is also branded.
+- Recheck the same module in Rathbones to confirm the original account still shows its original content.
+- Spot-check one additional Pinnacle module to confirm the fix is generic, not just hardcoded to Heritage & Values.

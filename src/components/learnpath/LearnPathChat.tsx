@@ -299,9 +299,13 @@ export function LearnPathChat() {
         ? `[SYSTEM] The learner just opened LearnPath. They have ${context.modules.length} module(s) assigned. ${context.resumeModuleId ? `Suggest resuming with "${context.resumeModuleTitle}" (moduleId: ${context.resumeModuleId}, skillTargetId: ${context.resumeSkillTargetId}) and use an open_module action only if no module is already open.` : "Welcome them and suggest browsing modules."}`
         : "[SYSTEM] The learner just opened LearnPath but has no modules or skill targets assigned. Welcome them warmly, explain that they don't have a learning path yet, and suggest they explore their dashboard to add skill targets.",
     };
-    const assistantId = createMessageId("assistant");
+    const assistantPlaceholder: ChatMessage = {
+      id: assistantId,
+      role: "assistant",
+      content: "",
+    };
 
-    setMessages([greetMessage, { id: assistantId, role: "assistant", content: "" }]);
+    setMessages([greetMessage, assistantPlaceholder]);
     void sendToAI([greetMessage], assistantId);
   }, [buildContext, hasGreeted, messages.length, sendToAI]);
 
@@ -316,8 +320,12 @@ export function LearnPathChat() {
       role: "user",
       content: text,
     };
-    const assistantId = createMessageId("assistant");
-    const nextMessages = [...messages, userMessage, { id: assistantId, role: "assistant", content: "" }];
+    const assistantPlaceholder: ChatMessage = {
+      id: assistantId,
+      role: "assistant",
+      content: "",
+    };
+    const nextMessages: ChatMessage[] = [...messages, userMessage, assistantPlaceholder];
 
     setMessages(nextMessages);
     void sendToAI([...messages, userMessage], assistantId);

@@ -1,60 +1,67 @@
 
-## Persona-Based Adaptive Learning Formats
 
-### Data Model Change
-Add optional `learningFormat` field to `StepItem` in `src/types/learning.ts`:
-- `"full"` (default) — standard module
-- `"micro"` — shortened content with "View Full" expand
-- `"auto_skip"` — pre-skipped based on experience (different from assessment-based skip)
+## Add Universal Back Button for Sub-Pages
 
-### Persona Mappings
+### Problem
+Several pages that users navigate to via clicks (not sidebar) lack a back button, making it hard to return to the previous page.
 
-**Rathbones — Intro to Rathbones (RAT-ST-INTRO-001):**
-| Module | Clara | Elliot | Sophie |
-|---|---|---|---|
-| Heritage & Values | auto_skip | micro | full |
-| How We Invest | auto_skip | full | full |
-| Your First 90 Days | micro | full | full |
+### Analysis
 
-**Rathbones — ST2 Investment Management Foundations:**
-| Module | Clara | Elliot | Sophie |
-|---|---|---|---|
-| Modules 1-3 (skippable) | auto_skip (if baseline >80%) | auto_skip (if baseline >80%) | full |
-| Client Communication | micro | full | full |
-| Internal Collaboration | micro | full | full |
-| Professional Standards | full | full | full |
-| Communicating Clearly | full | full | full |
+**Pages that already have back buttons** (no changes needed):
+- `SkillTargetDetail` — "Back to Dashboard"
+- `ManagerSkillTargetDetail` — "Back to Learning Paths"
+- `AssessmentPage` — "Back to Skill Target"
+- `RolePlaySession` — "Back"
+- `LearningModulePage` — "Back to Skill Target"
+- `LearnPathAssessment` — "Back to Module"
 
-**Apple L1 Support:**
-| Module | u6 (pre-assess) | u8 (HRIS) | u10 (fresher) |
-|---|---|---|---|
-| Ecosystem Overview | auto_skip (if >80%) | completed | full |
-| Apple ID/iCloud | auto_skip (if >80%) | completed | full |
-| iPhone/iPad Basics | micro | full | full |
-| Mac Basics | micro | full | full |
-| Rest | full | full | full |
+**Pages that need back buttons** (navigated to via clicks, not sidebar top-level):
+- `SkillTargetBuilder` (`/create-skill-target`) — navigated from Dashboard
+- `ProgramContextPage` (`/manager/programs`) — while in sidebar, it's a sub-page of Manager
+- `ManagerSkillTargets` (`/manager/skill-targets`) — sub-page of Manager
+- `TeamInsights` (`/team-insights`) — sub-page of Manager
+- `TeamDashboard` (`/team-dashboard`) — sub-page of Manager
+- `RolePlayBank` (`/role-play-bank` and `/manager/role-play`) — sub-page
 
-**Sales/CX:**
-| Module | u1 |
-|---|---|
-| st1 Consultative Selling: Discovery module | micro |
-| st1 Objection Handling + Role Play | full |
-| st2 Product Knowledge: all | full |
-| st3 Empathetic Communication: Active Listening | micro (already completed) |
+**Top-level pages** (no back button needed — they're primary sidebar destinations):
+- Dashboard (`/`)
+- LearnerChat (`/chat`)
+- ManagerView (`/manager`)
+- LearnPath (`/learnpath`)
+- My360 (`/my-360`)
+- MyInbox (`/my-inbox`)
+- AdminView (`/admin`)
 
-### UI Changes
+### Approach
 
-**`StepTimeline` / `StepListItem`**: Show badge indicating "Micro" or "Auto-skipped" next to the step title.
+Rather than adding individual back buttons to each page, create a reusable `BackButton` component that uses `useNavigate(-1)` (browser history back) so it always returns to the actual previous page regardless of how the user got there.
 
-**`LearnPathModuleContent`**: When `learningFormat === "micro"`, render a condensed version of the transcript (first ~30% of content) with a "View Full Content" expand button.
+### Implementation
 
-### Files to modify
+**1. Create `src/components/layout/BackButton.tsx`**
+- Small component: `<button>` with `ArrowLeft` icon + "Back" text
+- Uses `useNavigate()` with `navigate(-1)`
+- Consistent styling matching existing back buttons (text-sm text-muted-foreground hover:text-foreground)
+
+**2. Add BackButton to sub-pages** (6 files):
+- `SkillTargetBuilder.tsx` — top of the form area
+- `RolePlayBank.tsx` — top of the page header
+- `ManagerSkillTargets.tsx` — top of the page
+- `TeamInsights.tsx` — top of the page
+- `TeamDashboard.tsx` — top of the page
+- `ProgramContextPage.tsx` — top of the page
+
+Each insertion is a single line at the top of the page content area, before the existing header.
+
+### Files to create/modify
 
 | File | Change |
 |---|---|
-| `src/types/learning.ts` | Add `learningFormat?: "full" \| "micro" \| "auto_skip"` to `StepItem` |
-| `src/data/rathbonesOnboarding.ts` | Add `learningFormat` to Intro steps (per-persona variants), update `buildST2ForLearner` |
-| `src/data/mock.ts` | Add `learningFormat` to Apple and Sales/CX steps per persona |
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Handle micro format — truncated content + expand |
-| `src/components/skill-target/StepListItem.tsx` | Show Micro/Auto-skipped badges |
-| `src/components/skill-target/StepTimeline.tsx` | Pass through learningFormat |
+| `src/components/layout/BackButton.tsx` | **NEW** — reusable back button component |
+| `src/pages/SkillTargetBuilder.tsx` | Add BackButton at top |
+| `src/pages/RolePlayBank.tsx` | Add BackButton at top |
+| `src/pages/ManagerSkillTargets.tsx` | Add BackButton at top |
+| `src/pages/TeamInsights.tsx` | Add BackButton at top |
+| `src/pages/TeamDashboard.tsx` | Add BackButton at top |
+| `src/pages/ProgramContextPage.tsx` | Add BackButton at top |
+

@@ -441,7 +441,7 @@ export const elliotDomainBridge: SkillTarget = {
   progress: 0,
   dueDate: "2026-04-15",
   locked: true,
-  prerequisiteId: "st-rb-elliot",
+  prerequisiteId: "RAT-ST-INTRO-001",
   skills: [
     { name: "Wealth Management Context", current: "Beginner", target: "Intermediate" },
     { name: "Rathbones Investment Process", current: "Beginner", target: "Intermediate" },

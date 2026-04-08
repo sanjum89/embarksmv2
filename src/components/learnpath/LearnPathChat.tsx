@@ -75,23 +75,27 @@ export function LearnPathChat() {
   const buildContext = useCallback(() => {
     const accountModules = normalizedAccount?.learningModules;
 
-    // Sort skill targets by prerequisite chain
+    // Filter to user's targets and sort by prerequisite chain
+    const userTargets = skillTargets.filter((st) =>
+      !st.assignedTo || st.assignedTo.length === 0 || st.assignedTo.includes(user.id)
+    );
+
     const sortedTargets = (() => {
-      const idSet = new Set(skillTargets.map((st) => st.id));
-      const ordered: typeof skillTargets = [];
+      const idSet = new Set(userTargets.map((st) => st.id));
+      const ordered: typeof userTargets = [];
       const placed = new Set<string>();
 
-      const place = (st: (typeof skillTargets)[number]) => {
+      const place = (st: (typeof userTargets)[number]) => {
         if (placed.has(st.id)) return;
         if (st.prerequisiteId && idSet.has(st.prerequisiteId) && !placed.has(st.prerequisiteId)) {
-          const prereq = skillTargets.find((t) => t.id === st.prerequisiteId);
+          const prereq = userTargets.find((t) => t.id === st.prerequisiteId);
           if (prereq) place(prereq);
         }
         placed.add(st.id);
         ordered.push(st);
       };
 
-      skillTargets.forEach(place);
+      userTargets.forEach(place);
       return ordered;
     })();
 

@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { MessageSquare, Mic } from "lucide-react";
 import type { RolePlay } from "@/types/learning";
@@ -57,10 +56,10 @@ export function HandsOnRolePlayCard({ rolePlay }: Props) {
           <MessageSquare className="h-3.5 w-3.5" />
           Chat Role Play
         </Button>
-        <Badge variant="secondary" className="text-[10px] gap-1">
-          <Mic className="h-2.5 w-2.5" />
+        <Button size="sm" variant="outline" disabled className="gap-1.5 text-xs">
+          <Mic className="h-3.5 w-3.5" />
           Voice: Soon
-        </Badge>
+        </Button>
       </div>
     </div>
   );

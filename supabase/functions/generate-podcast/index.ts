@@ -13,24 +13,25 @@ interface ScriptLine {
   voiceId?: string;
 }
 
-/**
- * Default voice map — used when no per-line voiceId is provided.
- * Maps speaker names to ElevenLabs voice IDs.
- */
 const DEFAULT_VOICES: Record<string, string> = {
-  "Sarah Chen": "EXAVITQu4vr4xnSDxMaL",   // Sarah
-  "James Morton": "JBFqnCBsd6RMkjVDRZzb",  // George
-  "Eleanor Webb": "FGY2WhTYpPnrIDTdsKH5",  // Laura
+  "Sarah Chen": "EXAVITQu4vr4xnSDxMaL",
+  "James Morton": "JBFqnCBsd6RMkjVDRZzb",
+  "Eleanor Webb": "FGY2WhTYpPnrIDTdsKH5",
 };
-const FALLBACK_VOICE = "JBFqnCBsd6RMkjVDRZzb"; // George
+const FALLBACK_VOICE = "JBFqnCBsd6RMkjVDRZzb";
 
-async function generateTurnAudio(
+/**
+ * Request PCM (raw 16-bit signed LE, mono, 44100 Hz) from ElevenLabs.
+ * PCM segments can be trivially concatenated and wrapped in a WAV header
+ * to produce a perfectly seekable file.
+ */
+async function generateTurnPCM(
   text: string,
   voiceId: string,
   apiKey: string,
 ): Promise<Uint8Array> {
   const resp = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
+    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=pcm_44100`,
     {
       method: "POST",
       headers: {
@@ -49,6 +50,47 @@ async function generateTurnAudio(
     throw new Error(`ElevenLabs error ${resp.status}: ${errText}`);
   }
   return new Uint8Array(await resp.arrayBuffer());
+}
+
+/** Build a valid WAV header for raw PCM data (16-bit mono 44100 Hz). */
+function buildWavHeader(pcmLength: number): Uint8Array {
+  const sampleRate = 44100;
+  const numChannels = 1;
+  const bitsPerSample = 16;
+  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+  const blockAlign = numChannels * (bitsPerSample / 8);
+  const dataChunkSize = pcmLength;
+  const fileSize = 36 + dataChunkSize; // 44 - 8 (RIFF header) + data
+
+  const header = new ArrayBuffer(44);
+  const view = new DataView(header);
+
+  // RIFF chunk
+  writeString(view, 0, "RIFF");
+  view.setUint32(4, fileSize, true);
+  writeString(view, 8, "WAVE");
+
+  // fmt sub-chunk
+  writeString(view, 12, "fmt ");
+  view.setUint32(16, 16, true); // sub-chunk size
+  view.setUint16(20, 1, true);  // PCM format
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+
+  // data sub-chunk
+  writeString(view, 36, "data");
+  view.setUint32(40, dataChunkSize, true);
+
+  return new Uint8Array(header);
+}
+
+function writeString(view: DataView, offset: number, str: string) {
+  for (let i = 0; i < str.length; i++) {
+    view.setUint8(offset + i, str.charCodeAt(i));
+  }
 }
 
 serve(async (req) => {
@@ -77,37 +119,42 @@ serve(async (req) => {
       );
     }
 
-    // Merge provided voiceMap with defaults
     const voices = { ...DEFAULT_VOICES, ...(voiceMap || {}) };
 
-    // Generate audio for each turn sequentially
+    // Generate PCM for each turn sequentially
     const segments: Uint8Array[] = [];
     for (let i = 0; i < script.length; i++) {
       const line = script[i];
       const voice = line.voiceId || voices[line.speaker] || FALLBACK_VOICE;
       console.log(`Generating turn ${i + 1}/${script.length}: ${line.speaker} (voice ${voice})`);
-      const audio = await generateTurnAudio(line.text, voice, ELEVENLABS_API_KEY);
-      segments.push(audio);
+      const pcm = await generateTurnPCM(line.text, voice, ELEVENLABS_API_KEY);
+      segments.push(pcm);
     }
 
-    // Concatenate MP3 segments (MP3 frames are self-describing so simple concat works)
-    const totalLength = segments.reduce((sum, s) => sum + s.length, 0);
-    const combined = new Uint8Array(totalLength);
+    // Concatenate all PCM segments
+    const totalPCMLength = segments.reduce((sum, s) => sum + s.length, 0);
+    const pcmData = new Uint8Array(totalPCMLength);
     let offset = 0;
     for (const seg of segments) {
-      combined.set(seg, offset);
+      pcmData.set(seg, offset);
       offset += seg.length;
     }
 
-    // Upload to storage
+    // Build WAV = header + PCM data
+    const wavHeader = buildWavHeader(totalPCMLength);
+    const wavFile = new Uint8Array(wavHeader.length + pcmData.length);
+    wavFile.set(wavHeader, 0);
+    wavFile.set(pcmData, wavHeader.length);
+
+    // Upload to storage as .wav
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const filePath = `${moduleId}.mp3`;
+    const filePath = `${moduleId}.wav`;
     const { error: uploadError } = await supabase.storage
       .from("podcast-audio")
-      .upload(filePath, combined, { contentType: "audio/mpeg", upsert: true });
+      .upload(filePath, wavFile, { contentType: "audio/wav", upsert: true });
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
@@ -127,7 +174,8 @@ serve(async (req) => {
         publicUrl: urlData.publicUrl,
         moduleId,
         turns: script.length,
-        sizeBytes: combined.length,
+        sizeBytes: wavFile.length,
+        format: "wav",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );

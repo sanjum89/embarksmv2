@@ -208,7 +208,7 @@ function ProgramDetail({ program, onBack }: { program: ProgramContext; onBack: (
                 <p className="text-sm font-semibold text-foreground">Assigned Learners</p>
               </div>
               <div className="space-y-2.5">
-                {newHires.filter((h) => program.assignedLearners.includes(h.user.id)).map((hire) => (
+                {newHires.filter((h) => (program.assignedLearners ?? []).includes(h.user.id)).map((hire) => (
                   <div key={hire.user.id} className="flex items-center gap-2.5">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
                       {hire.user.name.split(" ").map((n) => n[0]).join("")}

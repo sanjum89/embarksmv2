@@ -1,4 +1,4 @@
-import { useLearnPath } from "@/contexts/LearnPathContext";
+import { useLearnPath, type LearningMode } from "@/contexts/LearnPathContext";
 import { LearnPathPodcastPlayer } from "./LearnPathPodcastPlayer";
 import { ScenarioQuestion } from "./ScenarioQuestion";
 import { HandsOnRolePlayCard } from "./HandsOnRolePlayCard";
@@ -6,8 +6,8 @@ import { VisualDiagram, parseTranscriptToDiagram, extractFlowCharts } from "./Vi
 import { FlowDiagram } from "./FlowDiagram";
 import type { LearningModule, LearningFormat } from "@/types/learning";
 import ReactMarkdown from "react-markdown";
-import { useState } from "react";
-import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users, Zap, ChevronDown } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users, Zap, ChevronDown, CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
@@ -15,11 +15,16 @@ import { cn } from "@/lib/utils";
 import { getPodcastTranscript, getStaticPodcastUrl } from "@/data/podcastTranscripts";
 import { getHandsOnScenarios } from "@/data/handsOnScenarios";
 import { mockRolePlayBank, moduleRolePlayMap } from "@/data/mock";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface Props {
   module: LearningModule;
   skillTargetTitle?: string;
   learningFormat?: LearningFormat;
+  learningModeOverride?: LearningMode;
+  skillTargetId?: string;
+  stepId?: string;
+  onComplete?: () => void;
 }
 
 const modeBanners: Record<string, { icon: React.ElementType; label: string; desc: string; className: string }> = {
@@ -27,16 +32,32 @@ const modeBanners: Record<string, { icon: React.ElementType; label: string; desc
   reading: { icon: BookOpen, label: "Reading Mode", desc: "Full written content for deep, self-paced study.", className: "bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800" },
   listening: { icon: Headphones, label: "Listening Mode", desc: "Podcast-style conversation — learn hands-free.", className: "bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800" },
   "hands-on": { icon: Wrench, label: "Hands-On Mode", desc: "Interactive scenarios and role-play practice.", className: "bg-orange-50 dark:bg-orange-950/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-orange-800" },
-  combined: { icon: Layers, label: "Combined Mode", desc: "All learning modes in one comprehensive view.", className: "bg-accent/10 text-accent-foreground border-accent/20" },
+  combined: { icon: Layers, label: "Combined Mode", desc: "All learning modes in one comprehensive view.", className: "bg-primary/10 text-primary border-primary/20" },
 };
 
-export function LearnPathModuleContent({ module, skillTargetTitle, learningFormat }: Props) {
-  const { learningMode, openAssessment } = useLearnPath();
-  const { skillTargets } = useSkillTargets();
+export function LearnPathModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete }: Props) {
+  const learnPathCtx = useLearnPath();
+  const learningMode = learningModeOverride ?? learnPathCtx.learningMode;
+  const openAssessment = learnPathCtx.openAssessment;
+  const { skillTargets, updateSkillTarget } = useSkillTargets();
   const navigate = useNavigate();
   const isMicro = learningFormat === "micro";
   const transcript = module.transcript ?? "No content available for this module.";
   const [microExpanded, setMicroExpanded] = useState(false);
+  const [completed, setCompleted] = useState(false);
+  const [showAllBullets, setShowAllBullets] = useState(false);
+
+  // Reading progress
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [readingProgress, setReadingProgress] = useState(0);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const progress = scrollHeight <= clientHeight ? 100 : Math.round((scrollTop / (scrollHeight - clientHeight)) * 100);
+    setReadingProgress(progress);
+  }, []);
 
   // For micro mode: truncate to ~30% of content
   const microTranscript = (() => {
@@ -54,6 +75,33 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
 
   const wordCount = transcript.split(/\s+/).length;
   const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
+
+  const handleMarkComplete = () => {
+    setCompleted(true);
+    if (onComplete) {
+      onComplete();
+      return;
+    }
+    // If we have skillTargetId and stepId, update directly
+    if (skillTargetId && stepId) {
+      updateSkillTarget(skillTargetId, (target) => {
+        const updatedSteps = target.steps.map((s) => {
+          if (s.id === stepId) return { ...s, status: "completed" as const };
+          return s;
+        });
+        const sortedSteps = [...updatedSteps].sort((a, b) => a.order - b.order);
+        const currentStep = sortedSteps.find((s) => s.id === stepId);
+        const currentOrder = currentStep?.order ?? 0;
+        const nextLocked = sortedSteps.find((s) => s.order > currentOrder && s.status === "locked");
+        const finalSteps = nextLocked
+          ? updatedSteps.map((s) => s.id === nextLocked.id ? { ...s, status: "available" as const } : s)
+          : updatedSteps;
+        const completedCount = finalSteps.filter((s) => s.status === "completed" || s.status === "skipped").length;
+        const progress = Math.round((completedCount / finalSteps.length) * 100);
+        return { ...target, steps: finalSteps, progress };
+      });
+    }
+  };
 
   const renderModuleHeader = () => (
     <div className="rounded-xl border border-border bg-card p-4 flex items-start gap-4">
@@ -99,14 +147,15 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
     const flowCharts = extractFlowCharts(transcript);
     const diagramNodes = parseTranscriptToDiagram(transcript);
     const bullets = transcript.match(/^\*\s+.+$/gm)?.slice(0, 8) ?? [];
+    const visibleBullets = showAllBullets ? bullets : bullets.slice(0, 6);
 
     return (
-      <div className="space-y-5">
+      <div className="space-y-6">
         {/* Flow-chart diagrams */}
         {flowCharts.length > 0 && (
           <div className="space-y-6">
             {flowCharts.map((chart, i) => (
-              <div key={i} className="bg-card rounded-xl border border-border p-6 flex justify-center">
+              <div key={i} className="bg-card rounded-xl border border-border p-8 flex justify-center animate-fade-in">
                 <FlowDiagram chart={chart} />
               </div>
             ))}
@@ -118,19 +167,31 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
         )}
 
         {/* Key Takeaways */}
-        {bullets.length > 0 && (
+        {visibleBullets.length > 0 && (
           <div className="bg-card rounded-xl p-5 border border-border">
             <h4 className="font-semibold mb-3 text-foreground flex items-center gap-2 text-sm">
               💡 Key Takeaways
             </h4>
             <div className="grid grid-cols-1 gap-2">
-              {bullets.map((b, i) => (
-                <div key={i} className="rounded-lg bg-muted/50 px-3 py-2.5 text-sm text-foreground flex items-start gap-2">
+              {visibleBullets.map((b, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "rounded-lg px-3 py-2.5 text-sm text-foreground flex items-start gap-2 animate-fade-in",
+                    i % 2 === 0 ? "bg-muted/50" : "bg-muted/30"
+                  )}
+                  style={{ animationDelay: `${i * 60}ms`, animationFillMode: 'both' }}
+                >
                   <span className="text-primary font-bold mt-0.5 shrink-0">→</span>
-                  <span>{b.replace(/^\*\s*/, "").replace(/\*\*/g, "")}</span>
+                  <span className="leading-relaxed">{b.replace(/^\*\s*/, "").replace(/\*\*/g, "")}</span>
                 </div>
               ))}
             </div>
+            {bullets.length > 6 && !showAllBullets && (
+              <Button variant="ghost" size="sm" onClick={() => setShowAllBullets(true)} className="mt-3 w-full text-xs">
+                Show {bullets.length - 6} more takeaways
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -157,6 +218,14 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
           </div>
         </div>
 
+        {/* Reading progress bar */}
+        <div className="sticky top-0 z-10 h-1 bg-muted rounded-full overflow-hidden">
+          <div
+            className="h-full bg-primary transition-all duration-150 ease-out rounded-full"
+            style={{ width: `${readingProgress}%` }}
+          />
+        </div>
+
         {/* Table of contents */}
         {headings.length > 2 && (
           <div className="rounded-xl border border-border bg-muted/30 p-5">
@@ -181,10 +250,10 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
         {/* Content */}
         <div className="bg-card rounded-xl border border-border p-6 md:p-10">
           <div className={cn(
-            "prose prose-base dark:prose-invert max-w-none",
+            "prose prose-lg dark:prose-invert max-w-prose mx-auto",
             "prose-headings:text-foreground prose-headings:font-bold",
             "prose-h1:text-2xl prose-h1:mt-6 prose-h1:mb-4",
-            "prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-b prose-h2:border-border prose-h2:pb-3",
+            "prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-l-4 prose-h2:border-l-primary prose-h2:pl-4",
             "prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3",
             "prose-p:text-muted-foreground prose-p:leading-8 prose-p:mb-4",
             "prose-li:text-muted-foreground prose-li:leading-7",
@@ -232,12 +301,9 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
   /* ═══ HANDS-ON MODE ═══ */
   const renderHandsOn = () => (
     <div className="space-y-5">
-      {/* Intro */}
       <p className="text-sm text-muted-foreground">
         {handsOnData?.intro ?? "Practice what you've learned through interactive scenarios and role-play."}
       </p>
-
-      {/* Role Play Cards — before scenarios */}
       {rolePlays.length > 0 && (
         <div className="space-y-3">
           <h4 className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -249,8 +315,6 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
           </div>
         </div>
       )}
-
-      {/* Scenarios */}
       {handsOnData?.scenarios.map((scenario, idx) => (
         <ScenarioQuestion
           key={idx}
@@ -260,33 +324,61 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
           options={scenario.options}
         />
       ))}
-
-      {/* Assessment CTA */}
       <Button variant="outline" onClick={() => openAssessment(module.id)} className="gap-2 w-full">
         📝 Take a Quick Assessment
       </Button>
     </div>
   );
 
-  /* ═══ COMBINED MODE ═══ */
+  /* ═══ COMBINED MODE — Accordion ═══ */
+  const combinedSections = [
+    { value: "visual", icon: Eye, label: "Visual Summary", color: "text-blue-600 dark:text-blue-400", render: renderVisual },
+    { value: "reading", icon: BookOpen, label: "Full Reading", color: "text-emerald-600 dark:text-emerald-400", render: renderReading },
+    { value: "listening", icon: Headphones, label: "Listen", color: "text-purple-600 dark:text-purple-400", render: renderListening },
+    { value: "hands-on", icon: Wrench, label: "Practice", color: "text-orange-600 dark:text-orange-400", render: renderHandsOn },
+  ];
+
   const renderCombined = () => (
-    <div className="space-y-6">
-      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Visual Summary</h4>
-      {renderVisual()}
-      <hr className="border-border" />
-      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Full Reading</h4>
-      {renderReading()}
-      <hr className="border-border" />
-      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Listen</h4>
-      {renderListening()}
-      <hr className="border-border" />
-      <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Practice</h4>
-      {renderHandsOn()}
-    </div>
+    <Accordion type="single" collapsible defaultValue="visual" className="space-y-3">
+      {combinedSections.map((section, i) => {
+        const Icon = section.icon;
+        return (
+          <AccordionItem key={section.value} value={section.value} className="border border-border rounded-xl overflow-hidden bg-card">
+            <AccordionTrigger className="px-5 py-4 hover:no-underline hover:bg-muted/50 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className={cn("flex items-center justify-center w-8 h-8 rounded-lg bg-muted", section.color)}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="text-left">
+                  <span className="text-sm font-semibold text-foreground">{section.label}</span>
+                </div>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="px-5 pb-5">
+              <div className="pt-2">
+                {section.render()}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        );
+      })}
+    </Accordion>
   );
 
+  if (completed) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 text-center animate-fade-in">
+        <div className="h-16 w-16 rounded-full bg-success/15 flex items-center justify-center mb-4">
+          <CheckCircle2 className="h-8 w-8 text-success" />
+        </div>
+        <h3 className="text-lg font-semibold text-foreground mb-1">Module Complete!</h3>
+        <p className="text-sm text-muted-foreground mb-6">Great work. Keep going!</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-4">
+    <div className="p-6 max-w-4xl mx-auto space-y-4" ref={scrollRef} onScroll={handleScroll}>
       {renderModuleHeader()}
       {renderModeBanner()}
       {learningMode === "visual" && renderVisual()}
@@ -294,6 +386,16 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
       {learningMode === "listening" && renderListening()}
       {learningMode === "hands-on" && renderHandsOn()}
       {learningMode === "combined" && renderCombined()}
+
+      {/* Mark as Complete — sticky bottom bar */}
+      {(skillTargetId || onComplete) && (
+        <div className="sticky bottom-0 pt-4 pb-2 bg-gradient-to-t from-background via-background to-transparent">
+          <Button onClick={handleMarkComplete} className="w-full gap-2">
+            <CheckCircle2 className="h-4 w-4" />
+            Mark as Complete
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

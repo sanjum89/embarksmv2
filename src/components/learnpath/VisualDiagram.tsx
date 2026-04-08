@@ -23,10 +23,10 @@ function SectionCard({ node, accent }: { node: DiagramNode; accent: number }) {
   const cls = accents[accent % accents.length];
 
   return (
-    <div className={cn("rounded-lg border border-border border-l-4 p-4 space-y-2", cls)}>
+    <div className={cn("rounded-lg border border-border border-l-4 p-5 space-y-2.5", cls)}>
       <h5 className="font-semibold text-foreground text-sm">{node.title}</h5>
       {node.description && (
-        <p className="text-xs text-muted-foreground leading-relaxed">{node.description}</p>
+        <p className="text-sm text-muted-foreground leading-relaxed">{node.description}</p>
       )}
       {node.children && node.children.length > 0 && (
         <ul className="space-y-1.5 mt-2">
@@ -51,9 +51,11 @@ export function VisualDiagram({ title, nodes, className }: Props) {
   return (
     <div className={cn("space-y-4", className)}>
       <h4 className="font-semibold text-foreground text-base">{title}</h4>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 gap-3">
         {nodes.map((node, i) => (
-          <SectionCard key={i} node={node} accent={i} />
+          <div key={i} className="animate-fade-in" style={{ animationDelay: `${i * 80}ms`, animationFillMode: 'both' }}>
+            <SectionCard node={node} accent={i} />
+          </div>
         ))}
       </div>
     </div>

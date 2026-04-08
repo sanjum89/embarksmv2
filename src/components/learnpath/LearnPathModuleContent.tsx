@@ -340,8 +340,8 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
 
   /* ═══ COMBINED MODE — Curated Blend ═══ */
   const renderCombined = () => {
-    const flowCharts = extractFlowCharts(transcript);
-    const diagramNodes = parseTranscriptToDiagram(transcript);
+    const flowCharts = substituteDeep(extractFlowCharts(transcript));
+    const diagramNodes = substituteDeep(parseTranscriptToDiagram(transcript));
 
     // Extract a condensed summary: first 2 paragraphs of transcript
     const paragraphs = transcript.split("\n\n").filter(p => p.trim() && !p.startsWith("#"));

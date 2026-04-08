@@ -60,6 +60,45 @@ export function VisualDiagram({ title, nodes, className }: Props) {
   );
 }
 
+/* Curated flow-chart definitions for known module content */
+import type { FlowChartData } from "./FlowDiagram";
+
+const curatedFlowCharts: Record<string, FlowChartData[]> = {
+  heritage: [
+    {
+      title: "Company Foundation",
+      root: "Rathbones (est. 1742)",
+      children: ["Integrity", "Empowerment", "Independent Thinking", "Client-Centricity"],
+      bottom: "280-Year Legacy",
+    },
+  ],
+  investment: [
+    {
+      title: "Investment Philosophy",
+      root: "CLIENT OUTCOMES",
+      children: ["Research Driven", "Risk Managed", "Long-Term Focus"],
+      bottom: "Sustainable Value Creation",
+    },
+  ],
+};
+
+/** Extract flow charts from transcript — uses curated maps or simple heuristics */
+export function extractFlowCharts(transcript: string): FlowChartData[] {
+  const lower = transcript.toLowerCase();
+  for (const [key, charts] of Object.entries(curatedFlowCharts)) {
+    if (lower.includes(key)) return charts;
+  }
+  // Heuristic: look for "built on" or enumerated values patterns
+  const builtOnMatch = transcript.match(/(?:built on|founded on|based on)\s+(.+?)(?:\.|$)/i);
+  if (builtOnMatch) {
+    const parts = builtOnMatch[1].split(/,\s*|\s+and\s+/).map(s => s.trim()).filter(Boolean);
+    if (parts.length >= 2) {
+      return [{ root: "Core Foundation", children: parts.slice(0, 5) }];
+    }
+  }
+  return [];
+}
+
 /* Utility: parse markdown transcript into diagram nodes — max 2 levels */
 export function parseTranscriptToDiagram(transcript: string): DiagramNode[] {
   const lines = transcript.split("\n");

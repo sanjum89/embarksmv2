@@ -15,9 +15,18 @@ export type PodcastScript = PodcastLine[];
  * Static audio URLs for pre-generated podcast episodes.
  * These modules load instantly with zero API calls.
  */
+const HERITAGE_MP3 = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/podcast-audio/m-rb-intro-heritage.mp3`;
+
 export const staticPodcastUrls: Record<string, string> = {
-  "m-rb-intro-heritage": `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/podcast-audio/m-rb-intro-heritage.mp3`,
+  "m-rb-intro-heritage": HERITAGE_MP3,
+  "RAT-INTRO-001": HERITAGE_MP3,
+  "RAT-INTRO-LM-001": HERITAGE_MP3,
 };
+
+/** Resolve a static podcast URL for any module ID alias */
+export function getStaticPodcastUrl(moduleId: string): string | undefined {
+  return staticPodcastUrls[moduleId];
+}
 
 export const podcastTranscripts: Record<string, PodcastScript> = {
   /* ═══ RATHBONES INTRO MODULES ═══ */

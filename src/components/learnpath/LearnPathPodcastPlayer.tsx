@@ -18,7 +18,8 @@ function scriptToText(script: PodcastScript): string {
 }
 
 export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
-  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "playing" | "paused" | "error">("idle");
+  const isStatic = !!staticAudioUrl;
+  const [status, setStatus] = useState<"idle" | "loading" | "ready" | "playing" | "paused" | "error">(isStatic ? "loading" : "idle");
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState("--:--");
   const [currentTime, setCurrentTime] = useState("0:00");

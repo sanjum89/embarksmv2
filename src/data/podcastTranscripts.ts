@@ -15,7 +15,11 @@ export type PodcastScript = PodcastLine[];
  * Static audio URLs for pre-generated podcast episodes.
  * These modules load instantly with zero API calls.
  */
-const HERITAGE_MP3 = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/podcast-audio/m-rb-intro-heritage.mp3`;
+const STORAGE_BASE = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/public/podcast-audio`;
+const HERITAGE_MP3 = `${STORAGE_BASE}/m-rb-intro-heritage.mp3`;
+const PINNACLE_HERITAGE_MP3 = `${STORAGE_BASE}/pinnacle-heritage.mp3`;
+
+const HERITAGE_ALIASES = new Set(["m-rb-intro-heritage", "RAT-INTRO-001", "RAT-INTRO-LM-001"]);
 
 export const staticPodcastUrls: Record<string, string> = {
   "m-rb-intro-heritage": HERITAGE_MP3,
@@ -25,12 +29,14 @@ export const staticPodcastUrls: Record<string, string> = {
 
 /**
  * Resolve a static podcast URL for any module ID alias.
- * When accountName indicates a white-labeled account (e.g. Pinnacle Capital),
- * skip the Rathbones-specific static audio so the player falls back to
- * on-demand TTS with the already-substituted transcript text.
+ * Account-aware: Pinnacle Capital gets its own pre-generated Heritage MP3.
  */
 export function getStaticPodcastUrl(moduleId: string, accountName?: string): string | undefined {
-  // If this is a white-labeled account, don't serve the Rathbones static audio
+  if (HERITAGE_ALIASES.has(moduleId)) {
+    if (accountName === "Pinnacle Capital") return PINNACLE_HERITAGE_MP3;
+    return HERITAGE_MP3;
+  }
+  // Non-heritage modules: only serve static for Rathbones (or no account)
   if (accountName && accountName !== "Rathbones") return undefined;
   return staticPodcastUrls[moduleId];
 }

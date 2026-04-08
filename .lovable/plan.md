@@ -1,55 +1,41 @@
 
-No rebuild of skill targets is needed. The issue is in the Heritage podcast flow inside LearnPath, not in the chapter data.
+## Fix Visual Mode Rendering + Reading Mode Formatting
 
-What’s actually going wrong
-- The browser is still POSTing the full Heritage transcript to the on-demand TTS endpoint when you click Play.
-- In `src/components/learnpath/LearnPathPodcastPlayer.tsx`, the player falls back to on-demand generation whenever its state is still `"idle"`.
-- Static audio is loaded asynchronously, so if the user clicks Play before the stored MP3 reaches `loadedmetadata/canplay`, the code takes the API path.
-- `src/components/learnpath/LearnPathModuleContent.tsx` also looks up static audio with `staticPodcastUrls[module.id]` only, while transcript lookup already supports aliases. That is fragile for LearnPath entry paths.
-- The stored Heritage MP3 likely still needs to be replaced with the final full multi-voice version.
+### Problems
 
-Implementation plan
-1. Add canonical static audio lookup
-- In `src/data/podcastTranscripts.ts`, add a shared helper like `getStaticPodcastUrl(moduleId)`.
-- Map all Heritage IDs to the same stored file:
-  - `m-rb-intro-heritage`
-  - `RAT-INTRO-001`
-  - `RAT-INTRO-LM-001`
+**Visual Mode**: The `VisualDiagram` component creates a tree with CSS grid columns, but the Heritage transcript has deeply nested content (H2 → H3 → bullets with long descriptions). The grid tries to fit 4-5 items per row with full descriptions, causing overlapping/unreadable text as seen in image 1. The concept map approach is fundamentally wrong for long-form prose content.
 
-2. Update LearnPath to always use that helper
-- In `src/components/learnpath/LearnPathModuleContent.tsx`, replace the direct `staticPodcastUrls[module.id]` lookup with the shared helper.
-- This ensures LearnPath, auto-resume, and alias-based openings all resolve the same stored MP3.
+**Reading Mode**: The transcript contains proper markdown (`##`, `###`, `**bold**`, `*` bullets) but renders as a flat wall of text (image 2). The `ReactMarkdown` component is present but the prose styling is not taking effect — likely because the transcript content from `rathbonesTranscripts` doesn't have proper line breaks preserved, or the prose classes are not sufficient.
 
-3. Remove API fallback for Heritage playback
-- In `src/components/learnpath/LearnPathPodcastPlayer.tsx`, treat `staticAudioUrl` as authoritative.
-- If a static URL exists:
-  - never call the TTS endpoint
-  - preload the stored MP3
-  - if Play is clicked before the file is ready, wait for the static file or temporarily disable Play
-  - if static loading fails, show an error instead of falling back to credit-consuming generation
-- Keep on-demand TTS unchanged for every other module.
+### Changes
 
-4. Regenerate Heritage as a real stored podcast
-- In `supabase/functions/generate-podcast/index.ts`, keep persona-based voice generation and regenerate the Heritage episode from the speaker transcript.
-- Use explicit speaker-to-voice mapping for the Heritage speakers so it sounds like a conversation, not one narrator reading labels.
-- Overwrite the stored `m-rb-intro-heritage.mp3` with the final multi-voice file.
+**1. Rewrite `VisualDiagram.tsx` — Better visual rendering**
+- Limit tree depth to 2 levels max (root + children only, no grandchildren in the tree)
+- Show grandchildren (bullet points) as a compact list inside each child card, not as separate tree nodes
+- Cap description text with `line-clamp` to prevent overflow
+- Use `min-w-0` and `overflow-hidden` on all grid cells
+- For leaf nodes with long descriptions, use a card layout instead of cramming into tiny grid cells
 
-5. Make full-generation reliable
-- Do not trim the Heritage episode.
-- Make the one-time generation reliable enough to finish the full conversation, e.g. by batching/parallelizing turn generation while preserving playback order.
-- Only if runtime limits still block completion, move this one generation step to an async backend job. Playback should still remain static afterward.
+**2. Improve `parseTranscriptToDiagram` — Smarter extraction**
+- Only extract H2 headings as top-level nodes and H3 as children
+- Bullet points become `description` text on the parent H3 node (joined as a summary), not individual child nodes
+- This prevents the explosion of tiny unreadable boxes at the deepest level
 
-Technical details
-- Files to update:
-  - `src/data/podcastTranscripts.ts`
-  - `src/components/learnpath/LearnPathModuleContent.tsx`
-  - `src/components/learnpath/LearnPathPodcastPlayer.tsx`
-  - `supabase/functions/generate-podcast/index.ts`
-- No skill target rebuild is required.
-- No database changes are needed unless the async generation fallback becomes necessary.
+**3. Rewrite `renderVisual()` in `LearnPathModuleContent.tsx`**
+- After the concept map, add a "Key Points" section that renders each H2 section as a styled summary card with an icon, title, and 2-3 extracted bullet highlights
+- Remove the redundant "Quick Stats" grid (duration/type/words) — already shown in the module header
 
-QA
-- Open Heritage from LearnPath in Listening mode.
-- Confirm the player shows the pre-generated state.
-- Click Play immediately after load and again after the audio is ready; neither should send a request to `elevenlabs-tts`.
-- Verify the stored audio is the full Heritage conversation with the correct personas and that the transcript matches the audio.
+**4. Fix `renderReading()` in `LearnPathModuleContent.tsx`**
+- Increase prose size from `prose-sm` to `prose-base` for better readability
+- Add `prose-h1:text-2xl` for the top heading
+- Improve line height and paragraph spacing
+- Add visual separators between major sections
+- Style bold milestone items (like "**1742:**") with accent coloring
+- Ensure the markdown renders with proper spacing — the content uses `\n` within template literals which ReactMarkdown should handle
+
+### Files to modify
+
+| File | Change |
+|---|---|
+| `src/components/learnpath/VisualDiagram.tsx` | Rewrite NodeBox to limit depth, show bullets as description lists inside cards, add overflow protection |
+| `src/components/learnpath/LearnPathModuleContent.tsx` | Rewrite `renderVisual()` with summary cards below the diagram; fix `renderReading()` prose classes for better typography |

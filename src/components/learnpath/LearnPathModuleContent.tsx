@@ -45,6 +45,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
   const transcript = module.transcript ?? "No content available for this module.";
   const [microExpanded, setMicroExpanded] = useState(false);
   const [completed, setCompleted] = useState(false);
+  const [showAllBullets, setShowAllBullets] = useState(false);
 
   // Reading progress
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -146,7 +147,6 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
     const flowCharts = extractFlowCharts(transcript);
     const diagramNodes = parseTranscriptToDiagram(transcript);
     const bullets = transcript.match(/^\*\s+.+$/gm)?.slice(0, 8) ?? [];
-    const [showAllBullets, setShowAllBullets] = useState(false);
     const visibleBullets = showAllBullets ? bullets : bullets.slice(0, 6);
 
     return (

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { StepItem, StepType } from "@/types/learning";
 import { cn } from "@/lib/utils";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 
 interface TraditionalActivitiesPanelProps {
   steps: StepItem[];
@@ -39,6 +40,7 @@ export function TraditionalActivitiesPanel({
   onActivityClick,
   activeStepId,
 }: TraditionalActivitiesPanelProps) {
+  const { substitute } = useContentSubstitution();
   const [summaryOpen, setSummaryOpen] = useState(true);
   const [statusFilter, setStatusFilter] = useState("All");
   const [typeFilter, setTypeFilter] = useState("All");
@@ -222,7 +224,7 @@ export function TraditionalActivitiesPanel({
                         isLocked && "text-muted-foreground"
                       )}
                     >
-                      {step.title}
+                     {substitute(step.title)}
                     </h4>
                     {isClickable && (
                       <button

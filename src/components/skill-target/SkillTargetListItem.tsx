@@ -5,6 +5,7 @@ import type { SkillTarget } from "@/types/learning";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 
 interface SkillTargetListItemProps {
   target: SkillTarget;
@@ -15,6 +16,7 @@ export function SkillTargetListItem({ target, index }: SkillTargetListItemProps)
   const totalSteps = target.steps.length;
   const { styleTheme } = useTheme();
   const { skillTargets } = useSkillTargets();
+  const { substitute } = useContentSubstitution();
   const isTraditional = styleTheme === "traditional";
   const isLocked = target.locked === true;
   const prerequisite = target.prerequisiteId ? skillTargets.find(st => st.id === target.prerequisiteId) : null;
@@ -49,13 +51,13 @@ export function SkillTargetListItem({ target, index }: SkillTargetListItemProps)
               "font-display font-semibold text-foreground group-hover:text-primary transition-colors",
               isTraditional ? "text-[15px] mb-1" : "text-base mb-1.5"
             )}>
-              {target.title}
+              {substitute(target.title)}
             </h4>
             <p className={cn(
               "line-clamp-1 mb-2",
               isTraditional ? "text-[13px] text-muted-foreground/70" : "text-sm text-muted-foreground"
             )}>
-              {target.description}
+              {substitute(target.description)}
             </p>
             <div className={cn(
               "flex items-center gap-1.5",
@@ -71,7 +73,7 @@ export function SkillTargetListItem({ target, index }: SkillTargetListItemProps)
                   <span>•</span>
                   <span className="inline-flex items-center gap-1">
                     <Lock className="h-3 w-3" />
-                    Complete <strong className="text-foreground">{prerequisite.title}</strong> to unlock
+                    Complete <strong className="text-foreground">{substitute(prerequisite.title)}</strong> to unlock
                   </span>
                 </>
               )}

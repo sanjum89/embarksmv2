@@ -463,6 +463,9 @@ export interface NormalizedAccount {
   performanceAlerts: PerformanceAlert[];
   recommendedCTAs: RecommendedCTA[];
 
+  // Content name substitution (for cloned/white-label accounts)
+  contentNameMap?: Record<string, string>;
+
   // Demo / Agent One
   demoMode?: boolean;
   demoScenarios?: import("@/types/agentOneActions").DemoScenarios;

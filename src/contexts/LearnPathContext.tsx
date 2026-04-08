@@ -4,12 +4,21 @@ export type LearningMode = "visual" | "reading" | "listening" | "hands-on" | "co
 
 export type ContentView = "welcome" | "modules" | "module" | "assessment";
 
+export interface CompletedModuleInfo {
+  moduleId: string;
+  moduleTitle: string;
+  nextModuleId?: string;
+  nextModuleTitle?: string;
+  skillTargetId?: string;
+}
+
 export interface LearnPathState {
   contentView: ContentView;
   activeModuleId: string | null;
   activeSkillTargetId: string | null;
   learningMode: LearningMode;
   assessmentModuleId: string | null;
+  lastCompletedModule: CompletedModuleInfo | null;
 }
 
 interface LearnPathContextType extends LearnPathState {
@@ -20,6 +29,8 @@ interface LearnPathContextType extends LearnPathState {
   openAssessment: (moduleId: string) => void;
   closeAssessment: () => void;
   showModuleGrid: () => void;
+  notifyModuleCompleted: (info: CompletedModuleInfo) => void;
+  clearCompletedModule: () => void;
 }
 
 const LearnPathContext = createContext<LearnPathContextType>({
@@ -28,6 +39,7 @@ const LearnPathContext = createContext<LearnPathContextType>({
   activeSkillTargetId: null,
   learningMode: "combined",
   assessmentModuleId: null,
+  lastCompletedModule: null,
   setContentView: () => {},
   openModule: () => {},
   closeModule: () => {},
@@ -35,6 +47,8 @@ const LearnPathContext = createContext<LearnPathContextType>({
   openAssessment: () => {},
   closeAssessment: () => {},
   showModuleGrid: () => {},
+  notifyModuleCompleted: () => {},
+  clearCompletedModule: () => {},
 });
 
 export function LearnPathProvider({ children }: { children: ReactNode }) {
@@ -44,6 +58,7 @@ export function LearnPathProvider({ children }: { children: ReactNode }) {
     activeSkillTargetId: null,
     learningMode: "combined",
     assessmentModuleId: null,
+    lastCompletedModule: null,
   });
 
   const setContentView = useCallback((view: ContentView) => {
@@ -98,6 +113,14 @@ export function LearnPathProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const notifyModuleCompleted = useCallback((info: CompletedModuleInfo) => {
+    setState((s) => ({ ...s, lastCompletedModule: info }));
+  }, []);
+
+  const clearCompletedModule = useCallback(() => {
+    setState((s) => ({ ...s, lastCompletedModule: null }));
+  }, []);
+
   return (
     <LearnPathContext.Provider
       value={{
@@ -109,6 +132,8 @@ export function LearnPathProvider({ children }: { children: ReactNode }) {
         openAssessment,
         closeAssessment,
         showModuleGrid,
+        notifyModuleCompleted,
+        clearCompletedModule,
       }}
     >
       {children}

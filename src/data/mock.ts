@@ -387,7 +387,7 @@ export const mockSkillTargets: SkillTarget[] = [
     ],
     steps: [
       { id: "s1", type: "assessment", title: "Pre-Assessment: Objection Basics", description: "Test your current knowledge of objection handling.", order: 1, skippable: false, status: "completed", duration: "15 min", referenceId: "a1" },
-      { id: "s2", type: "module", title: "Objection Handling Framework", description: "Learn the LAER framework for handling objections.", order: 2, skippable: true, skipCondition: "Pre-assessment score > 80%", status: "in_progress", duration: "25 min", referenceId: "m1" },
+      { id: "s2", type: "module", title: "Objection Handling Framework", description: "Learn the LAER framework for handling objections.", order: 2, skippable: true, skipCondition: "Pre-assessment score > 80%", status: "in_progress", duration: "25 min", referenceId: "m1", learningFormat: "micro" as const },
       { id: "s3", type: "module", title: "Advanced Reframing Techniques", description: "Deep dive into reframing customer concerns.", order: 3, skippable: true, skipCondition: "Pre-assessment score > 90%", status: "locked", duration: "20 min", referenceId: "m2" },
       { id: "s4", type: "role_play", title: "Practice: Price Objection Scenario", description: "Role play with AI customer who objects to pricing.", order: 4, skippable: false, status: "locked", duration: "15 min", referenceId: "rp1" },
       { id: "s5", type: "assessment", title: "Post-Assessment: Objection Mastery", description: "Validate your objection handling proficiency.", order: 5, skippable: false, status: "locked", duration: "20 min", referenceId: "a2" },
@@ -429,7 +429,7 @@ export const mockSkillTargets: SkillTarget[] = [
     ],
     steps: [
       { id: "s11", type: "assessment", title: "Pre-Assessment: Empathy Baseline", description: "Assess current empathetic communication level.", order: 1, skippable: false, status: "completed", duration: "10 min", referenceId: "a5" },
-      { id: "s12", type: "module", title: "Active Listening Techniques", description: "Master active listening for customer conversations.", order: 2, skippable: false, status: "completed", duration: "20 min", referenceId: "m5" },
+      { id: "s12", type: "module", title: "Active Listening Techniques", description: "Master active listening for customer conversations.", order: 2, skippable: false, status: "completed", duration: "20 min", referenceId: "m5", learningFormat: "micro" as const },
       { id: "s13", type: "role_play", title: "Frustrated Customer Scenario", description: "Handle an upset customer with empathy.", order: 3, skippable: false, status: "completed", duration: "15 min", referenceId: "rp3" },
       { id: "s14", type: "assessment", title: "Post-Assessment: Empathy Mastery", description: "Final empathy communication check.", order: 4, skippable: false, status: "in_progress", duration: "15 min", referenceId: "a6" },
     ],

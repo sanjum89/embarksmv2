@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ProgramContext } from "@/data/mock";
+import BackButton from "@/components/layout/BackButton";
 
 export default function ProgramContextPage() {
   const { normalizedAccount, activeAccount } = useAccount();

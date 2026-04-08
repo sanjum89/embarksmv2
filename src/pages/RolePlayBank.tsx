@@ -9,6 +9,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { useRolePlays } from "@/contexts/RolePlayContext";
 import { useUser } from "@/contexts/UserContext";
 import { cn } from "@/lib/utils";
+import BackButton from "@/components/layout/BackButton";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -169,6 +170,7 @@ export default function RolePlayBank() {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="p-6">
+        <BackButton />
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center justify-between">
             <div>

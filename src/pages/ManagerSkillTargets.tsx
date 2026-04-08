@@ -7,6 +7,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import BackButton from "@/components/layout/BackButton";
 
 const defaultCategories = [...new Set(defaultManagerSkillTargets.map((t) => t.category))];
 
@@ -51,6 +52,7 @@ export default function ManagerSkillTargets() {
   return (
     <div className="flex-1 overflow-y-auto p-6">
       <div className="max-w-5xl mx-auto space-y-6">
+        <BackButton />
         {/* Header */}
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground">Learning Paths</h1>

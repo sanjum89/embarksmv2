@@ -23,8 +23,15 @@ export const staticPodcastUrls: Record<string, string> = {
   "RAT-INTRO-LM-001": HERITAGE_MP3,
 };
 
-/** Resolve a static podcast URL for any module ID alias */
-export function getStaticPodcastUrl(moduleId: string): string | undefined {
+/**
+ * Resolve a static podcast URL for any module ID alias.
+ * When accountName indicates a white-labeled account (e.g. Pinnacle Capital),
+ * skip the Rathbones-specific static audio so the player falls back to
+ * on-demand TTS with the already-substituted transcript text.
+ */
+export function getStaticPodcastUrl(moduleId: string, accountName?: string): string | undefined {
+  // If this is a white-labeled account, don't serve the Rathbones static audio
+  if (accountName && accountName !== "Rathbones") return undefined;
   return staticPodcastUrls[moduleId];
 }
 

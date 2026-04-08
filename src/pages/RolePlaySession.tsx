@@ -5,6 +5,7 @@ import { ArrowLeft, Send, Eye, EyeOff, Bot, User, Mic, MicOff, Volume2, VolumeX,
 
 import { useRolePlays } from "@/contexts/RolePlayContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
+import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { streamRolePlayChat } from "@/lib/streamChat";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
@@ -67,10 +68,11 @@ export default function RolePlaySession() {
   const navigate = useNavigate();
   const { getRolePlay } = useRolePlays();
   const { skillTargets, updateSkillTarget } = useSkillTargets();
+  const { substituteDeep } = useContentSubstitution();
   const foundRolePlay = getRolePlay(rid || "");
 
   // Generate fallback role play from skill target step data when not in mock bank
-  const rolePlay = foundRolePlay ?? (() => {
+  const rolePlay = substituteDeep(foundRolePlay ?? (() => {
     // Try to derive context from skill target step data
     let fallbackTitle = "Practice Scenario";
     let fallbackScenario = "Engage naturally with the AI persona and apply the techniques you've learned.";
@@ -102,7 +104,7 @@ export default function RolePlaySession() {
         context: fallbackContext,
       },
     };
-  })();
+  })());
 
   const [isPrivate, setIsPrivate] = useState(false);
   const [chatInput, setChatInput] = useState("");

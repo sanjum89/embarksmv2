@@ -11,7 +11,7 @@ const ONBOARDING_NEXT_PILL: Record<string, string> = {
   "profile-review": "Show me my onboarding plan",
   feedback: "What's my 20-day plan?",
   "task-list": "Start my first module",
-  "pre-intro": "Go to Introduction to Rathbones",
+  "pre-intro": "Go to Introduction",
   "pre-bridge": "Go to my bridge target",
   "pre-assessment": "Take the assessment",
   "post-assessment": "View my skill target",
@@ -20,6 +20,12 @@ const ONBOARDING_NEXT_PILL: Record<string, string> = {
 
 function buildSystemPrompt(stage: string, userContext: any): string {
   const { name, role, title, tenure, skills, reportsTo, accountName, lockedTargets, isFreshGraduate, targetTitle, targetId, targetSteps, hasBridgeTarget, bridgeTargetTitle, bridgeCompleted, introCompleted, introTargetTitle, currentPage, currentSkillTargetProgress, skillsDetailed, skillTargetsSummary, inboxSummary, skillGaps, chapterContext, roleName, roleDescription, roleDetailedDescription } = userContext || {};
+
+  // Override pre-intro pill dynamically if introTargetTitle is provided
+  const dynamicPills = { ...ONBOARDING_NEXT_PILL };
+  if (introTargetTitle) {
+    dynamicPills["pre-intro"] = `Go to ${introTargetTitle}`;
+  }
   const firstName = name?.split(" ")[0] || "there";
   const isNewJoiner = tenure !== undefined && tenure <= 6;
 
@@ -31,7 +37,7 @@ function buildSystemPrompt(stage: string, userContext: any): string {
     ? `\n\nJOB ROLE — ${roleName || "Current Role"}:\n${roleDescription}`
     : "";
 
-  const nextPill = ONBOARDING_NEXT_PILL[stage] || null;
+  const nextPill = dynamicPills[stage] || null;
   const pillRule = nextPill
     ? `The FIRST suggestion pill MUST be exactly: "${nextPill}". Add 1-3 more contextual pills after it.`
     : `All suggestion pills should be contextual to the conversation.`;

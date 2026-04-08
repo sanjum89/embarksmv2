@@ -287,6 +287,32 @@ export function LearnPathChat() {
     [buildContext, learnPath, normalizedAccount?.learningModules, skillTargets]
   );
 
+  // Auto-congratulate on module completion
+  useEffect(() => {
+    if (!learnPath.lastCompletedModule || isStreaming) return;
+    const { moduleTitle, nextModuleId, nextModuleTitle, skillTargetId } = learnPath.lastCompletedModule;
+    learnPath.clearCompletedModule();
+
+    const nextHint = nextModuleId
+      ? `Suggest moving to "${nextModuleTitle}" (moduleId: ${nextModuleId}, skillTargetId: ${skillTargetId}) using an open_module action.`
+      : "Let them know they've finished all assigned modules — great job!";
+
+    const systemMsg: ChatMessage = {
+      id: createMessageId("system"),
+      role: "user",
+      content: `[SYSTEM] The learner just completed "${moduleTitle}". Congratulate them briefly (1-2 sentences). ${nextHint}`,
+    };
+    const assistantId = createMessageId("assistant");
+    const assistantPlaceholder: ChatMessage = {
+      id: assistantId,
+      role: "assistant",
+      content: "",
+    };
+
+    setMessages((prev) => [...prev, systemMsg, assistantPlaceholder]);
+    void sendToAI([...messages, systemMsg], assistantId);
+  }, [learnPath.lastCompletedModule]);
+
   useEffect(() => {
     if (hasGreeted || messages.length > 0) return;
 

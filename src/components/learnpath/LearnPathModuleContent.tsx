@@ -106,6 +106,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
         return { ...target, steps: finalSteps, progress };
       });
     }
+    onComplete?.();
   };
 
   const renderModuleHeader = () => (

@@ -231,6 +231,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
 
   const skillTargetsSummary = useMemo(() =>
     assignedTargets.map(st => ({
+      id: st.id,
       title: st.title,
       progress: Math.round(st.progress || 0),
       status: st.locked ? "locked" : st.progress >= 100 ? "completed" : "in_progress",

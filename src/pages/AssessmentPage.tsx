@@ -3,13 +3,12 @@ import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
 
-import { mockAssessments } from "@/data/mock";
-import { st2BaselineAssessment, st2MidAssessment, st2FinalAssessment } from "@/data/rathbonesOnboarding";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { emitAssessmentCompleted } from "@/lib/agentOneEventEmitter";
+import { resolveAssessment, applyGateActions } from "@/lib/assessmentGates";
 
 export default function AssessmentPage() {
   const { aid, id: skillTargetId } = useParams();
@@ -17,55 +16,7 @@ export default function AssessmentPage() {
   const { activeAccount, normalizedAccount } = useAccount();
   const { user } = useUser();
 
-  // Deduplicate: ensure Rathbones assessments are always present regardless of import order
-  const rathbonesAssessments = [st2BaselineAssessment, st2MidAssessment, st2FinalAssessment];
-  const rathbonesIds = new Set(rathbonesAssessments.map(a => a.id));
-  const allAssessments = [...mockAssessments.filter(a => !rathbonesIds.has(a.id)), ...rathbonesAssessments];
-  // Try direct assessment ID match first, then resolve via step referenceId
-  let foundAssessment = allAssessments.find((a) => a.id === aid);
-  if (!foundAssessment) {
-    // Search across all skill targets (context + any loaded targets) for a step whose ID matches aid
-    for (const target of skillTargets) {
-      const stepByStepId = target.steps.find((s) => s.id === aid && s.type === "assessment");
-      if (stepByStepId) {
-        foundAssessment = allAssessments.find((a) => a.id === stepByStepId.referenceId);
-        break;
-      }
-    }
-  }
-  // Static fallback map for known Rathbones step IDs → assessment IDs
-  if (!foundAssessment) {
-    const STEP_TO_ASSESSMENT: Record<string, string> = {
-      "RAT-ASM-001": "a-rb-st2-baseline",
-      "RAT-ASM-002": "a-rb-st2-mid",
-      "RAT-ASM-003": "a-rb-st2-final",
-    };
-    const mappedId = STEP_TO_ASSESSMENT[aid ?? ""];
-    if (mappedId) {
-      foundAssessment = allAssessments.find((a) => a.id === mappedId);
-    }
-  }
-
-  // Generate fallback assessment from skill target step data when not in mock catalog
-  const assessment = foundAssessment ?? (() => {
-    const target = skillTargets.find((st) => st.id === skillTargetId);
-    const step = target?.steps.find((s) => s.referenceId === aid);
-    if (!step) return null;
-    const topicName = step.title.replace(/Pre-Assessment:|Post-Assessment:/gi, "").trim() || target?.title || "General Knowledge";
-    return {
-      id: aid!,
-      title: step.title,
-      type: (step.title.toLowerCase().includes("pre") ? "pre" : "post") as "pre" | "post",
-      passingScore: 70,
-      questions: [
-        { id: `${aid}-q1`, question: `What is the primary objective of ${topicName}?`, options: ["Improve team collaboration", "Build core competency in this area", "Reduce operational costs", "Automate workflows"], correctIndex: 1 },
-        { id: `${aid}-q2`, question: `Which of the following best describes a key principle of ${topicName}?`, options: ["Avoid feedback loops", "Focus on continuous improvement", "Minimize stakeholder input", "Prioritize speed over quality"], correctIndex: 1 },
-        { id: `${aid}-q3`, question: `When applying ${topicName} in practice, you should first:`, options: ["Skip the planning phase", "Assess the current state and gaps", "Implement changes immediately", "Delegate to others"], correctIndex: 1 },
-        { id: `${aid}-q4`, question: `What is a common challenge when developing skills in ${topicName}?`, options: ["Too much available training", "Balancing theory with practice", "Lack of any resources", "No measurable outcomes"], correctIndex: 1 },
-        { id: `${aid}-q5`, question: `The best indicator of proficiency in ${topicName} is:`, options: ["Years of experience alone", "Ability to apply concepts in real scenarios", "Number of certifications", "Memorizing definitions"], correctIndex: 1 },
-      ],
-    };
-  })();
+  const assessment = aid ? resolveAssessment(aid, skillTargets) : null;
 
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -109,48 +60,6 @@ export default function AssessmentPage() {
     if (currentQ > 0) setCurrentQ((prev) => prev - 1);
   };
 
-  /* ─── Explicit Assessment Gate Map ─── */
-  interface GateAction { skip?: string[]; unlock?: string[]; complete?: string[]; reset?: string[]; retryId?: string }
-  const GATE_MAP: Record<string, {
-    onPass: GateAction;
-    onFail: GateAction;
-    passThreshold: number;
-  }> = {
-    "a-rb-st2-baseline": {
-      passThreshold: 80,
-      onPass: {
-        complete: ["RAT-ASM-001"],
-        skip: ["RAT-LM-001", "RAT-LM-002", "RAT-LM-003"],
-        unlock: ["RAT-LM-004"],
-      },
-      onFail: {
-        complete: ["RAT-ASM-001"],
-        unlock: ["RAT-LM-001"],
-      },
-    },
-    "a-rb-st2-mid": {
-      passThreshold: 80,
-      onPass: {
-        complete: ["RAT-ASM-002"],
-        unlock: ["RAT-RP-001"],
-      },
-      onFail: {
-        reset: ["RAT-LM-004", "RAT-LM-005", "RAT-LM-006", "RAT-LM-007"],
-        retryId: "RAT-ASM-002",
-      },
-    },
-    "a-rb-st2-final": {
-      passThreshold: 80,
-      onPass: {
-        complete: ["RAT-ASM-003"],
-      },
-      onFail: {
-        reset: ["RAT-RP-001"],
-        retryId: "RAT-ASM-003",
-      },
-    },
-  };
-
   const handleSubmit = () => {
     setShowResults(true);
 
@@ -173,51 +82,10 @@ export default function AssessmentPage() {
       ).catch(console.error);
     }
 
-    const gate = GATE_MAP[assessment.id];
-
+    // Apply gate logic using shared utility
     updateSkillTarget(skillTargetId, (target) => {
-      // Mark the assessment step itself as completed
-      let updatedSteps = target.steps.map((step) => {
-        if (step.referenceId === assessment.id && step.type === "assessment") {
-          return { ...step, status: "completed" as const };
-        }
-        return step;
-      });
-
-      if (gate) {
-        const passed = finalScore >= gate.passThreshold;
-        const actions = passed ? gate.onPass : gate.onFail;
-
-        updatedSteps = updatedSteps.map((step) => {
-          if (actions.complete?.includes(step.id)) return { ...step, status: "completed" as const };
-          if (actions.skip?.includes(step.id)) return { ...step, status: "skipped" as const };
-          if (actions.unlock?.includes(step.id)) return { ...step, status: "available" as const };
-          if (actions.reset?.includes(step.id)) return { ...step, status: "available" as const };
-          if (!passed && actions.retryId === step.id) return { ...step, status: "available" as const };
-          return step;
-        });
-      } else {
-        // Fallback: unlock the next locked step after this assessment
-        const assessmentStep = updatedSteps.find(
-          (s) => s.referenceId === assessment.id && s.type === "assessment"
-        );
-        if (assessmentStep) {
-          const sorted = [...updatedSteps].sort((a, b) => a.order - b.order);
-          const nextLocked = sorted.find((s) => s.order > assessmentStep.order && s.status === "locked");
-          if (nextLocked) {
-            updatedSteps = updatedSteps.map((s) =>
-              s.id === nextLocked.id ? { ...s, status: "available" as const } : s
-            );
-          }
-        }
-      }
-
-      const completedCount = updatedSteps.filter(
-        (s) => s.status === "completed" || s.status === "skipped"
-      ).length;
-      const progress = Math.round((completedCount / updatedSteps.length) * 100);
-
-      return { ...target, steps: updatedSteps, progress };
+      const result = applyGateActions(target.steps, assessment.id, finalScore);
+      return { ...target, steps: result.steps, progress: result.progress };
     });
   };
 

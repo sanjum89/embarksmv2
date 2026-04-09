@@ -2,138 +2,286 @@ import { useState } from "react";
 import { useLearnPath } from "@/contexts/LearnPathContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
-import { resolveModule } from "@/lib/learnPathModuleResolver";
+import { useUser } from "@/contexts/UserContext";
+import { resolveAssessment, applyGateActions, STEP_TO_ASSESSMENT } from "@/lib/assessmentGates";
+import { emitAssessmentCompleted } from "@/lib/agentOneEventEmitter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, XCircle, ArrowLeft } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import type { StepType } from "@/types/learning";
 
-// Generate simple quiz questions from module content
-function generateQuestions(moduleTitle: string) {
-  return [
-    {
-      id: "q1",
-      question: `What is the primary focus of "${moduleTitle}"?`,
-      options: [
-        "Understanding core concepts and best practices",
-        "Advanced coding techniques",
-        "Marketing strategy development",
-        "Financial reporting standards",
-      ],
-      correctIndex: 0,
-    },
-    {
-      id: "q2",
-      question: "Which of the following best describes the key takeaway?",
-      options: [
-        "Ignore established processes",
-        "Apply structured approaches for consistent outcomes",
-        "Rely solely on intuition",
-        "Avoid documentation",
-      ],
-      correctIndex: 1,
-    },
-    {
-      id: "q3",
-      question: "How should you apply what you've learned?",
-      options: [
-        "Only in theory, never in practice",
-        "Wait for someone else to implement it",
-        "Practice regularly and seek feedback",
-        "Only during formal assessments",
-      ],
-      correctIndex: 2,
-    },
-  ];
+interface Props {
+  assessmentId: string;
+  skillTargetId?: string;
+  stepId?: string;
+  nextStepId?: string;
+  nextStepTitle?: string;
+  nextStepType?: StepType;
+  nextSkillTargetId?: string;
 }
 
-export function LearnPathAssessment({ moduleId }: { moduleId: string }) {
-  const { closeAssessment } = useLearnPath();
-  const { skillTargets } = useSkillTargets();
-  const { normalizedAccount } = useAccount();
-  const module = resolveModule(moduleId, skillTargets, normalizedAccount?.learningModules);
-  const questions = generateQuestions(module?.title ?? "this module");
+export function LearnPathAssessment({
+  assessmentId,
+  skillTargetId,
+  stepId,
+  nextStepId,
+  nextStepTitle,
+  nextStepType,
+  nextSkillTargetId,
+}: Props) {
+  const { closeAssessment, openModule, openAssessment: openNextAssessment, showModuleGrid } = useLearnPath();
+  const { skillTargets, updateSkillTarget } = useSkillTargets();
+  const { activeAccount, normalizedAccount } = useAccount();
+  const { user } = useUser();
 
+  // Resolve the assessment using shared logic
+  const resolvedId = STEP_TO_ASSESSMENT[assessmentId] ?? assessmentId;
+  const assessment = resolveAssessment(resolvedId, skillTargets);
+
+  const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [showResults, setShowResults] = useState(false);
 
-  const score = submitted
-    ? questions.filter((q) => answers[q.id] === q.correctIndex).length
+  if (!assessment) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground">
+        Assessment not found.
+      </div>
+    );
+  }
+
+  const totalQuestions = assessment.questions.length;
+  const answered = Object.keys(answers).length;
+  const question = assessment.questions[currentQ];
+
+  const score = showResults
+    ? Math.round(
+        (assessment.questions.filter((q) => answers[q.id] === q.correctIndex).length /
+          totalQuestions) *
+          100
+      )
     : 0;
+  const passed = showResults && score >= assessment.passingScore;
+
+  const handleSelect = (optionIndex: number) => {
+    if (showResults) return;
+    setAnswers((prev) => ({ ...prev, [question.id]: optionIndex }));
+  };
+
+  const handleNext = () => {
+    if (currentQ < totalQuestions - 1) setCurrentQ((p) => p + 1);
+  };
+  const handlePrev = () => {
+    if (currentQ > 0) setCurrentQ((p) => p - 1);
+  };
+
+  const handleSubmit = () => {
+    setShowResults(true);
+
+    const finalScore = Math.round(
+      (assessment.questions.filter((q) => answers[q.id] === q.correctIndex).length /
+        totalQuestions) *
+        100
+    );
+
+    // Emit event
+    if (activeAccount?.id && normalizedAccount && assessmentId) {
+      emitAssessmentCompleted(user.id, assessmentId, finalScore, activeAccount.id, normalizedAccount).catch(console.error);
+    }
+
+    // Apply gate logic
+    if (skillTargetId) {
+      updateSkillTarget(skillTargetId, (target) => {
+        const result = applyGateActions(target.steps, assessment.id, finalScore);
+        return { ...target, steps: result.steps, progress: result.progress };
+      });
+    }
+  };
+
+  const handleRetry = () => {
+    setAnswers({});
+    setCurrentQ(0);
+    setShowResults(false);
+  };
+
+  const handleContinue = () => {
+    if (nextStepId) {
+      if (nextStepType === "assessment") {
+        openNextAssessment(nextStepId);
+      } else {
+        openModule(nextStepId, nextSkillTargetId);
+      }
+    } else {
+      showModuleGrid();
+    }
+  };
 
   return (
-    <div className="h-full overflow-y-auto p-6">
-      <Button variant="ghost" size="sm" onClick={closeAssessment} className="gap-1 mb-4">
-        <ArrowLeft className="h-3.5 w-3.5" /> Back to Module
-      </Button>
+    <div className="h-full overflow-y-auto">
+      <div className="mx-auto max-w-2xl p-6">
+        <Button variant="ghost" size="sm" onClick={closeAssessment} className="gap-1 mb-4">
+          <ArrowLeft className="h-3.5 w-3.5" /> Back
+        </Button>
 
-      <h2 className="text-lg font-bold text-foreground mb-1">Quick Assessment</h2>
-      <p className="text-sm text-muted-foreground mb-6">{module?.title}</p>
-
-      {submitted && (
-        <Card className="mb-6 border-accent/30">
-          <CardContent className="p-4 flex items-center gap-3">
-            {score >= 2 ? (
-              <CheckCircle2 className="h-6 w-6 text-green-500" />
-            ) : (
-              <XCircle className="h-6 w-6 text-destructive" />
-            )}
-            <div>
-              <p className="font-semibold text-foreground">
-                Score: {score}/{questions.length}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {score >= 2 ? "Great work! You've demonstrated understanding." : "Review the module and try again."}
-              </p>
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl bg-card border border-border p-5 shadow-card mb-6"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className={cn(
+              "rounded-full px-2.5 py-0.5 text-xs font-medium",
+              assessment.type === "pre" ? "bg-info/10 text-info" : "bg-accent/10 text-accent"
+            )}>
+              {assessment.type === "pre" ? "Pre-Assessment" : "Post-Assessment"}
+            </span>
+            <span className="text-xs text-muted-foreground">Passing: {assessment.passingScore}%</span>
+          </div>
+          <h1 className="font-display text-lg font-bold text-foreground">{assessment.title}</h1>
+          <div className="mt-3 flex items-center gap-3">
+            <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+              <div
+                className="h-full rounded-full gradient-accent transition-all duration-300"
+                style={{ width: `${(answered / totalQuestions) * 100}%` }}
+              />
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <span className="text-xs text-muted-foreground">{answered}/{totalQuestions}</span>
+          </div>
+        </motion.div>
 
-      <div className="space-y-4">
-        {questions.map((q, qi) => (
-          <Card key={q.id}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">
-                {qi + 1}. {q.question}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {q.options.map((opt, oi) => {
-                const selected = answers[q.id] === oi;
-                const isCorrect = submitted && oi === q.correctIndex;
-                const isWrong = submitted && selected && oi !== q.correctIndex;
+        {/* Results */}
+        {showResults ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="rounded-xl bg-card border border-border p-8 shadow-card text-center"
+          >
+            <div className={cn(
+              "mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full",
+              passed ? "bg-success/15" : "bg-destructive/15"
+            )}>
+              {passed ? <CheckCircle2 className="h-8 w-8 text-success" /> : <XCircle className="h-8 w-8 text-destructive" />}
+            </div>
+            <h2 className="font-display text-2xl font-bold text-foreground mb-1">{score}%</h2>
+            <p className={cn("text-sm font-medium mb-1", passed ? "text-success" : "text-destructive")}>
+              {passed ? "Passed!" : "Not yet — keep going!"}
+            </p>
+            <p className="text-xs text-muted-foreground mb-6">
+              You got {assessment.questions.filter((q) => answers[q.id] === q.correctIndex).length} of {totalQuestions} correct.
+              {passed && assessment.type === "pre" ? " Some modules may be skippable based on your score." : ""}
+            </p>
+
+            {/* Per-question results */}
+            <div className="space-y-2 text-left mb-6">
+              {assessment.questions.map((q, i) => {
+                const correct = answers[q.id] === q.correctIndex;
                 return (
-                  <button
-                    key={oi}
-                    onClick={() => !submitted && setAnswers((a) => ({ ...a, [q.id]: oi }))}
-                    disabled={submitted}
+                  <div
+                    key={q.id}
                     className={cn(
-                      "w-full text-left px-3 py-2 rounded-md text-sm border transition-colors",
-                      selected && !submitted && "border-accent bg-accent/10",
-                      isCorrect && "border-green-500 bg-green-500/10",
-                      isWrong && "border-destructive bg-destructive/10",
-                      !selected && !isCorrect && "border-border hover:bg-muted"
+                      "rounded-lg border p-3 text-sm",
+                      correct ? "border-success/30 bg-success/5" : "border-destructive/30 bg-destructive/5"
                     )}
                   >
-                    {opt}
-                  </button>
+                    <p className="font-medium text-foreground">{i + 1}. {q.question}</p>
+                    <p className={cn("text-xs mt-1", correct ? "text-success" : "text-destructive")}>
+                      {correct ? "✓ Correct" : `✗ Your answer: ${q.options[answers[q.id]]} — Correct: ${q.options[q.correctIndex]}`}
+                    </p>
+                  </div>
                 );
               })}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+            </div>
 
-      {!submitted && (
-        <Button
-          className="mt-6 w-full"
-          disabled={Object.keys(answers).length < questions.length}
-          onClick={() => setSubmitted(true)}
-        >
-          Submit Answers
-        </Button>
-      )}
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={handleRetry}
+                className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors"
+              >
+                <RotateCcw className="h-4 w-4" /> Retry
+              </button>
+              <button
+                onClick={handleContinue}
+                className="inline-flex items-center gap-2 rounded-lg gradient-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90 transition-opacity"
+              >
+                {nextStepId ? "Continue" : "All Chapters"} <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Next up preview */}
+            {nextStepId && nextStepTitle && (
+              <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3 text-left">
+                <p className="text-xs text-muted-foreground mb-0.5">Next Up</p>
+                <p className="text-sm font-medium text-foreground">{nextStepTitle}</p>
+              </div>
+            )}
+          </motion.div>
+        ) : (
+          /* Question card */
+          <motion.div
+            key={question.id}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.25 }}
+            className="rounded-xl bg-card border border-border p-6 shadow-card"
+          >
+            <p className="text-xs text-muted-foreground mb-3">Question {currentQ + 1} of {totalQuestions}</p>
+            <h3 className="font-display text-base font-semibold text-foreground mb-5">{question.question}</h3>
+
+            <div className="space-y-2.5">
+              {question.options.map((option, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSelect(i)}
+                  className={cn(
+                    "w-full rounded-lg border p-3.5 text-left text-sm transition-all duration-200",
+                    answers[question.id] === i
+                      ? "border-accent bg-accent/10 text-foreground ring-1 ring-accent/30"
+                      : "border-border bg-card text-foreground hover:border-accent/40 hover:bg-accent/5"
+                  )}
+                >
+                  <span className="inline-flex items-center gap-2.5">
+                    <span className={cn(
+                      "flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium",
+                      answers[question.id] === i ? "bg-accent text-accent-foreground" : "bg-secondary text-muted-foreground"
+                    )}>
+                      {String.fromCharCode(65 + i)}
+                    </span>
+                    <span className="leading-snug">{option}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-6 flex items-center justify-between">
+              <button
+                onClick={handlePrev}
+                disabled={currentQ === 0}
+                className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-30 transition-colors"
+              >
+                Previous
+              </button>
+              {currentQ === totalQuestions - 1 ? (
+                <button
+                  onClick={handleSubmit}
+                  disabled={answered < totalQuestions}
+                  className="rounded-lg gradient-accent px-5 py-2 text-sm font-medium text-accent-foreground hover:opacity-90 disabled:opacity-40 transition-opacity"
+                >
+                  Submit
+                </button>
+              ) : (
+                <button
+                  onClick={handleNext}
+                  className="rounded-lg bg-secondary px-4 py-2 text-sm font-medium text-foreground hover:bg-secondary/80 transition-colors"
+                >
+                  Next
+                </button>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }

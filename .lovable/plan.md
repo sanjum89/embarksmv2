@@ -1,41 +1,51 @@
 
 
-## Fix Hands-On Role Play Navigation and Agent One Skill Target Links
+## Add Stats Cards to Module Completion Screen
 
-### Problem 1: Hands-On Role Play Shows Placeholder
-The `HandsOnRolePlayCard` navigates to `/role-play-bank/${rolePlay.id}`, but when the `RolePlaySession` page loads, `getRolePlay(rid)` may fail to find the role play in state because the `RolePlayContext` re-initializes on account switches. The fallback generates a generic "Practice Scenario" placeholder instead of using the actual role play data with persona details.
+### Overview
+When a learner marks a module as complete, the completion screen (currently just a checkmark + "Great work") will show four stat cards: Time Spent, Assessment Score, Skill Target Progress, and Learning Streak.
 
-**Root cause**: The `HandsOnRolePlayCard` navigates to `/role-play-bank/:rid` without a `skillTargetId` context, so when the role play isn't found in context state, the fallback path at line 82 (`if (skillTargetId)`) is skipped entirely, producing a bare-bones placeholder.
+### Changes
 
-**Fix in `src/components/learnpath/HandsOnRolePlayCard.tsx`**: The card needs to know its parent skill target ID and navigate to `/skill-target/${skillTargetId}/role-play/${rolePlay.id}` instead of `/role-play-bank/${rolePlay.id}`. This provides the `skillTargetId` param to `RolePlaySession`, enabling a richer fallback if the role play isn't found in state.
+**File: `src/components/learnpath/LearnPathModuleContent.tsx`**
 
-Additionally, in `src/components/learnpath/LearnPathModuleContent.tsx`: Pass a `skillTargetId` prop to `HandsOnRolePlayCard`, derived from the current module's skill target context.
+1. **Track time spent**: Add a `useRef` for `startTimeRef = useRef(Date.now())` at component mount. On completion, calculate elapsed time.
 
-Also, ensure `RolePlaySession` checks `mockRolePlayBank` directly as a fallback if the role play isn't found in context state.
+2. **Compute stats at completion**:
+   - **Time Spent**: `Date.now() - startTimeRef.current`, formatted as "X min Y sec"
+   - **Assessment Score**: Look up the current step/module's assessment score from skill target context (if an assessment was taken for this module). Show "—" if none.
+   - **Skill Target Progress**: Calculate from parent skill target — completed steps / total steps and percentage. Already available via `skillTargets` context.
+   - **Learning Streak**: Count consecutive completed steps (from the beginning or from last incomplete) in the current skill target.
 
-### Problem 2: "Skill Target not found" in Agent One Links
-When Agent One shows the Skill Targets rich block, the AI backend generates target data from `skillTargetsSummary` which is passed in the system prompt. However, `skillTargetsSummary` (built at line 232-239 of `AgentOneContext.tsx`) does **not include the `id` field**. The AI backend instructions at line 89 tell the AI to include `"id":"target-id"` in the block data, but without actual IDs in the context, the AI either makes up IDs or omits them, causing navigation to `/skill-target/wrong-id`.
+3. **Replace the completion screen** (lines 426-435) with a richer layout:
+   - Keep the checkmark + "Module Complete!" heading
+   - Add a 2x2 grid of stat cards below, each with an icon, label, and value
+   - Each card: small rounded card with icon, metric name, and bold value
+   - Add the continue button (from the previously approved but unimplemented plan) below the stats
 
-**Fix in `src/contexts/AgentOneContext.tsx`**: Add the `id` field to `skillTargetsSummary`:
-```typescript
-const skillTargetsSummary = useMemo(() =>
-  assignedTargets.map(st => ({
-    id: st.id,  // <-- ADD THIS
-    title: st.title,
-    progress: Math.round(st.progress || 0),
-    status: st.locked ? "locked" : st.progress >= 100 ? "completed" : "in_progress",
-    totalSteps: st.steps.length,
-    completedSteps: st.steps.filter(s => s.status === "completed" || s.status === "skipped").length,
-  })), [assignedTargets]);
+### Stat Cards Design
+
+```text
+┌─────────────────┐  ┌─────────────────┐
+│  🕐 Time Spent  │  │  📊 Assessment  │
+│     4 min 32s   │  │      85%        │
+└─────────────────┘  └─────────────────┘
+┌─────────────────┐  ┌─────────────────┐
+│  📈 Progress    │  │  🔥 Streak      │
+│   3/5 chapters  │  │   3 in a row    │
+└─────────────────┘  └─────────────────┘
 ```
 
-This ensures the AI backend has real skill target IDs to include in `skill_targets_table` blocks, making the links work across all accounts including Pinnacle.
+### Technical Details
+
+- `startTimeRef` is set once via `useRef(Date.now())` — no state needed
+- Assessment score: check if current step has a sibling assessment step that's completed, or look for score in skill target metadata
+- Streak: iterate backwards through sorted completed steps from current position
+- Progress: reuse the same `completedCount / totalSteps` logic already in `handleMarkComplete`
+- All stats are computed from in-memory context data — no database calls needed
 
 ### Files Changed
 | File | Change |
 |---|---|
-| `src/contexts/AgentOneContext.tsx` | Add `id: st.id` to `skillTargetsSummary` |
-| `src/components/learnpath/HandsOnRolePlayCard.tsx` | Accept `skillTargetId` prop, navigate to skill-target-scoped route |
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Pass `skillTargetId` to `HandsOnRolePlayCard` |
-| `src/pages/RolePlaySession.tsx` | Add fallback lookup to `mockRolePlayBank` when `getRolePlay` returns undefined |
+| `src/components/learnpath/LearnPathModuleContent.tsx` | Add time tracking ref, compute stats, render stat cards grid on completion screen |
 

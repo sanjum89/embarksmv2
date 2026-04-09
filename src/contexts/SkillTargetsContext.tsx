@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import type { SkillTarget } from "@/types/learning";
-import { mockSkillTargets } from "@/data/mock";
+import { mockSkillTargets, getPersonaSkillTargets } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { emitEvent } from "@/lib/agentOneEventEmitter";
@@ -50,7 +50,9 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
       if (prev[compositeKey]) return prev; // already seeded
       // Deep clone so each user gets independent objects
       const base = getBaseTargets();
-      const cloned = JSON.parse(JSON.stringify(base)) as SkillTarget[];
+      // Apply persona-specific skill target variants (e.g. Elliot's intro has different formats)
+      const personalized = getPersonaSkillTargets(userId, base);
+      const cloned = JSON.parse(JSON.stringify(personalized)) as SkillTarget[];
       return { ...prev, [compositeKey]: cloned };
     });
   }, [compositeKey, loading, getBaseTargets]);

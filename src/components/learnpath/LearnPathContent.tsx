@@ -67,6 +67,7 @@ export function LearnPathContent() {
   })();
 
   // Include ALL step types in order (modules, assessments, role plays)
+  // Force locked status for steps whose parent skill target is locked
   const allSteps: UnifiedStep[] = sortedTargets.flatMap((st) =>
     [...st.steps]
       .sort((a, b) => a.order - b.order)
@@ -74,6 +75,7 @@ export function LearnPathContent() {
         const mod = s.type === "module"
           ? resolveModule(s.referenceId ?? s.id, skillTargets, normalizedAccount?.learningModules)
           : undefined;
+        const effectiveStatus = st.locked ? "locked" : s.status;
         return {
           stepId: s.id,
           moduleId: mod?.id ?? s.referenceId ?? s.id,
@@ -82,7 +84,7 @@ export function LearnPathContent() {
           description: substitute(mod?.transcript?.slice(0, 120) ?? s.description),
           duration: mod?.duration ?? s.duration,
           contentType: s.type === "assessment" ? "assessment" : s.type === "role_play" ? "role_play" : (mod?.contentType ?? "document"),
-          status: s.status,
+          status: effectiveStatus,
           skillTargetId: st.id,
           skillTargetTitle: substitute(st.title),
           progress: st.progress,
@@ -167,6 +169,10 @@ export function LearnPathContent() {
             skillTargetId={stepInfo?.skillTargetId}
             stepId={stepInfo?.stepId}
             onComplete={handleModuleComplete}
+            nextModuleId={nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId}
+            nextModuleTitle={nextStep?.title}
+            nextSkillTargetId={nextStep?.skillTargetId}
+            nextStepType={nextStep?.type}
           />
         </div>
       </div>

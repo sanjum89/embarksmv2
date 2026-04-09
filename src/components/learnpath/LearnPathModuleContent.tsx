@@ -87,11 +87,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
 
   const handleMarkComplete = () => {
     setCompleted(true);
-    if (onComplete) {
-      onComplete();
-      return;
-    }
-    // If we have skillTargetId and stepId, update directly
+    // Always update skill target to unlock next step
     if (skillTargetId && stepId) {
       updateSkillTarget(skillTargetId, (target) => {
         const updatedSteps = target.steps.map((s) => {

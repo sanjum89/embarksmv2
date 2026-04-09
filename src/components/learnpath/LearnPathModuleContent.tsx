@@ -319,7 +319,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
             Role Play Scenarios
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {rolePlays.map((rp) => rp && <HandsOnRolePlayCard key={rp.id} rolePlay={rp} />)}
+            {rolePlays.map((rp) => rp && <HandsOnRolePlayCard key={rp.id} rolePlay={rp} skillTargetId={skillTargetId} />)}
           </div>
         </div>
       )}
@@ -396,7 +396,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
               Practice: Role Play
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {rolePlays.map((rp) => rp && <HandsOnRolePlayCard key={rp.id} rolePlay={rp} />)}
+              {rolePlays.map((rp) => rp && <HandsOnRolePlayCard key={rp.id} rolePlay={rp} skillTargetId={skillTargetId} />)}
             </div>
           </div>
         )}

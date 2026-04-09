@@ -6,9 +6,10 @@ import { useContentSubstitution } from "@/lib/contentSubstitution";
 
 interface Props {
   rolePlay: RolePlay;
+  skillTargetId?: string;
 }
 
-export function HandsOnRolePlayCard({ rolePlay }: Props) {
+export function HandsOnRolePlayCard({ rolePlay, skillTargetId }: Props) {
   const navigate = useNavigate();
   const { substitute } = useContentSubstitution();
   const initials = rolePlay.aiCloneConfig?.persona
@@ -54,7 +55,7 @@ export function HandsOnRolePlayCard({ rolePlay }: Props) {
         <Button
           size="sm"
           className="gap-1.5 text-xs bg-accent text-accent-foreground hover:bg-accent/90"
-          onClick={() => navigate(`/role-play-bank/${rolePlay.id}`)}
+          onClick={() => navigate(skillTargetId ? `/skill-target/${skillTargetId}/role-play/${rolePlay.id}` : `/role-play-bank/${rolePlay.id}`)}
         >
           <MessageSquare className="h-3.5 w-3.5" />
           Chat Role Play

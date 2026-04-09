@@ -10,6 +10,7 @@ import { streamRolePlayChat } from "@/lib/streamChat";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import { Skeleton } from "@/components/ui/skeleton";
+import { mockRolePlayBank } from "@/data/mock";
 
 interface StructuredFeedback {
   overallScore: number;
@@ -69,7 +70,7 @@ export default function RolePlaySession() {
   const { getRolePlay } = useRolePlays();
   const { skillTargets, updateSkillTarget } = useSkillTargets();
   const { substituteDeep } = useContentSubstitution();
-  const foundRolePlay = getRolePlay(rid || "");
+  const foundRolePlay = getRolePlay(rid || "") ?? mockRolePlayBank.find(rp => rp.id === rid);
 
   // Generate fallback role play from skill target step data when not in mock bank
   const rolePlay = substituteDeep(foundRolePlay ?? (() => {

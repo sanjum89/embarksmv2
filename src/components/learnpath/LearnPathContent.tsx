@@ -13,9 +13,26 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getRecommendationsForUser } from "@/lib/skillRecommendations";
 import { useEffect, useRef } from "react";
+import type { StepType } from "@/types/learning";
+
+export interface UnifiedStep {
+  stepId: string;
+  moduleId: string;
+  type: StepType;
+  title: string;
+  description: string;
+  duration?: string;
+  contentType: string;
+  status: string;
+  skillTargetId: string;
+  skillTargetTitle: string;
+  progress: number;
+  learningFormat?: string;
+  referenceId: string;
+}
 
 export function LearnPathContent() {
-  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, notifyModuleCompleted } = useLearnPath();
+  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted } = useLearnPath();
   const { skillTargets } = useSkillTargets();
   const { user } = useUser();
   const { normalizedAccount } = useAccount();
@@ -49,45 +66,70 @@ export function LearnPathContent() {
     return ordered;
   })();
 
-  const moduleSteps = sortedTargets.flatMap((st) =>
-    st.steps
-      .filter((s) => s.type === "module")
+  // Include ALL step types in order (modules, assessments, role plays)
+  const allSteps: UnifiedStep[] = sortedTargets.flatMap((st) =>
+    [...st.steps]
+      .sort((a, b) => a.order - b.order)
       .map((s) => {
-        const mod = resolveModule(s.referenceId ?? s.id, skillTargets, normalizedAccount?.learningModules);
+        const mod = s.type === "module"
+          ? resolveModule(s.referenceId ?? s.id, skillTargets, normalizedAccount?.learningModules)
+          : undefined;
         return {
+          stepId: s.id,
           moduleId: mod?.id ?? s.referenceId ?? s.id,
+          type: s.type,
           title: substitute(mod?.title ?? s.title),
           description: substitute(mod?.transcript?.slice(0, 120) ?? s.description),
           duration: mod?.duration ?? s.duration,
-          contentType: mod?.contentType ?? "document",
+          contentType: s.type === "assessment" ? "assessment" : s.type === "role_play" ? "role_play" : (mod?.contentType ?? "document"),
           status: s.status,
           skillTargetId: st.id,
           skillTargetTitle: substitute(st.title),
           progress: st.progress,
           learningFormat: s.learningFormat,
-          stepId: s.id,
+          referenceId: s.referenceId ?? s.id,
         };
       })
   );
 
-  const hasModules = moduleSteps.length > 0;
+  const hasSteps = allSteps.length > 0;
 
-  // Auto-resume: open first incomplete module on mount
+  // Auto-resume: open first incomplete step on mount
   useEffect(() => {
-    if (autoResumedRef.current || !hasModules || contentView !== "welcome") return;
+    if (autoResumedRef.current || !hasSteps || contentView !== "welcome") return;
     autoResumedRef.current = true;
-    const resume = moduleSteps.find((m) => m.status === "in_progress") ?? moduleSteps.find((m) => m.status === "available");
+    const resume = allSteps.find((s) => s.status === "in_progress") ?? allSteps.find((s) => s.status === "available");
     if (resume) {
-      openModule(resume.moduleId, resume.skillTargetId);
+      if (resume.type === "assessment") {
+        openAssessment(resume.stepId);
+      } else {
+        openModule(resume.moduleId, resume.skillTargetId);
+      }
     }
-  }, [hasModules, contentView]);
+  }, [hasSteps, contentView]);
 
   // Get skill gap recommendations for empty state
   const profileData = normalizedAccount?.profileData?.[user.id];
   const { groups: recommendationGroups } = getRecommendationsForUser(profileData);
 
+  // Assessment view
   if (contentView === "assessment" && assessmentModuleId) {
-    return <LearnPathAssessment moduleId={assessmentModuleId} />;
+    // Find the step info for this assessment
+    const stepInfo = allSteps.find((s) => s.stepId === assessmentModuleId || s.moduleId === assessmentModuleId);
+    const currentIdx = allSteps.findIndex((s) => s.stepId === assessmentModuleId || s.moduleId === assessmentModuleId);
+    const nextStep = allSteps.slice(currentIdx + 1).find((s) => s.status !== "completed" && s.status !== "skipped");
+
+    return (
+      <LearnPathAssessment
+        assessmentId={assessmentModuleId}
+        skillTargetId={stepInfo?.skillTargetId}
+        stepId={stepInfo?.stepId}
+        nextStepId={nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId}
+        nextStepTitle={nextStep?.title}
+        nextStepType={nextStep?.type}
+        nextSkillTargetId={nextStep?.skillTargetId}
+      />
+    );
   }
 
   if (contentView === "module" && activeModuleId) {
@@ -99,17 +141,18 @@ export function LearnPathContent() {
         </div>
       );
     }
-    const stepInfo = moduleSteps.find((ms) => ms.moduleId === activeModuleId);
+    const stepInfo = allSteps.find((ms) => ms.moduleId === activeModuleId);
+
+    const currentIdx = allSteps.findIndex((ms) => ms.moduleId === activeModuleId);
+    const nextStep = allSteps.slice(currentIdx + 1).find((s) => s.status !== "completed" && s.status !== "skipped");
 
     const handleModuleComplete = () => {
-      const currentIdx = moduleSteps.findIndex((ms) => ms.moduleId === activeModuleId);
-      const nextIncomplete = moduleSteps.slice(currentIdx + 1).find((ms) => ms.status !== "completed");
       notifyModuleCompleted({
         moduleId: activeModuleId,
         moduleTitle: stepInfo?.title ?? mod.title ?? activeModuleId,
-        nextModuleId: nextIncomplete?.moduleId,
-        nextModuleTitle: nextIncomplete?.title,
-        skillTargetId: nextIncomplete?.skillTargetId ?? stepInfo?.skillTargetId,
+        nextModuleId: nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId,
+        nextModuleTitle: nextStep?.title,
+        skillTargetId: nextStep?.skillTargetId ?? stepInfo?.skillTargetId,
       });
     };
 
@@ -120,7 +163,7 @@ export function LearnPathContent() {
           <LearnPathModuleContent
             module={mod}
             skillTargetTitle={stepInfo?.skillTargetTitle}
-            learningFormat={stepInfo?.learningFormat}
+            learningFormat={stepInfo?.learningFormat as any}
             skillTargetId={stepInfo?.skillTargetId}
             stepId={stepInfo?.stepId}
             onComplete={handleModuleComplete}
@@ -136,14 +179,14 @@ export function LearnPathContent() {
         <div className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <BookOpen className="h-5 w-5 text-accent" />
-            <h2 className="text-lg font-semibold text-foreground">Your Learning Modules</h2>
+            <h2 className="text-lg font-semibold text-foreground">Your Learning Path</h2>
           </div>
-          {moduleSteps.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No modules assigned yet.</p>
+          {allSteps.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No chapters assigned yet.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {moduleSteps.map((ms) => (
-                <LearnPathModuleCard key={`${ms.skillTargetId}-${ms.moduleId}`} step={ms} />
+              {allSteps.map((step) => (
+                <LearnPathModuleCard key={`${step.skillTargetId}-${step.stepId}`} step={step} />
               ))}
             </div>
           )}
@@ -153,7 +196,7 @@ export function LearnPathContent() {
   }
 
   // Empty state — no skill targets assigned
-  if (!hasModules) {
+  if (!hasSteps) {
     return (
       <div className="h-full overflow-y-auto">
         <div className="max-w-lg mx-auto px-6 py-10 space-y-6">
@@ -200,7 +243,7 @@ export function LearnPathContent() {
     );
   }
 
-  // Welcome (has modules but hasn't navigated yet — shouldn't typically show due to auto-resume)
+  // Welcome (has steps but hasn't navigated yet — shouldn't typically show due to auto-resume)
   return (
     <div className="h-full flex items-center justify-center">
       <div className="max-w-md text-center space-y-4 px-6">

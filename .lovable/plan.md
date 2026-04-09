@@ -1,83 +1,64 @@
 
 
-## Fix LearnPath Module Ordering, Assessment Steps, and Unified Sequencing
+## Fix Module Completion Continue Button, Elliot Ordering, and Sequential Locking
 
-### Problem Summary
+### Problems Identified
 
-1. **LearnPath only shows modules, not assessments or role plays**: `LearnPathContent.tsx` line 54 filters with `s.type === "module"`, completely ignoring assessment and role_play steps. For Elliot, this means the Domain Bridge modules appear but without proper sequencing context since assessments are invisible.
+1. **No Continue Button on Module Completion**: `LearnPathModuleContent` has no props for next module info. The completion screen (lines 458-492) shows stats but no "Continue" or "Next Up" section. The assessment completion screen has this but module completion does not.
 
-2. **Module ordering across skill targets is wrong for Elliot**: The prerequisite-based topological sort is correct, but since only `module` steps are extracted, the visual ordering loses its relationship to assessments/role-plays that should appear between modules.
+2. **Elliot's Module Ordering**: `mockSkillTargets` pushes a single generic `introToRathbones` (built without persona arg = Sophie-like full path with all steps "full"). The per-persona `getRathbonesTargetsForUser()` function exists but is never used by the skill targets context or normalized account builder. All users get the same generic intro target.
 
-3. **LearnPath assessments use placeholder questions**: `LearnPathAssessment.tsx` generates fake generic questions instead of using the real Rathbones assessments (baseline, mid, final) with their gate logic (skip rules, unlock rules).
-
-4. **No assessment skip logic in LearnPath**: The `AssessmentPage.tsx` has the `GATE_MAP` for baseline >80% skipping modules, but `LearnPathAssessment` doesn't use any of this. There's a complete disconnect.
-
-### Root Cause
-LearnPath and Skill Target were built as separate experiences with separate assessment components. The user wants them to be the **same experience with two views** — meaning LearnPath must show all step types (modules, assessments, role plays) in order and use the same assessment logic with gate maps.
+3. **All Chapters in Locked Skill Targets Are Accessible**: `LearnPathContent` maps step status directly from step data (`s.status`) without checking if the parent skill target is locked. So the baseline assessment in "Investment Management Foundations" (which has `locked: true`, `prerequisiteId: "RAT-ST-INTRO-001"`) shows as "available" because that's the step's own status, even though the entire skill target should be locked until its prerequisite completes.
 
 ### Plan
 
+**File: `src/components/learnpath/LearnPathModuleContent.tsx`**
+- Add props: `nextModuleId?: string`, `nextModuleTitle?: string`, `nextSkillTargetId?: string`, `nextStepType?: StepType`, `backPath?: string`
+- In the completion screen (after stats grid, lines ~490), add:
+  - A "Next Up" preview card when `nextModuleTitle` is provided (showing title + skill target name)
+  - A "Continue to Next Chapter" button that calls `openModule()` or `openAssessment()` based on `nextStepType`
+  - When no next module: show "Back to All Modules" button (calling `showModuleGrid()`) or navigate to `backPath`
+
 **File: `src/components/learnpath/LearnPathContent.tsx`**
-- Change `moduleSteps` to `allSteps` — include ALL step types (module, assessment, role_play), not just modules
-- Add a `type` field to each step entry so the UI can differentiate rendering
-- When `contentView === "module"` and the active step is an assessment, render the full `AssessmentPage`-equivalent inline (or the enhanced `LearnPathAssessment`)
-- When the active step is a role_play, render the `RolePlaySession` equivalent inline
-- Auto-resume should find the first non-completed step of any type
-- Pass next step info (of any type) to completion screens
+- Pass `nextModuleId`, `nextModuleTitle`, `nextSkillTargetId`, `nextStepType` props to `LearnPathModuleContent` (data already computed at line 147 as `nextStep`)
+- Override step status to `"locked"` when the parent skill target is locked (`st.locked === true` and prerequisite not yet complete). In the `allSteps` mapping, check: if `st.locked` is true, force all steps to `"locked"` status regardless of their individual status.
 
-**File: `src/components/learnpath/LearnPathAssessment.tsx`**
-- Replace the generic `generateQuestions` with proper assessment resolution using the same logic as `AssessmentPage.tsx`
-- Import `st2BaselineAssessment`, `st2MidAssessment`, `st2FinalAssessment` and the `STEP_TO_ASSESSMENT` map
-- Implement the `GATE_MAP` logic: on submit, call `updateSkillTarget` with the same skip/unlock/complete/reset actions
-- After submission, show score and call `onComplete` to trigger the continue flow
+**File: `src/data/mock.ts`**
+- Replace the single generic `introToRathbones` push with per-persona intro targets: `buildIntroToRathbones("clara")`, `buildIntroToRathbones("elliot")`, `buildIntroToRathbones("sophie")`
+- Import `buildIntroToRathbones` instead of `introToRathbones`
 
-**File: `src/components/learnpath/LearnPathContent.tsx` (step rendering)**
-- For assessment steps: open the assessment view (passing `skillTargetId` and `stepId`)
-- For role_play steps: navigate to role play or render inline
-- For module steps: current behavior (render `LearnPathModuleContent`)
-- Module grid view shows all step types with appropriate icons
-
-**File: `src/components/learnpath/LearnPathModuleCard.tsx`**
-- Accept step type and render appropriate icon (ClipboardCheck for assessment, MessageSquare for role_play, BookOpen for module)
-- Assessment and role_play cards should be clickable to open their respective views
+**File: `src/pages/LearningModulePage.tsx`** (if it renders `LearnPathModuleContent`)
+- Pass next module info props from the skill target's step sequence
 
 ### Technical Details
 
-The key structural change is replacing:
+**Sequential locking logic** (in `allSteps` mapping):
 ```typescript
-// BEFORE
-const moduleSteps = sortedTargets.flatMap((st) =>
-  st.steps.filter((s) => s.type === "module").map(...)
-);
+// If skill target is locked, force all its steps to "locked"
+const effectiveStatus = st.locked ? "locked" : s.status;
 ```
 
-With:
+**Continue button** (in completion screen):
 ```typescript
-// AFTER
-const allSteps = sortedTargets.flatMap((st) =>
-  [...st.steps].sort((a, b) => a.order - b.order).map((s) => ({
-    ...existingMapping,
-    type: s.type,  // "module" | "assessment" | "role_play"
-    referenceId: s.referenceId,
-  }))
-);
+{nextModuleId && (
+  <div className="w-full space-y-3">
+    <div className="rounded-xl border bg-card p-4">
+      <p className="text-xs text-muted-foreground">Next Up</p>
+      <p className="text-sm font-medium">{nextModuleTitle}</p>
+    </div>
+    <Button onClick={() => nextStepType === "assessment" 
+      ? openAssessment(nextModuleId) 
+      : openModule(nextModuleId, nextSkillTargetId)}>
+      Continue to Next Chapter
+    </Button>
+  </div>
+)}
 ```
-
-The `LearnPathAssessment` will be enhanced to:
-1. Resolve the real assessment (Rathbones or fallback) using the same `STEP_TO_ASSESSMENT` + `allAssessments` logic from `AssessmentPage`
-2. Apply `GATE_MAP` on submit to skip/unlock/complete steps
-3. Accept `skillTargetId` and `stepId` props
-4. Call `onComplete` after submission to trigger the continue/next-step flow
-
-### Assessment Gate Logic (shared)
-Extract the `GATE_MAP` and assessment resolution into a shared utility so both `AssessmentPage.tsx` and `LearnPathAssessment.tsx` use identical logic. This prevents divergence.
 
 ### Files Changed
 | File | Change |
 |---|---|
-| `src/lib/assessmentGates.ts` | New — shared GATE_MAP + assessment resolution logic |
-| `src/components/learnpath/LearnPathContent.tsx` | Include all step types, render assessments/role-plays, pass next step info |
-| `src/components/learnpath/LearnPathAssessment.tsx` | Use real assessments + gate logic, accept skillTargetId/stepId |
-| `src/components/learnpath/LearnPathModuleCard.tsx` | Support assessment/role_play step types with icons |
-| `src/pages/AssessmentPage.tsx` | Import shared gate logic from new utility |
+| `src/components/learnpath/LearnPathModuleContent.tsx` | Add next-module props, render continue button + next-up card |
+| `src/components/learnpath/LearnPathContent.tsx` | Pass next step props; force locked status for locked skill targets |
+| `src/data/mock.ts` | Use per-persona intro targets instead of generic one |
 

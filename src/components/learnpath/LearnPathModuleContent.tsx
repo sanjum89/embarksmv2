@@ -52,6 +52,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
   const [microExpanded, setMicroExpanded] = useState(false);
   const [completed, setCompleted] = useState(false);
   const [showAllBullets, setShowAllBullets] = useState(false);
+  const startTimeRef = useRef(Date.now());
 
   // Reading progress
   const scrollRef = useRef<HTMLDivElement>(null);

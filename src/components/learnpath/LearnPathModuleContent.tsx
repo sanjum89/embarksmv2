@@ -424,14 +424,73 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
     );
   };
 
+  const completionStats = useMemo(() => {
+    if (!completed) return null;
+    const elapsed = Date.now() - startTimeRef.current;
+    const mins = Math.floor(elapsed / 60000);
+    const secs = Math.floor((elapsed % 60000) / 1000);
+    const timeSpent = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+
+    // Skill target progress
+    const currentTarget = skillTargetId ? skillTargets.find(t => t.id === skillTargetId) : undefined;
+    const totalSteps = currentTarget?.steps.length ?? 0;
+    const completedSteps = currentTarget?.steps.filter(s => s.status === "completed" || s.status === "skipped").length ?? 0;
+    const progressText = totalSteps > 0 ? `${completedSteps}/${totalSteps}` : "—";
+
+    // Assessment score — look for a completed assessment sibling step
+    const assessmentStep = currentTarget?.steps.find(s =>
+      (s as any).type === "assessment" && (s.status === "completed" || s.status === "skipped")
+    );
+    const assessmentScore = (assessmentStep as any)?.score != null ? `${(assessmentStep as any).score}%` : "—";
+
+    // Learning streak — consecutive completed steps ending at current
+    let streak = 0;
+    if (currentTarget) {
+      const sorted = [...currentTarget.steps].sort((a, b) => a.order - b.order);
+      const currentIdx = sorted.findIndex(s => s.id === stepId);
+      for (let i = currentIdx; i >= 0; i--) {
+        if (sorted[i].status === "completed") streak++;
+        else break;
+      }
+    }
+    const streakText = streak > 0 ? `${streak} in a row` : "—";
+
+    return { timeSpent, assessmentScore, progressText, streakText };
+  }, [completed, skillTargetId, skillTargets, stepId]);
+
   if (completed) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 text-center animate-fade-in">
-        <div className="h-16 w-16 rounded-full bg-success/15 flex items-center justify-center mb-4">
-          <CheckCircle2 className="h-8 w-8 text-success" />
+      <div className="flex flex-col items-center justify-center p-8 md:p-12 text-center animate-fade-in max-w-lg mx-auto">
+        <div className="h-16 w-16 rounded-full bg-emerald-500/15 flex items-center justify-center mb-4">
+          <CheckCircle2 className="h-8 w-8 text-emerald-500" />
         </div>
         <h3 className="text-lg font-semibold text-foreground mb-1">Module Complete!</h3>
-        <p className="text-sm text-muted-foreground mb-6">Great work. Keep going!</p>
+        <p className="text-sm text-muted-foreground mb-6">Great work on "{substitute(module.title)}"</p>
+
+        {completionStats && (
+          <div className="grid grid-cols-2 gap-3 w-full mb-6">
+            <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
+              <Timer className="h-5 w-5 text-primary" />
+              <span className="text-xs text-muted-foreground">Time Spent</span>
+              <span className="text-lg font-bold text-foreground">{completionStats.timeSpent}</span>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              <span className="text-xs text-muted-foreground">Assessment</span>
+              <span className="text-lg font-bold text-foreground">{completionStats.assessmentScore}</span>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <span className="text-xs text-muted-foreground">Progress</span>
+              <span className="text-lg font-bold text-foreground">{completionStats.progressText}</span>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
+              <Flame className="h-5 w-5 text-orange-500" />
+              <span className="text-xs text-muted-foreground">Streak</span>
+              <span className="text-lg font-bold text-foreground">{completionStats.streakText}</span>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

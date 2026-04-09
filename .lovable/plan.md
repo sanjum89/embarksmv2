@@ -1,35 +1,41 @@
 
-Goal: Fix heritage podcast seeking so clicking or dragging the scrubber lands on the correct spoken moment in both Rathbones and Pinnacle.
 
-Root cause
-- The remaining bug is not mainly the slider math anymore.
-- The heritage podcast is a pre-generated conversation track, and the saved audio is currently stitched by raw MP3 byte concatenation in `supabase/functions/generate-podcast/index.ts`.
-- That kind of file will often play, but browser time-based seeking becomes inaccurate: the UI can show the middle of the episode while the audio actually jumps to much earlier dialogue, and playback can appear to run past the end.
-- Because both Rathbones and Pinnacle heritage episodes are pre-generated this way, both accounts inherit the same problem.
+## Fix Hands-On Role Play Navigation and Agent One Skill Target Links
 
-Plan
-1. Fix the generation pipeline at the source
-- Update the podcast generator so it produces a true seek-safe single audio file instead of raw concatenated MP3 segments.
-- Keep the existing multi-persona voices and transcript order exactly as-is.
+### Problem 1: Hands-On Role Play Shows Placeholder
+The `HandsOnRolePlayCard` navigates to `/role-play-bank/${rolePlay.id}`, but when the `RolePlaySession` page loads, `getRolePlay(rid)` may fail to find the role play in state because the `RolePlayContext` re-initializes on account switches. The fallback generates a generic "Practice Scenario" placeholder instead of using the actual role play data with persona details.
 
-2. Rebuild the saved heritage podcast files
-- Regenerate and replace the two stored heritage episodes:
-  - Rathbones heritage
-  - Pinnacle heritage
-- Keep them as pre-generated cloud-stored assets so pressing Play still avoids runtime TTS calls.
+**Root cause**: The `HandsOnRolePlayCard` navigates to `/role-play-bank/:rid` without a `skillTargetId` context, so when the role play isn't found in context state, the fallback path at line 82 (`if (skillTargetId)`) is skipped entirely, producing a bare-bones placeholder.
 
-3. Lightly harden the player
-- In `src/components/learnpath/LearnPathPodcastPlayer.tsx`, keep the current seek UX but switch the displayed timer/progress to native audio events (`loadedmetadata`, `timeupdate`, `ended`, `seeked`) instead of relying mostly on the interval.
-- Ensure seek state is cleared cleanly after click-to-seek, drag-to-seek, and end-of-track.
+**Fix in `src/components/learnpath/HandsOnRolePlayCard.tsx`**: The card needs to know its parent skill target ID and navigate to `/skill-target/${skillTargetId}/role-play/${rolePlay.id}` instead of `/role-play-bank/${rolePlay.id}`. This provides the `skillTargetId` param to `RolePlaySession`, enabling a richer fallback if the role play isn't found in state.
 
-Files likely involved
-- `supabase/functions/generate-podcast/index.ts`
-- `src/components/learnpath/LearnPathPodcastPlayer.tsx`
-- `src/data/podcastTranscripts.ts` only if the regenerated heritage asset name or extension changes
+Additionally, in `src/components/learnpath/LearnPathModuleContent.tsx`: Pass a `skillTargetId` prop to `HandsOnRolePlayCard`, derived from the current module's skill target context.
 
-Validation
-- Test heritage in both Rathbones and Pinnacle.
-- Click the scrubber at 25%, 50%, and 75% and confirm the spoken content matches the displayed position.
-- Confirm playback ends exactly at the real end.
-- Confirm Play for heritage uses only the saved static file and does not call the TTS function.
-- Confirm other chapters still behave as they do today and are not accidentally made pre-generated.
+Also, ensure `RolePlaySession` checks `mockRolePlayBank` directly as a fallback if the role play isn't found in context state.
+
+### Problem 2: "Skill Target not found" in Agent One Links
+When Agent One shows the Skill Targets rich block, the AI backend generates target data from `skillTargetsSummary` which is passed in the system prompt. However, `skillTargetsSummary` (built at line 232-239 of `AgentOneContext.tsx`) does **not include the `id` field**. The AI backend instructions at line 89 tell the AI to include `"id":"target-id"` in the block data, but without actual IDs in the context, the AI either makes up IDs or omits them, causing navigation to `/skill-target/wrong-id`.
+
+**Fix in `src/contexts/AgentOneContext.tsx`**: Add the `id` field to `skillTargetsSummary`:
+```typescript
+const skillTargetsSummary = useMemo(() =>
+  assignedTargets.map(st => ({
+    id: st.id,  // <-- ADD THIS
+    title: st.title,
+    progress: Math.round(st.progress || 0),
+    status: st.locked ? "locked" : st.progress >= 100 ? "completed" : "in_progress",
+    totalSteps: st.steps.length,
+    completedSteps: st.steps.filter(s => s.status === "completed" || s.status === "skipped").length,
+  })), [assignedTargets]);
+```
+
+This ensures the AI backend has real skill target IDs to include in `skill_targets_table` blocks, making the links work across all accounts including Pinnacle.
+
+### Files Changed
+| File | Change |
+|---|---|
+| `src/contexts/AgentOneContext.tsx` | Add `id: st.id` to `skillTargetsSummary` |
+| `src/components/learnpath/HandsOnRolePlayCard.tsx` | Accept `skillTargetId` prop, navigate to skill-target-scoped route |
+| `src/components/learnpath/LearnPathModuleContent.tsx` | Pass `skillTargetId` to `HandsOnRolePlayCard` |
+| `src/pages/RolePlaySession.tsx` | Add fallback lookup to `mockRolePlayBank` when `getRolePlay` returns undefined |
+

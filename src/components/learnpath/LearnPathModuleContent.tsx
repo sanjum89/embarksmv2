@@ -6,7 +6,7 @@ import { ScenarioQuestion } from "./ScenarioQuestion";
 import { HandsOnRolePlayCard } from "./HandsOnRolePlayCard";
 import { VisualDiagram, parseTranscriptToDiagram, extractFlowCharts } from "./VisualDiagram";
 import { FlowDiagram } from "./FlowDiagram";
-import type { LearningModule, LearningFormat } from "@/types/learning";
+import type { LearningModule, LearningFormat, StepType } from "@/types/learning";
 import ReactMarkdown from "react-markdown";
 import { useState, useRef, useMemo, useCallback } from "react";
 import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users, Zap, ChevronDown, CheckCircle2, ArrowRight, Timer, BarChart3, TrendingUp, Flame } from "lucide-react";
@@ -29,6 +29,11 @@ interface Props {
   onComplete?: () => void;
   /** When true, suppresses the inner module header card + mode banner (parent renders its own) */
   hideHeader?: boolean;
+  /** Next step info for continue button on completion */
+  nextModuleId?: string;
+  nextModuleTitle?: string;
+  nextSkillTargetId?: string;
+  nextStepType?: StepType;
 }
 
 const modeBanners: Record<string, { icon: React.ElementType; label: string; desc: string; className: string }> = {
@@ -39,7 +44,7 @@ const modeBanners: Record<string, { icon: React.ElementType; label: string; desc
   combined: { icon: Layers, label: "Combined Mode", desc: "A curated blend of reading, visuals, and practice.", className: "bg-primary/10 text-primary border-primary/20" },
 };
 
-export function LearnPathModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader }: Props) {
+export function LearnPathModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader, nextModuleId, nextModuleTitle, nextSkillTargetId, nextStepType }: Props) {
   const learnPathCtx = useLearnPath();
   const learningMode = learningModeOverride ?? learnPathCtx.learningMode;
   const openAssessment = learnPathCtx.openAssessment;
@@ -486,7 +491,41 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
               <span className="text-xs text-muted-foreground">Streak</span>
               <span className="text-lg font-bold text-foreground">{completionStats.streakText}</span>
             </div>
+           </div>
+        )}
+
+        {/* Next Up / Continue */}
+        {nextModuleId && nextModuleTitle ? (
+          <div className="w-full space-y-3">
+            <div className="rounded-xl border border-border bg-card p-4 text-left">
+              <p className="text-xs text-muted-foreground mb-1">Next Up</p>
+              <p className="text-sm font-medium text-foreground">{nextModuleTitle}</p>
+              {nextSkillTargetId && nextSkillTargetId !== skillTargetId && (
+                <p className="text-xs text-muted-foreground mt-0.5">New skill target</p>
+              )}
+            </div>
+            <Button
+              onClick={() => {
+                if (nextStepType === "assessment") {
+                  learnPathCtx.openAssessment(nextModuleId);
+                } else {
+                  learnPathCtx.openModule(nextModuleId, nextSkillTargetId);
+                }
+              }}
+              className="w-full gap-2"
+            >
+              <ArrowRight className="h-4 w-4" />
+              Continue to Next Chapter
+            </Button>
           </div>
+        ) : (
+          <Button
+            variant="outline"
+            onClick={() => learnPathCtx.showModuleGrid()}
+            className="w-full gap-2"
+          >
+            Back to All Chapters
+          </Button>
         )}
       </div>
     );

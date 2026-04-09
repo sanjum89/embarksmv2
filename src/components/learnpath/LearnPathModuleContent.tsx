@@ -8,7 +8,7 @@ import { VisualDiagram, parseTranscriptToDiagram, extractFlowCharts } from "./Vi
 import { FlowDiagram } from "./FlowDiagram";
 import type { LearningModule, LearningFormat } from "@/types/learning";
 import ReactMarkdown from "react-markdown";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users, Zap, ChevronDown, CheckCircle2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";

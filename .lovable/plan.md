@@ -1,64 +1,67 @@
 
 
-## Fix Module Completion Continue Button, Elliot Ordering, and Sequential Locking
+## People Graph Intelligence Hub — Manager View
 
-### Problems Identified
+### Overview
+A new manager page at `/manager/people-graph` that visualizes the data architecture feeding the People Graph, with investment management-specific systems of work for Rathbones/Pinnacle Capital accounts.
 
-1. **No Continue Button on Module Completion**: `LearnPathModuleContent` has no props for next module info. The completion screen (lines 458-492) shows stats but no "Continue" or "Next Up" section. The assessment completion screen has this but module completion does not.
+### Research: Investment Management Systems of Work
 
-2. **Elliot's Module Ordering**: `mockSkillTargets` pushes a single generic `introToRathbones` (built without persona arg = Sophie-like full path with all steps "full"). The per-persona `getRathbonesTargetsForUser()` function exists but is never used by the skill targets context or normalized account builder. All users get the same generic intro target.
+Based on research into Rathbones and similar wealth management firms, the systems of work for investment managers include:
 
-3. **All Chapters in Locked Skill Targets Are Accessible**: `LearnPathContent` maps step status directly from step data (`s.status`) without checking if the parent skill target is locked. So the baseline assessment in "Investment Management Foundations" (which has `locked: true`, `prerequisiteId: "RAT-ST-INTRO-001"`) shows as "available" because that's the step's own status, even though the entire skill target should be locked until its prerequisite completes.
+| System | Category | Signals Produced |
+|---|---|---|
+| **Bloomberg Terminal** | Market Data & Research | Research queries/day, securities analyzed, news alerts actioned, time on terminal |
+| **Charles River IMS** (State Street Alpha) | Order & Portfolio Management | Orders placed, trade accuracy, portfolio rebalances, compliance exceptions, execution speed |
+| **InvestCloud CLM** | Client Lifecycle Management | Client interactions logged, proposals generated, onboarding completions, client retention |
+| **Salesforce Financial Services Cloud** | CRM | Client meetings/week, pipeline value, relationship health scores, follow-up completion rate |
+| **Advent/Geneva** | Portfolio Accounting & Reporting | Reports generated, reconciliation exceptions, NAV accuracy, reporting timeliness |
+| **FactSet / Morningstar** | Analytics & Research | Models built, research reports consumed, peer comparisons run |
+| **Microsoft Teams / Outlook** | Collaboration | Meeting frequency, response times, cross-team interactions |
+| **Compliance Systems** (e.g. ComplianceAlpha) | Regulatory | Pre-trade checks passed/failed, personal account dealing declarations, training completions |
 
-### Plan
+### Direct vs Derived Data
 
-**File: `src/components/learnpath/LearnPathModuleContent.tsx`**
-- Add props: `nextModuleId?: string`, `nextModuleTitle?: string`, `nextSkillTargetId?: string`, `nextStepType?: StepType`, `backPath?: string`
-- In the completion screen (after stats grid, lines ~490), add:
-  - A "Next Up" preview card when `nextModuleTitle` is provided (showing title + skill target name)
-  - A "Continue to Next Chapter" button that calls `openModule()` or `openAssessment()` based on `nextStepType`
-  - When no next module: show "Back to All Modules" button (calling `showModuleGrid()`) or navigate to `backPath`
+**Direct signals**: orders placed, client meetings, compliance checks, terminal time, tickets resolved
+**Derived signals**: investment conviction score, client relationship health, ramp-up velocity, knowledge retention rate, flight risk, rising star, mentorship need, course effectiveness rating
 
-**File: `src/components/learnpath/LearnPathContent.tsx`**
-- Pass `nextModuleId`, `nextModuleTitle`, `nextSkillTargetId`, `nextStepType` props to `LearnPathModuleContent` (data already computed at line 147 as `nextStep`)
-- Override step status to `"locked"` when the parent skill target is locked (`st.locked === true` and prerequisite not yet complete). In the `allSteps` mapping, check: if `st.locked` is true, force all steps to `"locked"` status regardless of their individual status.
+### Page Sections
 
-**File: `src/data/mock.ts`**
-- Replace the single generic `introToRathbones` push with per-persona intro targets: `buildIntroToRathbones("clara")`, `buildIntroToRathbones("elliot")`, `buildIntroToRathbones("sophie")`
-- Import `buildIntroToRathbones` instead of `introToRathbones`
+1. **Connected Systems Map** — Visual pipeline showing source categories (Pre-Onboarding, HRIS, Resume, Manager, Job Architecture, System of Engagement, System of Work) flowing into a central People Graph node. Each source has a card with signal count, last sync, and toggle switch (pending admin approval).
 
-**File: `src/pages/LearningModulePage.tsx`** (if it renders `LearnPathModuleContent`)
-- Pass next module info props from the skill target's step sequence
+2. **Data Streams Detail** — Expandable cards per system. Each metric tagged as [Direct] or [Derived]. System of Work cards are context-aware (investment management systems for Rathbones/Pinnacle).
 
-### Technical Details
+3. **Employee Signal Explorer** — Select a team member → see their signal pipeline (Source → Raw Signal → Derived → Label). Click any label (Flight Risk, Rising Star, Needs Mentoring) to see reasoning chain with formulas and contributing data.
 
-**Sequential locking logic** (in `allSteps` mapping):
-```typescript
-// If skill target is locked, force all its steps to "locked"
-const effectiveStatus = st.locked ? "locked" : s.status;
-```
+4. **Skill Gaps** — Role gap vs Project gap side by side for selected employee.
 
-**Continue button** (in completion screen):
-```typescript
-{nextModuleId && (
-  <div className="w-full space-y-3">
-    <div className="rounded-xl border bg-card p-4">
-      <p className="text-xs text-muted-foreground">Next Up</p>
-      <p className="text-sm font-medium">{nextModuleTitle}</p>
-    </div>
-    <Button onClick={() => nextStepType === "assessment" 
-      ? openAssessment(nextModuleId) 
-      : openModule(nextModuleId, nextSkillTargetId)}>
-      Continue to Next Chapter
-    </Button>
-  </div>
-)}
-```
+5. **Reflections Analysis** — Reflection entries with extracted skills/proficiency, flagged concerns, sentiment timeline, and "Schedule 1-on-1" CTA.
 
-### Files Changed
+6. **Computation Details** — Expandable formulas, weights, thresholds for each derived label.
+
+### Files to Create/Edit
+
 | File | Change |
 |---|---|
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Add next-module props, render continue button + next-up card |
-| `src/components/learnpath/LearnPathContent.tsx` | Pass next step props; force locked status for locked skill targets |
-| `src/data/mock.ts` | Use per-persona intro targets instead of generic one |
+| `src/pages/PeopleGraphIntelligence.tsx` | New page — hub with all sections |
+| `src/components/people-graph/ConnectedSystemsMap.tsx` | Visual pipeline of connected systems with toggles |
+| `src/components/people-graph/DataStreamCards.tsx` | Expandable cards with direct/derived tags per system |
+| `src/components/people-graph/EmployeeSignalExplorer.tsx` | Employee selector + signal pipeline + label reasoning |
+| `src/components/people-graph/SignalPipelineFlow.tsx` | Visual flow diagram (source → raw → derived → label) |
+| `src/components/people-graph/ReflectionsAnalysis.tsx` | Reflection entries with skills extraction + CTAs |
+| `src/components/people-graph/ComputationDetails.tsx` | Expandable formulas and thresholds |
+| `src/data/peopleGraphSystems.ts` | Mock data for connected systems, signal definitions, and IM-specific work systems |
+| `src/App.tsx` | Add route `/manager/people-graph` |
+| `src/components/layout/AppSidebar.tsx` | Add "People Graph" nav item under manager children |
+
+### Design Direction
+- Dark-themed glassmorphism cards with gradient accent borders (teal/purple/amber) per system category
+- Animated flow lines connecting source nodes to central People Graph
+- Color-coded tags: green badges for [Direct], purple badges for [Derived]
+- Interactive label chips that expand into reasoning chains with weighted signal breakdowns
+- Subtle pulse animations on active data streams
+- Investment management iconography (chart lines, portfolio, compliance shield)
+
+### Data Source
+All employee/signal data comes from existing `NormalizedAccount` — `architectureSources`, `signals`, `reflections`, `workSignals`, `explainability`, `employeesById`, `rolesById`, `projectsById`. The new `peopleGraphSystems.ts` file provides the system definitions and mock signal metadata specific to investment management workflows.
 

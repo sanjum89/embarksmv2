@@ -15,7 +15,8 @@ import type { SkillGapEntry } from "@/types/account-v2";
 
 export default function PeopleGraphIntelligence() {
   const { normalizedAccount } = useAccount();
-  const { activeUserId } = useUser();
+  const { user } = useUser();
+  const activeUserId = user.id;
   const [pendingToggles, setPendingToggles] = useState<Record<string, boolean>>({});
 
   const scoped = useMemo(() => {

@@ -123,5 +123,6 @@ export default function PeopleGraphIntelligence() {
         />
       </section>
     </div>
+    </div>
   );
 }

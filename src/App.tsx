@@ -32,6 +32,7 @@ import ProgramContextPage from "./pages/ProgramContextPage";
 import AdminView from "./pages/AdminView";
 import LearnPath from "./pages/LearnPath";
 import NotFound from "./pages/NotFound";
+import PeopleGraphIntelligence from "./pages/PeopleGraphIntelligence";
 
 
 const queryClient = new QueryClient();
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="/manager/skill-target/:id" element={<ManagerSkillTargetDetail />} />
               <Route path="/manager/programs" element={<ProgramContextPage />} />
               <Route path="/learnpath" element={<LearnPath />} />
+              <Route path="/manager/people-graph" element={<PeopleGraphIntelligence />} />
               <Route path="/admin" element={<AdminView />} />
             </Route>
             <Route path="*" element={<NotFound />} />

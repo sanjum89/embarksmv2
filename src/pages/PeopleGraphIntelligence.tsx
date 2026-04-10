@@ -79,6 +79,7 @@ export default function PeopleGraphIntelligence() {
   };
 
   return (
+    <div className="h-full overflow-y-auto">
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-8">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
@@ -121,6 +122,7 @@ export default function PeopleGraphIntelligence() {
           getSkillGaps={getSkillGaps}
         />
       </section>
+    </div>
     </div>
   );
 }

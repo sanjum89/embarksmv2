@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Loader2, LogOut, LogIn, Paintbrush } from "lucide-react";
+import { Loader2, LogOut, LogIn, Paintbrush, GitGraph } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -67,6 +67,7 @@ const navItems: NavItem[] = [
       { label: "Programs", path: "/manager/programs", icon: Layers },
       { label: "Team Insights", path: "/team-insights", icon: BarChart3 },
       { label: "Team Dashboard", path: "/team-dashboard", icon: Shield },
+      { label: "People Graph", path: "/manager/people-graph", icon: GitGraph },
     ],
   },
   {

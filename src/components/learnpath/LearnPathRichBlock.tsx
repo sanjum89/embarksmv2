@@ -273,7 +273,7 @@ function LearningPathVisual({ data }: { data: LearningPathVisualData }) {
 
 export type RichBlockType = "inline_quiz" | "skill_gaps_chart" | "learning_path_visual";
 
-export interface LearnPathRichBlockData {
+export interface EmbarkRichBlockData {
   type: RichBlockType;
   data: any;
 }
@@ -284,7 +284,7 @@ const RENDERERS: Record<string, React.FC<{ data: any }>> = {
   learning_path_visual: LearningPathVisual,
 };
 
-export function LearnPathRichBlock({ block }: { block: LearnPathRichBlockData }) {
+export function EmbarkRichBlock({ block }: { block: EmbarkRichBlockData }) {
   const Renderer = RENDERERS[block.type];
   if (!Renderer) return null;
 
@@ -301,9 +301,9 @@ export function LearnPathRichBlock({ block }: { block: LearnPathRichBlockData })
 
 /* ── Parser ── */
 
-export function parseLearnPathRichBlocks(text: string): { segments: Array<{ type: "text"; content: string } | { type: "block"; block: LearnPathRichBlockData }>; } {
+export function parseEmbarkRichBlocks(text: string): { segments: Array<{ type: "text"; content: string } | { type: "block"; block: EmbarkRichBlockData }>; } {
   const regex = /:::RICH_BLOCK(\{[\s\S]*?\}):::/g;
-  const segments: Array<{ type: "text"; content: string } | { type: "block"; block: LearnPathRichBlockData }> = [];
+  const segments: Array<{ type: "text"; content: string } | { type: "block"; block: EmbarkRichBlockData }> = [];
   let lastIndex = 0;
   let match;
 

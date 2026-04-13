@@ -30,7 +30,7 @@ import ManagerSkillTargetDetail from "./pages/ManagerSkillTargetDetail";
 
 import ProgramContextPage from "./pages/ProgramContextPage";
 import AdminView from "./pages/AdminView";
-import LearnPath from "./pages/LearnPath";
+import EmbarkAI from "./pages/LearnPath";
 import UnifiedChat from "./pages/UnifiedChat";
 import NotFound from "./pages/NotFound";
 import PeopleGraphIntelligence from "./pages/PeopleGraphIntelligence";
@@ -53,9 +53,9 @@ const App = () => (
           <AgentOneProvider>
           <Routes>
             <Route element={<AppLayout />}>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<UnifiedChat />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/chat" element={<LearnerChat />} />
-              <Route path="/unified" element={<UnifiedChat />} />
               
               <Route path="/create-skill-target" element={<SkillTargetBuilder />} />
               <Route path="/skill-target/:id" element={<SkillTargetDetail />} />
@@ -73,7 +73,7 @@ const App = () => (
               <Route path="/manager/skill-targets" element={<ManagerSkillTargets />} />
               <Route path="/manager/skill-target/:id" element={<ManagerSkillTargetDetail />} />
               <Route path="/manager/programs" element={<ProgramContextPage />} />
-              <Route path="/learnpath" element={<LearnPath />} />
+              <Route path="/embark" element={<EmbarkAI />} />
               <Route path="/manager/people-graph" element={<PeopleGraphIntelligence />} />
               <Route path="/admin" element={<AdminView />} />
             </Route>

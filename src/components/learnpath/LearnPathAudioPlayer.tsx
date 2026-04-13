@@ -10,7 +10,7 @@ interface Props {
   text: string;
 }
 
-export function LearnPathAudioPlayer({ text }: Props) {
+export function EmbarkAudioPlayer({ text }: Props) {
   const [status, setStatus] = useState<"idle" | "loading" | "playing" | "paused" | "error">("idle");
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");

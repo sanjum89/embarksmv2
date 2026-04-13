@@ -8,7 +8,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { resolveModule } from "@/lib/learnPathModuleResolver";
-import { LearnPathModuleContent } from "@/components/learnpath/LearnPathModuleContent";
+import { EmbarkModuleContent } from "@/components/learnpath/LearnPathModuleContent";
 import type { StepItem, Assessment } from "@/types/learning";
 import type { LearningMode } from "@/contexts/LearnPathContext";
 
@@ -487,9 +487,9 @@ function DefaultContentViewer({
         </div>
       </div>
 
-      {/* Content — use rich LearnPathModuleContent if module resolved */}
+      {/* Content — use rich EmbarkModuleContent if module resolved */}
       {resolvedModule ? (
-        <LearnPathModuleContent
+        <EmbarkModuleContent
           module={resolvedModule}
           learningModeOverride={learningMode}
           skillTargetId={skillTargetId}

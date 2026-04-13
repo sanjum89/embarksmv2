@@ -1,13 +1,13 @@
-import { useLearnPath } from "@/contexts/LearnPathContext";
+import { useEmbark } from "@/contexts/LearnPathContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
-import { LearnPathModuleCard } from "./LearnPathModuleCard";
-import { LearnPathModuleContent } from "./LearnPathModuleContent";
-import { LearnPathAssessment } from "./LearnPathAssessment";
-import { LearnPathModeSelector } from "./LearnPathModeSelector";
+import { EmbarkModuleCard } from "./LearnPathModuleCard";
+import { EmbarkModuleContent } from "./LearnPathModuleContent";
+import { EmbarkAssessment } from "./LearnPathAssessment";
+import { EmbarkModeSelector } from "./LearnPathModeSelector";
 import { BookOpen, GraduationCap, Sparkles, AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -32,8 +32,8 @@ export interface UnifiedStep {
   referenceId: string;
 }
 
-export function LearnPathContent() {
-  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted } = useLearnPath();
+export function EmbarkContent() {
+  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted } = useEmbark();
   const { skillTargets } = useSkillTargets();
   const { user } = useUser();
   const { normalizedAccount } = useAccount();
@@ -105,7 +105,7 @@ export function LearnPathContent() {
     const nextStep = allSteps.slice(currentIdx + 1).find((s) => s.status !== "completed" && s.status !== "skipped");
 
     return (
-      <LearnPathAssessment
+      <EmbarkAssessment
         assessmentId={assessmentModuleId}
         skillTargetId={stepInfo?.skillTargetId}
         stepId={stepInfo?.stepId}
@@ -143,9 +143,9 @@ export function LearnPathContent() {
 
     return (
       <div className="h-full flex flex-col">
-        <LearnPathModeSelector skillTargetTitle={stepInfo?.skillTargetTitle} />
+        <EmbarkModeSelector skillTargetTitle={stepInfo?.skillTargetTitle} />
         <div className="flex-1 overflow-y-auto">
-          <LearnPathModuleContent
+          <EmbarkModuleContent
             module={mod}
             skillTargetTitle={stepInfo?.skillTargetTitle}
             learningFormat={stepInfo?.learningFormat as any}
@@ -168,14 +168,14 @@ export function LearnPathContent() {
         <div className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <BookOpen className="h-5 w-5 text-accent" />
-            <h2 className="text-lg font-semibold text-foreground">Your Learning Path</h2>
+            <h2 className="text-lg font-semibold text-foreground">Your Embark Journey</h2>
           </div>
           {allSteps.length === 0 ? (
             <p className="text-sm text-muted-foreground">No chapters assigned yet.</p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {allSteps.map((step) => (
-                <LearnPathModuleCard key={`${step.skillTargetId}-${step.stepId}`} step={step} />
+                <EmbarkModuleCard key={`${step.skillTargetId}-${step.stepId}`} step={step} />
               ))}
             </div>
           )}
@@ -193,7 +193,7 @@ export function LearnPathContent() {
             <div className="mx-auto w-14 h-14 rounded-2xl bg-muted flex items-center justify-center">
               <AlertTriangle className="h-7 w-7 text-muted-foreground" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">No Learning Path Yet</h1>
+            <h1 className="text-xl font-bold text-foreground">No Learning Journey Yet</h1>
             <p className="text-sm text-muted-foreground">
               You don't have any skill targets assigned. Based on your profile, here are some skill gaps you could work on.
             </p>
@@ -239,9 +239,9 @@ export function LearnPathContent() {
         <div className="mx-auto w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center">
           <GraduationCap className="h-8 w-8 text-accent" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Welcome to LearnPath</h1>
+        <h1 className="text-2xl font-bold text-foreground">Welcome to Embark AI</h1>
         <p className="text-muted-foreground text-sm">
-          Your AI Learning Manager will guide you through your assigned modules, adapting content
+          Your AI learning companion will guide you through your assigned modules, adapting content
           to your preferred learning style. Start a conversation on the left, or browse your modules.
         </p>
         <Button onClick={showModuleGrid} variant="outline" className="gap-2">

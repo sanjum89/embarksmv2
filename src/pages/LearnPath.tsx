@@ -1,26 +1,26 @@
-import { LearnPathProvider } from "@/contexts/LearnPathContext";
-import { LearnPathChat } from "@/components/learnpath/LearnPathChat";
-import { LearnPathContent } from "@/components/learnpath/LearnPathContent";
+import { EmbarkProvider } from "@/contexts/LearnPathContext";
+import { EmbarkChat } from "@/components/learnpath/LearnPathChat";
+import { EmbarkContent } from "@/components/learnpath/LearnPathContent";
 import {
   ResizablePanelGroup,
   ResizablePanel,
   ResizableHandle,
 } from "@/components/ui/resizable";
 
-export default function LearnPath() {
+export default function EmbarkAI() {
   return (
-    <LearnPathProvider>
+    <EmbarkProvider>
       <div className="h-full flex flex-col">
         <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
           <ResizablePanel defaultSize={40} minSize={25} maxSize={55}>
-            <LearnPathChat />
+            <EmbarkChat />
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={60} minSize={35}>
-            <LearnPathContent />
+            <EmbarkContent />
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
-    </LearnPathProvider>
+    </EmbarkProvider>
   );
 }

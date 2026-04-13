@@ -23,7 +23,7 @@ const formatTime = (s: number) => {
   return `${m}:${sec.toString().padStart(2, "0")}`;
 };
 
-export function LearnPathPodcastPlayer({ script, staticAudioUrl }: Props) {
+export function EmbarkPodcastPlayer({ script, staticAudioUrl }: Props) {
   const isStatic = !!staticAudioUrl;
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "playing" | "paused" | "error">(isStatic ? "loading" : "idle");
   const [progress, setProgress] = useState(0);

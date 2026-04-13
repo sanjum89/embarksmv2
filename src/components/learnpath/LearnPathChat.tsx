@@ -2,12 +2,12 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Send, Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
-import { LearnPathRichBlock, parseLearnPathRichBlocks } from "./LearnPathRichBlock";
+import { EmbarkRichBlock, parseEmbarkRichBlocks } from "./LearnPathRichBlock";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
-import { useLearnPath } from "@/contexts/LearnPathContext";
+import { useEmbark } from "@/contexts/LearnPathContext";
 import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
@@ -57,11 +57,11 @@ function parseActions(text: string): { cleanText: string; actions: any[] } {
   };
 }
 
-export function LearnPathChat() {
+export function EmbarkChat() {
   const { user } = useUser();
   const { normalizedAccount } = useAccount();
   const { skillTargets } = useSkillTargets();
-  const learnPath = useLearnPath();
+  const embark = useEmbark();
   const { substitute } = useContentSubstitution();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -104,15 +104,15 @@ export function LearnPathChat() {
       moduleSteps.find((module) => module.status === "available");
 
     const currentModuleId =
-      learnPath.contentView === "assessment"
-        ? learnPath.assessmentModuleId ?? learnPath.activeModuleId
-        : learnPath.activeModuleId;
+      embark.contentView === "assessment"
+        ? embark.assessmentModuleId ?? embark.activeModuleId
+        : embark.activeModuleId;
 
     const activeStep = currentModuleId
       ? moduleSteps.find(
           (module) =>
             module.moduleId === currentModuleId &&
-            (!learnPath.activeSkillTargetId || module.skillTargetId === learnPath.activeSkillTargetId)
+            (!embark.activeSkillTargetId || module.skillTargetId === embark.activeSkillTargetId)
         ) ?? moduleSteps.find((module) => module.moduleId === currentModuleId)
       : null;
 
@@ -137,7 +137,7 @@ export function LearnPathChat() {
           moduleId: activeModule.id,
           moduleTitle: substitute(activeModule.title),
           skillTargetTitle: activeStep?.skillTargetTitle ?? null,
-          learningMode: learnPath.learningMode,
+          learningMode: embark.learningMode,
           contentType: activeModule.contentType,
           duration: activeModule.duration ?? null,
           summary: transcriptParagraphs.slice(0, 3).join("\n\n"),
@@ -213,12 +213,12 @@ export function LearnPathChat() {
       userRole: user.role,
       userTitle: user.title ?? "",
       modules: moduleSteps,
-      currentView: learnPath.contentView,
+      currentView: embark.contentView,
       activeModuleId: currentModuleId,
       activeModuleTitle: currentContent?.moduleTitle ?? null,
-      activeSkillTargetId: learnPath.activeSkillTargetId,
+      activeSkillTargetId: embark.activeSkillTargetId,
       activeSkillTargetTitle: currentContent?.skillTargetTitle ?? null,
-      learningMode: learnPath.learningMode,
+      learningMode: embark.learningMode,
       hasModules: moduleSteps.length > 0,
       resumeModuleId: resumeModule?.moduleId ?? null,
       resumeModuleTitle: resumeModule?.title ?? null,
@@ -234,11 +234,11 @@ export function LearnPathChat() {
       projects,
     };
   }, [
-    learnPath.activeModuleId,
-    learnPath.activeSkillTargetId,
-    learnPath.assessmentModuleId,
-    learnPath.contentView,
-    learnPath.learningMode,
+    embark.activeModuleId,
+    embark.activeSkillTargetId,
+    embark.assessmentModuleId,
+    embark.contentView,
+    embark.learningMode,
     normalizedAccount,
     skillTargets,
     substitute,
@@ -331,14 +331,14 @@ export function LearnPathChat() {
         for (const action of actions) {
           if (action.type === "open_module" && action.moduleId) {
             const resolved = resolveModule(action.moduleId, skillTargets, accountModules);
-            learnPath.openModule(resolved?.id ?? action.moduleId, action.skillTargetId);
+            embark.openModule(resolved?.id ?? action.moduleId, action.skillTargetId);
           } else if (action.type === "show_modules") {
-            learnPath.showModuleGrid();
+            embark.showModuleGrid();
           } else if (action.type === "set_mode" && action.mode) {
-            learnPath.setLearningMode(action.mode);
+            embark.setLearningMode(action.mode);
           } else if (action.type === "open_assessment" && action.moduleId) {
             const resolved = resolveModule(action.moduleId, skillTargets, accountModules);
-            learnPath.openAssessment(resolved?.id ?? action.moduleId);
+            embark.openAssessment(resolved?.id ?? action.moduleId);
           }
         }
 
@@ -394,9 +394,9 @@ export function LearnPathChat() {
 
   // Auto-congratulate on module completion
   useEffect(() => {
-    if (!learnPath.lastCompletedModule || isStreaming) return;
-    const { moduleTitle, nextModuleId, nextModuleTitle, skillTargetId } = learnPath.lastCompletedModule;
-    learnPath.clearCompletedModule();
+    if (!embark.lastCompletedModule || isStreaming) return;
+    const { moduleTitle, nextModuleId, nextModuleTitle, skillTargetId } = embark.lastCompletedModule;
+    embark.clearCompletedModule();
 
     const nextHint = nextModuleId
       ? `Suggest moving to "${nextModuleTitle}" (moduleId: ${nextModuleId}, skillTargetId: ${skillTargetId}) using an open_module action.`
@@ -416,7 +416,7 @@ export function LearnPathChat() {
 
     setMessages((prev) => [...prev, systemMsg, assistantPlaceholder]);
     void sendToAI([...messages, systemMsg], assistantId);
-  }, [learnPath.lastCompletedModule]);
+  }, [embark.lastCompletedModule]);
 
   useEffect(() => {
     if (hasGreeted || messages.length > 0) return;
@@ -499,12 +499,12 @@ export function LearnPathChat() {
                   {message.role === "assistant" ? (
                     <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                       {(() => {
-                        const { segments } = parseLearnPathRichBlocks(message.content);
+                        const { segments } = parseEmbarkRichBlocks(message.content);
                         return segments.map((seg, si) =>
                           seg.type === "text" ? (
                             <ReactMarkdown key={si}>{seg.content}</ReactMarkdown>
                           ) : (
-                            <LearnPathRichBlock key={si} block={seg.block} />
+                            <EmbarkRichBlock key={si} block={seg.block} />
                           )
                         );
                       })()}

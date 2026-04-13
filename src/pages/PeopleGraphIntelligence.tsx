@@ -20,7 +20,7 @@ export default function PeopleGraphIntelligence() {
   const { user } = useUser();
   const activeUserId = user.id;
   const [pendingToggles, setPendingToggles] = useState<Record<string, boolean>>({});
-  const [view, setView] = useState<"signals" | "dataflow">("signals");
+  const [view, setView] = useState<"signals" | "dataflow" | "nodegraph">("signals");
 
   const scoped = useMemo(() => {
     if (!normalizedAccount || !activeUserId) return null;

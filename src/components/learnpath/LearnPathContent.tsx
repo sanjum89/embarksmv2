@@ -12,59 +12,18 @@ import { BookOpen, GraduationCap, Sparkles, AlertTriangle, ArrowRight } from "lu
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getRecommendationsForUser } from "@/lib/skillRecommendations";
-import { useEffect, useRef } from "react";
+import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
+import { useEffect, useMemo, useRef } from "react";
 import type { StepType } from "@/types/learning";
-
-export interface UnifiedStep {
-  stepId: string;
-  moduleId: string;
-  type: StepType;
-  title: string;
-  description: string;
-  duration?: string;
-  contentType: string;
-  status: string;
-  skillTargetId: string;
-  skillTargetTitle: string;
-  progress: number;
-  learningFormat?: string;
-  referenceId: string;
-}
-
-export function LearnPathContent() {
-  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted } = useLearnPath();
-  const { skillTargets } = useSkillTargets();
-  const { user } = useUser();
-  const { normalizedAccount } = useAccount();
-  const navigate = useNavigate();
-  const { substitute } = useContentSubstitution();
-  const autoResumedRef = useRef(false);
-
+...
   const catalog = buildCatalog(normalizedAccount?.learningModules);
 
-  // Filter skill targets to only those assigned to current user, then sort by prerequisite chain
-  const userTargets = skillTargets.filter((st) =>
-    !st.assignedTo || st.assignedTo.length === 0 || st.assignedTo.includes(user.id)
+  const userTargets = useMemo(
+    () => getAssignedSkillTargetsForUser(skillTargets, user.id),
+    [skillTargets, user.id],
   );
 
-  const sortedTargets = (() => {
-    const idSet = new Set(userTargets.map((st) => st.id));
-    const ordered: typeof userTargets = [];
-    const placed = new Set<string>();
-
-    const place = (st: (typeof userTargets)[number]) => {
-      if (placed.has(st.id)) return;
-      if (st.prerequisiteId && idSet.has(st.prerequisiteId) && !placed.has(st.prerequisiteId)) {
-        const prereq = userTargets.find((t) => t.id === st.prerequisiteId);
-        if (prereq) place(prereq);
-      }
-      placed.add(st.id);
-      ordered.push(st);
-    };
-
-    userTargets.forEach(place);
-    return ordered;
-  })();
+  const sortedTargets = useMemo(() => orderSkillTargets(userTargets), [userTargets]);
 
   // Include ALL step types in order (modules, assessments, role plays)
   // Force locked status for steps whose parent skill target is locked

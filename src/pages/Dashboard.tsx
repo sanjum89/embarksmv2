@@ -11,6 +11,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
 
 type Filter = "all" | "in_progress" | "completed" | "not_started";
 type ViewMode = "cards" | "list";
@@ -21,15 +22,6 @@ const filters: { value: Filter; label: string }[] = [
   { value: "completed", label: "Completed" },
   { value: "not_started", label: "Not Started" },
 ];
-
-// Prerequisite chain ordering — earlier in the chain = lower index
-const TARGET_ORDER: Record<string, number> = {
-  "RAT-ST-INTRO-001": 0,
-  "RAT-ST-BRIDGE-001": 1,
-  "RAT-ST-001": 2,
-  "RAT-ST-002": 3,
-  "RAT-ST-003": 4,
-};
 
 export default function Dashboard() {
   const { user } = useUser();
@@ -42,27 +34,23 @@ export default function Dashboard() {
 
   const isTraditional = styleTheme === "traditional";
 
+  const allTargets = useMemo(
+    () => orderSkillTargets(getAssignedSkillTargetsForUser(mockSkillTargets, user.id)),
+    [mockSkillTargets, user.id],
+  );
+
   const targets = useMemo(() => {
-    const assigned = mockSkillTargets.filter((st) => st.assignedTo?.includes(user.id));
-    // Sort by prerequisite chain order
-    assigned.sort((a, b) => {
-      const orderA = TARGET_ORDER[a.id] ?? 99;
-      const orderB = TARGET_ORDER[b.id] ?? 99;
-      return orderA - orderB;
-    });
     switch (activeFilter) {
       case "in_progress":
-        return assigned.filter((st) => st.progress > 0 && st.progress < 100);
+        return allTargets.filter((st) => st.progress > 0 && st.progress < 100);
       case "completed":
-        return assigned.filter((st) => st.progress === 100);
+        return allTargets.filter((st) => st.progress === 100);
       case "not_started":
-        return assigned.filter((st) => st.progress === 0);
+        return allTargets.filter((st) => st.progress === 0);
       default:
-        return assigned;
+        return allTargets;
     }
-  }, [user.id, activeFilter, mockSkillTargets]);
-
-  const allTargets = mockSkillTargets.filter((st) => st.assignedTo?.includes(user.id));
+  }, [activeFilter, allTargets]);
   const hasAnyTargets = allTargets.length > 0;
   const stats = {
     total: allTargets.length,

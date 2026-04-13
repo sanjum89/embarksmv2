@@ -90,7 +90,7 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
     }
   }, [perUserTargets, compositeKey, loading]);
 
-  const skillTargets = perUserTargets[compositeKey] ?? getBaseTargets();
+  const skillTargets = perUserTargets[compositeKey] ?? getPersonaSkillTargets(userId, getBaseTargets());
 
   const addSkillTargets = useCallback((targets: SkillTarget[]) => {
     setPerUserTargets((prev) => ({

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Send, Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
@@ -9,6 +9,7 @@ import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useLearnPath } from "@/contexts/LearnPathContext";
 import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
+import { SuggestionPillsRow, computeSuggestionPills, type SuggestionPill } from "./SuggestionPills";
 
 interface ChatMessage {
   id: string;
@@ -66,6 +67,7 @@ export function LearnPathChat() {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [hasGreeted, setHasGreeted] = useState(false);
+  const [suggestionPills, setSuggestionPills] = useState<SuggestionPill[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -164,6 +166,67 @@ export function LearnPathChat() {
         }
       : null;
 
+    // Build profile/skill context from normalizedAccount
+    const linkedEmployeeId = Object.values(normalizedAccount?.usersById ?? {}).find(
+      (u) => u.id === user.id
+    )?.linkedEmployeeId;
+    const employee = linkedEmployeeId
+      ? normalizedAccount?.employeesById?.[linkedEmployeeId]
+      : normalizedAccount?.employeesById?.[user.id];
+    const role = employee?.roleId ? normalizedAccount?.rolesById?.[employee.roleId] : null;
+
+    const currentSkills = (employee?.skills ?? []).map((s) => ({
+      skillName: s.skillName,
+      proficiency: s.proficiency,
+    }));
+
+    const roleSkillGaps = (role?.requiredSkills ?? []).map((req) => {
+      const cur = currentSkills.find((s) => s.skillName === req.skillName);
+      const profOrder = ["Beginner", "Intermediate", "Advanced", "Expert", "Master"];
+      const curIdx = cur ? profOrder.indexOf(cur.proficiency) : -1;
+      const reqIdx = profOrder.indexOf(req.proficiency);
+      const diff = reqIdx - curIdx;
+      return {
+        skillName: req.skillName,
+        currentProficiency: cur?.proficiency ?? "None",
+        targetProficiency: req.proficiency,
+        gap: diff >= 2 ? "High gap" : diff === 1 ? "Medium gap" : "No gap",
+      };
+    });
+
+    const employeeProjectIds = (normalizedAccount?.projectAssignments ?? [])
+      .filter((pa) => pa.employeeId === (linkedEmployeeId ?? user.id))
+      .map((pa) => pa.projectId);
+    const projects = employeeProjectIds
+      .map((pid) => normalizedAccount?.projectsById?.[pid])
+      .filter(Boolean)
+      .map((p) => ({ name: p!.name, description: p!.description ?? "" }));
+
+    const projectSkillGaps = projects.flatMap((p) => {
+      const proj = Object.values(normalizedAccount?.projectsById ?? {}).find((pr) => pr.name === p.name);
+      return (proj?.requiredSkills ?? []).map((req) => {
+        const cur = currentSkills.find((s) => s.skillName === req.skillName);
+        const profOrder = ["Beginner", "Intermediate", "Advanced", "Expert", "Master"];
+        const curIdx = cur ? profOrder.indexOf(cur.proficiency) : -1;
+        const reqIdx = profOrder.indexOf(req.proficiency);
+        const diff = reqIdx - curIdx;
+        return {
+          skillName: req.skillName,
+          currentProficiency: cur?.proficiency ?? "None",
+          targetProficiency: req.proficiency,
+          gap: diff >= 2 ? "High gap" : diff === 1 ? "Medium gap" : "No gap",
+        };
+      });
+    });
+
+    const profileSummary = [
+      employee?.title ? `Title: ${employee.title}` : null,
+      employee?.department ? `Department: ${employee.department}` : null,
+      role ? `Role: ${role.name}` : null,
+      employee?.tenure ? `Tenure: ${employee.tenure} years` : null,
+      employee?.performanceRating ? `Performance: ${employee.performanceRating}` : null,
+    ].filter(Boolean).join(". ");
+
     return {
       userName: user.name,
       userRole: user.role,
@@ -180,6 +243,14 @@ export function LearnPathChat() {
       resumeModuleTitle: resumeModule?.title ?? null,
       resumeSkillTargetId: resumeModule?.skillTargetId ?? null,
       currentContent,
+      // Profile enrichment
+      profileSummary,
+      employeeTitle: employee?.title ?? "",
+      department: employee?.department ?? "",
+      currentSkills,
+      roleSkillGaps,
+      projectSkillGaps,
+      projects,
     };
   }, [
     learnPath.activeModuleId,
@@ -187,9 +258,10 @@ export function LearnPathChat() {
     learnPath.assessmentModuleId,
     learnPath.contentView,
     learnPath.learningMode,
-    normalizedAccount?.learningModules,
+    normalizedAccount,
     skillTargets,
     substitute,
+    user.id,
     user.name,
     user.role,
     user.title,
@@ -296,6 +368,22 @@ export function LearnPathChat() {
               : message
           )
         );
+
+        // Compute suggestion pills after response
+        const ctx = buildContext();
+        const allComplete = ctx.modules.length > 0 && ctx.modules.every((m: any) => m.status === "completed");
+        setSuggestionPills(
+          computeSuggestionPills({
+            contentView: ctx.currentView,
+            activeModuleId: ctx.activeModuleId,
+            learningMode: ctx.learningMode,
+            hasModules: ctx.hasModules,
+            allComplete,
+            moduleSteps: ctx.modules,
+            roleSkillGaps: (ctx.roleSkillGaps ?? []).map((g: any) => ({ skillName: g.skillName, gap: g.gap })),
+            projectNames: (ctx.projects ?? []).map((p: any) => p.name),
+          })
+        );
       } catch {
         setMessages((prev) =>
           prev.map((message) =>
@@ -360,11 +448,12 @@ export function LearnPathChat() {
     void sendToAI([greetMessage], assistantId);
   }, [buildContext, hasGreeted, messages.length, sendToAI]);
 
-  const handleSend = () => {
-    const text = input.trim();
+  const handleSend = (overrideText?: string) => {
+    const text = (overrideText ?? input).trim();
     if (!text || isStreaming) return;
 
     setInput("");
+    setSuggestionPills([]);
 
     const userMessage: ChatMessage = {
       id: createMessageId("user"),
@@ -395,29 +484,43 @@ export function LearnPathChat() {
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-        {visibleMessages.map((message) => (
-          <div
-            key={message.id}
-            className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}
-          >
-            <div
-              className={cn(
-                "max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm",
-                message.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-foreground"
-              )}
-            >
-              {message.role === "assistant" ? (
-                <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                  <ReactMarkdown>{message.content}</ReactMarkdown>
+        {visibleMessages.map((message, idx) => {
+          const isLastAssistant =
+            message.role === "assistant" &&
+            idx === visibleMessages.length - 1;
+
+          return (
+            <div key={message.id}>
+              <div
+                className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}
+              >
+                <div
+                  className={cn(
+                    "max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm",
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-foreground"
+                  )}
+                >
+                  {message.role === "assistant" ? (
+                    <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p>{message.content}</p>
+                  )}
                 </div>
-              ) : (
-                <p>{message.content}</p>
+              </div>
+              {isLastAssistant && !isStreaming && suggestionPills.length > 0 && (
+                <SuggestionPillsRow
+                  pills={suggestionPills}
+                  onSelect={(prompt) => handleSend(prompt)}
+                  disabled={isStreaming}
+                />
               )}
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {isStreaming && (
           <div className="flex justify-start">
@@ -440,7 +543,7 @@ export function LearnPathChat() {
           />
           <Button
             size="icon"
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={isStreaming || !input.trim()}
             className="shrink-0"
           >

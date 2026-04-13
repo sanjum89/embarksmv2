@@ -88,7 +88,8 @@ export function computeSuggestionPills(ctx: PillContext): SuggestionPill[] {
 
     if (ctx.learningMode !== "visual") {
       pills.push({ label: "Switch to visual mode", prompt: "Switch to visual mode for this content" });
-    } else if (ctx.learningMode !== "reading") {
+    }
+    if (ctx.learningMode !== "reading") {
       pills.push({ label: "Switch to reading mode", prompt: "Switch to reading mode for this content" });
     }
 

@@ -517,7 +517,7 @@ export function LearnPathChat() {
                       })()}
                     </div>
                   ) : (
-                    <p>{message.content}</p>
+                    <p>{message.content.replace(/^\[FORMAT:\w+\]\s*/i, "")}</p>
                   )}
                 </div>
               </div>

@@ -1,35 +1,77 @@
 
 
-## Fix Module Ordering in LearnPath "All Modules" View
+## Redesign Data Flow View — Big Node Layout with Click-to-Expand
 
 ### Problem
-Elliot sees modules from **Investment Management Foundations** appearing immediately after **Introduction to Rathbones**, skipping over the **Domain Bridge** target entirely. This happens because there are two "Foundations" skill targets for Elliot:
-
-1. **`st-rb-elliot`** (legacy, in `mockSkillTargets`) — has NO `prerequisiteId`, so the topological sort places it right after Intro
-2. **`RAT-ST-001`** (from `buildST2ForLearner("u13","elliot")`) — correctly has `prerequisiteId: "RAT-ST-BRIDGE-001"`
-
-The same duplication exists for Clara and Sophie (`st-rb-clara`, `st-rb-sophie`).
+The current Data Flow view crams too many small cards into a 3-column grid with tiny connector lines. Source cards are narrow and dense, the engine panel lists compute nodes as small rows, and consumer cards are minimal. The page space is underutilized and the layout doesn't feel like a proper data flow visualization.
 
 ### Solution
-Remove the legacy `st-rb-*` targets from `mockSkillTargets` for users who receive the newer `RAT-ST-001` persona-aware targets. The `getPersonaSkillTargets` function already replaces the generic intro — it should also filter out the legacy foundations targets.
+Rebuild the layout around **large, prominent nodes** arranged in 3 tiers (Sources → Engine → Consumers) that fill the page width. Each node shows only the most important data at a glance. Clicking any node opens an expanded detail panel (inline accordion or a slide-out sheet) with full signal lists, actions (simulate impact, request switch-off), and metadata.
 
-### Changes
+### Layout
 
-**File: `src/data/mock.ts`** — Update `getPersonaSkillTargets()`
+```text
+┌──────────────────────────────────────────────────────────┐
+│  [Simulation banner if active]                           │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  ── SOURCE SYSTEMS ──────────────────────────────────    │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ...   │
+│  │  Icon        │ │  Icon        │ │             │       │
+│  │  HRIS / HCM  │ │  Resume Data │ │  Hiring     │       │
+│  │  1,247 sig   │ │  892 sig     │ │  456 sig    │       │
+│  │  ● Live      │ │  ● Live      │ │  ● Live     │       │
+│  └──────────────┘ └──────────────┘ └─────────────┘       │
+│                                                          │
+│              ▼ ▼ ▼  (connector arrows)  ▼ ▼ ▼           │
+│                                                          │
+│  ── PEOPLE GRAPH ENGINE ─────────────────────────────    │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ...   │
+│  │ Skill   │ │ Gap     │ │ Label   │ │ Sentiment│       │
+│  │ Mapping │ │ Analysis│ │ Derive  │ │ Extract  │       │
+│  └─────────┘ └─────────┘ └─────────┘ └──────────┘       │
+│                                                          │
+│              ▼ ▼ ▼  (connector arrows)  ▼ ▼ ▼           │
+│                                                          │
+│  ── CONSUMERS ───────────────────────────────────────    │
+│  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ...   │
+│  │  Agent One  │ │  LearnPath  │ │  Manager    │       │
+│  │  (Learner)  │ │             │ │  Dashboard  │       │
+│  └─────────────┘ └─────────────┘ └─────────────┘       │
+└──────────────────────────────────────────────────────────┘
+```
 
-- After replacing the generic intro with the persona-specific one, also **filter out** `st-rb-clara`, `st-rb-elliot`, and `st-rb-sophie` for the matching persona. These are superseded by the `RAT-ST-001` target built by `buildST2ForLearner`.
-- Map: `clara → st-rb-clara`, `elliot → st-rb-elliot`, `sophie → st-rb-sophie`
-- This ensures each persona only has ONE foundations target — the one with the correct prerequisite chain.
+### Design Details
 
-### Result
-Elliot's LearnPath "All Modules" will show:
-1. Introduction to Rathbones chapters (3 steps)
-2. Domain Bridge chapters (3 steps)
-3. Investment Management Foundations chapters (12+ steps)
-4. Business Development & Relationship Growth chapters
+**Source nodes (tier 1):**
+- Large cards in a responsive grid (3-4 columns), ~160px tall
+- Big icon (40px), system name in bold, signal count prominent, live/paused status dot
+- Category badge (e.g. "HRIS", "Engagement")
+- Click → expands inline below the card (accordion style) showing: signal list, direct/derived counts, last sync time, Simulate Impact button, Request Switch Off button
+- If simulated off → red border + red glow, "Simulating Off" overlay
+
+**Compute nodes (tier 2 — Engine):**
+- Horizontal row of medium cards inside a subtle container card
+- Each shows icon + label + brief description
+- Red strikethrough + "Impacted" badge when affected by simulation
+
+**Consumer nodes (tier 3):**
+- Same grid pattern as sources, medium-large cards
+- Icon + name + 2-3 signal bullets visible
+- Click → expands to show full signal list
+- "Data Reduced" badge when affected
+
+**Connector arrows between tiers:**
+- Simple centered downward arrows (chevrons or animated dots) between each tier — not per-card connectors
+- Red when simulation is active
+
+**Click-to-expand detail panel:**
+- Uses `Collapsible` — expands the card inline (not a separate sheet)
+- Source detail: full signal table, simulate impact toggle, request switch-off button with consequences preview
+- Consumer detail: full signal list, which compute nodes feed it
 
 ### Files Changed
 | File | Change |
 |---|---|
-| `src/data/mock.ts` | Filter legacy `st-rb-{persona}` targets in `getPersonaSkillTargets()` |
+| `src/components/people-graph/DataFlowWorkflow.tsx` | Full rewrite: 3-tier vertical layout with big nodes, click-to-expand inline detail panels, responsive grid, simplified connectors |
 

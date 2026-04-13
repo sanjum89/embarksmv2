@@ -5,9 +5,12 @@ import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 
+export type PillResponseFormat = "text" | "inline_quiz" | "skill_gaps_chart" | "learning_path_visual";
+
 export interface SuggestionPill {
   label: string;
   prompt: string;
+  responseFormat?: PillResponseFormat;
 }
 
 interface SuggestionPillsProps {

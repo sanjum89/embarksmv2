@@ -45,6 +45,27 @@ ${currentContent.transcriptExcerpt || ""}`
       : `## Right Panel Context
 - There is no active module content open right now.`;
 
+    const profileBlock = context?.profileSummary
+      ? `## Learner Profile & Skills
+- Department: ${context.department || "Unknown"}
+- Employee title: ${context.employeeTitle || context.userTitle || "Unknown"}
+
+### Current Skills
+${(context.currentSkills || []).map((s: any) => `- ${s.skillName}: ${s.proficiency}`).join("\n") || "- None recorded"}
+
+### Role Skill Gaps (vs role requirements)
+${(context.roleSkillGaps || []).map((g: any) => `- ${g.skillName}: current ${g.currentProficiency || "None"} → required ${g.targetProficiency} (${g.gap})`).join("\n") || "- No gaps identified"}
+
+### Project Assignments
+${(context.projects || []).map((p: any) => `- ${p.name}${p.description ? `: ${p.description}` : ""}`).join("\n") || "- None"}
+
+### Project Skill Gaps
+${(context.projectSkillGaps || []).map((g: any) => `- ${g.skillName}: current ${g.currentProficiency || "None"} → required ${g.targetProficiency} (${g.gap})`).join("\n") || "- No project-specific gaps"}
+
+### Profile Summary
+${context.profileSummary}`
+      : "";
+
     const systemPrompt = `You are the AI Learning Manager inside LearnPath.
 
 ## About the Learner

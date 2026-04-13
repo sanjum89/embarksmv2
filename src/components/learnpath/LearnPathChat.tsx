@@ -374,6 +374,12 @@ export function LearnPathChat() {
         // Compute suggestion pills after response
         const ctx = buildContext();
         const allComplete = ctx.modules.length > 0 && ctx.modules.every((m: any) => m.status === "completed");
+        const activeStep = ctx.activeModuleId
+          ? ctx.modules.find((m: any) => m.moduleId === ctx.activeModuleId)
+          : null;
+        const activeIdx = activeStep ? ctx.modules.indexOf(activeStep) : -1;
+        const nextStep = activeIdx >= 0 && activeIdx < ctx.modules.length - 1 ? ctx.modules[activeIdx + 1] : null;
+
         setSuggestionPills(
           computeSuggestionPills({
             contentView: ctx.currentView,
@@ -384,6 +390,12 @@ export function LearnPathChat() {
             moduleSteps: ctx.modules,
             roleSkillGaps: (ctx.roleSkillGaps ?? []).map((g: any) => ({ skillName: g.skillName, gap: g.gap })),
             projectNames: (ctx.projects ?? []).map((p: any) => p.name),
+            lastAssistantContent: cleanText,
+            usedPrompts,
+            activeModuleTitle: ctx.activeModuleTitle,
+            activeSkillTargetTitle: ctx.activeSkillTargetTitle,
+            turnCount: messages.length,
+            nextModuleTitle: nextStep?.title ?? null,
           })
         );
       } catch {
@@ -456,6 +468,7 @@ export function LearnPathChat() {
 
     setInput("");
     setSuggestionPills([]);
+    setUsedPrompts(prev => [...prev, text]);
 
     const userMessage: ChatMessage = {
       id: createMessageId("user"),

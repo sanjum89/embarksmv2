@@ -1,13 +1,13 @@
-import { useLearnPath } from "@/contexts/LearnPathContext";
+import { useEmbark } from "@/contexts/EmbarkContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
-import { LearnPathModuleCard } from "./LearnPathModuleCard";
-import { LearnPathModuleContent } from "./LearnPathModuleContent";
-import { LearnPathAssessment } from "./LearnPathAssessment";
-import { LearnPathModeSelector } from "./LearnPathModeSelector";
+import { EmbarkModuleCard } from "./EmbarkModuleCard";
+import { EmbarkModuleContent } from "./EmbarkModuleContent";
+import { EmbarkAssessment } from "./EmbarkAssessment";
+import { EmbarkModeSelector } from "./EmbarkModeSelector";
 import { BookOpen, GraduationCap, Sparkles, AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -32,8 +32,8 @@ export interface UnifiedStep {
   referenceId: string;
 }
 
-export function LearnPathContent() {
-  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted } = useLearnPath();
+export function EmbarkContent() {
+  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted } = useEmbark();
   const { skillTargets } = useSkillTargets();
   const { user } = useUser();
   const { normalizedAccount } = useAccount();
@@ -105,7 +105,7 @@ export function LearnPathContent() {
     const nextStep = allSteps.slice(currentIdx + 1).find((s) => s.status !== "completed" && s.status !== "skipped");
 
     return (
-      <LearnPathAssessment
+      <EmbarkAssessment
         assessmentId={assessmentModuleId}
         skillTargetId={stepInfo?.skillTargetId}
         stepId={stepInfo?.stepId}
@@ -143,9 +143,9 @@ export function LearnPathContent() {
 
     return (
       <div className="h-full flex flex-col">
-        <LearnPathModeSelector skillTargetTitle={stepInfo?.skillTargetTitle} />
+        <EmbarkModeSelector skillTargetTitle={stepInfo?.skillTargetTitle} />
         <div className="flex-1 overflow-y-auto">
-          <LearnPathModuleContent
+          <EmbarkModuleContent
             module={mod}
             skillTargetTitle={stepInfo?.skillTargetTitle}
             learningFormat={stepInfo?.learningFormat as any}
@@ -175,7 +175,7 @@ export function LearnPathContent() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {allSteps.map((step) => (
-                <LearnPathModuleCard key={`${step.skillTargetId}-${step.stepId}`} step={step} />
+                <EmbarkModuleCard key={`${step.skillTargetId}-${step.stepId}`} step={step} />
               ))}
             </div>
           )}

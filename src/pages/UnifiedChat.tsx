@@ -1,7 +1,7 @@
-import { LearnPathProvider } from "@/contexts/LearnPathContext";
-import { useLearnPath } from "@/contexts/LearnPathContext";
-import { LearnPathContent } from "@/components/learnpath/LearnPathContent";
-import { LearnPathChat } from "@/components/learnpath/LearnPathChat";
+import { EmbarkProvider } from "@/contexts/Embark AIContext";
+import { useEmbark } from "@/contexts/Embark AIContext";
+import { EmbarkContent } from "@/components/learnpath/EmbarkContent";
+import { EmbarkChat } from "@/components/learnpath/EmbarkChat";
 import {
   ResizablePanelGroup,
   ResizablePanel,
@@ -88,7 +88,7 @@ const CardIllustration = ({ type }: { type: string }) => {
         )}
       </svg>
     ),
-    learnpath: (
+    embark: (
       <svg viewBox="0 0 120 80" className="w-full h-full">
         <circle cx="30" cy="25" r="8" fill="hsl(var(--primary))" opacity="0.3" />
         <circle cx="60" cy="40" r="8" fill="hsl(var(--primary))" opacity="0.4" />
@@ -107,7 +107,7 @@ const suggestionCards = [
   { label: "Grow My Skills", description: "Get recommendations for growing your skills.", prompt: "Show me recommendations for growing my skills", illustration: "skills" },
   { label: "Required Skills", description: "Required skills for your job role.", prompt: "Show me the required skills for my role", illustration: "required" },
   { label: "Explore Career Paths", description: "Discover potential career paths.", prompt: "Explore career paths based on my current skills", illustration: "career" },
-  { label: "Open LearnPath", description: "Continue your learning journey.", prompt: "__OPEN_LEARNPATH__", illustration: "learnpath" },
+  { label: "Open Embark AI", description: "Continue your learning journey.", prompt: "__OPEN_EMBARK__", illustration: "learnpath" },
   { label: "Build Your Profile", description: "Upload resume to build your profile.", prompt: "Help me build my professional profile", illustration: "profile" },
   { label: "Create a Reflection", description: "Reflect on your learning journey.", prompt: "Help me create a reflection on my recent learning", illustration: "reflection" },
 ];
@@ -132,9 +132,9 @@ function ThinkingIndicator() {
 
 export default function UnifiedChat() {
   return (
-    <LearnPathProvider>
+    <EmbarkProvider>
       <UnifiedChatInner />
-    </LearnPathProvider>
+    </EmbarkProvider>
   );
 }
 
@@ -161,10 +161,10 @@ function UnifiedChatInner() {
   } = useAgentOne();
   const navigate = useNavigate();
   const { skillTargets } = useSkillTargets();
-  const learnPath = useLearnPath();
+  const learnPath = useEmbark();
 
   const [chatActive, setChatActive] = useState(false);
-  const [learnPathOpen, setLearnPathOpen] = useState(false);
+  const [embarkOpen, setEmbark AIOpen] = useState(false);
   const [ctaLabel, setCtaLabel] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -180,12 +180,12 @@ function UnifiedChatInner() {
   const isActive = chatActive;
 
   // Track learnpath content view — auto-open right panel when module is active
-  const hasLearnPathContent = learnPath.contentView === "module" || learnPath.contentView === "assessment";
+  const hasEmbarkContent = learnPath.contentView === "module" || learnPath.contentView === "assessment";
   useEffect(() => {
-    if (hasLearnPathContent && !learnPathOpen) {
-      setLearnPathOpen(true);
+    if (hasEmbarkContent && !embarkOpen) {
+      setEmbark AIOpen(true);
     }
-  }, [hasLearnPathContent]);
+  }, [hasEmbarkContent]);
 
   const deriveCTALabel = (prompt: string): string => {
     const lower = prompt.toLowerCase();
@@ -229,9 +229,9 @@ function UnifiedChatInner() {
   };
 
   const handleCardSend = (prompt: string) => {
-    if (prompt === "__OPEN_LEARNPATH__") {
+    if (prompt === "__OPEN_EMBARK__") {
       setChatActive(true);
-      setLearnPathOpen(true);
+      setEmbark AIOpen(true);
       return;
     }
     openedFromCta.current = true;
@@ -294,7 +294,7 @@ function UnifiedChatInner() {
             className="flex-1 overflow-y-auto min-h-0"
           >
             <div className="flex flex-col items-center justify-center min-h-full px-6">
-              <div className={cn("w-full pt-16 pb-8", learnPathOpen ? "max-w-[520px]" : "max-w-[680px]")}>
+              <div className={cn("w-full pt-16 pb-8", embarkOpen ? "max-w-[520px]" : "max-w-[680px]")}>
                 <motion.h1
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -323,7 +323,7 @@ function UnifiedChatInner() {
                     }}
                   />
                 </div>
-                <div className={cn("grid gap-3 mb-6", learnPathOpen ? "grid-cols-2" : "grid-cols-3")}>
+                <div className={cn("grid gap-3 mb-6", embarkOpen ? "grid-cols-2" : "grid-cols-3")}>
                   {suggestionCards.map((card, i) => (
                     <motion.button
                       key={card.label}
@@ -393,7 +393,7 @@ function UnifiedChatInner() {
           >
             {/* Pinned Agent One header */}
             <div className="shrink-0 px-4 pt-3 pb-2">
-              <div className={cn("mx-auto", learnPathOpen ? "max-w-full" : "max-w-[720px]")}>
+              <div className={cn("mx-auto", embarkOpen ? "max-w-full" : "max-w-[720px]")}>
                 <motion.div
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
@@ -430,20 +430,20 @@ function UnifiedChatInner() {
                       <RotateCcw className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  {/* LearnPath toggle button */}
+                  {/* Embark AI toggle button */}
                   <button
-                    onClick={() => setLearnPathOpen((p) => !p)}
+                    onClick={() => setEmbark AIOpen((p) => !p)}
                     className={cn(
                       "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all",
-                      learnPathOpen
+                      embarkOpen
                         ? "bg-white/20 text-primary-foreground"
                         : "bg-white/10 text-primary-foreground/70 hover:bg-white/15 hover:text-primary-foreground"
                     )}
-                    title={learnPathOpen ? "Close LearnPath" : "Open LearnPath"}
+                    title={embarkOpen ? "Close Embark AI" : "Open Embark AI"}
                   >
                     <GraduationCap className="h-3.5 w-3.5" />
-                    {!learnPathOpen && <span>LearnPath</span>}
-                    {learnPathOpen && <PanelRightClose className="h-3 w-3" />}
+                    {!embarkOpen && <span>Embark AI</span>}
+                    {embarkOpen && <PanelRightClose className="h-3 w-3" />}
                   </button>
                   <button
                     onClick={() => setChatActive(false)}
@@ -471,7 +471,7 @@ function UnifiedChatInner() {
                   </button>
                 </div>
               )}
-              <div className={cn("mx-auto px-4 py-4 space-y-3", learnPathOpen ? "max-w-full" : "max-w-[720px]")}>
+              <div className={cn("mx-auto px-4 py-4 space-y-3", embarkOpen ? "max-w-full" : "max-w-[720px]")}>
                 {!loaded && (
                   <div className="flex items-center justify-center py-8">
                     <div className="flex gap-1">
@@ -565,7 +565,7 @@ function UnifiedChatInner() {
             </div>
 
             {/* Input Bar */}
-            <div className={cn("shrink-0 mx-auto w-full px-4 pb-4 pt-2", learnPathOpen ? "max-w-full" : "max-w-[720px]")}>
+            <div className={cn("shrink-0 mx-auto w-full px-4 pb-4 pt-2", embarkOpen ? "max-w-full" : "max-w-[720px]")}>
               <div className="relative w-full">
                 <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary pointer-events-none" />
                 <Input
@@ -597,8 +597,8 @@ function UnifiedChatInner() {
     </div>
   );
 
-  // When learnPathOpen, show split-pane; otherwise full-width chat
-  if (learnPathOpen) {
+  // When embarkOpen, show split-pane; otherwise full-width chat
+  if (embarkOpen) {
     return (
       <div className="h-full flex flex-col">
         <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0">
@@ -608,12 +608,12 @@ function UnifiedChatInner() {
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={55} minSize={30}>
             <div className="h-full flex flex-col">
-              {/* LearnPath content — uses its own chat if in module view */}
-              {hasLearnPathContent ? (
-                <LearnPathContent />
+              {/* Embark AI content — uses its own chat if in module view */}
+              {hasEmbarkContent ? (
+                <EmbarkContent />
               ) : (
                 <div className="h-full flex flex-col">
-                  <LearnPathChat />
+                  <EmbarkChat />
                 </div>
               )}
             </div>

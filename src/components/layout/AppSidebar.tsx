@@ -63,7 +63,7 @@ const navItems: NavItem[] = [
     children: [
       { label: "Chat", path: "/manager", icon: MessageSquare },
       { label: "Role Play", path: "/manager/role-play", icon: Drama },
-      { label: "Learning Paths", path: "/manager/skill-targets", icon: Target },
+      { label: "Embark AI Paths", path: "/manager/skill-targets", icon: Target },
       { label: "Programs", path: "/manager/programs", icon: Layers },
       { label: "Team Insights", path: "/team-insights", icon: BarChart3 },
       { label: "Team Dashboard", path: "/team-dashboard", icon: Shield },
@@ -81,7 +81,7 @@ const navItems: NavItem[] = [
     ],
   },
   { label: "Action Centre", path: "/my-inbox", icon: Inbox, roles: ["learner", "manager", "admin"] },
-  { label: "LearnPath", path: "/learnpath", icon: GraduationCap, roles: ["learner", "manager", "admin"] },
+  { label: "Embark AI", path: "/embark", icon: GraduationCap, roles: ["learner", "manager", "admin"] },
   { label: "Unified Chat", path: "/unified", icon: MessageSquare, roles: ["learner", "manager", "admin"] },
   { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "admin"] },
   { label: "Admin", path: "/admin", icon: Shield, roles: ["admin", "manager"] },

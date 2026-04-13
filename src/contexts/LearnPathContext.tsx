@@ -12,7 +12,7 @@ export interface CompletedModuleInfo {
   skillTargetId?: string;
 }
 
-export interface LearnPathState {
+export interface EmbarkState {
   contentView: ContentView;
   activeModuleId: string | null;
   activeSkillTargetId: string | null;
@@ -21,7 +21,7 @@ export interface LearnPathState {
   lastCompletedModule: CompletedModuleInfo | null;
 }
 
-interface LearnPathContextType extends LearnPathState {
+interface EmbarkContextType extends EmbarkState {
   setContentView: (view: ContentView) => void;
   openModule: (moduleId: string, skillTargetId?: string) => void;
   closeModule: () => void;
@@ -33,7 +33,7 @@ interface LearnPathContextType extends LearnPathState {
   clearCompletedModule: () => void;
 }
 
-const LearnPathContext = createContext<LearnPathContextType>({
+const EmbarkContext = createContext<EmbarkContextType>({
   contentView: "welcome",
   activeModuleId: null,
   activeSkillTargetId: null,
@@ -51,8 +51,8 @@ const LearnPathContext = createContext<LearnPathContextType>({
   clearCompletedModule: () => {},
 });
 
-export function LearnPathProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<LearnPathState>({
+export function EmbarkProvider({ children }: { children: ReactNode }) {
+  const [state, setState] = useState<EmbarkState>({
     contentView: "welcome",
     activeModuleId: null,
     activeSkillTargetId: null,
@@ -122,7 +122,7 @@ export function LearnPathProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <LearnPathContext.Provider
+    <EmbarkContext.Provider
       value={{
         ...state,
         setContentView,
@@ -137,8 +137,8 @@ export function LearnPathProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-    </LearnPathContext.Provider>
+    </EmbarkContext.Provider>
   );
 }
 
-export const useLearnPath = () => useContext(LearnPathContext);
+export const useEmbark = () => useContext(EmbarkContext);

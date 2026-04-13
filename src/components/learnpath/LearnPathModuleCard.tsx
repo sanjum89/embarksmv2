@@ -1,4 +1,4 @@
-import { useLearnPath } from "@/contexts/LearnPathContext";
+import { useEmbark } from "@/contexts/EmbarkContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Video, FileText, CheckCircle2, Lock, Clock, ClipboardCheck, MessageSquare, SkipForward } from "lucide-react";
@@ -27,8 +27,8 @@ const typeIcons: Record<StepType, React.ElementType> = {
   role_play: MessageSquare,
 };
 
-export function LearnPathModuleCard({ step }: { step: StepEntry }) {
-  const { openModule, openAssessment } = useLearnPath();
+export function EmbarkModuleCard({ step }: { step: StepEntry }) {
+  const { openModule, openAssessment } = useEmbark();
   const { substitute } = useContentSubstitution();
   const isLocked = step.status === "locked";
   const isCompleted = step.status === "completed";

@@ -1,7 +1,7 @@
-import { useLearnPath, type LearningMode } from "@/contexts/LearnPathContext";
+import { useEmbark, type LearningMode } from "@/contexts/EmbarkContext";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { useAccount } from "@/contexts/AccountContext";
-import { LearnPathPodcastPlayer } from "./LearnPathPodcastPlayer";
+import { EmbarkPodcastPlayer } from "./EmbarkPodcastPlayer";
 import { ScenarioQuestion } from "./ScenarioQuestion";
 import { HandsOnRolePlayCard } from "./HandsOnRolePlayCard";
 import { VisualDiagram, parseTranscriptToDiagram, extractFlowCharts } from "./VisualDiagram";
@@ -44,8 +44,8 @@ const modeBanners: Record<string, { icon: React.ElementType; label: string; desc
   combined: { icon: Layers, label: "Combined Mode", desc: "A curated blend of reading, visuals, and practice.", className: "bg-primary/10 text-primary border-primary/20" },
 };
 
-export function LearnPathModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader, nextModuleId, nextModuleTitle, nextSkillTargetId, nextStepType }: Props) {
-  const learnPathCtx = useLearnPath();
+export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader, nextModuleId, nextModuleTitle, nextSkillTargetId, nextStepType }: Props) {
+  const learnPathCtx = useEmbark();
   const learningMode = learningModeOverride ?? learnPathCtx.learningMode;
   const openAssessment = learnPathCtx.openAssessment;
   const { skillTargets, updateSkillTarget } = useSkillTargets();
@@ -419,7 +419,7 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
   const renderListening = () => {
     if (podcastScript) {
       const staticUrl = getStaticPodcastUrl(module.id, normalizedAccount?.branding?.name);
-      return <LearnPathPodcastPlayer script={podcastScript} staticAudioUrl={staticUrl} />;
+      return <EmbarkPodcastPlayer script={podcastScript} staticAudioUrl={staticUrl} />;
     }
     return (
       <div className="space-y-4">

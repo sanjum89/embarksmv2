@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLearnPath } from "@/contexts/LearnPathContext";
+import { useEmbark } from "@/contexts/EmbarkContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
@@ -21,7 +21,7 @@ interface Props {
   nextSkillTargetId?: string;
 }
 
-export function LearnPathAssessment({
+export function EmbarkAssessment({
   assessmentId,
   skillTargetId,
   stepId,
@@ -30,7 +30,7 @@ export function LearnPathAssessment({
   nextStepType,
   nextSkillTargetId,
 }: Props) {
-  const { closeAssessment, openModule, openAssessment: openNextAssessment, showModuleGrid } = useLearnPath();
+  const { closeAssessment, openModule, openAssessment: openNextAssessment, showModuleGrid } = useEmbark();
   const { skillTargets, updateSkillTarget } = useSkillTargets();
   const { activeAccount, normalizedAccount } = useAccount();
   const { user } = useUser();

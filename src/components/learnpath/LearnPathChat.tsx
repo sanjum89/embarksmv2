@@ -2,12 +2,12 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Send, Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
-import { LearnPathRichBlock, parseLearnPathRichBlocks } from "./LearnPathRichBlock";
+import { EmbarkRichBlock, parseEmbarkRichBlocks } from "./EmbarkRichBlock";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
-import { useLearnPath } from "@/contexts/LearnPathContext";
+import { useEmbark } from "@/contexts/EmbarkContext";
 import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
@@ -57,11 +57,11 @@ function parseActions(text: string): { cleanText: string; actions: any[] } {
   };
 }
 
-export function LearnPathChat() {
+export function EmbarkChat() {
   const { user } = useUser();
   const { normalizedAccount } = useAccount();
   const { skillTargets } = useSkillTargets();
-  const learnPath = useLearnPath();
+  const learnPath = useEmbark();
   const { substitute } = useContentSubstitution();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -499,12 +499,12 @@ export function LearnPathChat() {
                   {message.role === "assistant" ? (
                     <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                       {(() => {
-                        const { segments } = parseLearnPathRichBlocks(message.content);
+                        const { segments } = parseEmbarkRichBlocks(message.content);
                         return segments.map((seg, si) =>
                           seg.type === "text" ? (
                             <ReactMarkdown key={si}>{seg.content}</ReactMarkdown>
                           ) : (
-                            <LearnPathRichBlock key={si} block={seg.block} />
+                            <EmbarkRichBlock key={si} block={seg.block} />
                           )
                         );
                       })()}

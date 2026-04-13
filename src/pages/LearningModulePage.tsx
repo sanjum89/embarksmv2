@@ -7,7 +7,7 @@ import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
-import { LearnPathModuleContent } from "@/components/learnpath/LearnPathModuleContent";
+import { EmbarkModuleContent } from "@/components/learnpath/EmbarkModuleContent";
 import type { LearningMode } from "@/contexts/LearnPathContext";
 import { cn } from "@/lib/utils";
 
@@ -167,7 +167,7 @@ export default function LearningModulePage() {
               </div>
 
               {/* Rich content */}
-              <LearnPathModuleContent
+              <EmbarkModuleContent
                 module={module}
                 learningModeOverride={learningMode}
                 skillTargetId={skillTargetId}

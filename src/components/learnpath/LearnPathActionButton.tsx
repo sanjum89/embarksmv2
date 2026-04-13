@@ -16,7 +16,7 @@ const iconMap: Record<string, React.ElementType> = {
   open_assessment: ClipboardCheck,
 };
 
-export function LearnPathActionButton({
+export function EmbarkActionButton({
   action,
   onClick,
 }: {

@@ -1,4 +1,4 @@
-import { useLearnPath, type LearningMode } from "@/contexts/LearnPathContext";
+import { useEmbark, type LearningMode } from "@/contexts/EmbarkContext";
 import { Eye, BookOpen, Headphones, Wrench, Layers, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,8 @@ interface Props {
   skillTargetTitle?: string;
 }
 
-export function LearnPathModeSelector({ skillTargetTitle }: Props) {
-  const { learningMode, setLearningMode, closeModule } = useLearnPath();
+export function EmbarkModeSelector({ skillTargetTitle }: Props) {
+  const { learningMode, setLearningMode, closeModule } = useEmbark();
 
   return (
     <div className="border-b border-border">

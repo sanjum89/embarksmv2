@@ -91,7 +91,7 @@ export function computeSuggestionPills(ctx: PillContext): SuggestionPill[] {
     reactivePills.push(
       { label: "Deep dive on weakest skill", prompt: "Which of my skill gaps is the most critical and what should I do to close it?", responseFormat: "text" },
       { label: "Create a plan for my gaps", prompt: "Create a learning plan to address my biggest skill gaps", responseFormat: "text" },
-      { label: "Show my learning path", prompt: "[FORMAT:learning_path_visual] Show my assigned learning path visually", responseFormat: "learning_path_visual" },
+      { label: "Show my Embark path", prompt: "[FORMAT:learning_path_visual] Show my assigned Embark path visually", responseFormat: "learning_path_visual" },
     );
   } else if (responseType === "path") {
     reactivePills.push(
@@ -154,7 +154,7 @@ export function computeSuggestionPills(ctx: PillContext): SuggestionPill[] {
     pool.push(
       { label: "What should I learn first?", prompt: "Based on my skill gaps and role, what should I learn first?", responseFormat: "text" },
       { label: "Show my skill gaps", prompt: "[FORMAT:skill_gaps_chart] What are my current skill gaps compared to my role requirements? Show them as a visual chart.", responseFormat: "skill_gaps_chart" },
-      { label: "Show my learning path", prompt: "[FORMAT:learning_path_visual] Walk me through my assigned learning path visually showing each module and its status.", responseFormat: "learning_path_visual" },
+      { label: "Show my Embark path", prompt: "[FORMAT:learning_path_visual] Walk me through my assigned Embark path visually showing each module and its status.", responseFormat: "learning_path_visual" },
       { label: "How much is left?", prompt: "How many modules do I have left to complete and how long will they take?", responseFormat: "text" },
       { label: "What's most urgent?", prompt: "Which of my assigned modules is the most urgent or important to complete first?", responseFormat: "text" },
     );

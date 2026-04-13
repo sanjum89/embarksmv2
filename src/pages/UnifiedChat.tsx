@@ -1,5 +1,5 @@
-import { EmbarkProvider } from "@/contexts/Embark AIContext";
-import { useEmbark } from "@/contexts/Embark AIContext";
+import { EmbarkProvider } from "@/contexts/LearnPathContext";
+import { useEmbark } from "@/contexts/LearnPathContext";
 import { EmbarkContent } from "@/components/learnpath/EmbarkContent";
 import { EmbarkChat } from "@/components/learnpath/EmbarkChat";
 import {

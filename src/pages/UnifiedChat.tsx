@@ -161,7 +161,7 @@ function UnifiedChatInner() {
   } = useAgentOne();
   const navigate = useNavigate();
   const { skillTargets } = useSkillTargets();
-  const learnPath = useEmbark();
+  const embark = useEmbark();
 
   const [chatActive, setChatActive] = useState(false);
   const [embarkOpen, setEmbark AIOpen] = useState(false);
@@ -180,7 +180,7 @@ function UnifiedChatInner() {
   const isActive = chatActive;
 
   // Track embark content view — auto-open right panel when module is active
-  const hasEmbarkContent = learnPath.contentView === "module" || learnPath.contentView === "assessment";
+  const hasEmbarkContent = embark.contentView === "module" || embark.contentView === "assessment";
   useEffect(() => {
     if (hasEmbarkContent && !embarkOpen) {
       setEmbark AIOpen(true);

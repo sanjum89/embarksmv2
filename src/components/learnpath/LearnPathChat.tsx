@@ -10,98 +10,11 @@ import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useLearnPath } from "@/contexts/LearnPathContext";
 import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
+import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
 import { SuggestionPillsRow, computeSuggestionPills, type SuggestionPill } from "./SuggestionPills";
-
-interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-}
-
-const LEARNPATH_CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/learnpath-chat`;
-const MAX_TRANSCRIPT_CONTEXT_CHARS = 5000;
-
-function createMessageId(prefix: string) {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return `${prefix}-${crypto.randomUUID()}`;
-  }
-
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
-function stripMarkdownDecorators(text: string) {
-  return text
-    .replace(/^#{1,6}\s+/gm, "")
-    .replace(/^\*\s+/gm, "")
-    .replace(/^\d+\.\s+/gm, "")
-    .replace(/\*\*/g, "")
-    .trim();
-}
-
-function parseActions(text: string): { cleanText: string; actions: any[] } {
-  const actionRegex = /<!--ACTION:(.*?)-->/g;
-  const actions: any[] = [];
-  let match;
-
-  while ((match = actionRegex.exec(text)) !== null) {
-    try {
-      actions.push(JSON.parse(match[1]));
-    } catch {
-      // Ignore malformed action payloads
-    }
-  }
-
-  return {
-    cleanText: text.replace(actionRegex, "").trim(),
-    actions,
-  };
-}
-
-export function LearnPathChat() {
-  const { user } = useUser();
-  const { normalizedAccount } = useAccount();
-  const { skillTargets } = useSkillTargets();
-  const learnPath = useLearnPath();
-  const { substitute } = useContentSubstitution();
-
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
-  const [isStreaming, setIsStreaming] = useState(false);
-  const [hasGreeted, setHasGreeted] = useState(false);
-  const [suggestionPills, setSuggestionPills] = useState<SuggestionPill[]>([]);
-  const [usedPrompts, setUsedPrompts] = useState<string[]>([]);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
-
-  const buildContext = useCallback(() => {
-    const accountModules = normalizedAccount?.learningModules;
-
-    // Filter to user's targets and sort by prerequisite chain
-    const userTargets = skillTargets.filter((st) =>
-      !st.assignedTo || st.assignedTo.length === 0 || st.assignedTo.includes(user.id)
-    );
-
-    const sortedTargets = (() => {
-      const idSet = new Set(userTargets.map((st) => st.id));
-      const ordered: typeof userTargets = [];
-      const placed = new Set<string>();
-
-      const place = (st: (typeof userTargets)[number]) => {
-        if (placed.has(st.id)) return;
-        if (st.prerequisiteId && idSet.has(st.prerequisiteId) && !placed.has(st.prerequisiteId)) {
-          const prereq = userTargets.find((t) => t.id === st.prerequisiteId);
-          if (prereq) place(prereq);
-        }
-        placed.add(st.id);
-        ordered.push(st);
-      };
-
-      userTargets.forEach(place);
-      return ordered;
-    })();
+...
+    const userTargets = getAssignedSkillTargetsForUser(skillTargets, user.id);
+    const sortedTargets = orderSkillTargets(userTargets);
 
     const moduleSteps = sortedTargets.flatMap((skillTarget) =>
       skillTarget.steps

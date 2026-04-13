@@ -124,7 +124,13 @@ export default function PeopleGraphIntelligence() {
 
       {view === "dataflow" ? (
         <section>
-          <DataFlowWorkflow />
+          <DataFlowWorkflow
+            foundational={foundationalSystems}
+            engagement={engagementSystems}
+            work={investmentManagementSystems}
+            pendingToggles={pendingToggles}
+            onToggle={handleToggle}
+          />
         </section>
       ) : (
       <>

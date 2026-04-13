@@ -120,10 +120,31 @@ export default function PeopleGraphIntelligence() {
             <GitBranch className="h-3.5 w-3.5" />
             Data Flow
           </button>
+          <button
+            onClick={() => setView("nodegraph")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              view === "nodegraph"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Circle className="h-3.5 w-3.5" />
+            Node Graph
+          </button>
         </div>
       </motion.div>
 
-      {view === "dataflow" ? (
+      {view === "nodegraph" ? (
+        <section>
+          <NodeGraphView
+            foundational={foundationalSystems}
+            engagement={engagementSystems}
+            work={investmentManagementSystems}
+            pendingToggles={pendingToggles}
+            onToggle={handleToggle}
+          />
+        </section>
+      ) : view === "dataflow" ? (
         <section>
           <DataFlowWorkflow
             foundational={foundationalSystems}

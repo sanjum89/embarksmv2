@@ -67,6 +67,7 @@ export function LearnPathChat() {
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
   const [hasGreeted, setHasGreeted] = useState(false);
+  const [suggestionPills, setSuggestionPills] = useState<SuggestionPill[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

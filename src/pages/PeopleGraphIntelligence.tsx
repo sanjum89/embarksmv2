@@ -1,11 +1,12 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Database, Activity } from "lucide-react";
+import { Database, Activity, GitBranch } from "lucide-react";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { getScopedAccount } from "@/lib/accountSelectors";
 import { ConnectedSystemsMap } from "@/components/people-graph/ConnectedSystemsMap";
 import { EmployeeSignalExplorer } from "@/components/people-graph/EmployeeSignalExplorer";
+import { DataFlowWorkflow } from "@/components/people-graph/DataFlowWorkflow";
 import {
   foundationalSystems,
   engagementSystems,
@@ -18,6 +19,7 @@ export default function PeopleGraphIntelligence() {
   const { user } = useUser();
   const activeUserId = user.id;
   const [pendingToggles, setPendingToggles] = useState<Record<string, boolean>>({});
+  const [view, setView] = useState<"signals" | "dataflow">("signals");
 
   const scoped = useMemo(() => {
     if (!normalizedAccount || !activeUserId) return null;
@@ -92,8 +94,40 @@ export default function PeopleGraphIntelligence() {
             <p className="text-sm text-muted-foreground">Understanding the signals behind your team</p>
           </div>
         </div>
+
+        {/* View toggle */}
+        <div className="flex gap-1 mt-3 bg-muted rounded-lg p-1 w-fit">
+          <button
+            onClick={() => setView("signals")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              view === "signals"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Activity className="h-3.5 w-3.5" />
+            Systems & Signals
+          </button>
+          <button
+            onClick={() => setView("dataflow")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              view === "dataflow"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <GitBranch className="h-3.5 w-3.5" />
+            Data Flow
+          </button>
+        </div>
       </motion.div>
 
+      {view === "dataflow" ? (
+        <section>
+          <DataFlowWorkflow />
+        </section>
+      ) : (
+      <>
       {/* Section 1: Connected Systems */}
       <section>
         <div className="flex items-center gap-2 mb-4">
@@ -122,6 +156,8 @@ export default function PeopleGraphIntelligence() {
           getSkillGaps={getSkillGaps}
         />
       </section>
+      </>
+      )}
     </div>
     </div>
   );

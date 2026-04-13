@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Database, Activity, GitBranch } from "lucide-react";
+import { Database, Activity, GitBranch, Circle } from "lucide-react";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { getScopedAccount } from "@/lib/accountSelectors";
 import { ConnectedSystemsMap } from "@/components/people-graph/ConnectedSystemsMap";
 import { EmployeeSignalExplorer } from "@/components/people-graph/EmployeeSignalExplorer";
 import { DataFlowWorkflow } from "@/components/people-graph/DataFlowWorkflow";
+import { NodeGraphView } from "@/components/people-graph/NodeGraphView";
 import {
   foundationalSystems,
   engagementSystems,

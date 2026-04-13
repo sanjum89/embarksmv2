@@ -1,45 +1,51 @@
 
 
-## Warm, Inviting Reading Mode for All Chapters
+## Unify Data Flow View with Interactive Switch-Off Impact Emulation
 
 ### Problem
-Reading mode currently renders raw Markdown with basic prose styling — it works but feels like a textbook wall of text. It lacks warmth, visual breathing room, and the kind of inviting formatting that makes content genuinely enjoyable to read.
+The Data Flow view uses hardcoded simplified source nodes and has no interactivity — no toggles, no signal details, no way to understand what happens when a system is switched off. All that richness only exists in the Systems & Signals view.
 
 ### Solution
-Transform reading mode into a magazine-style reading experience with warm visual accents, better section separation, highlighted callouts, and a welcoming header — without changing the underlying transcript data.
+Rewrite `DataFlowWorkflow` to accept the real system data and add a two-action UX per source card: **"Simulate Impact"** (shows downstream consequences in red) and **"Request Switch Off"** (confirmation dialog to actually send the request).
 
 ### Changes
 
-**File: `src/components/learnpath/LearnPathModuleContent.tsx`** — Rewrite `renderReading()`
+**File: `src/pages/PeopleGraphIntelligence.tsx`**
+- Pass `foundational`, `engagement`, `work`, `pendingToggles`, `onToggle` props to `<DataFlowWorkflow />`
 
-1. **Warm welcome banner** at the top of every chapter: a soft gradient card with the module title, an encouraging one-liner (e.g. "Let's explore this together"), estimated reading time, and a subtle book icon. Uses warm emerald/amber tones.
+**File: `src/components/people-graph/DataFlowWorkflow.tsx`** — Major rewrite
 
-2. **Improved Table of Contents**: Style as a collapsible card with numbered items, hover effects, and clickable anchor links that scroll to each section. Add a warm "What you'll learn" header instead of the clinical "Table of Contents".
+1. **Accept real system data as props** (`ConnectedSystem[]` arrays + `pendingToggles` + `onToggle`) instead of hardcoded `sourceNodes`. Build source cards from the real data with signal counts, last sync, and expandable signal lists.
 
-3. **Section-aware rendering** using custom ReactMarkdown components:
-   - `h2` → Rendered as styled section cards with a colored left accent bar, section number badge, and extra top padding to create clear visual breaks
-   - `h3` → Rendered with a subtle icon bullet and slightly warm background strip
-   - `p` → Improved line-height (leading-relaxed/loose), slightly larger text, warmer muted color
-   - `ul/ol` → Each list item gets a soft rounded background row with a check or arrow icon instead of plain bullets
-   - `strong` → Gets a subtle warm highlight background (like a highlighter pen effect)
-   - `blockquote` → Warm tip/callout card with a lightbulb icon and soft background
+2. **Two actions per source card:**
+   - **Eye icon ("Simulate Impact")** — toggles `impactPreview` state for that system. When active:
+     - Card gets a red pulsing border + "Simulating off" badge
+     - Downstream compute nodes that depend on it turn red with strikethrough labels
+     - Consumer nodes show a "Data reduced" red badge
+     - Connector lines to affected nodes turn red
+   - **Power icon ("Request Switch Off")** — opens an `AlertDialog` listing the specific consequences, with "Send Request" (calls `onToggle(id, false)`) and "Cancel" buttons
 
-4. **Key takeaway box** auto-generated at the end: extracts the last paragraph or any text after "Key" / "Summary" headings and renders it in a warm summary card with a star icon.
+3. **Impact dependency map** (hardcoded): Maps each source system ID to which compute nodes it feeds, and which compute nodes feed which consumers. Example:
+   ```
+   sys-hris → [gap-analysis, label-derive] → [manager-dash, agent-team]
+   sys-learning → [learn-velocity, gap-analysis] → [learnpath, agent-learner]
+   ```
 
-5. **Reading progress bar** enhanced: gradient from emerald to primary, with a small percentage label that appears on hover.
+4. **Multiple simultaneous simulations**: User can simulate switching off several systems to see compound impact.
 
-6. **Micro-spacing refinements**: More generous padding between sections, softer borders, rounded-2xl cards, and subtle fade-in animations on scroll.
+5. **Source cards are expandable** (click to see signal list inline, same pattern as `ConnectedSystemsMap`).
 
-### Visual Feel
-- Warm emerald/amber accents on light mode, soft teal/warm-gray on dark mode
-- Generous whitespace — content never feels cramped
-- Each section feels like its own "card" with breathing room
-- Bold text gets a subtle warm highlight
-- Lists feel scannable with icon markers and alternating row tints
-- Overall impression: a polished editorial/magazine layout, not a raw document dump
+6. **Compute and consumer cards** also show affected state visually — red text, strikethrough, pulsing border when in the dependency chain of a simulated-off source.
+
+### UX Flow
+1. User sees Data Flow with all real system cards (names, signal counts, sync times)
+2. Clicks eye icon on a source → card turns red, downstream nodes light up red showing what breaks
+3. Clicks eye again → removes simulation
+4. Clicks power icon → dialog: "Switching off {System} will stop {N} signals. Affected: {list}. Send request?" → "Send Request" / "Cancel"
 
 ### Files Changed
 | File | Change |
 |---|---|
-| `src/components/learnpath/LearnPathModuleContent.tsx` | Rewrite `renderReading()` with custom ReactMarkdown components, warm welcome banner, improved ToC, section cards, enhanced list/blockquote styling, key takeaway box |
+| `src/components/people-graph/DataFlowWorkflow.tsx` | Rewrite: accept real data, expandable cards, simulate impact mode, request switch-off dialog, dependency-based red highlighting |
+| `src/pages/PeopleGraphIntelligence.tsx` | Pass system data + toggle handlers to DataFlowWorkflow |
 

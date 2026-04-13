@@ -1,36 +1,36 @@
 
 
-## Make Suggestion Pills Dynamic and Conversation-Aware
+## Fix Visual Mode Flow Diagrams
 
 ### Problem
-`computeSuggestionPills` only looks at the current UI state (which view, which module, learning mode). Since the UI state rarely changes between messages, the pills are identical every time.
+The `FlowDiagram` component uses absolute-positioned horizontal bars with `calc()` that don't align with child nodes because the calculation doesn't account for actual rendered widths, gaps, or padding. This causes disconnected lines and misplaced arrows as shown in the screenshot.
 
 ### Solution
-Make pills vary based on **what the AI just said** and **what the user already asked**. After each AI response, pass the conversation history and the AI's last response text into the pill computation so it can:
-
-1. **Exclude already-asked topics** — track which pill prompts the user has already clicked and filter them out
-2. **React to the AI's last response** — if the AI just gave a summary, suggest "Quiz me" or "Deep dive"; if the AI just gave a quiz, suggest "Explain what I got wrong" or "Try harder questions"
-3. **Rotate variety** — maintain a larger pool of possible pills per state and pick different ones each time, using the conversation turn count as a rotation seed
-4. **Add content-specific pills** — use the active module title and skill target name to generate module-specific suggestions like "Key takeaways from {module}" or "How does {module} connect to {next module}?"
+Replace the fragile CSS-calc approach with an SVG-based connector system that measures actual DOM positions using `useRef` + `useLayoutEffect`. This guarantees lines always connect precisely to the nodes they join.
 
 ### Changes
 
-**File: `src/components/learnpath/SuggestionPills.tsx`**
-- Expand `PillContext` with: `lastAssistantContent: string`, `usedPrompts: string[]`, `activeModuleTitle: string | null`, `activeSkillTargetTitle: string | null`, `turnCount: number`, `nextModuleTitle: string | null`
-- Build a larger pool (~8-12 pills per state) instead of always the same 3-4
-- Filter out pills whose prompts appear in `usedPrompts`
-- Add response-reactive logic: detect if last AI response contained a quiz block → suggest "Explain mistakes" / "Try harder"; if it contained a chart → suggest "Deep dive on weakest skill"; if it was text → suggest quiz or visual
-- Use `turnCount % poolSize` to rotate which subset of 4 pills from the pool are shown
-- Add module-specific pills using the active module/skill target titles (e.g. "Key takeaways from {title}", "How does {title} help my role?")
+**File: `src/components/learnpath/FlowDiagram.tsx`** — Full rewrite of the connector logic
 
-**File: `src/components/learnpath/LearnPathChat.tsx`**
-- Track `usedPrompts` in state — append each pill prompt the user clicks
-- Pass `lastAssistantContent`, `usedPrompts`, `activeModuleTitle`, `activeSkillTargetTitle`, `turnCount` (messages.length), and `nextModuleTitle` into `computeSuggestionPills`
-- Derive `activeModuleTitle` and `nextModuleTitle` from the resolved modules list
+1. Use `useRef` on each child node and the root node to get their actual bounding rects
+2. After layout, draw an SVG overlay with:
+   - A vertical line from root center-bottom down to a junction point
+   - A horizontal line spanning from the first child's center to the last child's center
+   - Vertical lines from the horizontal bar down to each child's center-top
+   - If `bottom` exists: vertical lines from each child center-bottom down to a second junction, then a single line with an arrowhead to the bottom node
+3. Use `ResizeObserver` to re-measure if the container resizes
+4. SVG uses `stroke` with theme-aware colors (`currentColor` with muted-foreground class)
+5. Arrow markers defined as SVG `<defs>` for clean arrowheads
+
+**Visual improvements:**
+- Root node: rounded pill shape with subtle gradient background
+- Child nodes: consistent sizing with `min-w-[130px]`, balanced padding
+- Bottom node: pill shape with accent border and down-arrow marker
+- Smooth appearance with staggered fade-in on children
+- All connectors are crisp 1.5px strokes with rounded joins
 
 ### Files Changed
 | File | Change |
 |---|---|
-| `src/components/learnpath/SuggestionPills.tsx` | Expand pill pool, add filtering/rotation/response-reactive logic |
-| `src/components/learnpath/LearnPathChat.tsx` | Track used prompts, pass richer context to pill computation |
+| `src/components/learnpath/FlowDiagram.tsx` | Rewrite with SVG-based measured connectors, improved node styling |
 

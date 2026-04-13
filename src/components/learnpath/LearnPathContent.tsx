@@ -239,9 +239,9 @@ export function EmbarkContent() {
         <div className="mx-auto w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center">
           <GraduationCap className="h-8 w-8 text-accent" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground">Welcome to LearnPath</h1>
+        <h1 className="text-2xl font-bold text-foreground">Welcome to Embark AI</h1>
         <p className="text-muted-foreground text-sm">
-          Your AI Learning Manager will guide you through your assigned modules, adapting content
+          Your AI learning companion will guide you through your assigned modules, adapting content
           to your preferred learning style. Start a conversation on the left, or browse your modules.
         </p>
         <Button onClick={showModuleGrid} variant="outline" className="gap-2">

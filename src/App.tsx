@@ -56,7 +56,6 @@ const App = () => (
               <Route path="/" element={<UnifiedChat />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/chat" element={<LearnerChat />} />
-              <Route path="/unified" element={<UnifiedChat />} />
               
               <Route path="/create-skill-target" element={<SkillTargetBuilder />} />
               <Route path="/skill-target/:id" element={<SkillTargetDetail />} />

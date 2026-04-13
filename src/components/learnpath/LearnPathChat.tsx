@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Send, Loader2, Sparkles } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
+import { LearnPathRichBlock, parseLearnPathRichBlocks } from "./LearnPathRichBlock";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
@@ -504,7 +505,16 @@ export function LearnPathChat() {
                 >
                   {message.role === "assistant" ? (
                     <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                      {(() => {
+                        const { segments } = parseLearnPathRichBlocks(message.content);
+                        return segments.map((seg, si) =>
+                          seg.type === "text" ? (
+                            <ReactMarkdown key={si}>{seg.content}</ReactMarkdown>
+                          ) : (
+                            <LearnPathRichBlock key={si} block={seg.block} />
+                          )
+                        );
+                      })()}
                     </div>
                   ) : (
                     <p>{message.content}</p>

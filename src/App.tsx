@@ -31,6 +31,7 @@ import ManagerSkillTargetDetail from "./pages/ManagerSkillTargetDetail";
 import ProgramContextPage from "./pages/ProgramContextPage";
 import AdminView from "./pages/AdminView";
 import LearnPath from "./pages/LearnPath";
+import UnifiedChat from "./pages/UnifiedChat";
 import NotFound from "./pages/NotFound";
 import PeopleGraphIntelligence from "./pages/PeopleGraphIntelligence";
 

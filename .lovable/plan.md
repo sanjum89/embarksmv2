@@ -1,51 +1,35 @@
 
 
-## Unify Data Flow View with Interactive Switch-Off Impact Emulation
+## Fix Module Ordering in LearnPath "All Modules" View
 
 ### Problem
-The Data Flow view uses hardcoded simplified source nodes and has no interactivity — no toggles, no signal details, no way to understand what happens when a system is switched off. All that richness only exists in the Systems & Signals view.
+Elliot sees modules from **Investment Management Foundations** appearing immediately after **Introduction to Rathbones**, skipping over the **Domain Bridge** target entirely. This happens because there are two "Foundations" skill targets for Elliot:
+
+1. **`st-rb-elliot`** (legacy, in `mockSkillTargets`) — has NO `prerequisiteId`, so the topological sort places it right after Intro
+2. **`RAT-ST-001`** (from `buildST2ForLearner("u13","elliot")`) — correctly has `prerequisiteId: "RAT-ST-BRIDGE-001"`
+
+The same duplication exists for Clara and Sophie (`st-rb-clara`, `st-rb-sophie`).
 
 ### Solution
-Rewrite `DataFlowWorkflow` to accept the real system data and add a two-action UX per source card: **"Simulate Impact"** (shows downstream consequences in red) and **"Request Switch Off"** (confirmation dialog to actually send the request).
+Remove the legacy `st-rb-*` targets from `mockSkillTargets` for users who receive the newer `RAT-ST-001` persona-aware targets. The `getPersonaSkillTargets` function already replaces the generic intro — it should also filter out the legacy foundations targets.
 
 ### Changes
 
-**File: `src/pages/PeopleGraphIntelligence.tsx`**
-- Pass `foundational`, `engagement`, `work`, `pendingToggles`, `onToggle` props to `<DataFlowWorkflow />`
+**File: `src/data/mock.ts`** — Update `getPersonaSkillTargets()`
 
-**File: `src/components/people-graph/DataFlowWorkflow.tsx`** — Major rewrite
+- After replacing the generic intro with the persona-specific one, also **filter out** `st-rb-clara`, `st-rb-elliot`, and `st-rb-sophie` for the matching persona. These are superseded by the `RAT-ST-001` target built by `buildST2ForLearner`.
+- Map: `clara → st-rb-clara`, `elliot → st-rb-elliot`, `sophie → st-rb-sophie`
+- This ensures each persona only has ONE foundations target — the one with the correct prerequisite chain.
 
-1. **Accept real system data as props** (`ConnectedSystem[]` arrays + `pendingToggles` + `onToggle`) instead of hardcoded `sourceNodes`. Build source cards from the real data with signal counts, last sync, and expandable signal lists.
-
-2. **Two actions per source card:**
-   - **Eye icon ("Simulate Impact")** — toggles `impactPreview` state for that system. When active:
-     - Card gets a red pulsing border + "Simulating off" badge
-     - Downstream compute nodes that depend on it turn red with strikethrough labels
-     - Consumer nodes show a "Data reduced" red badge
-     - Connector lines to affected nodes turn red
-   - **Power icon ("Request Switch Off")** — opens an `AlertDialog` listing the specific consequences, with "Send Request" (calls `onToggle(id, false)`) and "Cancel" buttons
-
-3. **Impact dependency map** (hardcoded): Maps each source system ID to which compute nodes it feeds, and which compute nodes feed which consumers. Example:
-   ```
-   sys-hris → [gap-analysis, label-derive] → [manager-dash, agent-team]
-   sys-learning → [learn-velocity, gap-analysis] → [learnpath, agent-learner]
-   ```
-
-4. **Multiple simultaneous simulations**: User can simulate switching off several systems to see compound impact.
-
-5. **Source cards are expandable** (click to see signal list inline, same pattern as `ConnectedSystemsMap`).
-
-6. **Compute and consumer cards** also show affected state visually — red text, strikethrough, pulsing border when in the dependency chain of a simulated-off source.
-
-### UX Flow
-1. User sees Data Flow with all real system cards (names, signal counts, sync times)
-2. Clicks eye icon on a source → card turns red, downstream nodes light up red showing what breaks
-3. Clicks eye again → removes simulation
-4. Clicks power icon → dialog: "Switching off {System} will stop {N} signals. Affected: {list}. Send request?" → "Send Request" / "Cancel"
+### Result
+Elliot's LearnPath "All Modules" will show:
+1. Introduction to Rathbones chapters (3 steps)
+2. Domain Bridge chapters (3 steps)
+3. Investment Management Foundations chapters (12+ steps)
+4. Business Development & Relationship Growth chapters
 
 ### Files Changed
 | File | Change |
 |---|---|
-| `src/components/people-graph/DataFlowWorkflow.tsx` | Rewrite: accept real data, expandable cards, simulate impact mode, request switch-off dialog, dependency-based red highlighting |
-| `src/pages/PeopleGraphIntelligence.tsx` | Pass system data + toggle handlers to DataFlowWorkflow |
+| `src/data/mock.ts` | Filter legacy `st-rb-{persona}` targets in `getPersonaSkillTargets()` |
 

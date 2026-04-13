@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Database, Activity, GitBranch } from "lucide-react";
+import { Database, Activity, GitBranch, Circle } from "lucide-react";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { getScopedAccount } from "@/lib/accountSelectors";
 import { ConnectedSystemsMap } from "@/components/people-graph/ConnectedSystemsMap";
 import { EmployeeSignalExplorer } from "@/components/people-graph/EmployeeSignalExplorer";
 import { DataFlowWorkflow } from "@/components/people-graph/DataFlowWorkflow";
+import { NodeGraphView } from "@/components/people-graph/NodeGraphView";
 import {
   foundationalSystems,
   engagementSystems,
@@ -19,7 +20,7 @@ export default function PeopleGraphIntelligence() {
   const { user } = useUser();
   const activeUserId = user.id;
   const [pendingToggles, setPendingToggles] = useState<Record<string, boolean>>({});
-  const [view, setView] = useState<"signals" | "dataflow">("signals");
+  const [view, setView] = useState<"signals" | "dataflow" | "nodegraph">("signals");
 
   const scoped = useMemo(() => {
     if (!normalizedAccount || !activeUserId) return null;
@@ -119,10 +120,31 @@ export default function PeopleGraphIntelligence() {
             <GitBranch className="h-3.5 w-3.5" />
             Data Flow
           </button>
+          <button
+            onClick={() => setView("nodegraph")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              view === "nodegraph"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Circle className="h-3.5 w-3.5" />
+            Node Graph
+          </button>
         </div>
       </motion.div>
 
-      {view === "dataflow" ? (
+      {view === "nodegraph" ? (
+        <section>
+          <NodeGraphView
+            foundational={foundationalSystems}
+            engagement={engagementSystems}
+            work={investmentManagementSystems}
+            pendingToggles={pendingToggles}
+            onToggle={handleToggle}
+          />
+        </section>
+      ) : view === "dataflow" ? (
         <section>
           <DataFlowWorkflow
             foundational={foundationalSystems}

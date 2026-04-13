@@ -100,7 +100,7 @@ interface Props {
   onToggle: (systemId: string, enabled: boolean) => void;
 }
 
-export function DataFlowWorkflow({ foundational, engagement, work, pendingToggles, onToggle }: Props) {
+export function DataFlowWorkflow({ foundational = [], engagement = [], work = [], pendingToggles, onToggle }: Props) {
   const allSystems = useMemo(() => [...foundational, ...engagement, ...work], [foundational, engagement, work]);
   const [simulatedOff, setSimulatedOff] = useState<Set<string>>(new Set());
   const [switchOffTarget, setSwitchOffTarget] = useState<ConnectedSystem | null>(null);

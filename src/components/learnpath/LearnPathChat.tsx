@@ -166,6 +166,67 @@ export function LearnPathChat() {
         }
       : null;
 
+    // Build profile/skill context from normalizedAccount
+    const linkedEmployeeId = Object.values(normalizedAccount?.usersById ?? {}).find(
+      (u) => u.id === user.id
+    )?.linkedEmployeeId;
+    const employee = linkedEmployeeId
+      ? normalizedAccount?.employeesById?.[linkedEmployeeId]
+      : normalizedAccount?.employeesById?.[user.id];
+    const role = employee?.roleId ? normalizedAccount?.rolesById?.[employee.roleId] : null;
+
+    const currentSkills = (employee?.skills ?? []).map((s) => ({
+      skillName: s.skillName,
+      proficiency: s.proficiency,
+    }));
+
+    const roleSkillGaps = (role?.requiredSkills ?? []).map((req) => {
+      const cur = currentSkills.find((s) => s.skillName === req.skillName);
+      const profOrder = ["Beginner", "Intermediate", "Advanced", "Expert", "Master"];
+      const curIdx = cur ? profOrder.indexOf(cur.proficiency) : -1;
+      const reqIdx = profOrder.indexOf(req.proficiency);
+      const diff = reqIdx - curIdx;
+      return {
+        skillName: req.skillName,
+        currentProficiency: cur?.proficiency ?? "None",
+        targetProficiency: req.proficiency,
+        gap: diff >= 2 ? "High gap" : diff === 1 ? "Medium gap" : "No gap",
+      };
+    });
+
+    const employeeProjectIds = (normalizedAccount?.projectAssignments ?? [])
+      .filter((pa) => pa.employeeId === (linkedEmployeeId ?? user.id))
+      .map((pa) => pa.projectId);
+    const projects = employeeProjectIds
+      .map((pid) => normalizedAccount?.projectsById?.[pid])
+      .filter(Boolean)
+      .map((p) => ({ name: p!.name, description: p!.description ?? "" }));
+
+    const projectSkillGaps = projects.flatMap((p) => {
+      const proj = Object.values(normalizedAccount?.projectsById ?? {}).find((pr) => pr.name === p.name);
+      return (proj?.requiredSkills ?? []).map((req) => {
+        const cur = currentSkills.find((s) => s.skillName === req.skillName);
+        const profOrder = ["Beginner", "Intermediate", "Advanced", "Expert", "Master"];
+        const curIdx = cur ? profOrder.indexOf(cur.proficiency) : -1;
+        const reqIdx = profOrder.indexOf(req.proficiency);
+        const diff = reqIdx - curIdx;
+        return {
+          skillName: req.skillName,
+          currentProficiency: cur?.proficiency ?? "None",
+          targetProficiency: req.proficiency,
+          gap: diff >= 2 ? "High gap" : diff === 1 ? "Medium gap" : "No gap",
+        };
+      });
+    });
+
+    const profileSummary = [
+      employee?.title ? `Title: ${employee.title}` : null,
+      employee?.department ? `Department: ${employee.department}` : null,
+      role ? `Role: ${role.name}` : null,
+      employee?.tenure ? `Tenure: ${employee.tenure} years` : null,
+      employee?.performanceRating ? `Performance: ${employee.performanceRating}` : null,
+    ].filter(Boolean).join(". ");
+
     return {
       userName: user.name,
       userRole: user.role,
@@ -182,6 +243,14 @@ export function LearnPathChat() {
       resumeModuleTitle: resumeModule?.title ?? null,
       resumeSkillTargetId: resumeModule?.skillTargetId ?? null,
       currentContent,
+      // Profile enrichment
+      profileSummary,
+      employeeTitle: employee?.title ?? "",
+      department: employee?.department ?? "",
+      currentSkills,
+      roleSkillGaps,
+      projectSkillGaps,
+      projects,
     };
   }, [
     learnPath.activeModuleId,
@@ -189,9 +258,10 @@ export function LearnPathChat() {
     learnPath.assessmentModuleId,
     learnPath.contentView,
     learnPath.learningMode,
-    normalizedAccount?.learningModules,
+    normalizedAccount,
     skillTargets,
     substitute,
+    user.id,
     user.name,
     user.role,
     user.title,

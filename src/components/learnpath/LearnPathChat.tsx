@@ -484,29 +484,43 @@ export function LearnPathChat() {
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-        {visibleMessages.map((message) => (
-          <div
-            key={message.id}
-            className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}
-          >
-            <div
-              className={cn(
-                "max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm",
-                message.role === "user"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-foreground"
-              )}
-            >
-              {message.role === "assistant" ? (
-                <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                  <ReactMarkdown>{message.content}</ReactMarkdown>
+        {visibleMessages.map((message, idx) => {
+          const isLastAssistant =
+            message.role === "assistant" &&
+            idx === visibleMessages.length - 1;
+
+          return (
+            <div key={message.id}>
+              <div
+                className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}
+              >
+                <div
+                  className={cn(
+                    "max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm",
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-foreground"
+                  )}
+                >
+                  {message.role === "assistant" ? (
+                    <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                    </div>
+                  ) : (
+                    <p>{message.content}</p>
+                  )}
                 </div>
-              ) : (
-                <p>{message.content}</p>
+              </div>
+              {isLastAssistant && !isStreaming && suggestionPills.length > 0 && (
+                <SuggestionPillsRow
+                  pills={suggestionPills}
+                  onSelect={(prompt) => handleSend(prompt)}
+                  disabled={isStreaming}
+                />
               )}
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {isStreaming && (
           <div className="flex justify-start">

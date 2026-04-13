@@ -1,51 +1,36 @@
 
 
-## Add Data Flow Workflow View to People Graph
+## Make Suggestion Pills Dynamic and Conversation-Aware
 
-### What This Does
-Adds a switchable view to the People Graph Intelligence page — a visual workflow/pipeline diagram showing data flowing **into** the People Graph (source systems), being **computed** inside it (derived insights, labels, gap analysis), and flowing **out** to consumers (LearnPath, Agent One, Manager Dashboard, My 360, Skill Targets).
+### Problem
+`computeSuggestionPills` only looks at the current UI state (which view, which module, learning mode). Since the UI state rarely changes between messages, the pills are identical every time.
 
-Users can toggle between the existing "Systems & Signals" view and the new "Data Flow" view using a segmented control in the header.
+### Solution
+Make pills vary based on **what the AI just said** and **what the user already asked**. After each AI response, pass the conversation history and the AI's last response text into the pill computation so it can:
 
-### Plan
+1. **Exclude already-asked topics** — track which pill prompts the user has already clicked and filter them out
+2. **React to the AI's last response** — if the AI just gave a summary, suggest "Quiz me" or "Deep dive"; if the AI just gave a quiz, suggest "Explain what I got wrong" or "Try harder questions"
+3. **Rotate variety** — maintain a larger pool of possible pills per state and pick different ones each time, using the conversation turn count as a rotation seed
+4. **Add content-specific pills** — use the active module title and skill target name to generate module-specific suggestions like "Key takeaways from {module}" or "How does {module} connect to {next module}?"
 
-**File: `src/pages/PeopleGraphIntelligence.tsx`**
-- Add a view toggle state: `"signals" | "dataflow"`
-- Render a segmented control (two buttons or tabs) below the header to switch views
-- When `"signals"`: show current Connected Systems + Employee Signal Explorer sections
-- When `"dataflow"`: show the new `DataFlowWorkflow` component
+### Changes
 
-**File: `src/components/people-graph/DataFlowWorkflow.tsx`** (new)
-- Three-column animated layout: **Sources** (left) → **People Graph Core** (center) → **Consumers** (right)
-- **Sources column**: Cards for each system category (Pre-Onboarding, HRIS, Resume, Manager Data, Job Architecture, Engagement Systems, Work Systems) with signal count badges and animated connector lines flowing right
-- **Center column**: The People Graph "engine" — a larger card showing computations happening inside:
-  - Skill-to-proficiency mapping
-  - Gap analysis (role vs current)
-  - Label derivation (Flight Risk, Rising Star, etc.)
-  - Sentiment & concern extraction from reflections
-  - Learning velocity computation
-  - Each computation node shows inputs → output with small animated data flow dots
-- **Consumers column**: Cards showing where computed data flows out to:
-  - Agent One (learner mode) — skill recommendations, gap answers
-  - Agent One (team mode) — team insights, risk flags
-  - LearnPath — module recommendations, assessment calibration
-  - Manager Dashboard — team overview, 1-on-1 prompts
-  - My 360 — personal skill radar, career timeline
-  - Skill Targets — gap-driven target suggestions
-- Animated SVG connector lines between columns with small flowing dots to represent live data movement
-- Clicking any source/computation/consumer card shows a tooltip or expandable detail with the specific signals or data points involved
-- Responsive: on mobile, stacks vertically with top-down flow arrows
+**File: `src/components/learnpath/SuggestionPills.tsx`**
+- Expand `PillContext` with: `lastAssistantContent: string`, `usedPrompts: string[]`, `activeModuleTitle: string | null`, `activeSkillTargetTitle: string | null`, `turnCount: number`, `nextModuleTitle: string | null`
+- Build a larger pool (~8-12 pills per state) instead of always the same 3-4
+- Filter out pills whose prompts appear in `usedPrompts`
+- Add response-reactive logic: detect if last AI response contained a quiz block → suggest "Explain mistakes" / "Try harder"; if it contained a chart → suggest "Deep dive on weakest skill"; if it was text → suggest quiz or visual
+- Use `turnCount % poolSize` to rotate which subset of 4 pills from the pool are shown
+- Add module-specific pills using the active module/skill target titles (e.g. "Key takeaways from {title}", "How does {title} help my role?")
 
-### Visual Design
-- Dark gradient cards with category-colored borders (matching existing system card palette)
-- Animated dashed SVG paths between nodes with small circles traveling along them (CSS animation)
-- Center "engine" card has a subtle glow effect
-- Each computation inside the engine is a mini-node with icon + label
-- Consumer cards show which data they receive as small badges
+**File: `src/components/learnpath/LearnPathChat.tsx`**
+- Track `usedPrompts` in state — append each pill prompt the user clicks
+- Pass `lastAssistantContent`, `usedPrompts`, `activeModuleTitle`, `activeSkillTargetTitle`, `turnCount` (messages.length), and `nextModuleTitle` into `computeSuggestionPills`
+- Derive `activeModuleTitle` and `nextModuleTitle` from the resolved modules list
 
 ### Files Changed
 | File | Change |
 |---|---|
-| `src/components/people-graph/DataFlowWorkflow.tsx` | New — full pipeline visualization with three-column layout, animated connectors, expandable detail |
-| `src/pages/PeopleGraphIntelligence.tsx` | Add view toggle state and segmented control, conditionally render DataFlowWorkflow vs existing sections |
+| `src/components/learnpath/SuggestionPills.tsx` | Expand pill pool, add filtering/rotation/response-reactive logic |
+| `src/components/learnpath/LearnPathChat.tsx` | Track used prompts, pass richer context to pill computation |
 

@@ -15,7 +15,32 @@ import { getRecommendationsForUser } from "@/lib/skillRecommendations";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
 import { useEffect, useMemo, useRef } from "react";
 import type { StepType } from "@/types/learning";
-...
+
+export interface UnifiedStep {
+  stepId: string;
+  moduleId: string;
+  type: StepType;
+  title: string;
+  description: string;
+  duration?: string;
+  contentType: string;
+  status: string;
+  skillTargetId: string;
+  skillTargetTitle: string;
+  progress: number;
+  learningFormat?: string;
+  referenceId: string;
+}
+
+export function LearnPathContent() {
+  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted } = useLearnPath();
+  const { skillTargets } = useSkillTargets();
+  const { user } = useUser();
+  const { normalizedAccount } = useAccount();
+  const navigate = useNavigate();
+  const { substitute } = useContentSubstitution();
+  const autoResumedRef = useRef(false);
+
   const catalog = buildCatalog(normalizedAccount?.learningModules);
 
   const userTargets = useMemo(
@@ -75,7 +100,6 @@ import type { StepType } from "@/types/learning";
 
   // Assessment view
   if (contentView === "assessment" && assessmentModuleId) {
-    // Find the step info for this assessment
     const stepInfo = allSteps.find((s) => s.stepId === assessmentModuleId || s.moduleId === assessmentModuleId);
     const currentIdx = allSteps.findIndex((s) => s.stepId === assessmentModuleId || s.moduleId === assessmentModuleId);
     const nextStep = allSteps.slice(currentIdx + 1).find((s) => s.status !== "completed" && s.status !== "skipped");

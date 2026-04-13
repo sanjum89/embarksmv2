@@ -79,6 +79,8 @@ ${context.profileSummary}`
 ## Assigned Modules
 ${moduleList || "No modules assigned yet."}
 
+${profileBlock}
+
 ${currentContentBlock}
 
 ## Response Style

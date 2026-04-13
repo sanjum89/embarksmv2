@@ -168,7 +168,7 @@ export function EmbarkContent() {
         <div className="p-6">
           <div className="flex items-center gap-2 mb-4">
             <BookOpen className="h-5 w-5 text-accent" />
-            <h2 className="text-lg font-semibold text-foreground">Your Learning Path</h2>
+            <h2 className="text-lg font-semibold text-foreground">Your Embark Journey</h2>
           </div>
           {allSteps.length === 0 ? (
             <p className="text-sm text-muted-foreground">No chapters assigned yet.</p>
@@ -193,7 +193,7 @@ export function EmbarkContent() {
             <div className="mx-auto w-14 h-14 rounded-2xl bg-muted flex items-center justify-center">
               <AlertTriangle className="h-7 w-7 text-muted-foreground" />
             </div>
-            <h1 className="text-xl font-bold text-foreground">No Learning Path Yet</h1>
+            <h1 className="text-xl font-bold text-foreground">No Learning Journey Yet</h1>
             <p className="text-sm text-muted-foreground">
               You don't have any skill targets assigned. Based on your profile, here are some skill gaps you could work on.
             </p>

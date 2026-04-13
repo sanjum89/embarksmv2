@@ -368,6 +368,22 @@ export function LearnPathChat() {
               : message
           )
         );
+
+        // Compute suggestion pills after response
+        const ctx = buildContext();
+        const allComplete = ctx.modules.length > 0 && ctx.modules.every((m: any) => m.status === "completed");
+        setSuggestionPills(
+          computeSuggestionPills({
+            contentView: ctx.currentView,
+            activeModuleId: ctx.activeModuleId,
+            learningMode: ctx.learningMode,
+            hasModules: ctx.hasModules,
+            allComplete,
+            moduleSteps: ctx.modules,
+            roleSkillGaps: (ctx.roleSkillGaps ?? []).map((g: any) => ({ skillName: g.skillName, gap: g.gap })),
+            projectNames: (ctx.projects ?? []).map((p: any) => p.name),
+          })
+        );
       } catch {
         setMessages((prev) =>
           prev.map((message) =>
@@ -432,11 +448,12 @@ export function LearnPathChat() {
     void sendToAI([greetMessage], assistantId);
   }, [buildContext, hasGreeted, messages.length, sendToAI]);
 
-  const handleSend = () => {
-    const text = input.trim();
+  const handleSend = (overrideText?: string) => {
+    const text = (overrideText ?? input).trim();
     if (!text || isStreaming) return;
 
     setInput("");
+    setSuggestionPills([]);
 
     const userMessage: ChatMessage = {
       id: createMessageId("user"),

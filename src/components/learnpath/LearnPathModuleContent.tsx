@@ -222,59 +222,170 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
   /* ═══ READING MODE ═══ */
   const renderReading = () => {
     const headings = transcript.match(/^#{1,3}\s+.+$/gm) ?? [];
+    const contentToRender = isMicro ? microTranscript : transcript;
+
+    // Extract key takeaway — last section after "Key" / "Summary" / "Takeaway" heading, or last paragraph
+    const takeawayMatch = contentToRender.match(/#{1,3}\s+(?:Key|Summary|Takeaway|Conclusion)[^\n]*\n([\s\S]*?)(?=\n#{1,3}\s|\z)/i);
+    const takeawayText = takeawayMatch
+      ? takeawayMatch[1].trim()
+      : contentToRender.split("\n\n").filter(p => p.trim() && !p.startsWith("#")).slice(-1)[0]?.trim();
+
+    // Section counter for h2
+    let sectionCounter = 0;
+
     return (
       <div className="space-y-5">
-        {/* Reading progress bar */}
-        <div className="sticky top-0 z-10 h-1 bg-muted rounded-full overflow-hidden">
+        {/* Reading progress bar — warm gradient */}
+        <div className="sticky top-0 z-10 h-1.5 bg-muted/60 rounded-full overflow-hidden group">
           <div
-            className="h-full bg-primary transition-all duration-150 ease-out rounded-full"
-            style={{ width: `${readingProgress}%` }}
+            className="h-full rounded-full transition-all duration-200 ease-out"
+            style={{
+              width: `${readingProgress}%`,
+              background: 'linear-gradient(90deg, hsl(var(--success)), hsl(var(--primary)))',
+            }}
           />
         </div>
 
-        {/* Table of contents */}
-        {headings.length > 2 && (
-          <div className="rounded-xl border border-border bg-muted/30 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Table of Contents</h4>
-              <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                <BookOpenCheck className="h-3 w-3" /> ~{readingMinutes} min · {wordCount} words
-              </span>
+        {/* Warm welcome banner */}
+        <div className="rounded-2xl border border-border overflow-hidden">
+          <div
+            className="px-6 py-7 md:px-8 md:py-8"
+            style={{
+              background: 'linear-gradient(135deg, hsl(var(--success) / 0.08), hsl(var(--accent) / 0.06), hsl(var(--primary) / 0.04))',
+            }}
+          >
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 rounded-xl bg-success/15 flex items-center justify-center shrink-0">
+                <BookOpen className="h-6 w-6 text-success" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="font-display text-xl md:text-2xl font-bold text-foreground leading-tight mb-1.5">
+                  {substitute(module.title)}
+                </h2>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  Let's explore this together — take your time and enjoy the read.
+                </p>
+                <div className="flex items-center gap-3 mt-3 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-card/80 px-2.5 py-1 rounded-full border border-border/50">
+                    <Clock className="h-3 w-3" /> ~{readingMinutes} min read
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground bg-card/80 px-2.5 py-1 rounded-full border border-border/50">
+                    <FileText className="h-3 w-3" /> {wordCount.toLocaleString()} words
+                  </span>
+                </div>
+              </div>
             </div>
-            <ul className="space-y-1.5">
-              {headings.map((h, i) => {
-                const level = (h.match(/^#+/) ?? [""])[0].length;
-                const text = h.replace(/^#+\s*/, "");
-                return (
-                  <li key={i} className={cn(
-                    "text-sm",
-                    level <= 2 ? "text-foreground font-medium" : "ml-4 text-muted-foreground",
-                  )}>
-                    {text}
-                  </li>
-                );
-              })}
-            </ul>
           </div>
+        </div>
+
+        {/* Table of contents — warm "What you'll learn" */}
+        {headings.length > 2 && (
+          <Accordion type="single" collapsible defaultValue="toc">
+            <AccordionItem value="toc" className="rounded-2xl border border-border bg-card overflow-hidden">
+              <AccordionTrigger className="px-5 py-4 hover:no-underline">
+                <div className="flex items-center gap-2.5">
+                  <Sparkles className="h-4 w-4 text-accent" />
+                  <span className="text-sm font-semibold text-foreground">What you'll learn</span>
+                  <span className="text-xs text-muted-foreground ml-1">({headings.filter(h => (h.match(/^#+/) ?? [""])[0].length <= 2).length} sections)</span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="px-5 pb-4 space-y-1">
+                  {headings.map((h, i) => {
+                    const level = (h.match(/^#+/) ?? [""])[0].length;
+                    const text = h.replace(/^#+\s*/, "");
+                    if (level > 3) return null;
+                    return (
+                      <div
+                        key={i}
+                        className={cn(
+                          "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted/60 cursor-default",
+                          level <= 2 ? "text-foreground font-medium" : "ml-6 text-muted-foreground text-xs",
+                        )}
+                      >
+                        {level <= 2 && (
+                          <span className="h-5 w-5 rounded-md bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">
+                            {headings.filter((hh, ii) => ii <= i && (hh.match(/^#+/) ?? [""])[0].length <= 2).length}
+                          </span>
+                        )}
+                        {level > 2 && <ChevronRight className="h-3 w-3 text-muted-foreground/50 shrink-0" />}
+                        <span>{text}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         )}
 
-        {/* Content */}
-        <div className="bg-card rounded-xl border border-border p-6 md:p-10">
-          <div className={cn(
-            "prose prose-lg dark:prose-invert max-w-prose mx-auto",
-            "prose-headings:text-foreground prose-headings:font-bold",
-            "prose-h1:text-2xl prose-h1:mt-6 prose-h1:mb-4",
-            "prose-h2:text-xl prose-h2:mt-10 prose-h2:mb-4 prose-h2:border-l-4 prose-h2:border-l-primary prose-h2:pl-4",
-            "prose-h3:text-lg prose-h3:mt-8 prose-h3:mb-3",
-            "prose-p:text-muted-foreground prose-p:leading-8 prose-p:mb-4",
-            "prose-li:text-muted-foreground prose-li:leading-7",
-            "prose-strong:text-foreground prose-strong:font-semibold",
-            "prose-ul:space-y-2 prose-ul:my-4",
-            "prose-ol:space-y-2 prose-ol:my-4",
-            "prose-blockquote:border-l-primary prose-blockquote:bg-primary/5 prose-blockquote:rounded-r-lg prose-blockquote:py-1 prose-blockquote:px-4",
-          )}>
-            <ReactMarkdown>{isMicro ? microTranscript : transcript}</ReactMarkdown>
+        {/* Content with custom ReactMarkdown components */}
+        <div className="bg-card rounded-2xl border border-border p-6 md:p-10">
+          <div className="max-w-prose mx-auto">
+            <ReactMarkdown
+              components={{
+                h1: ({ children }) => (
+                  <h1 className="font-display text-2xl font-bold text-foreground mt-6 mb-4">{children}</h1>
+                ),
+                h2: ({ children }) => {
+                  sectionCounter++;
+                  return (
+                    <div className="mt-12 mb-5 first:mt-0">
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="h-7 w-7 rounded-lg bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+                          {sectionCounter}
+                        </span>
+                        <div className="h-px flex-1 bg-border" />
+                      </div>
+                      <h2 className="font-display text-xl font-bold text-foreground border-l-4 border-l-accent pl-4">
+                        {children}
+                      </h2>
+                    </div>
+                  );
+                },
+                h3: ({ children }) => (
+                  <div className="mt-8 mb-3 flex items-center gap-2.5">
+                    <div className="h-1.5 w-1.5 rounded-full bg-accent shrink-0" />
+                    <h3 className="font-display text-lg font-semibold text-foreground">{children}</h3>
+                  </div>
+                ),
+                p: ({ children }) => (
+                  <p className="text-[15px] text-muted-foreground leading-[1.85] mb-4">{children}</p>
+                ),
+                strong: ({ children }) => (
+                  <strong className="font-semibold text-foreground bg-accent/10 px-1 py-0.5 rounded-sm">{children}</strong>
+                ),
+                ul: ({ children }) => (
+                  <ul className="space-y-1.5 my-4">{children}</ul>
+                ),
+                ol: ({ children }) => (
+                  <ol className="space-y-1.5 my-4 list-none counter-reset-none">{children}</ol>
+                ),
+                li: ({ children }) => (
+                  <li className="flex items-start gap-2.5 rounded-lg bg-muted/30 px-3.5 py-2.5 text-[15px] text-muted-foreground leading-relaxed">
+                    <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
+                    <span>{children}</span>
+                  </li>
+                ),
+                blockquote: ({ children }) => (
+                  <div className="my-5 rounded-xl border border-accent/20 bg-accent/5 p-4 flex gap-3">
+                    <Lightbulb className="h-5 w-5 text-accent shrink-0 mt-0.5" />
+                    <div className="text-sm text-foreground/80 leading-relaxed [&>p]:mb-0">{children}</div>
+                  </div>
+                ),
+                hr: () => (
+                  <div className="my-8 flex items-center gap-3">
+                    <div className="h-px flex-1 bg-border" />
+                    <Sparkles className="h-3.5 w-3.5 text-muted-foreground/40" />
+                    <div className="h-px flex-1 bg-border" />
+                  </div>
+                ),
+              }}
+            >
+              {contentToRender}
+            </ReactMarkdown>
           </div>
+
           {isMicro && !microExpanded && (
             <Button
               variant="outline"
@@ -287,6 +398,19 @@ export function LearnPathModuleContent({ module, skillTargetTitle, learningForma
             </Button>
           )}
         </div>
+
+        {/* Key Takeaway box */}
+        {takeawayText && takeawayText.length > 20 && (
+          <div className="rounded-2xl border border-accent/20 overflow-hidden">
+            <div className="px-5 py-4 flex items-center gap-2.5" style={{ background: 'linear-gradient(135deg, hsl(var(--accent) / 0.08), hsl(var(--accent) / 0.03))' }}>
+              <Star className="h-4.5 w-4.5 text-accent" />
+              <span className="text-sm font-semibold text-foreground">Key Takeaway</span>
+            </div>
+            <div className="px-5 py-4 bg-card">
+              <p className="text-sm text-muted-foreground leading-relaxed">{takeawayText.replace(/^\*+\s*/, "").replace(/\*+/g, "")}</p>
+            </div>
+          </div>
+        )}
       </div>
     );
   };

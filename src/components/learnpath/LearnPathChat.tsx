@@ -529,7 +529,7 @@ export function LearnPathChat() {
           />
           <Button
             size="icon"
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={isStreaming || !input.trim()}
             className="shrink-0"
           >

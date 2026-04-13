@@ -76,7 +76,7 @@ const navItems: NavItem[] = [
     icon: LayoutDashboard,
     roles: ["learner", "manager", "admin"],
     children: [
-      { label: "Skill Targets", path: "/", icon: Target },
+      { label: "Skill Targets", path: "/dashboard", icon: Target },
       { label: "Role Play", path: "/role-play-bank", icon: Drama },
     ],
   },

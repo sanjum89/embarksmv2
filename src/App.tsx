@@ -53,7 +53,8 @@ const App = () => (
           <AgentOneProvider>
           <Routes>
             <Route element={<AppLayout />}>
-              <Route path="/" element={<Dashboard />} />
+              <Route path="/" element={<UnifiedChat />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/chat" element={<LearnerChat />} />
               <Route path="/unified" element={<UnifiedChat />} />
               

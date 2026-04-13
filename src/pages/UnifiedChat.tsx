@@ -107,7 +107,7 @@ const suggestionCards = [
   { label: "Grow My Skills", description: "Get recommendations for growing your skills.", prompt: "Show me recommendations for growing my skills", illustration: "skills" },
   { label: "Required Skills", description: "Required skills for your job role.", prompt: "Show me the required skills for my role", illustration: "required" },
   { label: "Explore Career Paths", description: "Discover potential career paths.", prompt: "Explore career paths based on my current skills", illustration: "career" },
-  { label: "Open Embark AI", description: "Continue your learning journey.", prompt: "__OPEN_EMBARK__", illustration: "learnpath" },
+  { label: "Open Embark AI", description: "Continue your learning journey.", prompt: "__OPEN_EMBARK__", illustration: "embark" },
   { label: "Build Your Profile", description: "Upload resume to build your profile.", prompt: "Help me build my professional profile", illustration: "profile" },
   { label: "Create a Reflection", description: "Reflect on your learning journey.", prompt: "Help me create a reflection on my recent learning", illustration: "reflection" },
 ];
@@ -179,7 +179,7 @@ function UnifiedChatInner() {
   const hasMessages = messages.filter((m) => m.role !== "system").length > 0;
   const isActive = chatActive;
 
-  // Track learnpath content view — auto-open right panel when module is active
+  // Track embark content view — auto-open right panel when module is active
   const hasEmbarkContent = learnPath.contentView === "module" || learnPath.contentView === "assessment";
   useEffect(() => {
     if (hasEmbarkContent && !embarkOpen) {

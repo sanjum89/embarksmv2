@@ -109,6 +109,18 @@ export default {
           "0%, 100%": { opacity: "0.85", filter: "brightness(1)" },
           "50%": { opacity: "1", filter: "brightness(1.15)" },
         },
+        "flow-right": {
+          "0%": { left: "0%", opacity: "0" },
+          "10%": { opacity: "1" },
+          "90%": { opacity: "1" },
+          "100%": { left: "100%", opacity: "0" },
+        },
+        "flow-left": {
+          "0%": { right: "0%", opacity: "0" },
+          "10%": { opacity: "1" },
+          "90%": { opacity: "1" },
+          "100%": { right: "100%", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -116,6 +128,8 @@ export default {
         "fade-in": "fade-in 0.4s ease-out",
         "slide-in-right": "slide-in-right 0.3s ease-out",
         "scale-in": "scale-in 0.3s ease-out",
+        "flow-right": "flow-right 2s linear infinite",
+        "flow-left": "flow-left 2s linear infinite",
       },
     },
   },

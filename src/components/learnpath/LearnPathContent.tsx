@@ -1,13 +1,13 @@
-import { useEmbark } from "@/contexts/EmbarkContext";
+import { useEmbark } from "@/contexts/LearnPathContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
-import { EmbarkModuleCard } from "./EmbarkModuleCard";
-import { EmbarkModuleContent } from "./EmbarkModuleContent";
-import { EmbarkAssessment } from "./EmbarkAssessment";
-import { EmbarkModeSelector } from "./EmbarkModeSelector";
+import { EmbarkModuleCard } from "./LearnPathModuleCard";
+import { EmbarkModuleContent } from "./LearnPathModuleContent";
+import { EmbarkAssessment } from "./LearnPathAssessment";
+import { EmbarkModeSelector } from "./LearnPathModeSelector";
 import { BookOpen, GraduationCap, Sparkles, AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";

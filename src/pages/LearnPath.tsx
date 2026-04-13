@@ -1,6 +1,6 @@
 import { EmbarkProvider } from "@/contexts/LearnPathContext";
-import { EmbarkChat } from "@/components/learnpath/EmbarkChat";
-import { EmbarkContent } from "@/components/learnpath/EmbarkContent";
+import { EmbarkChat } from "@/components/learnpath/LearnPathChat";
+import { EmbarkContent } from "@/components/learnpath/LearnPathContent";
 import {
   ResizablePanelGroup,
   ResizablePanel,

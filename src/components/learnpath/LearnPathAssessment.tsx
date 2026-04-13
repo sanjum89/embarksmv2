@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useEmbark } from "@/contexts/EmbarkContext";
+import { useEmbark } from "@/contexts/LearnPathContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";

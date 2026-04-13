@@ -8,7 +8,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { resolveModule } from "@/lib/learnPathModuleResolver";
-import { EmbarkModuleContent } from "@/components/learnpath/EmbarkModuleContent";
+import { EmbarkModuleContent } from "@/components/learnpath/LearnPathModuleContent";
 import type { StepItem, Assessment } from "@/types/learning";
 import type { LearningMode } from "@/contexts/LearnPathContext";
 

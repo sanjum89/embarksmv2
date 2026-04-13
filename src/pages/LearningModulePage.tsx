@@ -7,7 +7,7 @@ import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
-import { EmbarkModuleContent } from "@/components/learnpath/EmbarkModuleContent";
+import { EmbarkModuleContent } from "@/components/learnpath/LearnPathModuleContent";
 import type { LearningMode } from "@/contexts/LearnPathContext";
 import { cn } from "@/lib/utils";
 

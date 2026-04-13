@@ -1,4 +1,4 @@
-import { useEmbark } from "@/contexts/EmbarkContext";
+import { useEmbark } from "@/contexts/LearnPathContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Video, FileText, CheckCircle2, Lock, Clock, ClipboardCheck, MessageSquare, SkipForward } from "lucide-react";

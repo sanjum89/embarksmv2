@@ -1,7 +1,7 @@
-import { useEmbark, type LearningMode } from "@/contexts/EmbarkContext";
+import { useEmbark, type LearningMode } from "@/contexts/LearnPathContext";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { useAccount } from "@/contexts/AccountContext";
-import { EmbarkPodcastPlayer } from "./EmbarkPodcastPlayer";
+import { EmbarkPodcastPlayer } from "./LearnPathPodcastPlayer";
 import { ScenarioQuestion } from "./ScenarioQuestion";
 import { HandsOnRolePlayCard } from "./HandsOnRolePlayCard";
 import { VisualDiagram, parseTranscriptToDiagram, extractFlowCharts } from "./VisualDiagram";

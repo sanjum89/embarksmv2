@@ -1,4 +1,4 @@
-import { useEmbark, type LearningMode } from "@/contexts/EmbarkContext";
+import { useEmbark, type LearningMode } from "@/contexts/LearnPathContext";
 import { Eye, BookOpen, Headphones, Wrench, Layers, LayoutGrid } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";

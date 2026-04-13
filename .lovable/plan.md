@@ -1,38 +1,54 @@
 
 
-## Fix Corrupted LearnPath Files — Restore Missing Code
+## Add Circular Node Graph View to People Graph Intelligence
 
-### Problem
-The previous edit used `...` (ellipsis) as a shorthand when rewriting both files, but those literal `...` characters ended up in the actual source code, deleting ~90 lines from `LearnPathChat.tsx` and ~40 lines from `LearnPathContent.tsx`. This removed:
-- **LearnPathChat**: The `ChatMessage` interface, constants (`LEARNPATH_CHAT_URL`, `MAX_TRANSCRIPT_CONTEXT_CHARS`), helper functions (`createMessageId`, `stripMarkdownDecorators`, `parseActions`), component declaration, all state hooks, scroll effect, and the start of `buildContext`
-- **LearnPathContent**: The `UnifiedStep` interface export, component declaration, all hook calls (`useLearnPath`, `useSkillTargets`, `useUser`, etc.), and `autoResumedRef`
+### What
+A third view tab ("Node Graph") on the People Graph Intelligence page showing all data sources, compute nodes, and consumers as large **circular nodes** arranged in a radial/force-directed layout. Clicking any node opens an expanded card overlay with full details and actions.
 
-### Solution
-Restore the deleted code from git history (`a787c3e`), but keep the intended improvement: replace the old inline sorting logic with the centralized `getAssignedSkillTargetsForUser` + `orderSkillTargets` from `@/lib/skillTargetSequence`.
+### Layout
 
-### Changes
+```text
+View Toggle: [Systems & Signals] [Data Flow] [Node Graph ←NEW]
 
-**`src/components/learnpath/LearnPathContent.tsx`** — Replace the `...` on line 18 with the restored code:
-- `UnifiedStep` interface export
-- `LearnPathContent` function declaration with all hooks
-- `autoResumedRef`
-- `catalog` line
-- Use `getAssignedSkillTargetsForUser` + `orderSkillTargets` (already imported) instead of old inline filter+sort
-- Add `useMemo` to the react import (already there)
+┌────────────────────────────────────────────────────────┐
+│                                                        │
+│         ○ Bloomberg    ○ Charles River                 │
+│       ○ HRIS                  ○ InvestCloud            │
+│                                                        │
+│     ○ Resume      ┌──────────┐     ○ Hiring           │
+│                   │  ENGINE  │                         │
+│     ○ Onboard     │  (big)   │     ○ Engagement       │
+│                   └──────────┘                         │
+│       ○ Manager                ○ Surveys              │
+│         ○ Job Arch     ○ Training                     │
+│                                                        │
+│  Outer ring: ○ Agent One  ○ LearnPath  ○ Manager Dash │
+│              ○ My360  ○ Skill Targets                 │
+└────────────────────────────────────────────────────────┘
 
-**`src/components/learnpath/LearnPathChat.tsx`** — Replace the `...` on line 15 with the restored code:
-- `ChatMessage` interface
-- `LEARNPATH_CHAT_URL` and `MAX_TRANSCRIPT_CONTEXT_CHARS` constants
-- `createMessageId`, `stripMarkdownDecorators`, `parseActions` helper functions
-- `LearnPathChat` component declaration with all state hooks and scroll effect
-- `buildContext` callback opening, using `getAssignedSkillTargetsForUser` + `orderSkillTargets` instead of old inline sort
+Click any node → slide-up card with signal list + actions
+```
 
-### Result
-Both files compile again. Module ordering uses the centralized sequencing, ensuring Elliot sees Introduction → Domain Bridge → Foundations.
+### Design
+
+**Three concentric rings:**
+- **Outer ring (Sources)**: Large circles (~80px) with icon + name + signal count. Color-coded by category. Positioned evenly around outer edge.
+- **Center (Engine)**: One large central node (~120px) labeled "People Graph Engine" with a brain/sparkle icon. Click expands to show all 5 compute sub-nodes.
+- **Inner ring (Consumers)**: Medium circles (~70px) with icon + name. Positioned between engine and sources.
+
+**Connecting lines**: Thin curved SVG lines from sources → engine → consumers. Red when simulation active.
+
+**Click behavior**: Clicking a node opens a `motion.div` card panel at the bottom or side of the canvas showing:
+- Source nodes: signal list, status, simulate/switch-off actions
+- Engine node: list of compute functions with descriptions
+- Consumer nodes: what signals they receive, which compute nodes feed them
+
+**Simulation**: Same `simulatedOff` state — affected nodes get red borders and pulsing glow.
 
 ### Files Changed
+
 | File | Change |
 |---|---|
-| `src/components/learnpath/LearnPathChat.tsx` | Restore ~85 deleted lines (interface, helpers, component declaration), use centralized ordering |
-| `src/components/learnpath/LearnPathContent.tsx` | Restore ~35 deleted lines (interface, component declaration, hooks), use centralized ordering |
+| `src/components/people-graph/NodeGraphView.tsx` | **New**: Circular node graph with SVG connectors, click-to-expand card panels, simulation support |
+| `src/pages/PeopleGraphIntelligence.tsx` | Add third "Node Graph" tab to view toggle, render `NodeGraphView` |
 

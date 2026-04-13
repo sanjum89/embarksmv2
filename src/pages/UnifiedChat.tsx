@@ -164,7 +164,7 @@ function UnifiedChatInner() {
   const embark = useEmbark();
 
   const [chatActive, setChatActive] = useState(false);
-  const [embarkOpen, setEmbark AIOpen] = useState(false);
+  const [embarkOpen, setEmbarkOpen] = useState(false);
   const [ctaLabel, setCtaLabel] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -183,7 +183,7 @@ function UnifiedChatInner() {
   const hasEmbarkContent = embark.contentView === "module" || embark.contentView === "assessment";
   useEffect(() => {
     if (hasEmbarkContent && !embarkOpen) {
-      setEmbark AIOpen(true);
+      setEmbarkOpen(true);
     }
   }, [hasEmbarkContent]);
 
@@ -231,7 +231,7 @@ function UnifiedChatInner() {
   const handleCardSend = (prompt: string) => {
     if (prompt === "__OPEN_EMBARK__") {
       setChatActive(true);
-      setEmbark AIOpen(true);
+      setEmbarkOpen(true);
       return;
     }
     openedFromCta.current = true;
@@ -432,7 +432,7 @@ function UnifiedChatInner() {
                   </div>
                   {/* Embark AI toggle button */}
                   <button
-                    onClick={() => setEmbark AIOpen((p) => !p)}
+                    onClick={() => setEmbarkOpen((p) => !p)}
                     className={cn(
                       "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all",
                       embarkOpen

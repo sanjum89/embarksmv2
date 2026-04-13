@@ -630,9 +630,20 @@ export function getPersonaSkillTargets(userId: string, baseTargets: SkillTarget[
   const persona = personaMap[userId];
   if (!persona) return baseTargets;
 
+  // Legacy st-rb-* targets are superseded by the newer RAT-ST-001 targets
+  // that have correct prerequisiteId chains. Filter them out.
+  const legacyMap: Record<string, string> = {
+    clara: "st-rb-clara",
+    elliot: "st-rb-elliot",
+    sophie: "st-rb-sophie",
+  };
+  const legacyId = legacyMap[persona];
+
   // Replace the generic introToRathbones with persona-specific version
   const personaIntro = buildIntroToRathbones(persona);
-  return baseTargets.map((t) => t.id === "RAT-ST-INTRO-001" ? personaIntro : t);
+  return baseTargets
+    .filter((t) => t.id !== legacyId)
+    .map((t) => t.id === "RAT-ST-INTRO-001" ? personaIntro : t);
 }
 /* ─── Role Plays ─── */
 export const mockRolePlayBank: RolePlay[] = [

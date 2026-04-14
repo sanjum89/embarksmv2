@@ -66,8 +66,8 @@ const meNavItems: NavItem[] = [
 
 const teamNavItems: NavItem[] = [
   { label: "Admin", path: "/admin", icon: Shield },
-  { label: "Team Dashboard", path: "/team-dashboard", icon: LayoutDashboard, dev: true },
-  { label: "Team Insights", path: "/team-insights", icon: BarChart3, dev: true },
+  { label: "Team Dashboard", path: "/team-dashboard", icon: LayoutDashboard },
+  { label: "Team Insights", path: "/team-insights", icon: BarChart3 },
   { label: "People Graph", path: "/manager/people-graph", icon: GitGraph },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
   {

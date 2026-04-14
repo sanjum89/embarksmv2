@@ -1,38 +1,52 @@
 
 
-## Fix Dark Mode Readability with Brand Themes
+## Improve Node Graph Visualization
 
-### Problem
-When a brand theme (e.g. Rathbones) is applied, `useBrandColors` sets CSS variables like `--primary`, `--secondary`, `--muted`, `--border` to values designed for light mode (very dark primary, light tinted surfaces). In dark mode, these same values create dark-on-dark combinations — dark navy text on dark backgrounds, dark borders invisible against dark cards — making the UI unreadable.
-
-### Root Cause
-`deriveThemeVars()` produces a single set of values with no awareness of light vs dark mode. The `useEffect` in `useBrandColors` applies them unconditionally to non-sidebar vars regardless of `theme`.
-
-### Solution
-Add a `deriveDarkThemeVars()` function that inverts the logic for dark mode: light foregrounds, dark but distinguishable surface colors tinted with the brand hue, and properly contrasted interactive elements. Then in the `useEffect`, choose the correct derivation based on `theme`.
+### Problems
+1. **No data flow direction**: Lines between sources→engine and engine→consumers are plain lines with no indication of direction. Users can't tell what flows in vs out.
+2. **Text overflow in circles**: Labels inside source nodes (r=40) and consumer nodes (r=34) are crammed — text either breaks out of the circle or touches the border. The icon + text layout leaves insufficient vertical space.
 
 ### Changes
 
-**`src/hooks/useBrandColors.ts`**
-1. Add a new `deriveDarkThemeVars(primary, accent, sidebar)` function that produces dark-mode-appropriate values:
-   - `--primary` and `--accent`: Use lighter versions of the brand colors so interactive elements are visible against dark backgrounds
-   - `--primary-foreground` / `--accent-foreground`: Dark text for contrast on light interactive elements
-   - `--secondary`, `--muted`: Dark surfaces tinted with the brand hue (e.g. `${pH} 30% 14%`)
-   - `--border`, `--input`: Slightly lighter dark surfaces (e.g. `${pH} 25% 18%`)
-   - `--muted-foreground`: Light enough to read (e.g. `${pH} 15% 55%`)
-   - Sidebar vars: Dark backgrounds with the brand hue, light foregrounds
-2. In the `useEffect`, when `theme === "dark"`, call `deriveDarkThemeVars` instead of `deriveThemeVars`
-3. Handle the "Primary-as-Interactive" path for dark mode as well (Rathbones uses this since accent lightness > 75%)
+**`src/components/people-graph/NodeGraphView.tsx`**
 
-### Key dark-mode derivation logic (Rathbones example):
-```
-primary input: 230 75% 15%  →  dark-mode primary: 230 60% 55% (lighter, visible)
-accent input:  12 55% 85%   →  dark-mode surfaces: 12 20% 12% (warm-tinted dark)
---background stays from CSS .dark block
---secondary: 230 25% 14%
---border: 230 20% 20%
---muted-foreground: 230 10% 55%
-```
+#### 1. Add directional flow arrows
+- Define SVG `<marker>` arrowheads in `<defs>` — one for normal flow (subtle border color) and one for impacted/simulated flow (destructive color)
+- Apply `markerEnd` to source→engine lines and engine→consumer lines
+- Shorten lines slightly so arrows don't overlap node circles (offset start/end points by node radius)
+- Use animated dashed stroke on the lines to show active data flow direction
 
-This ensures brand identity is maintained (hue tinting) while keeping proper contrast ratios for dark backgrounds.
+#### 2. Move labels outside circles
+- Move `<text>` labels from inside the circles to **below** each circle (y offset = pos.y + nodeR + 12)
+- This frees up interior space for just the icon, centered vertically
+- Center the icon vertically in the circle (adjust foreignObject y)
+- For source nodes: label below circle, signal count badge stays at top-right
+- For consumer nodes: same — label below circle
+- Increase max label length or use two lines for longer names
+
+#### 3. Adjust circle sizes and spacing
+- Slightly increase source node radius from 40→44 for better icon breathing room
+- Increase consumer node radius from 34→38
+- Increase viewBox height from 800→900 to accommodate labels below circles
+- Increase SOURCE_R from 320→340 to give more spacing between outer nodes
+
+#### 4. Line endpoint calculation
+- Calculate line start/end points to stop at circle edges instead of centers:
+  ```
+  // For source→engine line, offset endpoints by respective radii
+  const angle = Math.atan2(CY - pos.y, CX - pos.x);
+  const x1 = pos.x + sourceR * Math.cos(angle);
+  const y1 = pos.y + sourceR * Math.sin(angle);
+  const x2 = CX - engineR * Math.cos(angle);
+  const y2 = CY - engineR * Math.sin(angle);
+  ```
+
+#### 5. Animated flow indicators
+- Add subtle animated dots/dashes along the lines using `strokeDasharray` + `strokeDashoffset` CSS animation to show data flowing inward (sources) and outward (consumers)
+
+### Result
+- Clear directional arrows showing data flowing INTO the People Graph Engine from sources
+- Clear directional arrows showing data flowing OUT to consumers
+- Labels sit cleanly below each circle — no overflow or touching borders
+- Icons centered within circles with breathing room
 

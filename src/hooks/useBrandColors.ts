@@ -89,13 +89,9 @@ function deriveThemeVars(primary: string, accent: string, sidebar: string): Reco
   const [aH, aS, aL] = accentParts;
   const accentLightness = aL ?? 50;
 
-  // "Primary-as-interactive" mode: when accent is very light (>75%), 
-  // use primary for interactive elements and accent for surface tints
   const isPrimaryInteractive = accentLightness > 75;
 
   if (isPrimaryInteractive) {
-    // Primary (navy) used for buttons, tabs, active states
-    // Accent (peach) used for surface tints and backgrounds
     const pParts = primary.split(" ").map((v) => parseFloat(v));
     const pLightness = pParts[2] ?? 20;
     const primaryFg = pLightness < 50 ? "0 0% 100%" : `${pH} 60% 12%`;
@@ -103,12 +99,11 @@ function deriveThemeVars(primary: string, accent: string, sidebar: string): Reco
     return {
       "--primary": primary,
       "--primary-foreground": primaryFg,
-      "--accent": primary,           // Interactive elements use primary
+      "--accent": primary,
       "--accent-foreground": primaryFg,
       "--ring": primary,
       "--warning": primary,
       "--warning-foreground": primaryFg,
-      // Surface tints from accent (peach) hue
       "--secondary": `${aH} 40% 93%`,
       "--secondary-foreground": `${pH} 40% 11%`,
       "--muted": `${aH} 40% 93%`,
@@ -116,7 +111,6 @@ function deriveThemeVars(primary: string, accent: string, sidebar: string): Reco
       "--border": `${aH} 25% 88%`,
       "--input": `${aH} 25% 88%`,
       "--surface-sunken": `${aH} 40% 95%`,
-      // Sidebar
       "--sidebar-background": sidebar,
       "--sidebar-foreground": `${pH} 20% 85%`,
       "--sidebar-primary": primary,
@@ -129,7 +123,6 @@ function deriveThemeVars(primary: string, accent: string, sidebar: string): Reco
     };
   }
 
-  // Standard mode: accent used for interactive elements
   const vibrantAccent = accentLightness > 65
     ? `${aH} ${aS}% 50%`
     : accent;
@@ -146,7 +139,6 @@ function deriveThemeVars(primary: string, accent: string, sidebar: string): Reco
     "--ring": primary,
     "--warning": vibrantAccent,
     "--warning-foreground": accentFg,
-    // Branded neutrals
     "--secondary": `${pH} 15% 93%`,
     "--secondary-foreground": `${pH} 40% 11%`,
     "--muted": `${pH} 15% 93%`,
@@ -154,7 +146,6 @@ function deriveThemeVars(primary: string, accent: string, sidebar: string): Reco
     "--border": `${pH} 15% 88%`,
     "--input": `${pH} 15% 88%`,
     "--surface-sunken": `${pH} 15% 95%`,
-    // Sidebar
     "--sidebar-background": sidebar,
     "--sidebar-foreground": `${pH} 20% 85%`,
     "--sidebar-primary": vibrantAccent,
@@ -164,6 +155,80 @@ function deriveThemeVars(primary: string, accent: string, sidebar: string): Reco
     "--sidebar-border": `${pH} 40% 22%`,
     "--sidebar-ring": vibrantAccent,
     "--sidebar-muted": `${pH} 30% 32%`,
+  };
+}
+
+function deriveDarkThemeVars(primary: string, accent: string, sidebar: string): Record<string, string> {
+  const pParts = primary.split(" ").map((v) => parseFloat(v));
+  const [pH, pS] = pParts;
+  const accentParts = accent.split(" ").map((v) => parseFloat(v));
+  const [aH, aS, aL] = accentParts;
+  const accentLightness = aL ?? 50;
+
+  const isPrimaryInteractive = accentLightness > 75;
+
+  // Lighten primary for visibility on dark backgrounds
+  const darkPrimary = `${pH} ${Math.min(pS, 60)}% 55%`;
+  const darkPrimaryFg = `${pH} 20% 10%`;
+
+  if (isPrimaryInteractive) {
+    return {
+      "--primary": darkPrimary,
+      "--primary-foreground": darkPrimaryFg,
+      "--accent": darkPrimary,
+      "--accent-foreground": darkPrimaryFg,
+      "--ring": darkPrimary,
+      "--warning": darkPrimary,
+      "--warning-foreground": darkPrimaryFg,
+      "--secondary": `${pH} 25% 14%`,
+      "--secondary-foreground": `${pH} 15% 80%`,
+      "--muted": `${pH} 20% 14%`,
+      "--muted-foreground": `${pH} 10% 55%`,
+      "--border": `${pH} 20% 20%`,
+      "--input": `${pH} 20% 20%`,
+      "--surface-sunken": `${pH} 25% 10%`,
+      "--sidebar-background": `${pH} 40% 10%`,
+      "--sidebar-foreground": `${pH} 15% 80%`,
+      "--sidebar-primary": darkPrimary,
+      "--sidebar-primary-foreground": darkPrimaryFg,
+      "--sidebar-accent": `${pH} 30% 18%`,
+      "--sidebar-accent-foreground": `${pH} 15% 85%`,
+      "--sidebar-border": `${pH} 25% 18%`,
+      "--sidebar-ring": darkPrimary,
+      "--sidebar-muted": `${pH} 20% 22%`,
+    };
+  }
+
+  // Standard mode: lighten accent for dark backgrounds
+  const darkAccent = accentLightness > 65
+    ? `${aH} ${aS}% 55%`
+    : `${aH} ${aS}% ${Math.max(accentLightness, 45)}%`;
+  const darkAccentFg = `${aH} 20% 10%`;
+
+  return {
+    "--primary": darkPrimary,
+    "--primary-foreground": darkPrimaryFg,
+    "--accent": darkAccent,
+    "--accent-foreground": darkAccentFg,
+    "--ring": darkPrimary,
+    "--warning": darkAccent,
+    "--warning-foreground": darkAccentFg,
+    "--secondary": `${pH} 20% 14%`,
+    "--secondary-foreground": `${pH} 15% 80%`,
+    "--muted": `${pH} 20% 14%`,
+    "--muted-foreground": `${pH} 10% 55%`,
+    "--border": `${pH} 20% 20%`,
+    "--input": `${pH} 20% 20%`,
+    "--surface-sunken": `${pH} 20% 10%`,
+    "--sidebar-background": `${pH} 35% 10%`,
+    "--sidebar-foreground": `${pH} 15% 80%`,
+    "--sidebar-primary": darkAccent,
+    "--sidebar-primary-foreground": darkAccentFg,
+    "--sidebar-accent": `${pH} 30% 18%`,
+    "--sidebar-accent-foreground": `${pH} 15% 85%`,
+    "--sidebar-border": `${pH} 25% 18%`,
+    "--sidebar-ring": darkAccent,
+    "--sidebar-muted": `${pH} 20% 22%`,
   };
 }
 

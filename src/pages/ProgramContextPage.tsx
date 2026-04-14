@@ -32,12 +32,12 @@ export default function ProgramContextPage() {
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="font-display text-2xl font-bold text-foreground">Program Context</h1>
-            <p className="text-sm text-muted-foreground mt-1">Configure and manage training programs</p>
+            <h1 className="font-display text-2xl font-bold text-foreground">Cohorts</h1>
+            <p className="text-sm text-muted-foreground mt-1">Configure and manage training cohorts</p>
           </div>
           <Button variant="outline" className="gap-2">
             <Plus className="h-4 w-4" />
-            New Program
+            New Cohort
           </Button>
         </div>
 
@@ -71,10 +71,10 @@ export default function ProgramContextPage() {
           {programContexts.length === 0 && (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <Layers className="h-10 w-10 text-muted-foreground mb-3" />
-              <p className="text-sm text-muted-foreground">No programs configured yet.</p>
+              <p className="text-sm text-muted-foreground">No cohorts configured yet.</p>
               <Button variant="outline" className="mt-4 gap-2">
                 <Plus className="h-4 w-4" />
-                Create your first program
+                Create your first cohort
               </Button>
             </div>
           )}
@@ -114,7 +114,7 @@ function ProgramDetail({ program, onBack }: { program: ProgramContext; onBack: (
         {/* Breadcrumb */}
         <button onClick={onBack} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4">
           <ChevronRight className="h-3 w-3 rotate-180" />
-          Back to Programs
+          Back to Cohorts
         </button>
 
         <div className="flex items-start gap-4 mb-6">

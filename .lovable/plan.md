@@ -1,22 +1,31 @@
 
 
-## Restore Original Embark AI as Default Page
+## Align Header Borders Across All Three Panels
 
 ### Problem
-The root path `/` currently loads `UnifiedChat` (a merged Agent One + Embark AI page). The user wants the original standalone Embark AI back as the default page, with Agent One chat remaining separate.
+The sidebar's brand section border, the Embark AI chat header border, and the content panel's top bar border don't align horizontally. Additionally, the content panel needs a separate border between the title row and the "Viewing in:" mode selector row.
+
+### Current Layout
+- **Sidebar**: Brand section has `px-4 py-4` with `border-b`
+- **Chat panel**: Header has `px-4 py-3` with `border-b`
+- **Content panel**: Single `border-b` wraps both the title row (`py-3`) and the mode selector row — no dividing line between them
 
 ### Changes
 
-**1. `src/App.tsx`** — Swap the root route back to Embark AI
-- Change `<Route path="/" element={<UnifiedChat />} />` → `<Route path="/" element={<EmbarkAI />} />`
-- Keep `/embark` route pointing to `EmbarkAI` as well (or remove the duplicate)
-- Remove `UnifiedChat` import if no longer used
+**1. `src/components/learnpath/LearnPathChat.tsx`** (line 475)
+- Change header padding from `py-3` to `py-4` to match sidebar height
 
-**2. `src/components/layout/AppSidebar.tsx`** — Ensure "Embark AI" nav item points to `/` (already does, no change needed)
+**2. `src/components/learnpath/LearnPathModeSelector.tsx`** (lines 22-37)
+- Add `border-b border-border` to the top bar div (title + "All Modules" button) so it becomes its own separated row
+- Change that top bar's padding from `py-3` to `py-4` to match sidebar and chat header heights
+- The outer wrapper div keeps its own `border-b` below the "Viewing in:" row
 
-**3. `src/components/chat/AIChatWrapper.tsx`** — Update the route guard so the floating Agent One panel shows on `/` and `/embark` (since those are now Embark AI, not the merged chat)
-- Remove `/` from the `isChatPage` check so the floating chat button appears on the Embark AI page
-- Keep `/chat` hidden since that's the dedicated Agent One page
-
-No other files need changes. The original `LearnPath.tsx` with the split-pane EmbarkChat + EmbarkContent is intact and ready to use.
+This creates three aligned horizontal borders:
+```text
+┌──────────┬──────────────┬─────────────────────┐
+│ Org Icon │  Embark AI   │  Module Title        │
+│──────────│──────────────│─────────────────────│  ← all three borders align
+│          │              │  Viewing in: [pills] │
+│          │              │─────────────────────│  ← new border below mode selector
+```
 

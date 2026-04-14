@@ -55,7 +55,7 @@ export default function ManagerSkillTargets() {
         <BackButton />
         {/* Header */}
         <div>
-          <h1 className="font-display text-2xl font-bold text-foreground">Learning Paths</h1>
+          <h1 className="font-display text-2xl font-bold text-foreground">Skill Targets</h1>
           <p className="text-sm text-muted-foreground mt-1">50 skill targets available for team assignment</p>
         </div>
 

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Loader2, LogOut, LogIn, Paintbrush, GitGraph } from "lucide-react";
+import { Loader2, LogOut, LogIn, Paintbrush, GitGraph, Code } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -44,46 +44,44 @@ interface NavItem {
   label: string;
   path: string;
   icon: React.ElementType;
-  roles: Array<"learner" | "manager" | "admin">;
-  children?: { label: string; path: string; icon: React.ElementType }[];
+  children?: { label: string; path: string; icon: React.ElementType; dev?: boolean }[];
+  dev?: boolean;
 }
 
-const navItems: NavItem[] = [
-  {
-    label: "New Chat",
-    path: "/chat",
-    icon: MessageSquare,
-    roles: ["learner", "manager", "admin"],
-  },
-  {
-    label: "New Chat",
-    path: "/manager",
-    icon: Building2,
-    roles: ["manager", "admin"],
-    children: [
-      { label: "Chat", path: "/manager", icon: MessageSquare },
-      { label: "Role Play", path: "/manager/role-play", icon: Drama },
-      { label: "Embark AI Paths", path: "/manager/skill-targets", icon: Target },
-      { label: "Cohorts", path: "/manager/cohorts", icon: Layers },
-      { label: "Team Insights", path: "/team-insights", icon: BarChart3 },
-      { label: "Team Dashboard", path: "/team-dashboard", icon: Shield },
-      { label: "People Graph", path: "/manager/people-graph", icon: GitGraph },
-    ],
-  },
+const meNavItems: NavItem[] = [
+  { label: "Embark AI", path: "/", icon: GraduationCap },
+  { label: "New Chat", path: "/chat", icon: MessageSquare },
   {
     label: "Learning Spaces",
-    path: "/",
+    path: "/dashboard",
     icon: LayoutDashboard,
-    roles: ["learner", "manager", "admin"],
     children: [
       { label: "Skill Targets", path: "/dashboard", icon: Target },
       { label: "Role Play", path: "/role-play-bank", icon: Drama },
     ],
   },
-  { label: "Action Centre", path: "/my-inbox", icon: Inbox, roles: ["learner", "manager", "admin"] },
-  { label: "Embark AI", path: "/embark", icon: GraduationCap, roles: ["learner", "manager", "admin"] },
-  { label: "My 360", path: "/my-360", icon: CircleUser, roles: ["learner", "admin"] },
-  { label: "Admin", path: "/admin", icon: Shield, roles: ["admin", "manager"] },
+  { label: "Action Centre", path: "/my-inbox", icon: Inbox },
+  { label: "My 360", path: "/my-360", icon: CircleUser },
+];
+
+const teamNavItems: NavItem[] = [
+  { label: "Admin", path: "/admin", icon: Shield },
+  { label: "Team Dashboard", path: "/team-dashboard", icon: LayoutDashboard, dev: true },
+  { label: "Team Insights", path: "/team-insights", icon: BarChart3, dev: true },
+  { label: "New Chat", path: "/chat", icon: MessageSquare },
+  {
+    label: "Manage Learning",
+    path: "/manager/people-graph",
+    icon: Building2,
+    children: [
+      { label: "People Graph", path: "/manager/people-graph", icon: GitGraph },
+      { label: "Role Play", path: "/manager/role-play", icon: Drama },
+      { label: "Skill Targets", path: "/manager/skill-targets", icon: Target },
+      { label: "Cohorts", path: "/manager/cohorts", icon: Layers },
+    ],
+  },
+  { label: "Action Centre", path: "/my-inbox", icon: Inbox },
+  { label: "My 360", path: "/my-360", icon: CircleUser },
 ];
 
 export function AppSidebar() {
@@ -95,6 +93,7 @@ export function AppSidebar() {
   const location = useLocation();
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
   const [managerOpen, setManagerOpen] = useState(true);
+  const [devMode, setDevMode] = useState(() => localStorage.getItem("dev-mode") === "true");
   
   // Store the user's original base role so team mode doesn't overwrite admin → manager
   const baseRole = availableUsers.find((u) => u.id === user.id)?.role ?? user.role;
@@ -127,27 +126,16 @@ export function AppSidebar() {
     logoutUser(userId);
   };
 
-  const effectiveRole = viewMode === "me" ? "learner" : user.role === "admin" ? "admin" : "manager";
+  const baseItems = viewMode === "me" ? meNavItems : teamNavItems;
+  const filteredItems = devMode ? baseItems : baseItems.filter((item) => !item.dev);
 
-  const filteredItems = navItems.filter((item) => {
-    if (!item.roles.includes(effectiveRole)) return false;
-    // Hide Learning Spaces in team/manager mode
-    if (item.label === "Learning Spaces" && viewMode === "team") return false;
-    // Hide manager New Chat group in me mode
-    if (item.path === "/manager" && viewMode === "me") return false;
-    return true;
-  }).sort((a, b) => {
-    // In team mode, put Chat first then Admin
-    if (viewMode === "team") {
-      const order = (item: NavItem) => {
-        if (item.path === "/chat") return 0;
-        if (item.label === "Admin") return 1;
-        return 2;
-      };
-      return order(a) - order(b);
-    }
-    return 0;
-  });
+  const toggleDevMode = useCallback(() => {
+    setDevMode((prev) => {
+      const next = !prev;
+      localStorage.setItem("dev-mode", String(next));
+      return next;
+    });
+  }, []);
 
   const isTraditional = styleTheme === "traditional";
 
@@ -350,6 +338,29 @@ export function AppSidebar() {
 
           {/* Bottom section */}
           <div className={cn("w-full pb-3", expanded ? "px-3" : "flex flex-col items-center gap-1")}>
+            {/* Dev mode toggle */}
+            {expanded ? (
+              <button
+                onClick={toggleDevMode}
+                className={cn("flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium", devMode ? "text-foreground bg-white/50" : "text-muted-foreground hover:bg-white/50 hover:text-foreground")}
+              >
+                <Code className="h-4 w-4 shrink-0" />
+                <span>Dev</span>
+                {devMode && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
+              </button>
+            ) : (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={toggleDevMode}
+                    className={cn("flex h-9 w-9 items-center justify-center rounded-full transition-colors", devMode ? "text-foreground bg-white/50" : "text-muted-foreground hover:bg-white/50 hover:text-foreground")}
+                  >
+                    <Code className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>Dev mode {devMode ? "on" : "off"}</TooltipContent>
+              </Tooltip>
+            )}
             {/* Dark mode toggle */}
             {expanded ? (
               <button
@@ -701,6 +712,32 @@ export function AppSidebar() {
             <TooltipContent side="right" sideOffset={8}>
               {theme === "dark" ? "Dark mode" : superLight ? "Super Light mode" : "Light mode"}
             </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+
+      {/* Dev mode toggle */}
+      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
+        {expanded ? (
+          <button
+            onClick={toggleDevMode}
+            className={cn("flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium", devMode ? "text-sidebar-accent-foreground bg-sidebar-accent" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground")}
+          >
+            <Code className="h-4 w-4 shrink-0" />
+            <span>Dev</span>
+            {devMode && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
+          </button>
+        ) : (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={toggleDevMode}
+                className={cn("flex h-10 w-10 items-center justify-center rounded-lg transition-colors", devMode ? "text-sidebar-accent-foreground bg-sidebar-accent" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground")}
+              >
+                <Code className="h-4 w-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>Dev mode {devMode ? "on" : "off"}</TooltipContent>
           </Tooltip>
         )}
       </div>

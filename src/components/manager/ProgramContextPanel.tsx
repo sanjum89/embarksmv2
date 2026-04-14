@@ -38,7 +38,7 @@ export default function ProgramContextPanel() {
     <div className="p-6">
       <div className="flex items-center gap-2 mb-1">
         <Settings className="h-4 w-4 text-primary" />
-        <h3 className="font-display text-lg font-bold text-foreground">Program Context</h3>
+        <h3 className="font-display text-lg font-bold text-foreground">Cohorts</h3>
       </div>
       <p className="text-sm text-muted-foreground mb-6">{program.name}</p>
 

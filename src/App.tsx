@@ -72,7 +72,7 @@ const App = () => (
               <Route path="/manager/role-play" element={<RolePlayBank />} />
               <Route path="/manager/skill-targets" element={<ManagerSkillTargets />} />
               <Route path="/manager/skill-target/:id" element={<ManagerSkillTargetDetail />} />
-              <Route path="/manager/programs" element={<ProgramContextPage />} />
+              <Route path="/manager/cohorts" element={<ProgramContextPage />} />
               <Route path="/embark" element={<EmbarkAI />} />
               <Route path="/manager/people-graph" element={<PeopleGraphIntelligence />} />
               <Route path="/admin" element={<AdminView />} />

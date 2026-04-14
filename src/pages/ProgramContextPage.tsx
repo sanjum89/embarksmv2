@@ -114,7 +114,7 @@ function ProgramDetail({ program, onBack }: { program: ProgramContext; onBack: (
         {/* Breadcrumb */}
         <button onClick={onBack} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4">
           <ChevronRight className="h-3 w-3 rotate-180" />
-          Back to Programs
+          Back to Cohorts
         </button>
 
         <div className="flex items-start gap-4 mb-6">

@@ -1093,3 +1093,106 @@ export const profileDataByUser: Record<string, ProfileData> = {
     ],
   },
 };
+
+/* ─── Cohorts ─── */
+export interface CohortLearnerProgress {
+  learnerId: string;
+  overallProgress: number;
+  avgScore: number;
+  lastActive: string;
+  currentStep: string;
+  status: "not_started" | "in_progress" | "completed" | "at_risk";
+  tags: Array<"rising_star" | "at_risk" | "needs_attention" | "completed" | "ahead_of_pace">;
+  skillTargetProgress: Record<string, number>;
+}
+
+export interface Cohort {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  status: "draft" | "active" | "completed";
+  startDate: string;
+  endDate: string;
+  skillTargetIds: string[];
+  assignedLearnerIds: string[];
+  passPercentage: number;
+  adaptiveSkipThresholds: { skipOne: number; skipTwo: number };
+  learnerProgress: CohortLearnerProgress[];
+  createdAt: string;
+}
+
+export const mockCohorts: Cohort[] = [
+  {
+    id: "coh1",
+    name: "Apple L1 Support — March 2026",
+    description: "Onboarding cohort for new Apple L1 Customer Support hires joining in March 2026. Covers product ecosystem, troubleshooting, billing, and live call readiness.",
+    category: "Apple Support Program",
+    status: "active",
+    startDate: "2026-03-01",
+    endDate: "2026-04-30",
+    skillTargetIds: ["st4"],
+    assignedLearnerIds: ["u6", "u8", "u9", "u10"],
+    passPercentage: 70,
+    adaptiveSkipThresholds: { skipOne: 80, skipTwo: 90 },
+    learnerProgress: [
+      { learnerId: "u6", overallProgress: 85, avgScore: 88, lastActive: "2026-04-13", currentStep: "Module 7: Warranty & AppleCare", status: "in_progress", tags: ["rising_star", "ahead_of_pace"], skillTargetProgress: { st4: 85 } },
+      { learnerId: "u8", overallProgress: 62, avgScore: 71, lastActive: "2026-04-12", currentStep: "Module 5: Billing & Subscriptions", status: "in_progress", tags: [], skillTargetProgress: { st4: 62 } },
+      { learnerId: "u9", overallProgress: 23, avgScore: 55, lastActive: "2026-04-05", currentStep: "Module 2: Apple ID & iCloud", status: "at_risk", tags: ["at_risk", "needs_attention"], skillTargetProgress: { st4: 23 } },
+      { learnerId: "u10", overallProgress: 45, avgScore: 64, lastActive: "2026-04-11", currentStep: "Module 4: iOS Troubleshooting", status: "in_progress", tags: [], skillTargetProgress: { st4: 45 } },
+    ],
+    createdAt: "2026-02-20",
+  },
+  {
+    id: "coh2",
+    name: "Advanced Troubleshooting — Q2",
+    description: "Advanced troubleshooting skills for experienced support agents moving to L2 escalation handling.",
+    category: "Career Development",
+    status: "active",
+    startDate: "2026-04-01",
+    endDate: "2026-06-30",
+    skillTargetIds: ["st4"],
+    assignedLearnerIds: ["u6", "u8"],
+    passPercentage: 80,
+    adaptiveSkipThresholds: { skipOne: 85, skipTwo: 95 },
+    learnerProgress: [
+      { learnerId: "u6", overallProgress: 40, avgScore: 78, lastActive: "2026-04-13", currentStep: "Module 3: Advanced Diagnostics", status: "in_progress", tags: ["ahead_of_pace"], skillTargetProgress: { st4: 40 } },
+      { learnerId: "u8", overallProgress: 15, avgScore: 60, lastActive: "2026-04-10", currentStep: "Module 1: Escalation Frameworks", status: "in_progress", tags: [], skillTargetProgress: { st4: 15 } },
+    ],
+    createdAt: "2026-03-25",
+  },
+  {
+    id: "coh3",
+    name: "Apple L1 Support — January 2026",
+    description: "Completed onboarding cohort for the January 2026 batch of Apple L1 support agents.",
+    category: "Apple Support Program",
+    status: "completed",
+    startDate: "2026-01-05",
+    endDate: "2026-02-28",
+    skillTargetIds: ["st4"],
+    assignedLearnerIds: ["u6", "u8", "u9"],
+    passPercentage: 70,
+    adaptiveSkipThresholds: { skipOne: 80, skipTwo: 90 },
+    learnerProgress: [
+      { learnerId: "u6", overallProgress: 100, avgScore: 92, lastActive: "2026-02-25", currentStep: "Completed", status: "completed", tags: ["completed", "rising_star"], skillTargetProgress: { st4: 100 } },
+      { learnerId: "u8", overallProgress: 100, avgScore: 78, lastActive: "2026-02-27", currentStep: "Completed", status: "completed", tags: ["completed"], skillTargetProgress: { st4: 100 } },
+      { learnerId: "u9", overallProgress: 100, avgScore: 71, lastActive: "2026-02-28", currentStep: "Completed", status: "completed", tags: ["completed"], skillTargetProgress: { st4: 100 } },
+    ],
+    createdAt: "2025-12-20",
+  },
+  {
+    id: "coh4",
+    name: "New Product Launch Training",
+    description: "Draft cohort for upcoming product launch training covering new Apple hardware and software features.",
+    category: "Product Training",
+    status: "draft",
+    startDate: "2026-05-01",
+    endDate: "2026-06-15",
+    skillTargetIds: [],
+    assignedLearnerIds: [],
+    passPercentage: 75,
+    adaptiveSkipThresholds: { skipOne: 80, skipTwo: 90 },
+    learnerProgress: [],
+    createdAt: "2026-04-10",
+  },
+];

@@ -338,6 +338,29 @@ export function AppSidebar() {
 
           {/* Bottom section */}
           <div className={cn("w-full pb-3", expanded ? "px-3" : "flex flex-col items-center gap-1")}>
+            {/* Dev mode toggle */}
+            {expanded ? (
+              <button
+                onClick={toggleDevMode}
+                className={cn("flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium", devMode ? "text-foreground bg-white/50" : "text-muted-foreground hover:bg-white/50 hover:text-foreground")}
+              >
+                <Code className="h-4 w-4 shrink-0" />
+                <span>Dev</span>
+                {devMode && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
+              </button>
+            ) : (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={toggleDevMode}
+                    className={cn("flex h-9 w-9 items-center justify-center rounded-full transition-colors", devMode ? "text-foreground bg-white/50" : "text-muted-foreground hover:bg-white/50 hover:text-foreground")}
+                  >
+                    <Code className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>Dev mode {devMode ? "on" : "off"}</TooltipContent>
+              </Tooltip>
+            )}
             {/* Dark mode toggle */}
             {expanded ? (
               <button
@@ -689,6 +712,32 @@ export function AppSidebar() {
             <TooltipContent side="right" sideOffset={8}>
               {theme === "dark" ? "Dark mode" : superLight ? "Super Light mode" : "Light mode"}
             </TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+
+      {/* Dev mode toggle */}
+      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
+        {expanded ? (
+          <button
+            onClick={toggleDevMode}
+            className={cn("flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium", devMode ? "text-sidebar-accent-foreground bg-sidebar-accent" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground")}
+          >
+            <Code className="h-4 w-4 shrink-0" />
+            <span>Dev</span>
+            {devMode && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
+          </button>
+        ) : (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={toggleDevMode}
+                className={cn("flex h-10 w-10 items-center justify-center rounded-lg transition-colors", devMode ? "text-sidebar-accent-foreground bg-sidebar-accent" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground")}
+              >
+                <Code className="h-4 w-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>Dev mode {devMode ? "on" : "off"}</TooltipContent>
           </Tooltip>
         )}
       </div>

@@ -44,7 +44,7 @@ function ThinkingIndicator() {
 export function AIChatWrapper() {
   const ctx = useContext(AgentOneContext);
   const location = useLocation();
-  const isChatPage = location.pathname === "/" || location.pathname === "/chat" || location.pathname === "/embark";
+  const isChatPage = location.pathname === "/chat";
 
   if (!ctx || isChatPage) return null;
 

@@ -135,10 +135,12 @@ export function NodeGraphView({ foundational = [], engagement = [], work = [] }:
 
   // Layout: place nodes on concentric rings in the SVG viewBox
   const CX = 500;
-  const CY = 400;
-  const SOURCE_R = 320;
+  const CY = 450;
+  const SOURCE_R = 340;
   const CONSUMER_R = 180;
-  const ENGINE_R = 0;
+  const ENGINE_R = 54;
+  const SOURCE_NODE_R = 44;
+  const CONSUMER_NODE_R = 38;
 
   const sourcePositions = useMemo(
     () =>
@@ -159,6 +161,20 @@ export function NodeGraphView({ foundational = [], engagement = [], work = [] }:
   );
 
   const hasSimulation = simulatedOff.size > 0;
+
+  // Helper to calculate line endpoints offset by radii
+  const getLineEndpoints = (
+    sx: number, sy: number, sR: number,
+    tx: number, ty: number, tR: number
+  ) => {
+    const angle = Math.atan2(ty - sy, tx - sx);
+    return {
+      x1: sx + sR * Math.cos(angle),
+      y1: sy + sR * Math.sin(angle),
+      x2: tx - tR * Math.cos(angle),
+      y2: ty - tR * Math.sin(angle),
+    };
+  };
 
   return (
     <div className="relative">
@@ -192,9 +208,29 @@ export function NodeGraphView({ foundational = [], engagement = [], work = [] }:
         )}
       </AnimatePresence>
 
+      {/* Flow animation styles */}
+      <style>{`
+        @keyframes flowIn {
+          to { stroke-dashoffset: 0; }
+          from { stroke-dashoffset: 20; }
+        }
+        @keyframes flowOut {
+          from { stroke-dashoffset: 0; }
+          to { stroke-dashoffset: -20; }
+        }
+        .flow-line-in {
+          stroke-dasharray: 6 4;
+          animation: flowIn 1.5s linear infinite;
+        }
+        .flow-line-out {
+          stroke-dasharray: 6 4;
+          animation: flowOut 1.5s linear infinite;
+        }
+      `}</style>
+
       {/* SVG Canvas */}
       <div className="relative w-full overflow-hidden rounded-2xl border border-border/40 bg-gradient-to-br from-background via-muted/20 to-background">
-        <svg viewBox="0 0 1000 800" className="w-full h-auto" style={{ minHeight: 500 }}>
+        <svg viewBox="0 0 1000 900" className="w-full h-auto" style={{ minHeight: 500 }}>
           <defs>
             <radialGradient id="engine-glow" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
@@ -203,6 +239,13 @@ export function NodeGraphView({ foundational = [], engagement = [], work = [] }:
             <filter id="node-shadow">
               <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="hsl(var(--foreground))" floodOpacity="0.08" />
             </filter>
+            {/* Arrow markers */}
+            <marker id="arrow-normal" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+              <path d="M0,1 L9,4 L0,7" fill="none" stroke="hsl(var(--muted-foreground))" strokeWidth="1.2" opacity="0.5" />
+            </marker>
+            <marker id="arrow-destructive" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto" markerUnits="userSpaceOnUse">
+              <path d="M0,1 L9,4 L0,7" fill="none" stroke="hsl(var(--destructive))" strokeWidth="1.5" opacity="0.8" />
+            </marker>
           </defs>
 
           {/* Concentric ring guides */}
@@ -213,16 +256,19 @@ export function NodeGraphView({ foundational = [], engagement = [], work = [] }:
           {sourcePositions.map((pos, i) => {
             const sys = allSystems[i];
             const isOff = simulatedOff.has(sys.id);
+            const ep = getLineEndpoints(pos.x, pos.y, SOURCE_NODE_R, CX, CY, ENGINE_R);
             return (
               <line
                 key={`s2e-${sys.id}`}
-                x1={pos.x}
-                y1={pos.y}
-                x2={CX}
-                y2={CY}
-                stroke={isOff ? "hsl(var(--destructive))" : "hsl(var(--border))"}
-                strokeWidth={isOff ? 1.5 : 0.8}
-                opacity={isOff ? 0.6 : 0.2}
+                x1={ep.x1}
+                y1={ep.y1}
+                x2={ep.x2}
+                y2={ep.y2}
+                stroke={isOff ? "hsl(var(--destructive))" : "hsl(var(--muted-foreground))"}
+                strokeWidth={isOff ? 1.5 : 1}
+                opacity={isOff ? 0.6 : 0.25}
+                className={isOff ? "" : "flow-line-in"}
+                markerEnd={isOff ? "url(#arrow-destructive)" : "url(#arrow-normal)"}
               />
             );
           })}
@@ -231,16 +277,19 @@ export function NodeGraphView({ foundational = [], engagement = [], work = [] }:
           {consumerPositions.map((pos, i) => {
             const con = consumerNodes[i];
             const isAffected = affectedConsumers.has(con.id);
+            const ep = getLineEndpoints(CX, CY, ENGINE_R, pos.x, pos.y, CONSUMER_NODE_R);
             return (
               <line
                 key={`e2c-${con.id}`}
-                x1={CX}
-                y1={CY}
-                x2={pos.x}
-                y2={pos.y}
-                stroke={isAffected ? "hsl(var(--destructive))" : "hsl(var(--border))"}
-                strokeWidth={isAffected ? 1.5 : 0.8}
-                opacity={isAffected ? 0.6 : 0.2}
+                x1={ep.x1}
+                y1={ep.y1}
+                x2={ep.x2}
+                y2={ep.y2}
+                stroke={isAffected ? "hsl(var(--destructive))" : "hsl(var(--muted-foreground))"}
+                strokeWidth={isAffected ? 1.5 : 1}
+                opacity={isAffected ? 0.6 : 0.25}
+                className={isAffected ? "" : "flow-line-out"}
+                markerEnd={isAffected ? "url(#arrow-destructive)" : "url(#arrow-normal)"}
               />
             );
           })}
@@ -254,7 +303,7 @@ export function NodeGraphView({ foundational = [], engagement = [], work = [] }:
             const Icon = iconMap[sys.icon] || Database;
             const isOff = simulatedOff.has(sys.id);
             const isSelected = selected?.type === "source" && selected.system.id === sys.id;
-            const nodeR = 40;
+            const nodeR = SOURCE_NODE_R;
             return (
               <g
                 key={sys.id}
@@ -288,26 +337,27 @@ export function NodeGraphView({ foundational = [], engagement = [], work = [] }:
                   strokeWidth="1.5"
                   filter="url(#node-shadow)"
                 />
-                {/* Icon placeholder — rendered via foreignObject */}
-                <foreignObject x={pos.x - 14} y={pos.y - 20} width="28" height="28">
+                {/* Icon centered in circle */}
+                <foreignObject x={pos.x - 14} y={pos.y - 14} width="28" height="28">
                   <div className={`flex items-center justify-center w-full h-full ${isOff ? "text-destructive" : categoryIconColors[sys.category] || "text-teal-500"}`}>
                     <Icon className="h-5 w-5" />
                   </div>
                 </foreignObject>
+                {/* Label below circle */}
                 <text
                   x={pos.x}
-                  y={pos.y + 16}
+                  y={pos.y + nodeR + 14}
                   textAnchor="middle"
-                  className="fill-foreground text-[8px] font-semibold"
-                  style={{ fontSize: 8 }}
+                  className="fill-foreground"
+                  style={{ fontSize: 9, fontWeight: 600 }}
                 >
-                  {sys.name.length > 18 ? sys.name.slice(0, 16) + "…" : sys.name}
+                  {sys.name.length > 20 ? sys.name.slice(0, 18) + "…" : sys.name}
                 </text>
                 {/* Signal count badge */}
-                <circle cx={pos.x + 28} cy={pos.y - 28} r={12} fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="1" />
+                <circle cx={pos.x + 30} cy={pos.y - 30} r={12} fill="hsl(var(--muted))" stroke="hsl(var(--border))" strokeWidth="1" />
                 <text
-                  x={pos.x + 28}
-                  y={pos.y - 24}
+                  x={pos.x + 30}
+                  y={pos.y - 26}
                   textAnchor="middle"
                   className="fill-muted-foreground"
                   style={{ fontSize: 7, fontWeight: 600 }}
@@ -353,7 +403,7 @@ export function NodeGraphView({ foundational = [], engagement = [], work = [] }:
             const pos = consumerPositions[i];
             const isAffected = affectedConsumers.has(con.id);
             const isSelected = selected?.type === "consumer" && selected.consumer.id === con.id;
-            const nodeR = 34;
+            const nodeR = CONSUMER_NODE_R;
             return (
               <g
                 key={con.id}
@@ -377,13 +427,21 @@ export function NodeGraphView({ foundational = [], engagement = [], work = [] }:
                   strokeWidth="1.5"
                   filter="url(#node-shadow)"
                 />
-                <foreignObject x={pos.x - 12} y={pos.y - 18} width="24" height="24">
+                {/* Icon centered in circle */}
+                <foreignObject x={pos.x - 12} y={pos.y - 12} width="24" height="24">
                   <div className={`flex items-center justify-center w-full h-full ${con.color}`}>
                     {con.icon}
                   </div>
                 </foreignObject>
-                <text x={pos.x} y={pos.y + 14} textAnchor="middle" className="fill-foreground" style={{ fontSize: 7, fontWeight: 600 }}>
-                  {con.label.length > 16 ? con.label.slice(0, 14) + "…" : con.label}
+                {/* Label below circle */}
+                <text
+                  x={pos.x}
+                  y={pos.y + nodeR + 14}
+                  textAnchor="middle"
+                  className="fill-foreground"
+                  style={{ fontSize: 8, fontWeight: 600 }}
+                >
+                  {con.label}
                 </text>
               </g>
             );

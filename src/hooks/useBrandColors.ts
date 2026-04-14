@@ -317,7 +317,9 @@ export function useBrandColors() {
       const { primary, accent, sidebar } = config;
       if (!primary || !accent || !sidebar) return;
 
-      const vars = deriveThemeVars(primary, accent, sidebar);
+      const vars = theme === "dark"
+        ? deriveDarkThemeVars(primary, accent, sidebar)
+        : deriveThemeVars(primary, accent, sidebar);
 
       // Always apply non-sidebar vars
       Object.entries(vars).forEach(([prop, val]) => {

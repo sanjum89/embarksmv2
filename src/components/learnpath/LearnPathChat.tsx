@@ -474,7 +474,7 @@ export function EmbarkChat() {
     <div className="h-full flex flex-col bg-background border-r border-border">
       <div className="px-4 py-3 border-b border-border flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-accent" />
-        <h2 className="font-semibold text-foreground text-sm">AI Learning Manager</h2>
+        <h2 className="font-semibold text-foreground text-sm">Embark AI</h2>
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-4">

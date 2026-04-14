@@ -149,11 +149,11 @@ function ProgramDetail({ program, onBack }: { program: ProgramContext; onBack: (
               <div className="space-y-2 text-xs text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Target className="h-3 w-3 text-warning" />
-                  <span>Score &gt;{program.adaptiveSkipThresholds.skipOne}% → Skip Module 2 (adaptive)</span>
+                  <span>Score &gt;{program.adaptiveSkipThresholds?.skipOne ?? 70}% → Skip Module 2 (adaptive)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Target className="h-3 w-3 text-success" />
-                  <span>Score ≥{program.adaptiveSkipThresholds.skipTwo}% → Skip Modules 2 & 3 (adaptive)</span>
+                  <span>Score ≥{program.adaptiveSkipThresholds?.skipTwo ?? 90}% → Skip Modules 2 &amp; 3 (adaptive)</span>
                 </div>
               </div>
             </div>

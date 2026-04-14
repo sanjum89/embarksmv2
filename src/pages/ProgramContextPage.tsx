@@ -59,7 +59,7 @@ export default function ProgramContextPage() {
                 <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{pc.description}</p>
                 <div className="flex items-center gap-3 mt-2">
                   <Badge variant="secondary" className="text-[10px]">{pc.category}</Badge>
-                  <span className="text-[10px] text-muted-foreground">{pc.assignedLearners.length} learners</span>
+                  <span className="text-[10px] text-muted-foreground">{(pc.assignedLearners ?? []).length} learners</span>
                   <span className="text-[10px] text-muted-foreground">Pass: {pc.assessmentPassPercentage}%</span>
                 </div>
               </div>

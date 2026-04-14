@@ -1,19 +1,38 @@
 
 
-## Rename Programs → Cohorts & Move Under Manage Learning
+## Fix Menu Structure & Move Dev Toggle
 
-### What Changes
-1. Rename "Programs" to "Cohorts" in the sidebar, route, and page content
-2. Move it under the "Manage Learning" group below Skill Targets in the team mode sidebar
+### Issues Found
+1. **Team Mode**: People Graph is currently inside "Manage Learning" group — user wants it as a standalone top-level item between "Team Insights" and "New Chat"
+2. **Dev toggle position**: Currently renders above Branding in the bottom settings area — should be below Branding in both themes
 
-### Files Changed
+### Changes to `src/components/layout/AppSidebar.tsx`
 
-| File | Change |
-|---|---|
-| `src/components/layout/AppSidebar.tsx` | Rename sidebar item label `"Programs"` → `"Cohorts"`, path `/manager/programs` → `/manager/cohorts`. Restructure team nav so Cohorts sits inside a "Manage Learning" group under: People Graph, Role Play, Skill Targets, **Cohorts** |
-| `src/App.tsx` | Update route from `/manager/programs` → `/manager/cohorts`, rename import if desired |
-| `src/pages/ProgramContextPage.tsx` | Rename heading "Program Context" → "Cohorts", "New Program" → "New Cohort", "No programs configured" → "No cohorts configured", "Back to Programs" → "Back to Cohorts", "Create your first program" → "Create your first cohort" |
-| `src/components/manager/ProgramContextPanel.tsx` | Rename heading "Program Context" → "Cohorts" |
+**1. Update `teamNavItems` array (line 67-85)**
 
-All internal data structures (`programContexts`, `ProgramContext` type) remain unchanged — only user-facing labels are renamed.
+Move People Graph out of the Manage Learning children to be a standalone item:
+
+```tsx
+const teamNavItems: NavItem[] = [
+  { label: "Admin", path: "/admin", icon: Shield },
+  { label: "Team Dashboard", path: "/team-dashboard", icon: LayoutDashboard, dev: true },
+  { label: "Team Insights", path: "/team-insights", icon: BarChart3, dev: true },
+  { label: "People Graph", path: "/manager/people-graph", icon: GitGraph },
+  { label: "New Chat", path: "/chat", icon: MessageSquare },
+  {
+    label: "Manage Learning",
+    path: "/manager/skill-targets",
+    icon: Building2,
+    children: [
+      { label: "Skill Targets", path: "/manager/skill-targets", icon: Target },
+      { label: "Role Play", path: "/manager/role-play", icon: Drama },
+      { label: "Cohorts", path: "/manager/cohorts", icon: Layers },
+    ],
+  },
+  { label: "Action Centre", path: "/my-inbox", icon: Inbox },
+  { label: "My 360", path: "/my-360", icon: CircleUser },
+];
+```
+
+**2. Move Dev toggle below Branding** in both Traditional and New theme bottom sections — swap the order so it renders after the Branding panel.
 

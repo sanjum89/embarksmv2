@@ -389,7 +389,7 @@ export function EmbarkChat() {
 
       setIsStreaming(false);
     },
-    [buildContext, learnPath, normalizedAccount?.learningModules, skillTargets]
+    [buildContext, embark, normalizedAccount?.learningModules, skillTargets]
   );
 
   // Auto-congratulate on module completion

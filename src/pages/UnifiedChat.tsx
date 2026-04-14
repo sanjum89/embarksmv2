@@ -1,5 +1,4 @@
-import { EmbarkProvider } from "@/contexts/LearnPathContext";
-import { useEmbark } from "@/contexts/LearnPathContext";
+import { EmbarkProvider, useEmbark } from "@/contexts/LearnPathContext";
 import { EmbarkContent } from "@/components/learnpath/LearnPathContent";
 import { EmbarkChat } from "@/components/learnpath/LearnPathChat";
 import {

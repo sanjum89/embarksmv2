@@ -472,7 +472,7 @@ export function EmbarkChat() {
 
   return (
     <div className="h-full flex flex-col bg-background border-r border-border">
-      <div className="px-4 py-[18px] border-b border-border flex items-center gap-2">
+      <div className="px-4 min-h-[65px] border-b border-border flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-accent" />
         <h2 className="font-semibold text-foreground text-sm">Embark AI</h2>
       </div>

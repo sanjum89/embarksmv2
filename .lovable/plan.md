@@ -1,19 +1,21 @@
 
 
-## Align Embark AI Header Border with Sidebar and Content Panel
+## Align Embark AI Header Border with Sidebar
 
 ### Problem
-The "Embark AI" chat header border sits higher than the sidebar brand section border and the content panel title border. The sidebar brand area is taller because it contains the AccountSwitcher (logo + org name + chevron), while the chat header only has a small icon + text with the same `py-4` padding.
+The sidebar brand section renders taller than the Embark AI chat header and content panel header despite all using similar padding. The sidebar has `py-4` (32px) wrapping a button with `py-1.5` + `h-8` logo, totaling ~70px. The Embark AI header with `py-[18px]` only reaches ~56px.
 
 ### Fix
+Use a fixed `min-h` on all three headers instead of relying on padding to match heights:
+
+**`src/components/layout/AppSidebar.tsx`** (line 588)
+- Add a data attribute or note the exact rendered height. The brand section div uses `px-4 py-4`.
 
 **`src/components/learnpath/LearnPathChat.tsx`** (line 475)
-- Change the chat header from `py-4` to `py-[18px]` (or use a fixed `min-h-[60px]` with flex centering) to match the actual rendered height of the sidebar brand section
-- This ensures the `border-b` of the Embark AI header aligns horizontally with the sidebar's `border-b` and the content panel's top bar `border-b`
+- Change from `py-[18px]` to `min-h-[65px] flex items-center` so it matches the sidebar brand section height regardless of content
 
 **`src/components/learnpath/LearnPathModeSelector.tsx`** (line 24)
-- Apply the same padding adjustment to the content panel's top bar div so all three borders remain aligned
+- Same change on the top bar: `min-h-[65px] flex items-center` to ensure the first border aligns with sidebar and chat header
 
-### Technical Detail
-The sidebar brand section renders at ~60px tall (py-4 = 32px padding + h-8 logo + py-1.5 inner button). The chat and content headers with just `py-4` render at ~52px. Increasing vertical padding on the chat and content headers by ~4px each side will close the gap.
+This approach is more robust than guessing padding — all three sections share the same minimum height so their `border-b` lines align perfectly.
 

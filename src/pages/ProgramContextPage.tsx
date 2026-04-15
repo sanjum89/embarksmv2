@@ -32,7 +32,9 @@ function useLearnerMap() {
     : defaultNewHires;
   return useMemo(() => {
     const map = new Map<string, typeof newHires[0]>();
-    newHires.forEach((h) => map.set(h.user.id, h));
+    newHires.forEach((h) => {
+      if (h?.user?.id) map.set(h.user.id, h);
+    });
     return { newHires, learnerMap: map };
   }, [newHires]);
 }

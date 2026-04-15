@@ -21,7 +21,7 @@ export function EmbarkModeSelector({ skillTargetTitle }: Props) {
   return (
     <div className="border-b border-border">
       {/* Top bar: skill target name + All Modules */}
-      <div className="px-4 py-[18px] flex items-center justify-between border-b border-border">
+      <div className="px-4 min-h-[65px] flex items-center justify-between border-b border-border">
         <h2 className="text-sm font-semibold text-foreground truncate">
           {skillTargetTitle ?? "Learning Path"}
         </h2>

@@ -543,7 +543,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
           <div className="space-y-2">
             {cohort.learnerProgress.map((lp) => {
               const hire = learnerMap.get(lp.learnerId);
-              const name = hire?.user.name ?? lp.learnerId;
+              const name = hire?.user?.name ?? lp.learnerId;
               const initials = name.split(" ").map(n => n[0]).join("");
               return (
                 <div key={lp.learnerId} className="rounded-xl border border-border bg-card p-4">

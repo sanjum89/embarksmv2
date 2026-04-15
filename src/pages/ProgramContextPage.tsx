@@ -617,7 +617,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
                       const prog = lp.skillTargetProgress[stId] ?? 0;
                       return (
                         <div key={lp.learnerId} className="flex items-center gap-3 text-xs">
-                          <span className="text-muted-foreground w-28 truncate">{hire?.user.name ?? lp.learnerId}</span>
+                          <span className="text-muted-foreground w-28 truncate">{hire?.user?.name ?? lp.learnerId}</span>
                           <div className="flex-1"><Progress value={prog} className="h-1" /></div>
                           <span className="text-muted-foreground w-8 text-right">{prog}%</span>
                         </div>

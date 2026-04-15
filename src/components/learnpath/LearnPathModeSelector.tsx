@@ -21,7 +21,7 @@ export function EmbarkModeSelector({ skillTargetTitle }: Props) {
   return (
     <div className="border-b border-border">
       {/* Top bar: skill target name + All Modules */}
-      <div className="px-4 min-h-[65px] flex items-center justify-between border-b border-border">
+      <div className="px-4 min-h-[60px] flex items-center justify-between border-b border-border">
         <h2 className="text-sm font-semibold text-foreground truncate">
           {skillTargetTitle ?? "Learning Path"}
         </h2>
@@ -37,7 +37,7 @@ export function EmbarkModeSelector({ skillTargetTitle }: Props) {
       </div>
 
       {/* Mode selector row */}
-      <div className="px-4 pb-2.5 flex items-center gap-2 overflow-x-auto">
+      <div className="px-4 py-2.5 flex items-center justify-center gap-2 overflow-x-auto">
         <span className="text-xs text-muted-foreground whitespace-nowrap">Viewing in:</span>
         <div className="flex items-center gap-1">
           {modes.map(({ mode, label, icon: Icon }) => (

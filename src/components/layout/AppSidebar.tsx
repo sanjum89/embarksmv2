@@ -585,7 +585,7 @@ export function AppSidebar() {
       )}
     >
       {/* Brand + toggle */}
-      <div className={cn("flex flex-col border-b border-sidebar-border w-full", expanded ? "px-4 py-4" : "items-center py-4")}>
+      <div className={cn("flex flex-col border-b border-sidebar-border w-full min-h-[60px]", expanded ? "px-4 py-3" : "items-center py-3")}>
         <AccountSwitcher expanded={expanded} onToggleSidebar={toggle} variant="new" />
       </div>
 

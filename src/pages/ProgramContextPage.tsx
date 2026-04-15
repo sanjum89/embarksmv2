@@ -312,7 +312,7 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
               <div className="relative w-60"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input value={searchLearner} onChange={(e) => setSearchLearner(e.target.value)} placeholder="Search learners..." className="pl-9 h-9" /></div>
             </div>
             <div className="space-y-1 max-h-80 overflow-y-auto">
-              {newHires.filter((h) => h.user.name.toLowerCase().includes(searchLearner.toLowerCase())).map((hire) => (
+              {newHires.filter((h) => h?.user?.name?.toLowerCase().includes(searchLearner.toLowerCase())).map((hire) => (
                 <label key={hire.user.id} className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-secondary/50 transition-colors cursor-pointer">
                   <Checkbox checked={selectedLearners.has(hire.user.id)} onCheckedChange={() => toggleLearner(hire.user.id)} />
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
@@ -543,7 +543,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
           <div className="space-y-2">
             {cohort.learnerProgress.map((lp) => {
               const hire = learnerMap.get(lp.learnerId);
-              const name = hire?.user.name ?? lp.learnerId;
+              const name = hire?.user?.name ?? lp.learnerId;
               const initials = name.split(" ").map(n => n[0]).join("");
               return (
                 <div key={lp.learnerId} className="rounded-xl border border-border bg-card p-4">
@@ -617,7 +617,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
                       const prog = lp.skillTargetProgress[stId] ?? 0;
                       return (
                         <div key={lp.learnerId} className="flex items-center gap-3 text-xs">
-                          <span className="text-muted-foreground w-28 truncate">{hire?.user.name ?? lp.learnerId}</span>
+                          <span className="text-muted-foreground w-28 truncate">{hire?.user?.name ?? lp.learnerId}</span>
                           <div className="flex-1"><Progress value={prog} className="h-1" /></div>
                           <span className="text-muted-foreground w-8 text-right">{prog}%</span>
                         </div>

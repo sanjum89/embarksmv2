@@ -50,6 +50,7 @@ interface NavItem {
 
 const meNavItems: NavItem[] = [
   { label: "Embark AI", path: "/", icon: GraduationCap },
+  { label: "Embark AI v2", path: "/embark-v2", icon: GraduationCap, dev: true },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
   {
     label: "Learning Spaces",

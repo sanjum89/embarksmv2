@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { motion, AnimatePresence } from "framer-motion";
 import {

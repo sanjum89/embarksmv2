@@ -31,6 +31,7 @@ import ManagerSkillTargetDetail from "./pages/ManagerSkillTargetDetail";
 import ProgramContextPage from "./pages/ProgramContextPage";
 import AdminView from "./pages/AdminView";
 import EmbarkAI from "./pages/LearnPath";
+import EmbarkAIv2 from "./pages/LearnPathV2";
 import UnifiedChat from "./pages/UnifiedChat";
 import NotFound from "./pages/NotFound";
 import PeopleGraphIntelligence from "./pages/PeopleGraphIntelligence";

@@ -1,21 +1,18 @@
 
+Goal: move only the sidebar brand divider so it aligns with the already-matching Embark AI and content header borders.
 
-## Align Embark AI Header Border with Sidebar
+1. Fix the sidebar header box
+- In `src/components/layout/AppSidebar.tsx` (brand section around line 588), replace the current padding-based wrapper with a true fixed-height header row.
+- Change the wrapper from `min-h-[60px]` plus `py-3` / `flex-col` to a single centered row such as `h-[60px] flex items-center border-b ...`.
+- Keep horizontal spacing only (`px-4` when expanded, centered layout when collapsed). Remove vertical padding from the wrapper so the border sits at the exact intended height.
 
-### Problem
-The sidebar brand section renders taller than the Embark AI chat header and content panel header despite all using similar padding. The sidebar has `py-4` (32px) wrapping a button with `py-1.5` + `h-8` logo, totaling ~70px. The Embark AI header with `py-[18px]` only reaches ~56px.
+2. Leave Embark/content headers as-is
+- Keep `src/components/learnpath/LearnPathChat.tsx` and `src/components/learnpath/LearnPathModeSelector.tsx` on the current 60px header height.
+- Since those two now coincide, the remaining drift should be solved by adjusting the sidebar only, not by moving the other two again.
 
-### Fix
-Use a fixed `min-h` on all three headers instead of relying on padding to match heights:
+3. Preserve centering of the sidebar control
+- Ensure `AccountSwitcher` remains vertically centered inside the new 60px sidebar header in both expanded and collapsed states.
+- If needed, use wrapper-level centering (`items-center`, `justify-center` for collapsed) instead of wrapper padding.
 
-**`src/components/layout/AppSidebar.tsx`** (line 588)
-- Add a data attribute or note the exact rendered height. The brand section div uses `px-4 py-4`.
-
-**`src/components/learnpath/LearnPathChat.tsx`** (line 475)
-- Change from `py-[18px]` to `min-h-[65px] flex items-center` so it matches the sidebar brand section height regardless of content
-
-**`src/components/learnpath/LearnPathModeSelector.tsx`** (line 24)
-- Same change on the top bar: `min-h-[65px] flex items-center` to ensure the first border aligns with sidebar and chat header
-
-This approach is more robust than guessing padding — all three sections share the same minimum height so their `border-b` lines align perfectly.
-
+## Technical detail
+The sidebar brand wrapper is the unstable piece because it still mixes a height constraint with vertical padding and a column layout. The robust fix is to make it a single fixed-height flex row, so its `border-b` lands on the same Y-position as the Embark AI and content panel borders.

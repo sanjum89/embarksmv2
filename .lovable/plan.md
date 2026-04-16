@@ -1,18 +1,14 @@
 
 
-## Fix: Strip `[FORMAT:...]` Tags from Displayed Messages
+## Fix: Replace "LearnPath" with "Embark AI" in chat system prompt
 
-### Problem
-When the AI model doesn't fully comply with the prompt instructions, it echoes `[FORMAT:skill_gaps_chart]` as visible text in the chat instead of stripping it and producing the rich block. The user sees raw format tags.
+The AI chat edge function (`supabase/functions/learnpath-chat/index.ts`) uses "LearnPath" in its system prompt, which causes the AI to say "Welcome to LearnPath" in responses.
 
-### Fix
-Add a client-side sanitization step in `parseEmbarkRichBlocks` (in `LearnPathRichBlock.tsx`) to strip any `[FORMAT:...]` prefixes from text segments before they're rendered. This is a one-line regex replace applied to the input text at the start of the function.
+### Changes
 
-### Technical Detail
-In `src/components/learnpath/LearnPathRichBlock.tsx`, at the top of `parseEmbarkRichBlocks`, add:
-```typescript
-text = text.replace(/\[FORMAT:\w+\]\s*/g, "");
-```
+**`supabase/functions/learnpath-chat/index.ts`** — two substitutions:
+- Line 69: `"You are the AI Learning Manager inside LearnPath."` → `"You are the AI Learning Manager inside Embark AI."`
+- Line 149: `"If the learner just opened LearnPath, welcome them briefly..."` → `"If the learner just opened Embark AI, welcome them briefly..."`
 
-This strips all `[FORMAT:xxx]` tags regardless of whether the AI produced a rich block or not, ensuring they never appear in the UI.
+No other files need changes — the rest of the codebase already uses "Embark AI" in user-facing text.
 

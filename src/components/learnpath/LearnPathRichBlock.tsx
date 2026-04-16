@@ -302,6 +302,7 @@ export function EmbarkRichBlock({ block }: { block: EmbarkRichBlockData }) {
 /* ── Parser ── */
 
 export function parseEmbarkRichBlocks(text: string): { segments: Array<{ type: "text"; content: string } | { type: "block"; block: EmbarkRichBlockData }>; } {
+  text = text.replace(/\[FORMAT:\w+\]\s*/g, "");
   const regex = /:::RICH_BLOCK(\{[\s\S]*?\}):::/g;
   const segments: Array<{ type: "text"; content: string } | { type: "block"; block: EmbarkRichBlockData }> = [];
   let lastIndex = 0;

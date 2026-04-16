@@ -416,18 +416,33 @@ export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
                   </div>
                 )}
 
-                <button
-                  onClick={handleComplete}
-                  disabled={!selectedStyle}
-                  className={cn(
-                    "w-full rounded-lg py-2.5 text-sm font-medium transition-colors",
-                    selectedStyle
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                      : "bg-muted text-muted-foreground cursor-not-allowed"
-                  )}
-                >
-                  Complete Setup
-                </button>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={() => { handleComplete(); navigate("/"); }}
+                    disabled={!selectedStyle}
+                    className={cn(
+                      "w-full rounded-lg py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-2",
+                      selectedStyle
+                        ? "bg-gradient-to-r from-primary to-accent text-primary-foreground hover:opacity-90"
+                        : "bg-muted text-muted-foreground cursor-not-allowed"
+                    )}
+                  >
+                    <GraduationCap className="h-4 w-4" />
+                    Start Learning on Embark AI
+                  </button>
+                  <button
+                    onClick={handleComplete}
+                    disabled={!selectedStyle}
+                    className={cn(
+                      "w-full rounded-lg py-2.5 text-sm font-medium transition-colors",
+                      selectedStyle
+                        ? "border border-border text-foreground hover:bg-muted"
+                        : "bg-muted text-muted-foreground cursor-not-allowed"
+                    )}
+                  >
+                    Complete Setup
+                  </button>
+                </div>
               </>
             )}
           </motion.div>

@@ -4,7 +4,7 @@ import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X, ChevronRight, ChevronLeft, SkipForward, Upload, CheckCircle2,
-  Loader2, Eye, BookOpen, Headphones, Hand, Pencil, Sparkles, FileText
+  Loader2, Eye, BookOpen, Headphones, Hand, Pencil, Sparkles, FileText, GraduationCap
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";

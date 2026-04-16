@@ -75,6 +75,7 @@ const App = () => (
               <Route path="/manager/skill-target/:id" element={<ManagerSkillTargetDetail />} />
               <Route path="/manager/cohorts" element={<ProgramContextPage />} />
               <Route path="/embark" element={<EmbarkAI />} />
+              <Route path="/embark-v2" element={<EmbarkAIv2 />} />
               <Route path="/manager/people-graph" element={<PeopleGraphIntelligence />} />
               <Route path="/admin" element={<AdminView />} />
             </Route>

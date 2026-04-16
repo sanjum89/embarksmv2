@@ -1,18 +1,18 @@
 
-Goal: move only the sidebar brand divider so it aligns with the already-matching Embark AI and content header borders.
 
-1. Fix the sidebar header box
-- In `src/components/layout/AppSidebar.tsx` (brand section around line 588), replace the current padding-based wrapper with a true fixed-height header row.
-- Change the wrapper from `min-h-[60px]` plus `py-3` / `flex-col` to a single centered row such as `h-[60px] flex items-center border-b ...`.
-- Keep horizontal spacing only (`px-4` when expanded, centered layout when collapsed). Remove vertical padding from the wrapper so the border sits at the exact intended height.
+## Create Embark AI v2 (Experimental Clone)
 
-2. Leave Embark/content headers as-is
-- Keep `src/components/learnpath/LearnPathChat.tsx` and `src/components/learnpath/LearnPathModeSelector.tsx` on the current 60px header height.
-- Since those two now coincide, the remaining drift should be solved by adjusting the sidebar only, not by moving the other two again.
+### What
+Create an exact replica of the Embark AI page at a new route `/embark-v2`, with its own context provider and components, so experiments can be done without affecting the original.
 
-3. Preserve centering of the sidebar control
-- Ensure `AccountSwitcher` remains vertically centered inside the new 60px sidebar header in both expanded and collapsed states.
-- If needed, use wrapper-level centering (`items-center`, `justify-center` for collapsed) instead of wrapper padding.
+### Steps
 
-## Technical detail
-The sidebar brand wrapper is the unstable piece because it still mixes a height constraint with vertical padding and a column layout. The robust fix is to make it a single fixed-height flex row, so its `border-b` lands on the same Y-position as the Embark AI and content panel borders.
+1. **Duplicate the page** — Create `src/pages/LearnPathV2.tsx` as an exact copy of `src/pages/LearnPath.tsx`, importing the same context and components. This gives a separate entry point that can later be rewired to v2-specific components as experiments evolve.
+
+2. **Add the route** — In `src/App.tsx`, import `LearnPathV2` and add `<Route path="/embark-v2" element={<LearnPathV2 />} />` inside the `AppLayout` routes.
+
+3. **Add sidebar link** — In `src/components/layout/AppSidebar.tsx`, add `{ label: "Embark AI v2", path: "/embark-v2", icon: GraduationCap, dev: true }` to the `meNavItems` array. The `dev: true` flag means it only appears when Dev mode is toggled on.
+
+### Result
+A new "Embark AI v2" link appears in the sidebar under Dev mode, loading an identical copy of the Embark AI experience at `/embark-v2`. The original remains untouched.
+

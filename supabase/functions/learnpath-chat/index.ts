@@ -66,7 +66,7 @@ ${(context.projectSkillGaps || []).map((g: any) => `- ${g.skillName}: current ${
 ${context.profileSummary}`
       : "";
 
-    const systemPrompt = `You are the AI Learning Manager inside LearnPath.
+    const systemPrompt = `You are the AI Learning Manager inside Embark AI.
 
 ## About the Learner
 - Name: ${context?.userName || "Learner"}
@@ -146,7 +146,7 @@ Rules for actions:
 - Only use moduleIds that exist in the assigned modules list.
 - Use actions only when they clearly help the learner move forward.
 - Do not use an action when the learner is simply asking a content question.
-- If the learner just opened LearnPath, welcome them briefly and suggest the next incomplete module.
+- If the learner just opened Embark AI, welcome them briefly and suggest the next incomplete module.
 
 ## When No Modules Are Assigned
 If the learner has no modules assigned:

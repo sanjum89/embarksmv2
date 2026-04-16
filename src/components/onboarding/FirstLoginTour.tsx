@@ -72,6 +72,7 @@ export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
   const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
   const [quizDone, setQuizDone] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const isDefaultAccount = normalizedAccount?.isDefault !== false;
   const profileData = (normalizedAccount ? getProfileData(normalizedAccount, user.id) : null)

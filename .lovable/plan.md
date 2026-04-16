@@ -1,14 +1,27 @@
 
 
-## Fix: Replace "LearnPath" with "Embark AI" in chat system prompt
+## Add Conversational Closer Tied to Suggestion Pills
 
-The AI chat edge function (`supabase/functions/learnpath-chat/index.ts`) uses "LearnPath" in its system prompt, which causes the AI to say "Welcome to LearnPath" in responses.
+### Problem
+AI responses end abruptly without prompting the user toward a next step. The suggestion pills appear below the message but the AI text doesn't reference them, making the experience feel disconnected.
+
+### Fix
+Update the system prompt in `supabase/functions/learnpath-chat/index.ts` to instruct the AI to end most responses with a brief forward-looking question or next-step suggestion that aligns with the types of actions available in the suggestion pills (e.g., "Want me to quiz you on this?", "Shall I show your skill gaps?", "Ready to move to the next module?").
 
 ### Changes
 
-**`supabase/functions/learnpath-chat/index.ts`** — two substitutions:
-- Line 69: `"You are the AI Learning Manager inside LearnPath."` → `"You are the AI Learning Manager inside Embark AI."`
-- Line 149: `"If the learner just opened LearnPath, welcome them briefly..."` → `"If the learner just opened Embark AI, welcome them briefly..."`
+**`supabase/functions/learnpath-chat/index.ts`** — Add a new instruction to the Response Style section (around line 86-128):
 
-No other files need changes — the rest of the codebase already uses "Embark AI" in user-facing text.
+```
+## Closing Each Response
+End most responses with a short, natural question or next-step prompt that invites the learner to continue. Examples:
+- "Want me to quiz you on this?"
+- "Shall I show how this maps to your skill gaps?"
+- "Ready to jump into the next module?"
+- "Would a visual breakdown help?"
+- "Want the key takeaways?"
+Keep it to one sentence. Match it to what's contextually relevant (current module, skill gaps, assessments). Do NOT end with generic sign-offs like "Let me know if you need anything" or "Happy learning!".
+```
+
+This ensures the AI's closing line naturally mirrors one of the dynamically computed suggestion pills, creating a seamless click-to-continue flow. No client-side changes needed — the pills are already computed contextually.
 

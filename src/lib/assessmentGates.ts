@@ -100,17 +100,22 @@ export function resolveAssessment(
     const step = target.steps.find((s) => s.referenceId === aid);
     if (step) {
       const topicName = step.title.replace(/Pre-Assessment:|Post-Assessment:/gi, "").trim() || target.title || "General Knowledge";
+      // Spread the 5 questions across 2 topic tags so the retention engine
+      // can detect which sub-area the learner is weak on.
+      const skills = target.skills?.map(s => s.name).filter(Boolean) ?? [];
+      const topicA = skills[0] ?? topicName;
+      const topicB = skills[1] ?? `${topicName} in Practice`;
       return {
         id: aid,
         title: step.title,
         type: (step.title.toLowerCase().includes("pre") ? "pre" : "post") as "pre" | "post",
         passingScore: 70,
         questions: [
-          { id: `${aid}-q1`, question: `What is the primary objective of ${topicName}?`, options: ["Improve team collaboration", "Build core competency in this area", "Reduce operational costs", "Automate workflows"], correctIndex: 1 },
-          { id: `${aid}-q2`, question: `Which best describes a key principle of ${topicName}?`, options: ["Avoid feedback loops", "Focus on continuous improvement", "Minimize stakeholder input", "Prioritize speed over quality"], correctIndex: 1 },
-          { id: `${aid}-q3`, question: `When applying ${topicName} in practice, you should first:`, options: ["Skip the planning phase", "Assess the current state and gaps", "Implement changes immediately", "Delegate to others"], correctIndex: 1 },
-          { id: `${aid}-q4`, question: `What is a common challenge when developing skills in ${topicName}?`, options: ["Too much available training", "Balancing theory with practice", "Lack of any resources", "No measurable outcomes"], correctIndex: 1 },
-          { id: `${aid}-q5`, question: `The best indicator of proficiency in ${topicName} is:`, options: ["Years of experience alone", "Ability to apply concepts in real scenarios", "Number of certifications", "Memorizing definitions"], correctIndex: 1 },
+          { id: `${aid}-q1`, question: `What is the primary objective of ${topicName}?`, options: ["Improve team collaboration", "Build core competency in this area", "Reduce operational costs", "Automate workflows"], correctIndex: 1, topicTag: topicA },
+          { id: `${aid}-q2`, question: `Which best describes a key principle of ${topicName}?`, options: ["Avoid feedback loops", "Focus on continuous improvement", "Minimize stakeholder input", "Prioritize speed over quality"], correctIndex: 1, topicTag: topicA },
+          { id: `${aid}-q3`, question: `When applying ${topicName} in practice, you should first:`, options: ["Skip the planning phase", "Assess the current state and gaps", "Implement changes immediately", "Delegate to others"], correctIndex: 1, topicTag: topicB },
+          { id: `${aid}-q4`, question: `What is a common challenge when developing skills in ${topicName}?`, options: ["Too much available training", "Balancing theory with practice", "Lack of any resources", "No measurable outcomes"], correctIndex: 1, topicTag: topicB },
+          { id: `${aid}-q5`, question: `The best indicator of proficiency in ${topicName} is:`, options: ["Years of experience alone", "Ability to apply concepts in real scenarios", "Number of certifications", "Memorizing definitions"], correctIndex: 1, topicTag: topicA },
         ],
       };
     }

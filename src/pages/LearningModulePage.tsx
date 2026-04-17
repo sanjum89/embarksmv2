@@ -45,9 +45,7 @@ export default function LearningModulePage() {
     );
   }
 
-  // Find the step for this module
-  const skillTarget = skillTargetId ? skillTargets.find(st => st.id === skillTargetId) : undefined;
-  const step = skillTarget?.steps.find(s => s.referenceId === mid || s.id === mid);
+
 
   const handleMarkComplete = () => {
     if (!skillTargetId || !mid) return;

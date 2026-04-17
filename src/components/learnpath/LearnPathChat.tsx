@@ -642,3 +642,163 @@ export function EmbarkChat() {
     </div>
   );
 }
+
+// ============================================================================
+// Engagement Settings Popover
+// ============================================================================
+
+const MODE_DESCRIPTIONS: Record<EngagementMode, string> = {
+  auto: "Smart, gentle nudges. First check-in around 90s of inactivity.",
+  proactive: "More frequent prompts. Best for guided demos and active coaching.",
+  focused: "No idle nudges. Embark only responds when you ask.",
+};
+
+const TIMING_BOUNDS: Record<keyof EngagementTimings, { min: number; max: number; step: number; label: string; help: string }> = {
+  idleFirst: { min: 5, max: 300, step: 5, label: "First idle nudge", help: "Time before first nudge" },
+  idleRepeat: { min: 15, max: 600, step: 15, label: "Repeat idle nudge", help: "Spacing between later nudges" },
+  dwellSoft: { min: 30, max: 600, step: 15, label: "Dwell — soft check", help: "Stuck on a section without scrolling" },
+  dwellSummary: { min: 60, max: 900, step: 30, label: "Dwell — auto summary", help: "Triggers an auto-recap of the section" },
+};
+
+function EngagementSettingsButton() {
+  const {
+    engagementMode,
+    setEngagementMode,
+    engagementTimings,
+    setEngagementTimings,
+    resetEngagementTimings,
+  } = useEmbark();
+
+  const customEnabled = engagementTimings !== null;
+  const effective = useMemo(
+    () =>
+      resolveEffectiveTimings(engagementMode, engagementTimings) ??
+      DEFAULT_TIMINGS_BY_MODE.auto!,
+    [engagementMode, engagementTimings]
+  );
+
+  const handleToggleCustom = (enabled: boolean) => {
+    if (enabled) {
+      // Seed from current effective values (or auto defaults if focused)
+      const seed = resolveEffectiveTimings(engagementMode, null) ?? DEFAULT_TIMINGS_BY_MODE.auto!;
+      setEngagementTimings({ ...seed });
+    } else {
+      resetEngagementTimings();
+    }
+  };
+
+  const updateTiming = (key: keyof EngagementTimings, value: number) => {
+    if (!engagementTimings) return;
+    setEngagementTimings({ ...engagementTimings, [key]: value });
+  };
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-muted-foreground hover:text-foreground"
+          aria-label="Engagement settings"
+        >
+          <Settings2 className="h-4 w-4" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-80 p-0">
+        <div className="p-4 border-b border-border">
+          <h3 className="text-sm font-semibold text-foreground mb-1">Engagement</h3>
+          <p className="text-xs text-muted-foreground">
+            Choose how proactive Embark AI should be.
+          </p>
+        </div>
+
+        <div className="p-2 space-y-1">
+          {(["auto", "proactive", "focused"] as EngagementMode[]).map((mode) => {
+            const active = engagementMode === mode;
+            return (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setEngagementMode(mode)}
+                className={cn(
+                  "w-full text-left rounded-md px-3 py-2 transition-colors",
+                  active ? "bg-accent/15 border border-accent/40" : "hover:bg-muted border border-transparent"
+                )}
+              >
+                <div className="text-sm font-medium capitalize text-foreground">{mode}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{MODE_DESCRIPTIONS[mode]}</div>
+              </button>
+            );
+          })}
+        </div>
+
+        {engagementMode !== "focused" && (
+          <div className="border-t border-border p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="custom-timings-toggle" className="text-sm">
+                  Custom timings
+                </Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Tip: lower values for demos, higher for real use.
+                </p>
+              </div>
+              <Switch
+                id="custom-timings-toggle"
+                checked={customEnabled}
+                onCheckedChange={handleToggleCustom}
+              />
+            </div>
+
+            {customEnabled && engagementTimings && (
+              <div className="space-y-4 pt-2">
+                {(Object.keys(TIMING_BOUNDS) as Array<keyof EngagementTimings>).map((key) => {
+                  const bounds = TIMING_BOUNDS[key];
+                  const value = engagementTimings[key];
+                  return (
+                    <div key={key} className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs">{bounds.label}</Label>
+                        <span className="text-xs font-medium text-foreground tabular-nums">
+                          {value}s
+                        </span>
+                      </div>
+                      <Slider
+                        min={bounds.min}
+                        max={bounds.max}
+                        step={bounds.step}
+                        value={[value]}
+                        onValueChange={(v) => updateTiming(key, v[0] ?? value)}
+                      />
+                      <p className="text-[10px] text-muted-foreground">{bounds.help}</p>
+                    </div>
+                  );
+                })}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={resetEngagementTimings}
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Reset to defaults
+                </Button>
+              </div>
+            )}
+
+            {!customEnabled && (
+              <div className="text-xs text-muted-foreground space-y-1 pt-1">
+                <div className="flex justify-between"><span>First idle nudge</span><span className="tabular-nums">{effective.idleFirst}s</span></div>
+                <div className="flex justify-between"><span>Repeat idle nudge</span><span className="tabular-nums">{effective.idleRepeat}s</span></div>
+                <div className="flex justify-between"><span>Dwell — soft</span><span className="tabular-nums">{effective.dwellSoft}s</span></div>
+                <div className="flex justify-between"><span>Dwell — summary</span><span className="tabular-nums">{effective.dwellSummary}s</span></div>
+              </div>
+            )}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
+

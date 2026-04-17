@@ -30,7 +30,12 @@ export default function LearningModulePage() {
     ? resolveModule(mid, skillTargets, normalizedAccount?.learningModules)
     : undefined;
 
-  const [completed, setCompleted] = useState(false);
+  // Find the step for this module
+  const skillTarget = skillTargetId ? skillTargets.find(st => st.id === skillTargetId) : undefined;
+  const step = skillTarget?.steps.find(s => s.referenceId === mid || s.id === mid);
+
+  const [completed, setCompleted] = useState(step?.status === "completed");
+  const [innerCompleted, setInnerCompleted] = useState(step?.status === "completed");
 
   if (!module) {
     return (

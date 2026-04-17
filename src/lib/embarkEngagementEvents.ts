@@ -21,6 +21,26 @@ export type EngagementEvent =
   | {
       type: "user_activity";
       kind: "scroll" | "click" | "keydown" | "mousemove";
+    }
+  | {
+      type: "retention_gap_detected";
+      weakTopics: string[];
+      score: number;
+      assessmentTitle?: string | null;
+      skillTargetId?: string | null;
+    }
+  | {
+      type: "module_reopened";
+      moduleTitle: string;
+      skillTargetId?: string | null;
+    }
+  | {
+      type: "refresher_passed";
+      topic: string;
+    }
+  | {
+      type: "struggling_streak";
+      consecutiveLowScores: number;
     };
 
 type Listener = (event: EngagementEvent) => void;

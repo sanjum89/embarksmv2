@@ -571,21 +571,28 @@ export function EmbarkChat() {
                     "max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground"
+                      : message.isNudge
+                        ? "bg-accent/10 border border-accent/30 text-foreground"
+                        : "bg-muted text-foreground"
                   )}
                 >
                   {message.role === "assistant" ? (
-                    <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                      {(() => {
-                        const { segments } = parseEmbarkRichBlocks(message.content);
-                        return segments.map((seg, si) =>
-                          seg.type === "text" ? (
-                            <ReactMarkdown key={si}>{seg.content}</ReactMarkdown>
-                          ) : (
-                            <EmbarkRichBlock key={si} block={seg.block} />
-                          )
-                        );
-                      })()}
+                    <div className="flex gap-2">
+                      {message.isNudge && (
+                        <Lightbulb className="h-4 w-4 text-accent shrink-0 mt-0.5" />
+                      )}
+                      <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 flex-1">
+                        {(() => {
+                          const { segments } = parseEmbarkRichBlocks(message.content);
+                          return segments.map((seg, si) =>
+                            seg.type === "text" ? (
+                              <ReactMarkdown key={si}>{seg.content}</ReactMarkdown>
+                            ) : (
+                              <EmbarkRichBlock key={si} block={seg.block} />
+                            )
+                          );
+                        })()}
+                      </div>
                     </div>
                   ) : (
                     <p>{message.content.replace(/^\[FORMAT:\w+\]\s*/i, "")}</p>

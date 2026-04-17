@@ -84,6 +84,21 @@ export function EmbarkModuleCard({ step }: { step: StepEntry }) {
           >
             {isSkipped ? "skipped" : step.status}
           </Badge>
+          {step.isAdaptive && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge className="text-[10px] px-1.5 py-0 bg-accent/15 text-accent ring-1 ring-accent/30 hover:bg-accent/15 gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    Micro Refresher · Added for you
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[240px] text-xs">
+                  {step.adaptiveReason ?? "Added based on your last assessment to help reinforce a key area."}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
       </CardContent>
     </Card>

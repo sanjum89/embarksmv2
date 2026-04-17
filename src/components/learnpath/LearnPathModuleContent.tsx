@@ -8,7 +8,8 @@ import { VisualDiagram, parseTranscriptToDiagram, extractFlowCharts } from "./Vi
 import { FlowDiagram } from "./FlowDiagram";
 import type { LearningModule, LearningFormat, StepType } from "@/types/learning";
 import ReactMarkdown from "react-markdown";
-import { useState, useRef, useMemo, useCallback } from "react";
+import { useState, useRef, useMemo, useCallback, useEffect } from "react";
+import { Progress } from "@/components/ui/progress";
 import { Eye, BookOpen, Headphones, Wrench, Layers, Clock, FileText, BookOpenCheck, Users, Zap, ChevronDown, CheckCircle2, ArrowRight, Timer, BarChart3, TrendingUp, Flame, Lightbulb, Star, Sparkles, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -34,6 +35,10 @@ interface Props {
   nextModuleTitle?: string;
   nextSkillTargetId?: string;
   nextStepType?: StepType;
+  /** Mount in completed state (revisiting a finished module) */
+  initialCompleted?: boolean;
+  /** Notify parent when completion state changes (so parent can hide mode selector etc.) */
+  onCompletedChange?: (completed: boolean) => void;
 }
 
 const modeBanners: Record<string, { icon: React.ElementType; label: string; desc: string; className: string }> = {
@@ -44,7 +49,7 @@ const modeBanners: Record<string, { icon: React.ElementType; label: string; desc
   combined: { icon: Layers, label: "Combined Mode", desc: "A curated blend of reading, visuals, and practice.", className: "bg-primary/10 text-primary border-primary/20" },
 };
 
-export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader, nextModuleId, nextModuleTitle, nextSkillTargetId, nextStepType }: Props) {
+export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader, nextModuleId, nextModuleTitle, nextSkillTargetId, nextStepType, initialCompleted = false, onCompletedChange }: Props) {
   const learnPathCtx = useEmbark();
   const learningMode = learningModeOverride ?? learnPathCtx.learningMode;
   const openAssessment = learnPathCtx.openAssessment;
@@ -55,9 +60,15 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   const isMicro = learningFormat === "micro";
   const transcript = substitute(module.transcript ?? "No content available for this module.");
   const [microExpanded, setMicroExpanded] = useState(false);
-  const [completed, setCompleted] = useState(false);
+  const [completed, setCompleted] = useState(initialCompleted);
+  const [isRevisit] = useState(initialCompleted);
   const [showAllBullets, setShowAllBullets] = useState(false);
   const startTimeRef = useRef(Date.now());
+
+  // Notify parent of completion state changes
+  useEffect(() => {
+    onCompletedChange?.(completed);
+  }, [completed, onCompletedChange]);
 
   // Reading progress
   const scrollRef = useRef<HTMLDivElement>(null);

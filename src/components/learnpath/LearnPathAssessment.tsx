@@ -32,7 +32,7 @@ export function EmbarkAssessment({
   nextSkillTargetId,
 }: Props) {
   const { closeAssessment, openModule, openAssessment: openNextAssessment, showModuleGrid } = useEmbark();
-  const { skillTargets, updateSkillTarget } = useSkillTargets();
+  const { skillTargets, updateSkillTarget, recordAssessmentResult } = useSkillTargets();
   const { activeAccount, normalizedAccount } = useAccount();
   const { user } = useUser();
 
@@ -86,23 +86,20 @@ export function EmbarkAssessment({
         100
     );
 
-    // Emit event
+    // Emit Agent One event
     if (activeAccount?.id && normalizedAccount && assessmentId) {
       emitAssessmentCompleted(user.id, assessmentId, finalScore, activeAccount.id, normalizedAccount).catch(console.error);
     }
 
-    // Emit Embark engagement event for proactive nudges
-    emitEngagementEvent({
-      type: "assessment_completed",
-      score: finalScore,
-      moduleTitle: assessment.title ?? null,
-    });
-
-    // Apply gate logic
+    // Centralized: gate logic + retention analysis + adaptive injection + engagement events
     if (skillTargetId) {
-      updateSkillTarget(skillTargetId, (target) => {
-        const result = applyGateActions(target.steps, assessment.id, finalScore);
-        return { ...target, steps: result.steps, progress: result.progress };
+      recordAssessmentResult(skillTargetId, assessment, answers);
+    } else {
+      // Fallback: at least emit the basic engagement event
+      emitEngagementEvent({
+        type: "assessment_completed",
+        score: finalScore,
+        moduleTitle: assessment.title ?? null,
       });
     }
   };

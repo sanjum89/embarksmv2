@@ -12,7 +12,7 @@ import { resolveAssessment, applyGateActions } from "@/lib/assessmentGates";
 
 export default function AssessmentPage() {
   const { aid, id: skillTargetId } = useParams();
-  const { updateSkillTarget, skillTargets } = useSkillTargets();
+  const { updateSkillTarget, skillTargets, recordAssessmentResult } = useSkillTargets();
   const { activeAccount, normalizedAccount } = useAccount();
   const { user } = useUser();
 
@@ -71,7 +71,7 @@ export default function AssessmentPage() {
         100
     );
 
-    // Emit assessment event
+    // Agent One event
     if (activeAccount?.id && normalizedAccount && aid) {
       emitAssessmentCompleted(
         user.id,
@@ -82,11 +82,8 @@ export default function AssessmentPage() {
       ).catch(console.error);
     }
 
-    // Apply gate logic using shared utility
-    updateSkillTarget(skillTargetId, (target) => {
-      const result = applyGateActions(target.steps, assessment.id, finalScore);
-      return { ...target, steps: result.steps, progress: result.progress };
-    });
+    // Centralized retention + gate logic
+    recordAssessmentResult(skillTargetId, assessment, answers);
   };
 
   const handleRetry = () => {

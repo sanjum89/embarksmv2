@@ -120,6 +120,7 @@ export const st2BaselineAssessment: Assessment = {
   questions: [
     {
       id: "q-rb-bl-1",
+      topicTag: "Client Relationship Ownership",
       question: "What is the core responsibility of an Investment Manager at Rathbones when managing a client's portfolio?",
       options: [
         "Acting as the primary relationship owner and ensuring portfolio suitability for each client's goals and risk profile",
@@ -131,6 +132,7 @@ export const st2BaselineAssessment: Assessment = {
     },
     {
       id: "q-rb-bl-2",
+      topicTag: "Suitability & Risk Profiling",
       question: "A new client expresses a desire for 'aggressive growth' but also mentions they will need 40% of their portfolio within two years for a property purchase. How should you respond?",
       options: [
         "Invest the full portfolio in high-growth equities to maximise the chance of meeting the return target",
@@ -142,6 +144,7 @@ export const st2BaselineAssessment: Assessment = {
     },
     {
       id: "q-rb-bl-3",
+      topicTag: "Suitability & Risk Profiling",
       question: "Under Consumer Duty and FCA suitability requirements, which of the following must be assessed and documented before making an investment recommendation?",
       options: [
         "The client's social media presence and public reputation",
@@ -153,6 +156,7 @@ export const st2BaselineAssessment: Assessment = {
     },
     {
       id: "q-rb-bl-4",
+      topicTag: "Client Relationship Ownership",
       question: "What is the primary benefit of maintaining a regular engagement cadence with clients, beyond the annual review?",
       options: [
         "It creates opportunities to sell additional products",
@@ -164,6 +168,7 @@ export const st2BaselineAssessment: Assessment = {
     },
     {
       id: "q-rb-bl-5",
+      topicTag: "Client Relationship Ownership",
       question: "When preparing for a client meeting, what approach best reflects Rathbones' expectations of an Investment Manager?",
       options: [
         "Wait for the client to raise topics and respond reactively",
@@ -184,6 +189,7 @@ export const st2MidAssessment: Assessment = {
   questions: [
     {
       id: "q-rb-mid-1",
+      topicTag: "Performance Communication",
       question: "During a portfolio review, a client asks why their portfolio underperformed the FTSE 100. The best response is:",
       options: [
         "Acknowledge the concern and explain that their portfolio has a different risk mandate and benchmark",
@@ -195,6 +201,7 @@ export const st2MidAssessment: Assessment = {
     },
     {
       id: "q-rb-mid-2",
+      topicTag: "Portfolio Construction",
       question: "What is the purpose of portfolio rebalancing?",
       options: [
         "To increase the number of trades and generate commission",
@@ -206,6 +213,7 @@ export const st2MidAssessment: Assessment = {
     },
     {
       id: "q-rb-mid-3",
+      topicTag: "Suitability & Risk Profiling",
       question: "A client inherits £500,000 and wants to invest it immediately. What should you do first?",
       options: [
         "Invest it in the same strategy as their existing portfolio",
@@ -217,6 +225,7 @@ export const st2MidAssessment: Assessment = {
     },
     {
       id: "q-rb-mid-4",
+      topicTag: "Performance Communication",
       question: "When communicating investment performance to a client, which approach demonstrates best practice?",
       options: [
         "Show only the periods where the portfolio outperformed",
@@ -228,6 +237,7 @@ export const st2MidAssessment: Assessment = {
     },
     {
       id: "q-rb-mid-5",
+      topicTag: "Suitability & Risk Profiling",
       question: "What is the key risk of not conducting regular suitability reviews?",
       options: [
         "The client may receive too many communications",
@@ -248,6 +258,7 @@ export const st2FinalAssessment: Assessment = {
   questions: [
     {
       id: "q-rb-fin-1",
+      topicTag: "Concentration Risk",
       question: "A long-standing client asks you to invest 80% of their retirement savings into a single high-growth tech stock. What is the correct course of action?",
       options: [
         "Execute the trade — the client has a right to direct their own portfolio",
@@ -259,6 +270,7 @@ export const st2FinalAssessment: Assessment = {
     },
     {
       id: "q-rb-fin-2",
+      topicTag: "Bespoke Portfolio Management",
       question: "Which of the following demonstrates the strongest approach to client-centric portfolio management?",
       options: [
         "Applying the same model portfolio to all clients with similar risk ratings",
@@ -270,6 +282,7 @@ export const st2FinalAssessment: Assessment = {
     },
     {
       id: "q-rb-fin-3",
+      topicTag: "Cross-Team Collaboration",
       question: "During a joint meeting with a Financial Planner, you disagree on the drawdown strategy for a client's pension. How should you handle this?",
       options: [
         "Defer entirely to the Financial Planner's recommendation",
@@ -281,6 +294,7 @@ export const st2FinalAssessment: Assessment = {
     },
     {
       id: "q-rb-fin-4",
+      topicTag: "Performance Communication",
       question: "What is the most effective way to demonstrate value to a client during a year of negative absolute returns?",
       options: [
         "Apologise and offer a fee reduction",
@@ -292,6 +306,7 @@ export const st2FinalAssessment: Assessment = {
     },
     {
       id: "q-rb-fin-5",
+      topicTag: "Bespoke Portfolio Management",
       question: "A prospective client asks why they should choose Rathbones over a robo-adviser. The strongest response focuses on:",
       options: [
         "Lower fees",

@@ -10,10 +10,12 @@ import {
   Clock,
   Zap,
   FastForward,
+  Sparkles,
 } from "lucide-react";
 import type { StepItem, StepType } from "@/types/learning";
 import { cn } from "@/lib/utils";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const stepTypeIcons: Record<string, React.ElementType> = {
   assessment: ClipboardCheck,
@@ -136,7 +138,22 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
             <TypeIcon className="h-3 w-3" />
             {step.type.replace("_", " ")}
           </span>
-          {step.learningFormat === "micro" && (
+          {step.isAdaptive && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center gap-1 rounded-md bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent ring-1 ring-accent/30">
+                    <Sparkles className="h-3 w-3" />
+                    Micro Refresher · Added for you
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-[240px] text-xs">
+                  {step.adaptiveReason ?? "Added based on your last assessment to help reinforce a key area."}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {step.learningFormat === "micro" && !step.isAdaptive && (
             <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-300">
               <Zap className="h-3 w-3" />
               Microlearning

@@ -15,11 +15,28 @@ import {
   pickWelcomeBackNudge,
   type NudgeContext,
 } from "@/lib/embarkNudges";
+import {
+  pickRetentionNudge,
+  pickStrugglingStreakNudge,
+  pickReopenNudge,
+  pickRecoveryNudge,
+} from "@/lib/embarkSupportiveMessages";
 
 export interface PendingNudge {
   id: string;
   message: string;
-  source: "idle" | "dwell-soft" | "dwell-summary" | "performance" | "completion" | "farewell" | "welcome-back";
+  source:
+    | "idle"
+    | "dwell-soft"
+    | "dwell-summary"
+    | "performance"
+    | "completion"
+    | "farewell"
+    | "welcome-back"
+    | "retention"
+    | "struggling"
+    | "reopen"
+    | "recovery";
 }
 
 interface UseEmbarkEngagementOptions {
@@ -312,6 +329,42 @@ export function useEmbarkEngagement({
           id: `nudge-completion-${Date.now()}`,
           message: pickCompletionNudge(event.moduleTitle, event.nextModuleTitle ?? null),
           source: "completion",
+        });
+        return;
+      }
+
+      if (event.type === "retention_gap_detected") {
+        dispatchNudge({
+          id: `nudge-retention-${Date.now()}`,
+          message: pickRetentionNudge(event.weakTopics, event.score),
+          source: "retention",
+        });
+        return;
+      }
+
+      if (event.type === "struggling_streak") {
+        dispatchNudge({
+          id: `nudge-struggling-${Date.now()}`,
+          message: pickStrugglingStreakNudge(),
+          source: "struggling",
+        });
+        return;
+      }
+
+      if (event.type === "module_reopened") {
+        dispatchNudge({
+          id: `nudge-reopen-${Date.now()}`,
+          message: pickReopenNudge(event.moduleTitle),
+          source: "reopen",
+        });
+        return;
+      }
+
+      if (event.type === "refresher_passed") {
+        dispatchNudge({
+          id: `nudge-recovery-${Date.now()}`,
+          message: pickRecoveryNudge(event.topic),
+          source: "recovery",
         });
       }
     };

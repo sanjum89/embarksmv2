@@ -503,11 +503,11 @@ export function EmbarkChat() {
     buildContext: buildNudgeContext,
   });
 
-  const lastNudgeIdRef = useRef<string | null>(null);
+  const injectedNudgeIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!pendingNudge) return;
-    if (lastNudgeIdRef.current === pendingNudge.id) return;
-    lastNudgeIdRef.current = pendingNudge.id;
+    if (injectedNudgeIdsRef.current.has(pendingNudge.id)) return;
+    injectedNudgeIdsRef.current.add(pendingNudge.id);
 
     const nudgeMsg: ChatMessage = {
       id: pendingNudge.id,
@@ -545,7 +545,10 @@ export function EmbarkChat() {
       })
     );
     dismissNudge();
-  }, [pendingNudge, buildContext, dismissNudge, messages.length, usedPrompts]);
+    // Only depend on the nudge identity — buildContext/usedPrompts/messages.length
+    // changes must NEVER re-trigger injection (was the spam root cause).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingNudge?.id]);
 
   return (
     <div className="h-full flex flex-col bg-background border-r border-border">

@@ -119,3 +119,34 @@ export function pickCompletionNudge(moduleTitle: string, nextModuleTitle?: strin
   }
   return `Nice work finishing **${moduleTitle}**! Want to reflect on what you learned, or browse what's next?`;
 }
+
+export function pickFarewellNudge(ctx: NudgeContext): string {
+  const where = ctx.activeModuleTitle ? ` on **${ctx.activeModuleTitle}**` : "";
+  return pickRandom([
+    `Looks like you've stepped away${where}. No rush — I'll be right here when you're back. Just say the word if you need anything.`,
+    `Seems like you're away for a bit. I'll pause the nudges${where} — pop back any time and I'll pick up where we left off.`,
+    `I'll quiet down for now${where}. Whenever you're ready to continue, just send a message and I'll jump back in.`,
+  ]);
+}
+
+export function pickWelcomeBackNudge(ctx: NudgeContext): string {
+  const points = (ctx.keyPoints ?? []).slice(0, 3);
+  const headings = (ctx.headings ?? []).slice(0, 3);
+
+  let recap = "";
+  if (points.length) {
+    recap = `\n\n**Where you left off:**\n${points.map((p) => `- ${p}`).join("\n")}`;
+  } else if (headings.length) {
+    recap = `\n\n**This section covers:**\n${headings.map((h) => `- ${h}`).join("\n")}`;
+  } else if (ctx.summary) {
+    recap = `\n\n${ctx.summary.slice(0, 240)}${ctx.summary.length > 240 ? "…" : ""}`;
+  }
+
+  if (ctx.activeModuleTitle) {
+    return `Good to see you back! You were on **${ctx.activeModuleTitle}**.${recap}\n\nWant to pick up here, or jump somewhere else?`;
+  }
+  if (ctx.hasModules) {
+    return `Welcome back! Ready to keep going? I can suggest the best next module for you, or you can browse them all.`;
+  }
+  return `Good to see you back! Let me know if I can help — I can suggest a starting point whenever you're ready.`;
+}

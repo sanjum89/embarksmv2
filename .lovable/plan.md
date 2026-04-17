@@ -1,61 +1,46 @@
 
 
-## Plan: Extend Adaptive Retention to Skill Target View
+## Plan: Clean Up Module Completion Screen + Auto-Advance Timer
 
-The previously approved retention engine + supportive nudges work in Embark AI. Now extend the same behavior to the **Skill Target view** so the experience is identical regardless of entry point — since both views render the same underlying modules and assessments (per the unified-learning-experience architecture).
+### Issues
+1. The completion screen still shows the **learning mode tabs** (Visual / Reading / Listening / Hands-On / Combined) at the top — these are irrelevant once the module is done and just add noise.
+2. After completing a module, the user has to manually click "Continue to Next Chapter". You want a **5-second auto-advance with a visible progress bar** (cancellable by hovering / clicking elsewhere).
+3. Every completed module should retain its **completion summary page** so the user can navigate back and review their stats (time spent, mode used, next-up).
 
-### What needs to change
-
-The retention logic lives in `LearnPathAssessment.tsx` (Embark view). The Skill Target view uses a separate assessment renderer that bypasses the new analyzer. We need to lift retention into a shared layer so both views trigger it.
+### Investigation needed
+Confirm where the mode selector renders relative to the completion screen and where the completion UI lives. Likely candidates: `LearnPathModuleContent.tsx`, `LearnPathModeSelector.tsx`, `LearningModulePage.tsx`. I'll verify before implementing.
 
 ### Implementation
 
-**1. Centralize retention in the data layer (not the view)**
+**1. Hide mode selector on completion screen**
+- In `LearnPathContent.tsx` (Embark) and `LearningModulePage.tsx` (standalone) and `TraditionalContentViewer.tsx` (Skill Target): when the active module's internal `completed` state is true, suppress the mode selector row.
+- Cleanest path: lift a `completed` flag out of `EmbarkModuleContent` via an `onCompletedChange` callback so the parent can conditionally hide the selector. Alternative: render the selector inside `EmbarkModuleContent` and gate it on internal state. Will pick whichever requires fewer touchpoints after exploring.
 
-Move adaptive-step injection out of `LearnPathAssessment.tsx` into `SkillTargetsContext.tsx` via a new helper:
+**2. Auto-advance countdown (5s) on completion screen**
+- Inside the completion view of `EmbarkModuleContent` (or `LearnPathModuleContent` — wherever the "Continue to Next Chapter" button lives), add:
+  - A `useEffect` that starts a 5s timer when `completed === true` AND a `nextModuleId` exists
+  - A `<Progress>` bar (existing `src/components/ui/progress.tsx`) animating 0 → 100% over 5s
+  - Label: *"Auto-advancing in 5s…"* with a small "Stay here" button to cancel
+  - On timer expiry → call the same handler that "Continue to Next Chapter" uses (`openModule(nextId)` or navigate)
+  - Cancel timer if user hovers the completion card, scrolls, or clicks anywhere on the card → switches to "Click to continue" state
+  - If no next module exists, skip timer and show only "Back to Modules"
 
-```ts
-// In SkillTargetsContext
-recordAssessmentResult(skillTargetId, stepId, assessment, answers)
-```
+**3. Persist completion summary for revisit**
+- Already mostly works: re-opening a completed module currently re-mounts (per the previous `key={module.id}` fix) which **resets** `completed` to false. To let users **revisit** the summary, add a check: when entering a module whose underlying step status is `"completed"`, mount with `completed = true` (initial state derived from `step.status`).
+- Source: `step.status === "completed"` is already tracked in `SkillTargetsContext`. Pass `initialCompleted` prop to `EmbarkModuleContent` from each parent that knows the step status.
+- Time-spent stat for re-visits: show "Previously completed" instead of live timer when `initialCompleted` is true.
 
-This function:
-- Calls `analyzeAssessment` from the retention engine
-- Calls `injectAdaptiveSteps` to add micro refreshers / reopen modules
-- Emits `retention_gap_detected` engagement event
-- Tracks `consecutiveLowScores` per user (for `struggling_streak` nudge)
+### Files to edit
+- `src/components/learnpath/LearnPathModuleContent.tsx` (or `EmbarkModuleContent` source) — add countdown timer, progress bar, `initialCompleted` prop, `onCompletedChange` callback
+- `src/components/learnpath/LearnPathContent.tsx` — hide `EmbarkModeSelector` when completed; pass `initialCompleted` based on step status
+- `src/pages/LearningModulePage.tsx` — hide local mode selector row when completed; pass `initialCompleted`
+- `src/components/skill-target/TraditionalContentViewer.tsx` — same hide + pass `initialCompleted`
+- (Possibly) `src/components/learnpath/LearnPathModeSelector.tsx` — accept a `hidden` prop, or just conditionally render at parent level
 
-Both views call this single entry point. Source-of-truth = context, not component.
-
-**2. Files to edit**
-
-- **`src/contexts/SkillTargetsContext.tsx`** — add `recordAssessmentResult` to context value; persist consecutive-low-score counter per user.
-- **`src/components/learnpath/LearnPathAssessment.tsx`** — replace inline retention logic with `recordAssessmentResult(...)` call.
-- **`src/components/skill-target/TraditionalActivitiesPanel.tsx`** (and/or `TraditionalContentViewer.tsx` / `AssessmentCreator.tsx` — whichever renders the Skill Target assessment results) — call the same `recordAssessmentResult` on submit; show the same "Areas to reinforce" results section.
-- **`src/pages/AssessmentPage.tsx`** — if this is the standalone assessment route used from skill targets, wire it through too.
-- **`src/components/skill-target/StepListItem.tsx`** & **`src/components/skill-target/StepTimeline.tsx`** — render the **"Micro Refresher · Added for you"** badge (sparkle + tooltip with `adaptiveReason`) when `step.isAdaptive === true`, mirroring `LearnPathModuleCard.tsx`.
-
-**3. Role play parity**
-
-`RolePlaySession.tsx` already emits `role_play_completed`. Confirm the engagement hook fires supportive nudges for low ratings regardless of which view launched the role play (it should — events are global). No code change expected, just verify.
-
-**4. Engagement nudges in Skill Target view**
-
-The `useEmbarkEngagement` hook currently runs inside `LearnPathChat`. Supportive nudges (retention gap, struggling streak, recovery) only show when Embark chat is open. Two options:
-
-- **Option A (chosen, minimal)**: Surface the supportive nudges in the Skill Target view via a lightweight toast (`sonner`) when the user isn't in Embark. Same message text from `embarkSupportiveMessages.ts`, just a different surface.
-- **Option B (heavier)**: Persist pending nudges and replay them next time Embark opens.
-
-Go with **A** for now — toast in Skill Target view, full chat nudge when Embark is open. The retention event itself fires once; the surface is decided by which view is active.
-
-### Files Touched
-- Edit: `src/contexts/SkillTargetsContext.tsx`, `src/components/learnpath/LearnPathAssessment.tsx`, `src/components/skill-target/TraditionalActivitiesPanel.tsx`, `src/components/skill-target/StepListItem.tsx`, `src/components/skill-target/StepTimeline.tsx`, `src/pages/AssessmentPage.tsx`
-- Verify-only: `src/pages/RolePlaySession.tsx`, `src/components/skill-target/AssessmentCreator.tsx`
-
-### What the User Sees
-1. Open a Skill Target → take an assessment → score 60% with weak topic detected
-2. Results screen shows the same **"Areas to reinforce"** card with "✨ Quick refresher added"
-3. Toast appears: *"Solid attempt! I've added a 5-minute refresher on [topic] — pop in whenever you're ready."*
-4. Step timeline now shows the new adaptive step with **"Micro Refresher · Added for you"** badge between original steps
-5. Switching to Embark AI view shows the exact same updated path — single source of truth
+### What you'll see
+1. Finish a chapter → completion summary appears (no mode tabs above it)
+2. A thin progress bar fills over 5 seconds with "Auto-advancing in 5s — Stay here" label
+3. At 0s → next chapter content loads automatically
+4. Hover / click completion card → timer cancels, button reverts to "Continue to Next Chapter"
+5. Open any previously-completed module from the grid → summary screen appears immediately (no timer, just stats + "Back to Modules" / "Continue" if applicable)
 

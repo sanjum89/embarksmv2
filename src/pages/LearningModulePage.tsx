@@ -30,7 +30,10 @@ export default function LearningModulePage() {
     ? resolveModule(mid, skillTargets, normalizedAccount?.learningModules)
     : undefined;
 
-  const [completed, setCompleted] = useState(false);
+  const skillTarget = skillTargetId ? skillTargets.find(st => st.id === skillTargetId) : undefined;
+  const step = skillTarget?.steps.find(s => s.referenceId === mid || s.id === mid);
+
+  const [innerCompleted, setInnerCompleted] = useState(step?.status === "completed");
 
   if (!module) {
     return (
@@ -39,10 +42,6 @@ export default function LearningModulePage() {
       </div>
     );
   }
-
-  // Find the step for this module
-  const skillTarget = skillTargetId ? skillTargets.find(st => st.id === skillTargetId) : undefined;
-  const step = skillTarget?.steps.find(s => s.referenceId === mid || s.id === mid);
 
   const handleMarkComplete = () => {
     if (!skillTargetId || !mid) return;
@@ -76,8 +75,6 @@ export default function LearningModulePage() {
 
       return { ...target, steps: updatedSteps, progress };
     });
-
-    setCompleted(true);
   };
 
   return (
@@ -91,93 +88,73 @@ export default function LearningModulePage() {
             <ArrowLeft className="h-4 w-4" /> Back to Skill Target
           </Link>
 
-          {completed ? (
+          {/* Module header — hidden once completion screen renders */}
+          {!innerCompleted && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="rounded-xl bg-card border border-border p-8 shadow-card text-center"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="rounded-xl bg-card border border-border p-5 shadow-card mb-4"
             >
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/15">
-                <CheckCircle2 className="h-8 w-8 text-success" />
-              </div>
-              <h2 className="font-display text-2xl font-bold text-foreground mb-1">
-                Module Complete!
-              </h2>
-              <p className="text-sm text-muted-foreground mb-6">
-                You've completed{" "}
-                <span className="font-medium text-foreground">{substitute(module.title)}</span>
-              </p>
-              <Link
-                to={`/skill-target/${skillTargetId}`}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
-              >
-                Continue
-              </Link>
-            </motion.div>
-          ) : (
-            <>
-              {/* Module header with Mark as Complete */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="rounded-xl bg-card border border-border p-5 shadow-card mb-4"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
-                        <BookOpen className="h-3 w-3" /> {module.contentType === "video" ? "Video" : "Document"}
-                      </span>
-                      {module.duration && (
-                        <span className="text-xs text-muted-foreground">{module.duration}</span>
-                      )}
-                    </div>
-                    <h1 className="font-display text-lg font-bold text-foreground">{substitute(module.title)}</h1>
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
+                      <BookOpen className="h-3 w-3" /> {module.contentType === "video" ? "Video" : "Document"}
+                    </span>
+                    {module.duration && (
+                      <span className="text-xs text-muted-foreground">{module.duration}</span>
+                    )}
                   </div>
-                  <button
-                    onClick={handleMarkComplete}
-                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity shrink-0 ml-4"
-                  >
-                    <CheckCircle2 className="h-4 w-4" /> Mark as Complete
-                  </button>
+                  <h1 className="font-display text-lg font-bold text-foreground">{substitute(module.title)}</h1>
                 </div>
-              </motion.div>
-
-              {/* Learning Mode Selector */}
-              <div className="flex items-center gap-1.5 overflow-x-auto mb-4">
-                {modeOptions.map((mode) => {
-                  const Icon = mode.icon;
-                  const isActive = learningMode === mode.value;
-                  return (
-                    <button
-                      key={mode.value}
-                      onClick={() => setLearningMode(mode.value)}
-                      className={cn(
-                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
-                        isActive
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-                      )}
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                      {mode.label}
-                    </button>
-                  );
-                })}
+                <button
+                  onClick={handleMarkComplete}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity shrink-0 ml-4"
+                >
+                  <CheckCircle2 className="h-4 w-4" /> Mark as Complete
+                </button>
               </div>
-
-              {/* Rich content */}
-              <EmbarkModuleContent
-                module={module}
-                learningModeOverride={learningMode}
-                skillTargetId={skillTargetId}
-                stepId={step?.id}
-                onComplete={handleMarkComplete}
-                learningFormat={step?.learningFormat}
-                hideHeader
-              />
-            </>
+            </motion.div>
           )}
+
+          {/* Learning Mode Selector — hidden once completion screen renders */}
+          {!innerCompleted && (
+            <div className="flex items-center gap-1.5 overflow-x-auto mb-4">
+              {modeOptions.map((mode) => {
+                const Icon = mode.icon;
+                const isActive = learningMode === mode.value;
+                return (
+                  <button
+                    key={mode.value}
+                    onClick={() => setLearningMode(mode.value)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {mode.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Rich content — handles its own completion screen with auto-advance */}
+          <EmbarkModuleContent
+            key={module.id}
+            module={module}
+            learningModeOverride={learningMode}
+            skillTargetId={skillTargetId}
+            stepId={step?.id}
+            onComplete={handleMarkComplete}
+            learningFormat={step?.learningFormat}
+            hideHeader
+            initialCompleted={step?.status === "completed"}
+            onCompletedChange={setInnerCompleted}
+          />
         </div>
       </div>
     </div>

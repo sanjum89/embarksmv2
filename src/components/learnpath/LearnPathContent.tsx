@@ -95,6 +95,11 @@ export function EmbarkContent() {
     }
   }, [hasSteps, contentView]);
 
+  // Reset completion-view flag when active module changes (so mode selector returns)
+  useEffect(() => {
+    setModuleCompletedView(false);
+  }, [activeModuleId]);
+
   // Get skill gap recommendations for empty state
   const profileData = normalizedAccount?.profileData?.[user.id];
   const { groups: recommendationGroups } = getRecommendationsForUser(profileData);

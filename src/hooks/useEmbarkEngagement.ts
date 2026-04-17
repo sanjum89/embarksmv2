@@ -330,6 +330,42 @@ export function useEmbarkEngagement({
           message: pickCompletionNudge(event.moduleTitle, event.nextModuleTitle ?? null),
           source: "completion",
         });
+        return;
+      }
+
+      if (event.type === "retention_gap_detected") {
+        dispatchNudge({
+          id: `nudge-retention-${Date.now()}`,
+          message: pickRetentionNudge(event.weakTopics, event.score),
+          source: "retention",
+        });
+        return;
+      }
+
+      if (event.type === "struggling_streak") {
+        dispatchNudge({
+          id: `nudge-struggling-${Date.now()}`,
+          message: pickStrugglingStreakNudge(),
+          source: "struggling",
+        });
+        return;
+      }
+
+      if (event.type === "module_reopened") {
+        dispatchNudge({
+          id: `nudge-reopen-${Date.now()}`,
+          message: pickReopenNudge(event.moduleTitle),
+          source: "reopen",
+        });
+        return;
+      }
+
+      if (event.type === "refresher_passed") {
+        dispatchNudge({
+          id: `nudge-recovery-${Date.now()}`,
+          message: pickRecoveryNudge(event.topic),
+          source: "recovery",
+        });
       }
     };
 

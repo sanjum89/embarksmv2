@@ -377,6 +377,7 @@ function DefaultContentViewer({
   onNavigateToStep: (step: StepItem) => void;
 }) {
   const [completed, setCompleted] = useState(step.status === "completed");
+  const [innerCompleted, setInnerCompleted] = useState(step.status === "completed");
   const [learningMode, setLearningMode] = useState<LearningMode>("reading");
   const { updateSkillTarget, skillTargets } = useSkillTargets();
   const { normalizedAccount } = useAccount();
@@ -428,7 +429,9 @@ function DefaultContentViewer({
     }
   };
 
-  if (completed) {
+  // When the rich content delegates back, fall back to a simple confirmation screen
+  // (this happens when no module resolved — keep the legacy minimal completion view)
+  if (completed && !resolvedModule) {
     return (
       <div className="flex flex-col items-center justify-center p-12 text-center">
         <div className="h-16 w-16 rounded-full bg-success/15 flex items-center justify-center mb-4">
@@ -448,53 +451,60 @@ function DefaultContentViewer({
 
   return (
     <>
-      {/* Header with title and Mark as Complete */}
-      <div className="px-5 py-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <h3 className="text-base font-semibold text-foreground">{substitute(step.title)}</h3>
-          <button
-            onClick={handleMarkComplete}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity"
-          >
-            <CheckCircle2 className="h-3.5 w-3.5" /> Mark as Complete
-          </button>
+      {/* Header with title and Mark as Complete (hidden once completed) */}
+      {!innerCompleted && (
+        <div className="px-5 py-4 border-b border-border">
+          <div className="flex items-center justify-between">
+            <h3 className="text-base font-semibold text-foreground">{substitute(step.title)}</h3>
+            <button
+              onClick={handleMarkComplete}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              <CheckCircle2 className="h-3.5 w-3.5" /> Mark as Complete
+            </button>
+          </div>
+          {step.duration && <p className="text-xs text-muted-foreground mt-1">Duration: {step.duration}</p>}
         </div>
-        {step.duration && <p className="text-xs text-muted-foreground mt-1">Duration: {step.duration}</p>}
-      </div>
+      )}
 
-      {/* Learning Mode Selector */}
-      <div className="px-5 py-3 border-b border-border">
-        <div className="flex items-center gap-1.5 overflow-x-auto">
-          {modeOptions.map((mode) => {
-            const Icon = mode.icon;
-            const isActive = learningMode === mode.value;
-            return (
-              <button
-                key={mode.value}
-                onClick={() => setLearningMode(mode.value)}
-                className={cn(
-                  "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
-                )}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {mode.label}
-              </button>
-            );
-          })}
+      {/* Learning Mode Selector — hidden once completed */}
+      {!innerCompleted && (
+        <div className="px-5 py-3 border-b border-border">
+          <div className="flex items-center gap-1.5 overflow-x-auto">
+            {modeOptions.map((mode) => {
+              const Icon = mode.icon;
+              const isActive = learningMode === mode.value;
+              return (
+                <button
+                  key={mode.value}
+                  onClick={() => setLearningMode(mode.value)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {mode.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Content — use rich EmbarkModuleContent if module resolved */}
       {resolvedModule ? (
         <EmbarkModuleContent
+          key={resolvedModule.id}
           module={resolvedModule}
           learningModeOverride={learningMode}
           skillTargetId={skillTargetId}
           stepId={step.id}
           onComplete={handleMarkComplete}
+          initialCompleted={step.status === "completed"}
+          onCompletedChange={setInnerCompleted}
         />
       ) : (
         <div className="px-5 py-5">

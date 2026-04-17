@@ -5,6 +5,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { resolveAssessment, applyGateActions, STEP_TO_ASSESSMENT } from "@/lib/assessmentGates";
 import { emitAssessmentCompleted } from "@/lib/agentOneEventEmitter";
+import { emitEngagementEvent } from "@/lib/embarkEngagementEvents";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -89,6 +90,13 @@ export function EmbarkAssessment({
     if (activeAccount?.id && normalizedAccount && assessmentId) {
       emitAssessmentCompleted(user.id, assessmentId, finalScore, activeAccount.id, normalizedAccount).catch(console.error);
     }
+
+    // Emit Embark engagement event for proactive nudges
+    emitEngagementEvent({
+      type: "assessment_completed",
+      score: finalScore,
+      moduleTitle: assessment.title ?? null,
+    });
 
     // Apply gate logic
     if (skillTargetId) {

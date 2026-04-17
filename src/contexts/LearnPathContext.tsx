@@ -1,8 +1,17 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 
 export type LearningMode = "visual" | "reading" | "listening" | "hands-on" | "combined";
 
 export type ContentView = "welcome" | "modules" | "module" | "assessment";
+
+export type EngagementMode = "auto" | "proactive" | "focused";
+
+export interface EngagementTimings {
+  idleFirst: number; // seconds
+  idleRepeat: number; // seconds
+  dwellSoft: number; // seconds on same module without scroll
+  dwellSummary: number; // seconds on same module without scroll
+}
 
 export interface CompletedModuleInfo {
   moduleId: string;
@@ -31,7 +40,16 @@ interface EmbarkContextType extends EmbarkState {
   showModuleGrid: () => void;
   notifyModuleCompleted: (info: CompletedModuleInfo) => void;
   clearCompletedModule: () => void;
+  // Engagement settings
+  engagementMode: EngagementMode;
+  setEngagementMode: (mode: EngagementMode) => void;
+  engagementTimings: EngagementTimings | null;
+  setEngagementTimings: (timings: EngagementTimings | null) => void;
+  resetEngagementTimings: () => void;
 }
+
+const ENGAGEMENT_MODE_KEY = "embark-ai-engagement-mode";
+const ENGAGEMENT_TIMINGS_KEY = "embark-ai-engagement-timings";
 
 const EmbarkContext = createContext<EmbarkContextType>({
   contentView: "welcome",
@@ -49,7 +67,39 @@ const EmbarkContext = createContext<EmbarkContextType>({
   showModuleGrid: () => {},
   notifyModuleCompleted: () => {},
   clearCompletedModule: () => {},
+  engagementMode: "auto",
+  setEngagementMode: () => {},
+  engagementTimings: null,
+  setEngagementTimings: () => {},
+  resetEngagementTimings: () => {},
 });
+
+function loadEngagementMode(): EngagementMode {
+  if (typeof window === "undefined") return "auto";
+  try {
+    const v = window.localStorage.getItem(ENGAGEMENT_MODE_KEY);
+    if (v === "auto" || v === "proactive" || v === "focused") return v;
+  } catch {}
+  return "auto";
+}
+
+function loadEngagementTimings(): EngagementTimings | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(ENGAGEMENT_TIMINGS_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      typeof parsed?.idleFirst === "number" &&
+      typeof parsed?.idleRepeat === "number" &&
+      typeof parsed?.dwellSoft === "number" &&
+      typeof parsed?.dwellSummary === "number"
+    ) {
+      return parsed as EngagementTimings;
+    }
+  } catch {}
+  return null;
+}
 
 export function EmbarkProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<EmbarkState>({
@@ -60,6 +110,27 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
     assessmentModuleId: null,
     lastCompletedModule: null,
   });
+
+  const [engagementMode, setEngagementModeState] = useState<EngagementMode>(loadEngagementMode);
+  const [engagementTimings, setEngagementTimingsState] = useState<EngagementTimings | null>(
+    loadEngagementTimings
+  );
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(ENGAGEMENT_MODE_KEY, engagementMode);
+    } catch {}
+  }, [engagementMode]);
+
+  useEffect(() => {
+    try {
+      if (engagementTimings) {
+        window.localStorage.setItem(ENGAGEMENT_TIMINGS_KEY, JSON.stringify(engagementTimings));
+      } else {
+        window.localStorage.removeItem(ENGAGEMENT_TIMINGS_KEY);
+      }
+    } catch {}
+  }, [engagementTimings]);
 
   const setContentView = useCallback((view: ContentView) => {
     setState((s) => ({ ...s, contentView: view }));
@@ -121,6 +192,18 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, lastCompletedModule: null }));
   }, []);
 
+  const setEngagementMode = useCallback((mode: EngagementMode) => {
+    setEngagementModeState(mode);
+  }, []);
+
+  const setEngagementTimings = useCallback((timings: EngagementTimings | null) => {
+    setEngagementTimingsState(timings);
+  }, []);
+
+  const resetEngagementTimings = useCallback(() => {
+    setEngagementTimingsState(null);
+  }, []);
+
   return (
     <EmbarkContext.Provider
       value={{
@@ -134,6 +217,11 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
         showModuleGrid,
         notifyModuleCompleted,
         clearCompletedModule,
+        engagementMode,
+        setEngagementMode,
+        engagementTimings,
+        setEngagementTimings,
+        resetEngagementTimings,
       }}
     >
       {children}
@@ -142,3 +230,19 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
 }
 
 export const useEmbark = () => useContext(EmbarkContext);
+
+// Default timing presets per mode
+export const DEFAULT_TIMINGS_BY_MODE: Record<EngagementMode, EngagementTimings | null> = {
+  auto: { idleFirst: 90, idleRepeat: 240, dwellSoft: 180, dwellSummary: 360 },
+  proactive: { idleFirst: 45, idleRepeat: 120, dwellSoft: 90, dwellSummary: 240 },
+  focused: null, // disabled
+};
+
+export function resolveEffectiveTimings(
+  mode: EngagementMode,
+  custom: EngagementTimings | null
+): EngagementTimings | null {
+  if (mode === "focused") return null;
+  if (custom) return custom;
+  return DEFAULT_TIMINGS_BY_MODE[mode];
+}

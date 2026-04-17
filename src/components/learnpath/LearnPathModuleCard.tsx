@@ -1,7 +1,8 @@
 import { useEmbark } from "@/contexts/LearnPathContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Video, FileText, CheckCircle2, Lock, Clock, ClipboardCheck, MessageSquare, SkipForward } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { BookOpen, Video, FileText, CheckCircle2, Lock, Clock, ClipboardCheck, MessageSquare, SkipForward, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import type { StepType } from "@/types/learning";
@@ -19,6 +20,8 @@ interface StepEntry {
   skillTargetTitle: string;
   progress: number;
   referenceId: string;
+  isAdaptive?: boolean;
+  adaptiveReason?: string;
 }
 
 const typeIcons: Record<StepType, React.ElementType> = {

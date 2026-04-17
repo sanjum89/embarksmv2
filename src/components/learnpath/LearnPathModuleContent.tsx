@@ -601,73 +601,27 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   }, [completed, skillTargetId, skillTargets, stepId]);
 
   if (completed) {
+    const handleContinue = () => {
+      if (!nextModuleId) return;
+      if (nextStepType === "assessment") {
+        learnPathCtx.openAssessment(nextModuleId);
+      } else {
+        learnPathCtx.openModule(nextModuleId, nextSkillTargetId);
+      }
+    };
+
     return (
-      <div className="flex flex-col items-center justify-center p-8 md:p-12 text-center animate-fade-in max-w-lg mx-auto">
-        <div className="h-16 w-16 rounded-full bg-emerald-500/15 flex items-center justify-center mb-4">
-          <CheckCircle2 className="h-8 w-8 text-emerald-500" />
-        </div>
-        <h3 className="text-lg font-semibold text-foreground mb-1">Module Complete!</h3>
-        <p className="text-sm text-muted-foreground mb-6">Great work on "{substitute(module.title)}"</p>
-
-        {completionStats && (
-          <div className="grid grid-cols-2 gap-3 w-full mb-6">
-            <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
-              <Timer className="h-5 w-5 text-primary" />
-              <span className="text-xs text-muted-foreground">Time Spent</span>
-              <span className="text-lg font-bold text-foreground">{completionStats.timeSpent}</span>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
-              <BarChart3 className="h-5 w-5 text-primary" />
-              <span className="text-xs text-muted-foreground">Assessment</span>
-              <span className="text-lg font-bold text-foreground">{completionStats.assessmentScore}</span>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              <span className="text-xs text-muted-foreground">Progress</span>
-              <span className="text-lg font-bold text-foreground">{completionStats.progressText}</span>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
-              <Flame className="h-5 w-5 text-orange-500" />
-              <span className="text-xs text-muted-foreground">Streak</span>
-              <span className="text-lg font-bold text-foreground">{completionStats.streakText}</span>
-            </div>
-           </div>
-        )}
-
-        {/* Next Up / Continue */}
-        {nextModuleId && nextModuleTitle ? (
-          <div className="w-full space-y-3">
-            <div className="rounded-xl border border-border bg-card p-4 text-left">
-              <p className="text-xs text-muted-foreground mb-1">Next Up</p>
-              <p className="text-sm font-medium text-foreground">{nextModuleTitle}</p>
-              {nextSkillTargetId && nextSkillTargetId !== skillTargetId && (
-                <p className="text-xs text-muted-foreground mt-0.5">New skill target</p>
-              )}
-            </div>
-            <Button
-              onClick={() => {
-                if (nextStepType === "assessment") {
-                  learnPathCtx.openAssessment(nextModuleId);
-                } else {
-                  learnPathCtx.openModule(nextModuleId, nextSkillTargetId);
-                }
-              }}
-              className="w-full gap-2"
-            >
-              <ArrowRight className="h-4 w-4" />
-              Continue to Next Chapter
-            </Button>
-          </div>
-        ) : (
-          <Button
-            variant="outline"
-            onClick={() => learnPathCtx.showModuleGrid()}
-            className="w-full gap-2"
-          >
-            Back to All Chapters
-          </Button>
-        )}
-      </div>
+      <CompletionScreen
+        moduleTitle={substitute(module.title)}
+        completionStats={completionStats}
+        nextModuleId={nextModuleId}
+        nextModuleTitle={nextModuleTitle}
+        nextSkillTargetId={nextSkillTargetId}
+        skillTargetId={skillTargetId}
+        isRevisit={isRevisit}
+        onContinue={handleContinue}
+        onBackToGrid={() => learnPathCtx.showModuleGrid()}
+      />
     );
   }
 

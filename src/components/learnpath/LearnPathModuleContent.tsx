@@ -637,3 +637,132 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
     </div>
   );
 }
+
+interface CompletionScreenProps {
+  moduleTitle: string;
+  completionStats: { timeSpent: string; assessmentScore: string; progressText: string; streakText: string } | null;
+  nextModuleId?: string;
+  nextModuleTitle?: string;
+  nextSkillTargetId?: string;
+  skillTargetId?: string;
+  isRevisit: boolean;
+  onContinue: () => void;
+  onBackToGrid: () => void;
+}
+
+function CompletionScreen({
+  moduleTitle,
+  completionStats,
+  nextModuleId,
+  nextModuleTitle,
+  nextSkillTargetId,
+  skillTargetId,
+  isRevisit,
+  onContinue,
+  onBackToGrid,
+}: CompletionScreenProps) {
+  const AUTO_ADVANCE_MS = 5000;
+  const TICK_MS = 50;
+  const hasNext = Boolean(nextModuleId && nextModuleTitle);
+  // Auto-advance only on first completion (not revisits) and when there is a next step
+  const [autoActive, setAutoActive] = useState(hasNext && !isRevisit);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!autoActive) return;
+    const start = Date.now();
+    const interval = setInterval(() => {
+      const e = Date.now() - start;
+      if (e >= AUTO_ADVANCE_MS) {
+        clearInterval(interval);
+        setElapsed(AUTO_ADVANCE_MS);
+        onContinue();
+      } else {
+        setElapsed(e);
+      }
+    }, TICK_MS);
+    return () => clearInterval(interval);
+  }, [autoActive, onContinue]);
+
+  const cancelAuto = () => setAutoActive(false);
+  const progressPct = Math.min(100, Math.round((elapsed / AUTO_ADVANCE_MS) * 100));
+  const secondsLeft = Math.max(0, Math.ceil((AUTO_ADVANCE_MS - elapsed) / 1000));
+
+  return (
+    <div
+      className="flex flex-col items-center justify-center p-8 md:p-12 text-center animate-fade-in max-w-lg mx-auto"
+      onMouseEnter={cancelAuto}
+    >
+      <div className="h-16 w-16 rounded-full bg-success/15 flex items-center justify-center mb-4">
+        <CheckCircle2 className="h-8 w-8 text-success" />
+      </div>
+      <h3 className="text-lg font-semibold text-foreground mb-1">
+        {isRevisit ? "Module Summary" : "Module Complete!"}
+      </h3>
+      <p className="text-sm text-muted-foreground mb-6">
+        {isRevisit ? "You've already completed" : "Great work on"} "{moduleTitle}"
+      </p>
+
+      {completionStats && (
+        <div className="grid grid-cols-2 gap-3 w-full mb-6">
+          <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
+            <Timer className="h-5 w-5 text-primary" />
+            <span className="text-xs text-muted-foreground">Time Spent</span>
+            <span className="text-sm font-bold text-foreground">{completionStats.timeSpent}</span>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
+            <BarChart3 className="h-5 w-5 text-primary" />
+            <span className="text-xs text-muted-foreground">Assessment</span>
+            <span className="text-lg font-bold text-foreground">{completionStats.assessmentScore}</span>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            <span className="text-xs text-muted-foreground">Progress</span>
+            <span className="text-lg font-bold text-foreground">{completionStats.progressText}</span>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-4 flex flex-col items-center gap-1.5">
+            <Flame className="h-5 w-5 text-primary" />
+            <span className="text-xs text-muted-foreground">Streak</span>
+            <span className="text-lg font-bold text-foreground">{completionStats.streakText}</span>
+          </div>
+        </div>
+      )}
+
+      {hasNext ? (
+        <div className="w-full space-y-3">
+          <div className="rounded-xl border border-border bg-card p-4 text-left">
+            <p className="text-xs text-muted-foreground mb-1">Next Up</p>
+            <p className="text-sm font-medium text-foreground">{nextModuleTitle}</p>
+            {nextSkillTargetId && nextSkillTargetId !== skillTargetId && (
+              <p className="text-xs text-muted-foreground mt-0.5">New skill target</p>
+            )}
+          </div>
+
+          {autoActive && (
+            <div className="space-y-2">
+              <Progress value={progressPct} className="h-1.5" />
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <span>Auto-advancing in {secondsLeft}s…</span>
+                <button
+                  onClick={cancelAuto}
+                  className="font-medium text-foreground hover:text-primary transition-colors"
+                >
+                  Stay here
+                </button>
+              </div>
+            </div>
+          )}
+
+          <Button onClick={onContinue} className="w-full gap-2">
+            <ArrowRight className="h-4 w-4" />
+            Continue to Next Chapter
+          </Button>
+        </div>
+      ) : (
+        <Button variant="outline" onClick={onBackToGrid} className="w-full gap-2">
+          Back to All Chapters
+        </Button>
+      )}
+    </div>
+  );
+}

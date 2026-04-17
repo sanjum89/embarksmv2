@@ -281,6 +281,16 @@ export default function RolePlaySession() {
       } else {
         const data = await resp.json();
         setEndSummary(data.summary || "No feedback received.");
+        // Emit engagement event for Embark AI proactive nudges (estimate rating from history length / completion)
+        try {
+          const { emitEngagementEvent } = await import("@/lib/embarkEngagementEvents");
+          // Rough rating heuristic: longer engaged conversations = higher rating
+          const estimatedRating = Math.min(5, Math.max(2, Math.round(history.length / 3)));
+          emitEngagementEvent({
+            type: "role_play_completed",
+            rating: estimatedRating,
+          });
+        } catch {}
       }
     } catch (err) {
       setEndSummary("Could not generate summary. Please try again.");

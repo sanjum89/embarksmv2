@@ -1,22 +1,34 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { Send, Loader2, Sparkles } from "lucide-react";
+import { Send, Loader2, Sparkles, Settings2, Lightbulb, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
 import { EmbarkRichBlock, parseEmbarkRichBlocks } from "./LearnPathRichBlock";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
-import { useEmbark } from "@/contexts/LearnPathContext";
+import {
+  useEmbark,
+  resolveEffectiveTimings,
+  DEFAULT_TIMINGS_BY_MODE,
+  type EngagementMode,
+  type EngagementTimings,
+} from "@/contexts/LearnPathContext";
 import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
 import { SuggestionPillsRow, computeSuggestionPills, type SuggestionPill } from "./SuggestionPills";
+import { useEmbarkEngagement } from "@/hooks/useEmbarkEngagement";
 
 interface ChatMessage {
   id: string;
   role: "user" | "assistant";
   content: string;
+  isNudge?: boolean;
 }
 
 const LEARNPATH_CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/learnpath-chat`;

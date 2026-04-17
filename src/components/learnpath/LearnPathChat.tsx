@@ -482,11 +482,77 @@ export function EmbarkChat() {
     (message) => !message.content.startsWith("[SYSTEM]") && !(message.role === "assistant" && !message.content)
   );
 
+  // === Proactive engagement / nudges ===
+  const buildNudgeContext = useCallback(() => {
+    const ctx = buildContext();
+    return {
+      activeModuleTitle: ctx.activeModuleTitle,
+      activeSkillTargetTitle: ctx.activeSkillTargetTitle,
+      hasModules: ctx.hasModules,
+      contentView: ctx.currentView,
+      keyPoints: ctx.currentContent?.keyPoints ?? [],
+      headings: ctx.currentContent?.headings ?? [],
+      summary: ctx.currentContent?.summary ?? "",
+    };
+  }, [buildContext]);
+
+  const { pendingNudge, dismissNudge } = useEmbarkEngagement({
+    enabled: hasGreeted,
+    isStreaming,
+    inputHasText: input.trim().length > 0,
+    buildContext: buildNudgeContext,
+  });
+
+  const lastNudgeIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!pendingNudge) return;
+    if (lastNudgeIdRef.current === pendingNudge.id) return;
+    lastNudgeIdRef.current = pendingNudge.id;
+
+    const nudgeMsg: ChatMessage = {
+      id: pendingNudge.id,
+      role: "assistant",
+      content: pendingNudge.message,
+      isNudge: true,
+    };
+    setMessages((prev) => [...prev, nudgeMsg]);
+
+    // Compute lightweight suggestion pills for the nudge
+    const ctx = buildContext();
+    const allComplete = ctx.modules.length > 0 && ctx.modules.every((m: any) => m.status === "completed");
+    const activeStep = ctx.activeModuleId
+      ? ctx.modules.find((m: any) => m.moduleId === ctx.activeModuleId)
+      : null;
+    const activeIdx = activeStep ? ctx.modules.indexOf(activeStep) : -1;
+    const nextStep = activeIdx >= 0 && activeIdx < ctx.modules.length - 1 ? ctx.modules[activeIdx + 1] : null;
+
+    setSuggestionPills(
+      computeSuggestionPills({
+        contentView: ctx.currentView,
+        activeModuleId: ctx.activeModuleId,
+        learningMode: ctx.learningMode,
+        hasModules: ctx.hasModules,
+        allComplete,
+        moduleSteps: ctx.modules,
+        roleSkillGaps: (ctx.roleSkillGaps ?? []).map((g: any) => ({ skillName: g.skillName, gap: g.gap })),
+        projectNames: (ctx.projects ?? []).map((p: any) => p.name),
+        lastAssistantContent: pendingNudge.message,
+        usedPrompts,
+        activeModuleTitle: ctx.activeModuleTitle,
+        activeSkillTargetTitle: ctx.activeSkillTargetTitle,
+        turnCount: messages.length,
+        nextModuleTitle: nextStep?.title ?? null,
+      })
+    );
+    dismissNudge();
+  }, [pendingNudge, buildContext, dismissNudge, messages.length, usedPrompts]);
+
   return (
     <div className="h-full flex flex-col bg-background border-r border-border">
       <div className="px-4 min-h-[60px] border-b border-border flex items-center gap-2">
         <Sparkles className="h-5 w-5 text-accent" />
-        <h2 className="font-semibold text-foreground text-sm">Embark AI</h2>
+        <h2 className="font-semibold text-foreground text-sm flex-1">Embark AI</h2>
+        <EngagementSettingsButton />
       </div>
 
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-4">

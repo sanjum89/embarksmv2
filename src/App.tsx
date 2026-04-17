@@ -35,6 +35,7 @@ import EmbarkAIv2 from "./pages/LearnPathV2";
 import UnifiedChat from "./pages/UnifiedChat";
 import NotFound from "./pages/NotFound";
 import PeopleGraphIntelligence from "./pages/PeopleGraphIntelligence";
+import { SupportiveToastBridge } from "@/components/SupportiveToastBridge";
 
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <SupportiveToastBridge />
         <BrowserRouter>
           <AgentOneProvider>
           <Routes>

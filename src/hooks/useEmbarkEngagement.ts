@@ -15,11 +15,28 @@ import {
   pickWelcomeBackNudge,
   type NudgeContext,
 } from "@/lib/embarkNudges";
+import {
+  pickRetentionNudge,
+  pickStrugglingStreakNudge,
+  pickReopenNudge,
+  pickRecoveryNudge,
+} from "@/lib/embarkSupportiveMessages";
 
 export interface PendingNudge {
   id: string;
   message: string;
-  source: "idle" | "dwell-soft" | "dwell-summary" | "performance" | "completion" | "farewell" | "welcome-back";
+  source:
+    | "idle"
+    | "dwell-soft"
+    | "dwell-summary"
+    | "performance"
+    | "completion"
+    | "farewell"
+    | "welcome-back"
+    | "retention"
+    | "struggling"
+    | "reopen"
+    | "recovery";
 }
 
 interface UseEmbarkEngagementOptions {

@@ -12,7 +12,7 @@ export interface User {
 
 export type StepType = "assessment" | "role_play" | "module";
 export type StepStatus = "locked" | "available" | "in_progress" | "completed" | "skipped";
-export type LearningFormat = "full" | "micro" | "auto_skip";
+export type LearningFormat = "full" | "micro" | "auto_skip" | "micro_refresher";
 
 export interface StepItem {
   id: string;
@@ -26,6 +26,12 @@ export interface StepItem {
   duration?: string;
   referenceId: string; // links to Assessment, RolePlay, or LearningModule
   learningFormat?: LearningFormat;
+  /** True when this step was injected by the retention engine (micro refresher, reopened module). */
+  isAdaptive?: boolean;
+  /** Human-readable explanation, surfaced via the "Added for you" badge tooltip. */
+  adaptiveReason?: string;
+  /** Topic tag linking this step (especially refreshers) to the gap it reinforces. */
+  topicTag?: string;
 }
 
 export interface SkillProficiencyTarget {
@@ -63,6 +69,8 @@ export interface AssessmentQuestion {
   question: string;
   options: string[];
   correctIndex: number;
+  /** Topic this question assesses — used by the retention engine for gap analysis. */
+  topicTag?: string;
 }
 
 export interface RolePlay {

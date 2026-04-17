@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getRecommendationsForUser } from "@/lib/skillRecommendations";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { StepType } from "@/types/learning";
 
 export interface UnifiedStep {
@@ -40,6 +40,7 @@ export function EmbarkContent() {
   const navigate = useNavigate();
   const { substitute } = useContentSubstitution();
   const autoResumedRef = useRef(false);
+  const [moduleCompletedView, setModuleCompletedView] = useState(false);
 
   const catalog = buildCatalog(normalizedAccount?.learningModules);
 
@@ -143,9 +144,12 @@ export function EmbarkContent() {
 
     return (
       <div className="h-full flex flex-col">
-        <EmbarkModeSelector skillTargetTitle={stepInfo?.skillTargetTitle} />
+        {!moduleCompletedView && (
+          <EmbarkModeSelector skillTargetTitle={stepInfo?.skillTargetTitle} />
+        )}
         <div className="flex-1 overflow-y-auto">
           <EmbarkModuleContent
+            key={mod.id}
             module={mod}
             skillTargetTitle={stepInfo?.skillTargetTitle}
             learningFormat={stepInfo?.learningFormat as any}
@@ -156,6 +160,8 @@ export function EmbarkContent() {
             nextModuleTitle={nextStep?.title}
             nextSkillTargetId={nextStep?.skillTargetId}
             nextStepType={nextStep?.type}
+            initialCompleted={stepInfo?.status === "completed"}
+            onCompletedChange={setModuleCompletedView}
           />
         </div>
       </div>

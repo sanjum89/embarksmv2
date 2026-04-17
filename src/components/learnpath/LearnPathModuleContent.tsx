@@ -563,10 +563,15 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
 
   const completionStats = useMemo(() => {
     if (!completed) return null;
-    const elapsed = Date.now() - startTimeRef.current;
-    const mins = Math.floor(elapsed / 60000);
-    const secs = Math.floor((elapsed % 60000) / 1000);
-    const timeSpent = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+    let timeSpent: string;
+    if (isRevisit) {
+      timeSpent = "Previously completed";
+    } else {
+      const elapsed = Date.now() - startTimeRef.current;
+      const mins = Math.floor(elapsed / 60000);
+      const secs = Math.floor((elapsed % 60000) / 1000);
+      timeSpent = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+    }
 
     // Skill target progress
     const currentTarget = skillTargetId ? skillTargets.find(t => t.id === skillTargetId) : undefined;

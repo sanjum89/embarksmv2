@@ -1,26 +1,56 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from "react";
-import type { SkillTarget } from "@/types/learning";
+import type { Assessment, SkillTarget, StepItem } from "@/types/learning";
 import { mockSkillTargets, getPersonaSkillTargets } from "@/data/mock";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { emitEvent } from "@/lib/agentOneEventEmitter";
+import { applyGateActions } from "@/lib/assessmentGates";
+import {
+  analyzeAssessment,
+  injectAdaptiveSteps,
+  recomputeProgress,
+  type AssessmentAnalysis,
+} from "@/lib/retentionEngine";
+import { emitEngagementEvent } from "@/lib/embarkEngagementEvents";
+
+export interface RecordAssessmentResult {
+  analysis: AssessmentAnalysis;
+  insertedAdaptiveCount: number;
+  consecutiveLowScores: number;
+}
 
 interface SkillTargetsContextType {
   skillTargets: SkillTarget[];
   addSkillTargets: (targets: SkillTarget[]) => void;
   updateSkillTarget: (id: string, updater: (target: SkillTarget) => SkillTarget) => void;
+  /**
+   * Single source of truth for assessment submissions across Embark + Skill Target views.
+   * Applies gate actions, runs retention analysis, injects adaptive steps,
+   * tracks struggling-streak, and emits engagement events.
+   */
+  recordAssessmentResult: (
+    skillTargetId: string,
+    assessment: Assessment,
+    answers: Record<string, number>
+  ) => RecordAssessmentResult;
 }
 
 const SkillTargetsContext = createContext<SkillTargetsContextType>({
   skillTargets: mockSkillTargets,
   addSkillTargets: () => {},
   updateSkillTarget: () => {},
+  recordAssessmentResult: () => ({
+    analysis: { overallScore: 0, passed: false, topicScores: [], weakTopics: [] },
+    insertedAdaptiveCount: 0,
+    consecutiveLowScores: 0,
+  }),
 });
+
+const LOW_SCORE_THRESHOLD = 60;
+const STRUGGLING_STREAK_TRIGGER = 2;
 
 /**
  * Per-user skill target state.
- * Each user gets their own independent copy of skill targets so that
- * progress / unlock state is fully isolated between profiles.
  */
 export function SkillTargetsProvider({ children }: { children: ReactNode }) {
   const { normalizedAccount, activeAccount, loading } = useAccount();
@@ -36,32 +66,27 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
     return mockSkillTargets;
   }, [normalizedAccount, activeAccount]);
 
-  // Map of userId → their own skill targets state
   const [perUserTargets, setPerUserTargets] = useState<Record<string, SkillTarget[]>>({});
 
   const accountId = activeAccount?.id ?? "__default";
   const userId = user.id;
   const compositeKey = `${accountId}::${userId}`;
 
-  // When account or user list changes, seed any user that doesn't have state yet
   useEffect(() => {
     if (loading) return;
     setPerUserTargets((prev) => {
-      if (prev[compositeKey]) return prev; // already seeded
-      // Deep clone so each user gets independent objects
+      if (prev[compositeKey]) return prev;
       const base = getBaseTargets();
-      // Apply persona-specific skill target variants (e.g. Elliot's intro has different formats)
       const personalized = getPersonaSkillTargets(userId, base);
       const cloned = JSON.parse(JSON.stringify(personalized)) as SkillTarget[];
       return { ...prev, [compositeKey]: cloned };
     });
   }, [compositeKey, loading, getBaseTargets]);
 
-  // Reset per-user map when account switches (different account = fresh slate)
   const accountIdRef = useState(accountId)[0];
   useEffect(() => {
     if (!loading && accountId !== accountIdRef) {
-      // Account actually changed — handled by compositeKey seeding above
+      // handled by compositeKey seeding above
     }
   }, [accountId, loading]);
 
@@ -99,7 +124,6 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
     }));
   }, [compositeKey]);
 
-  // Track which targets have already emitted midpoint events to avoid duplicates
   const midpointEmitted = useRef<Set<string>>(new Set());
 
   const updateSkillTarget = useCallback((id: string, updater: (target: SkillTarget) => SkillTarget) => {
@@ -109,7 +133,6 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
       const updated = currentTargets.map((st) => (st.id === id ? updater(st) : st));
       const newTarget = updated.find((st) => st.id === id);
 
-      // Emit onboarding_midpoint_reached when progress crosses 50%
       if (
         oldTarget && newTarget &&
         oldTarget.progress < 50 && newTarget.progress >= 50 &&
@@ -133,8 +156,89 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
     });
   }, [compositeKey, normalizedAccount, activeAccount?.id, userId]);
 
+  // Per-user consecutive-low-score counter (reset on a passing score)
+  const consecutiveLowRef = useRef<Record<string, number>>({});
+
+  const recordAssessmentResult = useCallback(
+    (
+      skillTargetId: string,
+      assessment: Assessment,
+      answers: Record<string, number>
+    ): RecordAssessmentResult => {
+      const analysis = analyzeAssessment(assessment, answers);
+
+      // Update consecutive-low-score counter for this user
+      const key = compositeKey;
+      const prev = consecutiveLowRef.current[key] ?? 0;
+      const next = analysis.overallScore < LOW_SCORE_THRESHOLD ? prev + 1 : 0;
+      consecutiveLowRef.current[key] = next;
+
+      // Apply gate actions + inject adaptive refresher steps if needed
+      let insertedAdaptiveCount = 0;
+      setPerUserTargets((prevState) => {
+        const targets = prevState[key] ?? [];
+        const updated = targets.map((target) => {
+          if (target.id !== skillTargetId) return target;
+
+          // 1. Standard gate logic
+          const gated = applyGateActions(target.steps, assessment.id, analysis.overallScore);
+          let nextSteps = gated.steps;
+
+          // 2. Inject adaptive steps for weak topics (only if not perfect)
+          if (analysis.weakTopics.length > 0) {
+            const injected = injectAdaptiveSteps(
+              nextSteps,
+              assessment.id,
+              analysis.weakTopics
+            );
+            nextSteps = injected.steps;
+            insertedAdaptiveCount = injected.insertedCount;
+          }
+
+          return {
+            ...target,
+            steps: nextSteps,
+            progress: recomputeProgress(nextSteps),
+          };
+        });
+        return { ...prevState, [key]: updated };
+      });
+
+      // 3. Emit engagement events
+      emitEngagementEvent({
+        type: "assessment_completed",
+        score: analysis.overallScore,
+        moduleTitle: assessment.title ?? null,
+      });
+
+      if (analysis.weakTopics.length > 0 && insertedAdaptiveCount > 0) {
+        emitEngagementEvent({
+          type: "retention_gap_detected",
+          weakTopics: analysis.weakTopics,
+          score: analysis.overallScore,
+          assessmentTitle: assessment.title ?? null,
+          skillTargetId,
+        });
+      }
+
+      if (next >= STRUGGLING_STREAK_TRIGGER) {
+        emitEngagementEvent({
+          type: "struggling_streak",
+          consecutiveLowScores: next,
+        });
+      }
+
+      return {
+        analysis,
+        insertedAdaptiveCount,
+        consecutiveLowScores: next,
+      };
+    },
+    [compositeKey]
+  );
+
   return (
-    <SkillTargetsContext.Provider value={{ skillTargets, addSkillTargets, updateSkillTarget }}>
+    <SkillTargetsContext.Provider value={{ skillTargets, addSkillTargets, updateSkillTarget, recordAssessmentResult }}>
       {children}
     </SkillTargetsContext.Provider>
   );

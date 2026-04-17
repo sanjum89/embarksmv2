@@ -1,22 +1,46 @@
 
 
-## Add "Go to Embark AI" CTA on Final Step of Manage Profile Tour
+## Plan: Add Configurable Timing for Engagement Modes (Demo Tuning)
 
-### What
-On the last step (step 5 — Learning Style), after the user clicks "Complete Setup", add a second CTA button that navigates to the Embark AI page (`/`). This gives users a clear next action after finishing profile setup.
+Adds a "Custom timings" section to the engagement settings popover so you can tune nudge thresholds live for demos.
 
-### Changes
+### What you'll see
+In the chat header ⚙️ popover, below the three mode selectors:
+- **Custom timings** toggle (off by default — modes use their built-in defaults)
+- When on, four sliders with live numeric input:
+  - **First idle nudge** (5s – 300s, default per mode)
+  - **Repeat idle nudge** (15s – 600s)
+  - **Dwell nudge — soft** (30s – 600s, time on same module without scroll)
+  - **Dwell nudge — summary** (60s – 900s)
+- **Reset to defaults** button
+- Small helper text: "Tip: lower values for demo, higher for real use"
 
-**`src/components/onboarding/FirstLoginTour.tsx`**
+All values persist to `localStorage` and override the mode defaults when "Custom timings" is on.
 
-1. Import `useNavigate` from `react-router-dom` and `GraduationCap` from `lucide-react`.
+### Implementation
 
-2. Replace the single "Complete Setup" button (lines 417-428) with two buttons:
-   - **"Complete Setup"** — same as now, closes the tour
-   - **"Start Learning on Embark AI"** — closes the tour AND navigates to `/`
+**`src/contexts/LearnPathContext.tsx`**
+- Add `engagementTimings: { idleFirst, idleRepeat, dwellSoft, dwellSummary } | null` (null = use mode defaults)
+- Persist to `localStorage` key `embark-ai-engagement-timings`
+- Expose `setEngagementTimings`, `resetEngagementTimings`
 
-   Layout: stack them vertically with a small gap. The Embark AI button uses the accent gradient style to stand out as the primary action, while "Complete Setup" becomes a secondary outline button.
+**`src/hooks/useEmbarkEngagement.ts`** (from prior plan)
+- Resolve thresholds: if `engagementTimings` is set, use those; otherwise use mode-based defaults
+- Defaults table:
+  | Mode | idleFirst | idleRepeat | dwellSoft | dwellSummary |
+  |------|-----------|------------|-----------|--------------|
+  | Auto | 90s | 240s | 180s | 360s |
+  | Proactive | 45s | 120s | 90s | 240s |
+  | Focused | — | — | — | — |
 
-### Result
-After completing the learning style selection, users see two CTAs: a subtle "Complete Setup" to just close, and a prominent "Start Learning on Embark AI" that takes them straight into the learning experience.
+**`src/components/learnpath/LearnPathChat.tsx`**
+- Extend the ⚙️ popover with the timings section using existing `Slider` + `Switch` + `Label` components
+- Show current effective values next to each slider (e.g., "45s")
+- Reset button clears `engagementTimings` back to null
+
+### Why this approach
+- Zero new dependencies — uses existing `Slider`, `Switch`, `Popover`, `Label` UI primitives
+- Live updates: changing a slider immediately affects the next timer cycle
+- Defaults are preserved — toggle off = back to research-based timings
+- Perfect for demos: drop idle nudge to 10s to trigger it on stage
 

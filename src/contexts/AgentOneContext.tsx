@@ -490,225 +490,249 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     setIsStreaming(true);
     setSuggestions([]);
 
-    const resp = await fetch(SUPER_AGENT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-      },
-      body: JSON.stringify({
-        messages: allMessages.filter((m) => m.role !== "system"),
-        stage: stageRef.current,
-        userContext,
-      }),
-    });
-
-    if (!resp.ok || !resp.body) {
-      const errMsg: ChatMessage = { role: "assistant", content: "Sorry, I'm having trouble connecting right now. Please try again in a moment." };
-      const updatedMsgs = isAutoWelcome ? [errMsg] : [...allMessages, errMsg];
-      setMessages(updatedMsgs);
-      setIsStreaming(false);
-      return;
-    }
-
-    const reader = resp.body.getReader();
-    const decoder = new TextDecoder();
-    let textBuffer = "";
-    let assistantSoFar = "";
-    let streamDone = false;
-
-    const addOrUpdateAssistant = (content: string) => {
-      setMessages((prev) => {
-        const last = prev[prev.length - 1];
-        if (last?.role === "assistant" && isAutoWelcome && prev.length <= 1) {
-          return [{ role: "assistant", content }];
-        }
-        if (last?.role === "assistant") {
-          return prev.map((m, i) => i === prev.length - 1 ? { ...m, content } : m);
-        }
-        return [...prev, { role: "assistant", content }];
+    try {
+      const resp = await fetch(SUPER_AGENT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: allMessages.filter((m) => m.role !== "system"),
+          stage: stageRef.current,
+          userContext,
+        }),
       });
-    };
 
-    while (!streamDone) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      textBuffer += decoder.decode(value, { stream: true });
+      if (!resp.ok || !resp.body) {
+        const rawError = !resp.ok ? await resp.text().catch(() => "") : "";
+        let parsedError = "";
 
-      let nlIdx: number;
-      while ((nlIdx = textBuffer.indexOf("\n")) !== -1) {
-        let line = textBuffer.slice(0, nlIdx);
-        textBuffer = textBuffer.slice(nlIdx + 1);
-        if (line.endsWith("\r")) line = line.slice(0, -1);
-        if (line.startsWith(":") || !line.trim() || !line.startsWith("data: ")) continue;
-        const jsonStr = line.slice(6).trim();
-        if (jsonStr === "[DONE]") { streamDone = true; break; }
-        try {
-          const parsed = JSON.parse(jsonStr);
-          const content = parsed.choices?.[0]?.delta?.content;
-          if (content) {
-            assistantSoFar += content;
-            addOrUpdateAssistant(assistantSoFar);
+        if (rawError) {
+          try {
+            const errorData = JSON.parse(rawError);
+            parsedError = typeof errorData?.error === "string" ? errorData.error : rawError;
+          } catch {
+            parsedError = rawError;
           }
-        } catch {
-          textBuffer = line + "\n" + textBuffer;
-          break;
-        }
-      }
-    }
-
-    if (textBuffer.trim()) {
-      for (let raw of textBuffer.split("\n")) {
-        if (!raw || !raw.startsWith("data: ")) continue;
-        if (raw.endsWith("\r")) raw = raw.slice(0, -1);
-        const jsonStr = raw.slice(6).trim();
-        if (jsonStr === "[DONE]") continue;
-        try {
-          const parsed = JSON.parse(jsonStr);
-          const content = parsed.choices?.[0]?.delta?.content;
-          if (content) { assistantSoFar += content; addOrUpdateAssistant(assistantSoFar); }
-        } catch { /* ignore */ }
-      }
-    }
-
-    const { clean, suggestions: newSugs } = parseSuggestions(assistantSoFar);
-    // Parse rich blocks and check for reflection submit
-    const { cleanText: finalText, blocks, reflectionSubmit } = parseRichBlocks(clean);
-    if (finalText !== assistantSoFar) {
-      addOrUpdateAssistant(finalText);
-    }
-    if (blocks.length > 0) {
-      // Find the message index (count of messages before this assistant msg)
-      setMessages(prev => {
-        const idx = prev.length - 1;
-        setRichBlocksMap(old => ({ ...old, [idx]: blocks }));
-        return prev;
-      });
-      setIsExpanded(true);
-      setCollapsedBlockIds(new Set());
-    }
-    // Only set AI suggestions if no contextual page pills exist — contextual pills take priority
-    // setSuggestions(newSugs); — disabled so page-aware contextual pills always show
-
-    // Handle reflection submission
-    if (reflectionSubmit && reflectionContext && accountId) {
-      try {
-        const conversationMsgs = messagesRef.current.map(m => ({ role: m.role, content: m.content }));
-        await supabase.from("reflections" as any).insert({
-          account_id: accountId,
-          employee_id: user.id,
-          manager_id: reflectionContext.managerName || "system",
-          trigger_type: reflectionContext.triggerType || "manager_requested",
-          topic: reflectionContext.topic || "",
-          questions: reflectionContext.questions?.map((q, i) => ({ question: q, answer: "" })) || [],
-          summary: finalText.slice(0, 500),
-          raw_conversation: conversationMsgs,
-          status: "submitted",
-          submitted_at: new Date().toISOString(),
-        } as any);
-
-        // Emit reflection_submitted event
-        if (normalizedAccount) {
-          emitEvent({
-            account_id: accountId,
-            event_type: "reflection_submitted" as any,
-            category: "reflection_request" as any,
-            source_employee_id: user.id,
-            target_employee_id: user.id,
-            related_employee_ids: [user.id],
-            payload: { topic: reflectionContext.topic },
-          }, normalizedAccount).catch(err => console.error("[AgentOne] Reflection submit event failed:", err));
         }
 
-        // Clear reflection context after submission
-        setReflectionContext(null);
-        // Return stage to previous
-        const postStage = isNewJoiner ? "post-completion" : "general";
-        setStage(postStage);
-        stageRef.current = postStage;
-      } catch (err) {
-        console.error("[AgentOne] Failed to save reflection:", err);
-      }
-    }
-
-    // Detect stage transitions
-    const lower = clean.toLowerCase();
-    let nextStage = stageRef.current;
-    if (stageRef.current === "welcome" && (lower.includes("look correct") || lower.includes("add anything"))) {
-      nextStage = "profile-review";
-    } else if (stageRef.current === "profile-review" && (lower.includes("onboarding") || lower.includes("how has"))) {
-      nextStage = "feedback";
-    } else if (stageRef.current === "feedback") {
-      nextStage = "task-list";
-    } else if (stageRef.current === "task-list" && (lower.includes("assessment") || lower.includes("ready") || lower.includes("bridge") || lower.includes("introduction") || lower.includes("intro"))) {
-      if (isSophie) {
-        const target = skillTargets.find((st) => st.id === "RAT-ST-001");
-        if (target) {
-          updateSkillTarget("RAT-ST-001", (st) => {
-            const updatedSteps = st.steps.map((step) => {
-              if (step.id === "RAT-ASM-001") return { ...step, status: "completed" as const };
-              if (step.id === "RAT-LM-001") return { ...step, status: "available" as const };
-              return step;
-            });
-            return { ...st, locked: false, steps: updatedSteps };
-          });
-        }
-        nextStage = "post-assessment";
-        const autoMsg: ChatMessage = { role: "user", content: "I'm ready to start my training — no assessment needed since I'm starting fresh!" };
-        setMessages((currentMsgs) => {
-          const autoMsgs = [...currentMsgs, autoMsg];
-          setStage("post-assessment");
-          stageRef.current = "post-assessment";
-          setTimeout(() => streamResponse(autoMsgs), 50);
-          return autoMsgs;
-        });
-        setIsStreaming(false);
+        const fallbackMessage = resp.status === 402
+          ? "Agent One is temporarily unavailable because AI credits are exhausted. Please add funds to restore chat."
+          : resp.status === 429
+            ? "Agent One is temporarily busy right now. Please try again shortly."
+            : "Sorry, I'm having trouble connecting right now. Please try again in a moment.";
+        const errMsg: ChatMessage = { role: "assistant", content: parsedError || fallbackMessage };
+        const updatedMsgs = isAutoWelcome ? [errMsg] : [...allMessages, errMsg];
+        setMessages(updatedMsgs);
         return;
       }
-      // For users with intro target not yet completed, guide them there
-      if (introTarget && !introCompleted) {
-        nextStage = "pre-intro";
-      } else if (hasBridgeTarget && !bridgeCompleted) {
-        if (!bridgeUnlocked) {
-          updateSkillTarget("RAT-ST-BRIDGE-001", (st) => {
-            const updatedSteps = st.steps.map((step, idx) => idx === 0 ? { ...step, status: "available" as const } : step);
-            return { ...st, locked: false, steps: updatedSteps };
-          });
+
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = "";
+      let assistantSoFar = "";
+      let streamDone = false;
+
+      const addOrUpdateAssistant = (content: string) => {
+        setMessages((prev) => {
+          const last = prev[prev.length - 1];
+          if (last?.role === "assistant" && isAutoWelcome && prev.length <= 1) {
+            return [{ role: "assistant", content }];
+          }
+          if (last?.role === "assistant") {
+            return prev.map((m, i) => i === prev.length - 1 ? { ...m, content } : m);
+          }
+          return [...prev, { role: "assistant", content }];
+        });
+      };
+
+      while (!streamDone) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let nlIdx: number;
+        while ((nlIdx = textBuffer.indexOf("\n")) !== -1) {
+          let line = textBuffer.slice(0, nlIdx);
+          textBuffer = textBuffer.slice(nlIdx + 1);
+          if (line.endsWith("\r")) line = line.slice(0, -1);
+          if (line.startsWith(":") || !line.trim() || !line.startsWith("data: ")) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === "[DONE]") {
+            streamDone = true;
+            break;
+          }
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantSoFar += content;
+              addOrUpdateAssistant(assistantSoFar);
+            }
+          } catch {
+            textBuffer = line + "\n" + textBuffer;
+            break;
+          }
         }
-        nextStage = "pre-bridge";
-      } else {
-        nextStage = "pre-assessment";
       }
-    } else if (stageRef.current === "pre-intro") {
-      if (introCompleted) {
-        if (hasBridgeTarget && !bridgeCompleted) {
+
+      if (textBuffer.trim()) {
+        for (let raw of textBuffer.split("\n")) {
+          if (!raw || !raw.startsWith("data: ")) continue;
+          if (raw.endsWith("\r")) raw = raw.slice(0, -1);
+          const jsonStr = raw.slice(6).trim();
+          if (jsonStr === "[DONE]") continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content;
+            if (content) {
+              assistantSoFar += content;
+              addOrUpdateAssistant(assistantSoFar);
+            }
+          } catch {
+            /* ignore */
+          }
+        }
+      }
+
+      const { clean, suggestions: newSugs } = parseSuggestions(assistantSoFar);
+      const { cleanText: finalText, blocks, reflectionSubmit } = parseRichBlocks(clean);
+      if (finalText !== assistantSoFar) {
+        addOrUpdateAssistant(finalText);
+      }
+      if (blocks.length > 0) {
+        setMessages(prev => {
+          const idx = prev.length - 1;
+          setRichBlocksMap(old => ({ ...old, [idx]: blocks }));
+          return prev;
+        });
+        setIsExpanded(true);
+        setCollapsedBlockIds(new Set());
+      }
+      void newSugs;
+
+      if (reflectionSubmit && reflectionContext && accountId) {
+        try {
+          const conversationMsgs = messagesRef.current.map(m => ({ role: m.role, content: m.content }));
+          await supabase.from("reflections" as any).insert({
+            account_id: accountId,
+            employee_id: user.id,
+            manager_id: reflectionContext.managerName || "system",
+            trigger_type: reflectionContext.triggerType || "manager_requested",
+            topic: reflectionContext.topic || "",
+            questions: reflectionContext.questions?.map((q, i) => ({ question: q, answer: "" })) || [],
+            summary: finalText.slice(0, 500),
+            raw_conversation: conversationMsgs,
+            status: "submitted",
+            submitted_at: new Date().toISOString(),
+          } as any);
+
+          if (normalizedAccount) {
+            emitEvent({
+              account_id: accountId,
+              event_type: "reflection_submitted" as any,
+              category: "reflection_request" as any,
+              source_employee_id: user.id,
+              target_employee_id: user.id,
+              related_employee_ids: [user.id],
+              payload: { topic: reflectionContext.topic },
+            }, normalizedAccount).catch(err => console.error("[AgentOne] Reflection submit event failed:", err));
+          }
+
+          setReflectionContext(null);
+          const postStage = isNewJoiner ? "post-completion" : "general";
+          setStage(postStage);
+          stageRef.current = postStage;
+        } catch (err) {
+          console.error("[AgentOne] Failed to save reflection:", err);
+        }
+      }
+
+      const lower = clean.toLowerCase();
+      let nextStage = stageRef.current;
+      if (stageRef.current === "welcome" && (lower.includes("look correct") || lower.includes("add anything"))) {
+        nextStage = "profile-review";
+      } else if (stageRef.current === "profile-review" && (lower.includes("onboarding") || lower.includes("how has"))) {
+        nextStage = "feedback";
+      } else if (stageRef.current === "feedback") {
+        nextStage = "task-list";
+      } else if (stageRef.current === "task-list" && (lower.includes("assessment") || lower.includes("ready") || lower.includes("bridge") || lower.includes("introduction") || lower.includes("intro"))) {
+        if (isSophie) {
+          const target = skillTargets.find((st) => st.id === "RAT-ST-001");
+          if (target) {
+            updateSkillTarget("RAT-ST-001", (st) => {
+              const updatedSteps = st.steps.map((step) => {
+                if (step.id === "RAT-ASM-001") return { ...step, status: "completed" as const };
+                if (step.id === "RAT-LM-001") return { ...step, status: "available" as const };
+                return step;
+              });
+              return { ...st, locked: false, steps: updatedSteps };
+            });
+          }
+          nextStage = "post-assessment";
+          const autoMsg: ChatMessage = { role: "user", content: "I'm ready to start my training — no assessment needed since I'm starting fresh!" };
+          setMessages((currentMsgs) => {
+            const autoMsgs = [...currentMsgs, autoMsg];
+            setStage("post-assessment");
+            stageRef.current = "post-assessment";
+            setTimeout(() => streamResponse(autoMsgs), 50);
+            return autoMsgs;
+          });
+          return;
+        }
+        if (introTarget && !introCompleted) {
+          nextStage = "pre-intro";
+        } else if (hasBridgeTarget && !bridgeCompleted) {
+          if (!bridgeUnlocked) {
+            updateSkillTarget("RAT-ST-BRIDGE-001", (st) => {
+              const updatedSteps = st.steps.map((step, idx) => idx === 0 ? { ...step, status: "available" as const } : step);
+              return { ...st, locked: false, steps: updatedSteps };
+            });
+          }
           nextStage = "pre-bridge";
         } else {
           nextStage = "pre-assessment";
         }
-      }
-    } else if (stageRef.current === "pre-bridge") {
-      if (bridgeCompleted) {
+      } else if (stageRef.current === "pre-intro") {
+        if (introCompleted) {
+          if (hasBridgeTarget && !bridgeCompleted) {
+            nextStage = "pre-bridge";
+          } else {
+            nextStage = "pre-assessment";
+          }
+        }
+      } else if (stageRef.current === "pre-bridge") {
+        if (bridgeCompleted) {
+          nextStage = "pre-assessment";
+        }
+      } else if (stageRef.current === "pre-assessment") {
         nextStage = "pre-assessment";
+      } else if (stageRef.current === "post-assessment") {
+        nextStage = "post-completion";
       }
-    } else if (stageRef.current === "pre-assessment") {
-      nextStage = "pre-assessment";
-    } else if (stageRef.current === "post-assessment") {
-      nextStage = "post-completion";
+
+      if (nextStage !== stageRef.current) {
+        setStage(nextStage);
+        stageRef.current = nextStage;
+      }
+
+      setMessages((prev) => {
+        const final = [...prev];
+        saveConversation(final, nextStage);
+        return final;
+      });
+    } catch (error) {
+      console.error("[AgentOne] streamResponse failed:", error);
+      const errMsg: ChatMessage = {
+        role: "assistant",
+        content: "Sorry, I'm having trouble connecting right now. Please try again in a moment.",
+      };
+      const updatedMsgs = isAutoWelcome ? [errMsg] : [...allMessages, errMsg];
+      setMessages(updatedMsgs);
+    } finally {
+      setIsStreaming(false);
     }
-
-    if (nextStage !== stageRef.current) {
-      setStage(nextStage);
-      stageRef.current = nextStage;
-    }
-
-    setMessages((prev) => {
-      const final = [...prev];
-      saveConversation(final, nextStage);
-      return final;
-    });
-
-    setIsStreaming(false);
   };
 
   const handleSend = useCallback((text: string, sourceBreadcrumb?: string) => {

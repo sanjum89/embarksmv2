@@ -24,8 +24,19 @@ export async function streamChat({
   });
 
   if (!resp.ok || !resp.body) {
-    const errorData = await resp.json().catch(() => ({ error: "Failed to connect to AI" }));
-    onError?.(errorData.error || "Failed to connect to AI");
+    const rawError = await resp.text().catch(() => "");
+    let parsedError = "Failed to connect to AI";
+
+    if (rawError) {
+      try {
+        const errorData = JSON.parse(rawError);
+        parsedError = errorData.error || parsedError;
+      } catch {
+        parsedError = rawError;
+      }
+    }
+
+    onError?.(parsedError);
     onDone();
     return;
   }
@@ -112,9 +123,20 @@ export async function streamRolePlayChat({
     });
 
     if (!resp.ok || !resp.body) {
-      const errorData = await resp.json().catch(() => ({ error: "Failed to connect to AI" }));
-      console.error("[RolePlay] Response error:", resp.status, errorData);
-      onError?.(errorData.error || "Failed to connect to AI");
+      const rawError = await resp.text().catch(() => "");
+      let parsedError = "Failed to connect to AI";
+
+      if (rawError) {
+        try {
+          const errorData = JSON.parse(rawError);
+          parsedError = errorData.error || parsedError;
+        } catch {
+          parsedError = rawError;
+        }
+      }
+
+      console.error("[RolePlay] Response error:", resp.status, parsedError);
+      onError?.(parsedError);
       onDone();
       return;
     }

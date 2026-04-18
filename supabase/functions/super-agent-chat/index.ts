@@ -276,9 +276,12 @@ serve(async (req) => {
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Credits exhausted — please add funds." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        const fallbackMessage = "Agent One is temporarily unavailable because AI credits are exhausted right now. Please add funds to restore chat, then come back whenever you're ready.";
+        const ssePayload = `data: ${JSON.stringify({ choices: [{ delta: { content: fallbackMessage } }] })}\n\ndata: [DONE]\n\n`;
+
+        return new Response(ssePayload, {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
         });
       }
       const t = await response.text();

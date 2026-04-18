@@ -281,10 +281,28 @@ export function EmbarkChat() {
         });
 
         if (!response.ok || !response.body) {
+          const rawError = !response.ok ? await response.text().catch(() => "") : "";
+          let parsedError = "";
+
+          if (rawError) {
+            try {
+              const errorData = JSON.parse(rawError);
+              parsedError = typeof errorData?.error === "string" ? errorData.error : rawError;
+            } catch {
+              parsedError = rawError;
+            }
+          }
+
+          const fallbackMessage = response.status === 402
+            ? "Embark AI is temporarily unavailable because AI credits are exhausted. Please add funds to restore chat."
+            : response.status === 429
+              ? "Embark AI is temporarily busy right now. Please try again shortly."
+              : "Sorry, I couldn't connect. Please try again.";
+
           setMessages((prev) =>
             prev.map((message) =>
               message.id === assistantId
-                ? { ...message, content: "Sorry, I couldn't connect. Please try again." }
+                ? { ...message, content: parsedError || fallbackMessage }
                 : message
             )
           );

@@ -179,16 +179,22 @@ If the learner has no modules assigned:
     if (!response.ok) {
       const text = await response.text();
       console.error("AI gateway error:", response.status, text);
-      const status = response.status === 429 ? 429 : response.status === 402 ? 402 : 500;
+
+      if (response.status === 402) {
+        const fallbackMessage = "Embark AI is temporarily unavailable because AI credits are exhausted right now. Please add funds to restore chat — you can keep moving through this module and come back any time.";
+        const ssePayload = `data: ${JSON.stringify({ choices: [{ delta: { content: fallbackMessage } }] })}\n\ndata: [DONE]\n\n`;
+
+        return new Response(ssePayload, {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+        });
+      }
+
+      const status = response.status === 429 ? 429 : 500;
 
       return new Response(
         JSON.stringify({
-          error:
-            status === 429
-              ? "Rate limited"
-              : status === 402
-              ? "Credits exhausted"
-              : "AI error",
+          error: status === 429 ? "Rate limited" : "AI error",
         }),
         {
           status,

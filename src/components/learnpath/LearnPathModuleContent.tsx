@@ -105,6 +105,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
 
   const handleMarkComplete = () => {
     setCompleted(true);
+    setShowSummary(true);
     // Always update skill target to unlock next step
     if (skillTargetId && stepId) {
       updateSkillTarget(skillTargetId, (target) => {

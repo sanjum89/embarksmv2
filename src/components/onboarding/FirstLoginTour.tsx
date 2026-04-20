@@ -418,7 +418,24 @@ export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
 
                 <div className="flex flex-col gap-2">
                   <button
-                    onClick={() => { handleComplete(); navigate("/"); }}
+                    onClick={() => {
+                      if (selectedStyle) {
+                        const modeMap: Record<string, string> = {
+                          visual: "visual",
+                          reading: "reading",
+                          listening: "listening",
+                          handson: "hands-on",
+                        };
+                        const mode = modeMap[selectedStyle];
+                        if (mode) {
+                          try {
+                            window.localStorage.setItem("embark-ai-pending-learning-mode", mode);
+                          } catch {}
+                        }
+                      }
+                      handleComplete();
+                      navigate("/");
+                    }}
                     disabled={!selectedStyle}
                     className={cn(
                       "w-full rounded-lg py-2.5 text-sm font-medium transition-colors flex items-center justify-center gap-2",

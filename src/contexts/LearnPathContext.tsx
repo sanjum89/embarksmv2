@@ -54,6 +54,19 @@ interface EmbarkContextType extends EmbarkState {
 
 const ENGAGEMENT_MODE_KEY = "embark-ai-engagement-mode";
 const ENGAGEMENT_TIMINGS_KEY = "embark-ai-engagement-timings";
+const PENDING_LEARNING_MODE_KEY = "embark-ai-pending-learning-mode";
+
+function loadPendingLearningMode(): LearningMode {
+  if (typeof window === "undefined") return "combined";
+  try {
+    const v = window.localStorage.getItem(PENDING_LEARNING_MODE_KEY);
+    if (v === "visual" || v === "reading" || v === "listening" || v === "hands-on" || v === "combined") {
+      window.localStorage.removeItem(PENDING_LEARNING_MODE_KEY);
+      return v;
+    }
+  } catch {}
+  return "combined";
+}
 
 const EmbarkContext = createContext<EmbarkContextType>({
   contentView: "welcome",
@@ -109,15 +122,15 @@ function loadEngagementTimings(): EngagementTimings | null {
 }
 
 export function EmbarkProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<EmbarkState>({
+  const [state, setState] = useState<EmbarkState>(() => ({
     contentView: "welcome",
     activeModuleId: null,
     activeSkillTargetId: null,
-    learningMode: "combined",
+    learningMode: loadPendingLearningMode(),
     assessmentModuleId: null,
     lastCompletedModule: null,
     previewMode: false,
-  });
+  }));
 
   const [engagementMode, setEngagementModeState] = useState<EngagementMode>(loadEngagementMode);
   const [engagementTimings, setEngagementTimingsState] = useState<EngagementTimings | null>(

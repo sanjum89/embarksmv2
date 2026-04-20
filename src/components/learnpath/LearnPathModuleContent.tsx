@@ -805,6 +805,18 @@ function CompletionScreen({
           Back to All Chapters
         </Button>
       )}
+
+      {onBackToChapter && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBackToChapter}
+          className="mt-3 gap-1.5 text-xs text-muted-foreground"
+        >
+          <BookOpen className="h-3.5 w-3.5" />
+          Back to chapter
+        </Button>
+      )}
     </div>
   );
 }

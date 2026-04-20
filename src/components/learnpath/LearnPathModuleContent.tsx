@@ -603,7 +603,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
     return { timeSpent, assessmentScore, progressText, streakText };
   }, [completed, skillTargetId, skillTargets, stepId]);
 
-  if (completed) {
+  if (completed && !previewMode) {
     const handleContinue = () => {
       if (!nextModuleId) return;
       if (nextStepType === "assessment") {
@@ -630,6 +630,23 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-4" ref={scrollRef} onScroll={handleScroll}>
+      {previewMode && (
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-dashed border-accent/40 bg-accent/5 px-3 py-2">
+          <div className="flex items-center gap-2 text-xs text-foreground">
+            <Eye className="h-3.5 w-3.5 text-accent" />
+            <span className="font-medium">Preview mode</span>
+            <span className="text-muted-foreground">— progress is not tracked</span>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 text-xs gap-1"
+            onClick={() => learnPathCtx.showModuleGrid()}
+          >
+            Back to all chapters
+          </Button>
+        </div>
+      )}
       {!hideHeader && renderModuleHeader()}
       {!hideHeader && renderModeBanner()}
       {learningMode === "visual" && renderVisual()}

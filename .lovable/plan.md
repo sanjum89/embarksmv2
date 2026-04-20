@@ -1,61 +1,54 @@
 
 
-## Plan: Quiz feedback loop + fix rich-block overflow
+## Plan: Back navigation, preview-anywhere, and "View Summary" for completed chapters
 
-### Two problems
+Three small, focused changes to the chapter viewer (`LearnPathModuleContent.tsx`), the chapter row (`LearnPathChapterRow.tsx`), and the top bar (`LearnPathModeSelector.tsx`).
 
-**1. AI is blind to quiz results.** The `InlineQuiz` rich block (`LearnPathRichBlock.tsx`) tracks score/answers entirely client-side. When the learner finishes the quiz, the AI's previous message ("How did that go? Ready to mark this complete?") is a stale closing line — it never receives the score, so it can't congratulate, diagnose weak topics, or recommend which sections to revisit.
+### 1. Back button to the previous view
 
-**2. Quiz Complete card overflows the chat bubble.** The card uses `flex items-center gap-4` on the score header and the per-question list uses `truncate` without `min-w-0` on the flex parent, so long question text pushes the card wider than the `max-w-[85%]` bubble. The bubble itself also has no `min-w-0` / overflow guard.
+Today the only way "back" from a chapter is the **All Modules** button, which always jumps to the journey grid even if you came from another chapter or the assessment. Add a true **Back** affordance.
 
-### Fix 1 — Auto-report quiz results back to the AI
+- In `LearnPathModeSelector.tsx`, add a `← Back` button to the **left** of the skill-target title.
+- Use a small in-context history stack on `EmbarkContext` (`viewHistory: ContentView[]` plus the previous `activeModuleId` / `assessmentModuleId`) — every time `openModule`, `openModulePreview`, `openAssessment`, `openAssessmentPreview`, or `showModuleGrid` is called, push the current view onto the stack. A new `goBack()` action pops and restores. Falls back to `showModuleGrid()` when the stack is empty.
+- The button is hidden when there's nowhere to go back to (empty stack + we're already on the modules grid).
 
-**A. `LearnPathRichBlock.tsx` — `InlineQuiz`**
-- Accept a new optional prop: `onComplete?: (result: { score: number; correct: number; total: number; missed: { question: string; correctAnswer: string }[] }) => void`.
-- When the quiz transitions to `finished = true`, call `onComplete` once (guard with a ref so it fires exactly once even if the component re-renders).
-- `EmbarkRichBlock` passes `onComplete` through to `InlineQuiz` when `block.type === "inline_quiz"`.
+### 2. Preview locked chapters too
 
-**B. `LearnPathChat.tsx` — wire it up**
-- When rendering `<EmbarkRichBlock>`, pass an `onQuizComplete` handler (only on the most recent assistant message that contains the quiz block, to avoid old quizzes re-firing).
-- Handler injects a hidden user message into the chat:
-  ```
-  [SYSTEM] The learner just finished the inline quiz on "<active module title>".
-  Score: <score>% (<correct>/<total>).
-  Missed questions:
-  - "<question>" — correct answer: "<answer>"
-  Respond now: do NOT ask "how did it go" — you already know.
-  - If score >= 80: congratulate briefly and offer to mark the module complete (suggest the next chapter).
-  - If 60–79: positive but specific — name the 1–2 topics they missed and point to the section in **<active module title>** that covers them. Offer a quick re-read or a switch to visual mode.
-  - If < 60: warm + supportive. List the missed topics, recommend revisiting the relevant headings/sections of the current module, and offer to summarise those sections.
-  Keep it to 2–4 short sentences plus a one-line closing question.
-  ```
-- Add the system message + an assistant placeholder, call `sendToAI` immediately. Reuses the same pattern already used by `lastCompletedModule` auto-congratulate (lines 433–457).
+Today `EmbarkChapterRow` hides the **Preview** button when a chapter is `locked` (`!isLocked && !isInProgress` guard). Lock prevents normal opening, but preview is read-only and should always be available.
 
-**C. `learnpath-chat/index.ts` system prompt — small addition**
-- Add a "Quiz Result Feedback" section under "Current Module Awareness":
-  - When a `[SYSTEM]` message reports a quiz score, NEVER ask "how did it go?" or anything similar — you have the result.
-  - Always tie the recommendation back to the **current active module's headings/key points** from Right Panel Context (we already inject these).
-  - Pass-fail thresholds: ≥80% pass, 60–79% partial, <60% revisit.
+- In `LearnPathChapterRow.tsx`:
+  - Show **Preview** for **locked** rows as well — change the guard to `!isInProgress` only.
+  - Locked rows: clicking the row body still does nothing (locked), but the **Preview** button is interactive and calls `openModulePreview` / `openAssessmentPreview` as today.
+  - Make the Preview button slightly more discoverable on locked rows: render it always-visible (drop the `opacity-0 group-hover:opacity-100`) when `isLocked`, since hover discovery is awkward on a disabled-looking row.
+- In `LearnPathContent.tsx` (line 127), the resolver already runs for whatever `activeModuleId` is set, so previewing a locked chapter just works — no extra wiring.
 
-After this, when the learner finishes the in-chat quiz the next AI turn is automatically a contextual debrief — no manual prompt needed.
+### 3. Completed chapters → "View Summary" button + green Completed tag
 
-### Fix 2 — Stop the rich-block card from overflowing
+Today the module header shows **Mark as Complete** turning into a disabled "Completed" ghost button. The post-chapter `CompletionScreen` (the stats grid) is only reachable on first completion or by clicking the row again with `initialCompleted=true`, which forces the stats screen and hides the content.
 
-Three layered changes, all in `LearnPathRichBlock.tsx` (and one tiny tweak in `LearnPathChat.tsx`):
+We want both: read the chapter content **and** open the summary on demand.
 
-- **Card wrapper** (`EmbarkRichBlock` root): add `w-full max-w-full overflow-hidden min-w-0`.
-- **Quiz Complete header row** (`flex items-center gap-4`): add `min-w-0` and wrap the right-side text block with `min-w-0 flex-1` so the message line wraps instead of pushing width.
-- **Per-question result rows**: parent needs `min-w-0`; the truncated `<span>` needs `min-w-0 flex-1` for `truncate` to actually engage in a flex child. Same fix for `LearningPathVisual` rows (`<div className="min-w-0">` is there but the parent `flex items-start gap-3` should also get `min-w-0` and the inner `<p className="truncate">` needs the flex-1+min-w-0 pair).
-- **`SkillGapsChart` rows** already use `truncate max-w-[55%]` — fine, leave alone.
-- **Chat bubble** (`LearnPathChat.tsx`, line ~600): add `min-w-0` on the `prose` wrapper so the rich block respects the bubble's `max-w-[85%]`. Also add `break-words` to the bubble itself for long unbroken strings.
+In `LearnPathModuleContent.tsx`:
 
-After this the Quiz Complete card stays inside the bubble, long question titles ellipsize, and the layout holds at narrow chat widths.
+- **Header (`renderModuleHeader`)** — when `completed` is true and not in `previewMode`:
+  - Replace the disabled "Mark as Complete" button with a small **green "Completed" badge** (Tailwind: `bg-emerald-500/15 text-emerald-600 border-emerald-500/30`, `CheckCircle2` icon).
+  - Next to the badge, add a **"View Summary"** outline button (`BarChart3` icon) that opens the summary screen.
+- **Summary screen access** — introduce a local `showSummary` state (separate from `completed`). Today the file gates the `CompletionScreen` on `if (completed && !previewMode)` (line 606), which means a completed chapter always renders the stats screen instead of content. Change this gate to `if (showSummary && !previewMode)` and seed `showSummary = initialCompleted` only when the user explicitly opts in via the new button. Default behavior on opening a completed chapter from the journey: show the **content** with the green Completed tag + View Summary button in the header.
+- The existing `CompletionScreen` is reused unchanged (it already handles `isRevisit` mode with "Module Summary" title and no auto-advance). Add a small **"Back to chapter"** button alongside its existing buttons so the user can return to the content view (`onClick={() => setShowSummary(false)}`).
+- First-time completion flow (clicking Mark as Complete on an unfinished chapter) is unchanged: `handleMarkComplete` sets both `completed` and `showSummary` to true so the celebratory screen still appears with auto-advance.
+
+### What you'll see
+
+- Open any chapter → top bar shows **← Back** (left) and **All Modules** (right). Back returns to wherever you came from (another chapter, the assessment view, or the grid).
+- In **All Modules**, hover (or just look at) a 🔒 locked chapter → **Preview** button is visible. Click it → opens the chapter in preview mode with the existing "Preview mode — progress is not tracked" banner. Normal click on the row still does nothing.
+- Open a previously completed chapter from the journey → you see the **chapter content**, with a green **Completed** tag and a **View Summary** button in the header. Click View Summary → the existing stats screen appears with a **Back to chapter** button to return.
 
 ### Files touched
 
-- `src/components/learnpath/LearnPathRichBlock.tsx` — add `onComplete` to `InlineQuiz`, fire-once guard, plumb through `EmbarkRichBlock`; add overflow/min-w-0 fixes to the card wrapper, Quiz Complete rows, and Learning Path rows.
-- `src/components/learnpath/LearnPathChat.tsx` — pass `onQuizComplete` to the most-recent assistant rich block; on completion inject a `[SYSTEM] quiz result` message and call `sendToAI`; add `min-w-0` / `break-words` to the bubble + prose wrapper.
-- `supabase/functions/learnpath-chat/index.ts` — add a "Quiz Result Feedback" section to the system prompt with the pass/partial/revisit guidance and the explicit "do not ask how it went" rule.
+- `src/contexts/LearnPathContext.tsx` — add `viewHistory` stack, push on every navigation action, expose `goBack()`.
+- `src/components/learnpath/LearnPathModeSelector.tsx` — add the `← Back` button on the left of the title; hide when history is empty and view is `modules`.
+- `src/components/learnpath/LearnPathChapterRow.tsx` — show Preview button for locked rows (always visible on locked, hover-revealed otherwise).
+- `src/components/learnpath/LearnPathModuleContent.tsx` — split `completed` from `showSummary`; render green **Completed** badge + **View Summary** button in `renderModuleHeader`; gate the `CompletionScreen` on `showSummary`; add **Back to chapter** action inside `CompletionScreen`.
 
-No data-model, schema, or context-shape changes.
+No data model, no edge function, no schema changes.
 

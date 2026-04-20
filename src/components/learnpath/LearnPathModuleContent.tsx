@@ -53,6 +53,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   const learnPathCtx = useEmbark();
   const learningMode = learningModeOverride ?? learnPathCtx.learningMode;
   const openAssessment = learnPathCtx.openAssessment;
+  const previewMode = learnPathCtx.previewMode;
   const { skillTargets, updateSkillTarget } = useSkillTargets();
   const navigate = useNavigate();
   const { substitute, substituteDeep } = useContentSubstitution();

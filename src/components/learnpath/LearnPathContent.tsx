@@ -191,19 +191,15 @@ export function EmbarkContent() {
   if (contentView === "modules") {
     return (
       <div className="h-full overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="p-6 space-y-4">
+          <div className="flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-accent" />
             <h2 className="text-lg font-semibold text-foreground">Your Embark Journey</h2>
           </div>
           {allSteps.length === 0 ? (
             <p className="text-sm text-muted-foreground">No chapters assigned yet.</p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {allSteps.map((step) => (
-                <EmbarkModuleCard key={`${step.skillTargetId}-${step.stepId}`} step={step} />
-              ))}
-            </div>
+            <EmbarkJourneyAccordion steps={allSteps} activeChapterId={activeModuleId} />
           )}
         </div>
       </div>

@@ -148,16 +148,18 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
           )}
         </div>
       </div>
-      <Button
-        size="sm"
-        variant={completed ? "ghost" : "default"}
-        disabled={completed}
-        onClick={handleMarkComplete}
-        className={cn("shrink-0 gap-1.5 text-xs", completed && "text-emerald-600")}
-      >
-        <CheckCircle2 className="h-3.5 w-3.5" />
-        {completed ? "Completed" : "Mark as Complete"}
-      </Button>
+      {!previewMode && (
+        <Button
+          size="sm"
+          variant={completed ? "ghost" : "default"}
+          disabled={completed}
+          onClick={handleMarkComplete}
+          className={cn("shrink-0 gap-1.5 text-xs", completed && "text-emerald-600")}
+        >
+          <CheckCircle2 className="h-3.5 w-3.5" />
+          {completed ? "Completed" : "Mark as Complete"}
+        </Button>
+      )}
     </div>
   );
 

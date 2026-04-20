@@ -241,6 +241,8 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
         ...state,
         setContentView,
         openModule,
+        openModulePreview,
+        openAssessmentPreview,
         closeModule,
         setLearningMode,
         openAssessment,

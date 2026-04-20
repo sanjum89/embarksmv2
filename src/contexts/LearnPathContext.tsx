@@ -32,6 +32,14 @@ export interface EmbarkState {
   previewMode: boolean;
 }
 
+interface ViewSnapshot {
+  contentView: ContentView;
+  activeModuleId: string | null;
+  activeSkillTargetId: string | null;
+  assessmentModuleId: string | null;
+  previewMode: boolean;
+}
+
 interface EmbarkContextType extends EmbarkState {
   setContentView: (view: ContentView) => void;
   openModule: (moduleId: string, skillTargetId?: string) => void;

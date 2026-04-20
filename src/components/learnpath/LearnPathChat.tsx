@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Send, Loader2, Sparkles, Settings2, Lightbulb, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
-import { EmbarkRichBlock, parseEmbarkRichBlocks } from "./LearnPathRichBlock";
+import { EmbarkRichBlock, parseEmbarkRichBlocks, type InlineQuizResult } from "./LearnPathRichBlock";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";

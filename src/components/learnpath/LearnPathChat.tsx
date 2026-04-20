@@ -642,7 +642,7 @@ Keep it to 2-4 short sentences plus a one-line closing question.`,
               >
                 <div
                   className={cn(
-                    "max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm",
+                    "max-w-[85%] min-w-0 rounded-xl px-3.5 py-2.5 text-sm break-words overflow-hidden",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : message.isNudge
@@ -651,25 +651,33 @@ Keep it to 2-4 short sentences plus a one-line closing question.`,
                   )}
                 >
                   {message.role === "assistant" ? (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 min-w-0">
                       {message.isNudge && (
                         <Lightbulb className="h-4 w-4 text-accent shrink-0 mt-0.5" />
                       )}
-                      <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 flex-1">
+                      <div className="prose prose-sm dark:prose-invert max-w-none min-w-0 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 flex-1">
                         {(() => {
                           const { segments } = parseEmbarkRichBlocks(message.content);
                           return segments.map((seg, si) =>
                             seg.type === "text" ? (
                               <ReactMarkdown key={si}>{seg.content}</ReactMarkdown>
                             ) : (
-                              <EmbarkRichBlock key={si} block={seg.block} />
+                              <EmbarkRichBlock
+                                key={si}
+                                block={seg.block}
+                                onQuizComplete={
+                                  isLastAssistant
+                                    ? (result) => handleQuizComplete(message.id, result)
+                                    : undefined
+                                }
+                              />
                             )
                           );
                         })()}
                       </div>
                     </div>
                   ) : (
-                    <p>{message.content.replace(/^\[FORMAT:\w+\]\s*/i, "")}</p>
+                    <p className="break-words">{message.content.replace(/^\[FORMAT:\w+\]\s*/i, "")}</p>
                   )}
                 </div>
               </div>

@@ -361,7 +361,14 @@ export function EmbarkChat() {
         for (const action of actions) {
           if (action.type === "open_module" && action.moduleId) {
             const resolved = resolveModule(action.moduleId, skillTargets, accountModules);
-            embark.openModule(resolved?.id ?? action.moduleId, action.skillTargetId);
+            if (resolved) {
+              embark.openModule(resolved.id, action.skillTargetId);
+            } else if (/(^RAT-ASM-)|assessment/i.test(action.moduleId)) {
+              // Defensive: AI emitted open_module for an assessment ID — route correctly
+              embark.openAssessment(action.moduleId);
+            } else {
+              embark.openModule(action.moduleId, action.skillTargetId);
+            }
           } else if (action.type === "show_modules") {
             embark.showModuleGrid();
           } else if (action.type === "set_mode" && action.mode) {
@@ -425,11 +432,12 @@ export function EmbarkChat() {
   // Auto-congratulate on module completion
   useEffect(() => {
     if (!embark.lastCompletedModule || isStreaming) return;
-    const { moduleTitle, nextModuleId, nextModuleTitle, skillTargetId } = embark.lastCompletedModule;
+    const { moduleTitle, nextModuleId, nextModuleTitle, nextStepType, skillTargetId } = embark.lastCompletedModule;
     embark.clearCompletedModule();
 
+    const actionVerb = nextStepType === "assessment" ? "open_assessment" : "open_module";
     const nextHint = nextModuleId
-      ? `Suggest moving to "${nextModuleTitle}" (moduleId: ${nextModuleId}, skillTargetId: ${skillTargetId}) using an open_module action.`
+      ? `Suggest moving to "${nextModuleTitle}" (id: ${nextModuleId}, skillTargetId: ${skillTargetId}) using an ${actionVerb} action.`
       : "Let them know they've finished all assigned modules — great job!";
 
     const systemMsg: ChatMessage = {

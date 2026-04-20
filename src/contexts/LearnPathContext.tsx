@@ -98,6 +98,8 @@ const EmbarkContext = createContext<EmbarkContextType>({
   showModuleGrid: () => {},
   notifyModuleCompleted: () => {},
   clearCompletedModule: () => {},
+  canGoBack: false,
+  goBack: () => {},
   engagementMode: "auto",
   setEngagementMode: () => {},
   engagementTimings: null,

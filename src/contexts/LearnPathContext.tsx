@@ -116,6 +116,7 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
     learningMode: "combined",
     assessmentModuleId: null,
     lastCompletedModule: null,
+    previewMode: false,
   });
 
   const [engagementMode, setEngagementModeState] = useState<EngagementMode>(loadEngagementMode);

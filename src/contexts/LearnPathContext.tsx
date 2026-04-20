@@ -29,11 +29,14 @@ export interface EmbarkState {
   learningMode: LearningMode;
   assessmentModuleId: string | null;
   lastCompletedModule: CompletedModuleInfo | null;
+  previewMode: boolean;
 }
 
 interface EmbarkContextType extends EmbarkState {
   setContentView: (view: ContentView) => void;
   openModule: (moduleId: string, skillTargetId?: string) => void;
+  openModulePreview: (moduleId: string, skillTargetId?: string) => void;
+  openAssessmentPreview: (stepId: string) => void;
   closeModule: () => void;
   setLearningMode: (mode: LearningMode) => void;
   openAssessment: (moduleId: string) => void;
@@ -59,8 +62,11 @@ const EmbarkContext = createContext<EmbarkContextType>({
   learningMode: "combined",
   assessmentModuleId: null,
   lastCompletedModule: null,
+  previewMode: false,
   setContentView: () => {},
   openModule: () => {},
+  openModulePreview: () => {},
+  openAssessmentPreview: () => {},
   closeModule: () => {},
   setLearningMode: () => {},
   openAssessment: () => {},
@@ -110,6 +116,7 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
     learningMode: "combined",
     assessmentModuleId: null,
     lastCompletedModule: null,
+    previewMode: false,
   });
 
   const [engagementMode, setEngagementModeState] = useState<EngagementMode>(loadEngagementMode);
@@ -144,6 +151,27 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
       activeModuleId: moduleId,
       activeSkillTargetId: skillTargetId ?? s.activeSkillTargetId,
       assessmentModuleId: null,
+      previewMode: false,
+    }));
+  }, []);
+
+  const openModulePreview = useCallback((moduleId: string, skillTargetId?: string) => {
+    setState((s) => ({
+      ...s,
+      contentView: "module",
+      activeModuleId: moduleId,
+      activeSkillTargetId: skillTargetId ?? s.activeSkillTargetId,
+      assessmentModuleId: null,
+      previewMode: true,
+    }));
+  }, []);
+
+  const openAssessmentPreview = useCallback((stepId: string) => {
+    setState((s) => ({
+      ...s,
+      contentView: "assessment",
+      assessmentModuleId: stepId,
+      previewMode: true,
     }));
   }, []);
 
@@ -165,6 +193,7 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
       ...s,
       contentView: "assessment",
       assessmentModuleId: moduleId,
+      previewMode: false,
     }));
   }, []);
 
@@ -182,6 +211,7 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
       contentView: "modules",
       activeModuleId: null,
       assessmentModuleId: null,
+      previewMode: false,
     }));
   }, []);
 
@@ -211,6 +241,8 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
         ...state,
         setContentView,
         openModule,
+        openModulePreview,
+        openAssessmentPreview,
         closeModule,
         setLearningMode,
         openAssessment,

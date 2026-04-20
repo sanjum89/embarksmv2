@@ -193,6 +193,7 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
       ...s,
       contentView: "assessment",
       assessmentModuleId: moduleId,
+      previewMode: false,
     }));
   }, []);
 
@@ -210,6 +211,7 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
       contentView: "modules",
       activeModuleId: null,
       assessmentModuleId: null,
+      previewMode: false,
     }));
   }, []);
 

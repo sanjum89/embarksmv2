@@ -127,8 +127,22 @@ export function EmbarkContent() {
     const mod = resolveModule(activeModuleId, skillTargets, normalizedAccount?.learningModules);
     if (!mod) {
       return (
-        <div className="h-full flex items-center justify-center text-muted-foreground">
-          Module not found.
+        <div className="h-full flex items-center justify-center p-6">
+          <div className="max-w-sm text-center space-y-4 rounded-xl border border-border bg-card p-6">
+            <div className="mx-auto w-12 h-12 rounded-2xl bg-muted flex items-center justify-center">
+              <AlertTriangle className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-base font-semibold text-foreground">Chapter unavailable</h3>
+              <p className="text-sm text-muted-foreground">
+                We couldn't load this chapter. It may have been moved or replaced.
+              </p>
+            </div>
+            <Button onClick={showModuleGrid} variant="outline" className="w-full gap-2">
+              <ArrowRight className="h-4 w-4" />
+              Back to all chapters
+            </Button>
+          </div>
         </div>
       );
     }
@@ -143,6 +157,7 @@ export function EmbarkContent() {
         moduleTitle: stepInfo?.title ?? mod.title ?? activeModuleId,
         nextModuleId: nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId,
         nextModuleTitle: nextStep?.title,
+        nextStepType: nextStep?.type,
         skillTargetId: nextStep?.skillTargetId ?? stepInfo?.skillTargetId,
       });
     };

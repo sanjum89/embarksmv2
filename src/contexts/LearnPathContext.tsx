@@ -18,6 +18,7 @@ export interface CompletedModuleInfo {
   moduleTitle: string;
   nextModuleId?: string;
   nextModuleTitle?: string;
+  nextStepType?: "module" | "assessment" | "role_play";
   skillTargetId?: string;
 }
 

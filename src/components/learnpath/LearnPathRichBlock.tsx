@@ -302,23 +302,31 @@ export interface EmbarkRichBlockData {
   data: any;
 }
 
-const RENDERERS: Record<string, React.FC<{ data: any }>> = {
+const RENDERERS: Record<string, React.FC<any>> = {
   inline_quiz: InlineQuiz,
   skill_gaps_chart: SkillGapsChart,
   learning_path_visual: LearningPathVisual,
 };
 
-export function EmbarkRichBlock({ block }: { block: EmbarkRichBlockData }) {
+export function EmbarkRichBlock({
+  block,
+  onQuizComplete,
+}: {
+  block: EmbarkRichBlockData;
+  onQuizComplete?: (result: InlineQuizResult) => void;
+}) {
   const Renderer = RENDERERS[block.type];
   if (!Renderer) return null;
+
+  const extraProps = block.type === "inline_quiz" ? { onComplete: onQuizComplete } : {};
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-border bg-card p-3 my-2"
+      className="rounded-xl border border-border bg-card p-3 my-2 w-full max-w-full overflow-hidden min-w-0"
     >
-      <Renderer data={block.data} />
+      <Renderer data={block.data} {...extraProps} />
     </motion.div>
   );
 }

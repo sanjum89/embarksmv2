@@ -4,7 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
-import { EmbarkModuleCard } from "./LearnPathModuleCard";
+import { EmbarkJourneyAccordion } from "./LearnPathJourneyAccordion";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";
 import { EmbarkAssessment } from "./LearnPathAssessment";
 import { EmbarkModeSelector } from "./LearnPathModeSelector";

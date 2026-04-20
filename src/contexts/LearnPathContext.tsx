@@ -122,15 +122,15 @@ function loadEngagementTimings(): EngagementTimings | null {
 }
 
 export function EmbarkProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<EmbarkState>({
+  const [state, setState] = useState<EmbarkState>(() => ({
     contentView: "welcome",
     activeModuleId: null,
     activeSkillTargetId: null,
-    learningMode: "combined",
+    learningMode: loadPendingLearningMode(),
     assessmentModuleId: null,
     lastCompletedModule: null,
     previewMode: false,
-  });
+  }));
 
   const [engagementMode, setEngagementModeState] = useState<EngagementMode>(loadEngagementMode);
   const [engagementTimings, setEngagementTimingsState] = useState<EngagementTimings | null>(

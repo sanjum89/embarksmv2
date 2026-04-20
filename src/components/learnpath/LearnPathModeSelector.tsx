@@ -1,5 +1,5 @@
 import { useEmbark, type LearningMode } from "@/contexts/LearnPathContext";
-import { Eye, BookOpen, Headphones, Wrench, Layers, LayoutGrid } from "lucide-react";
+import { Eye, BookOpen, Headphones, Wrench, Layers, LayoutGrid, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -16,15 +16,30 @@ interface Props {
 }
 
 export function EmbarkModeSelector({ skillTargetTitle }: Props) {
-  const { learningMode, setLearningMode, closeModule } = useEmbark();
+  const { learningMode, setLearningMode, closeModule, canGoBack, goBack, contentView } = useEmbark();
+
+  const showBack = canGoBack && contentView !== "modules";
 
   return (
     <div className="border-b border-border">
-      {/* Top bar: skill target name + All Modules */}
-      <div className="px-4 min-h-[60px] flex items-center justify-between border-b border-border">
-        <h2 className="text-sm font-semibold text-foreground truncate">
-          {skillTargetTitle ?? "Learning Path"}
-        </h2>
+      {/* Top bar: back + skill target name + All Modules */}
+      <div className="px-4 min-h-[60px] flex items-center justify-between border-b border-border gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          {showBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={goBack}
+              className="gap-1.5 text-xs shrink-0 -ml-1"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Back
+            </Button>
+          )}
+          <h2 className="text-sm font-semibold text-foreground truncate">
+            {skillTargetTitle ?? "Learning Path"}
+          </h2>
+        </div>
         <Button
           variant="outline"
           size="sm"

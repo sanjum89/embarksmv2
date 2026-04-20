@@ -1,46 +1,66 @@
 
 
-## Plan: Clean Up Module Completion Screen + Auto-Advance Timer
+## Plan: Fix "Module not found" When Next Step Is an Assessment
 
-### Issues
-1. The completion screen still shows the **learning mode tabs** (Visual / Reading / Listening / Hands-On / Combined) at the top — these are irrelevant once the module is done and just add noise.
-2. After completing a module, the user has to manually click "Continue to Next Chapter". You want a **5-second auto-advance with a visible progress bar** (cancellable by hovering / clicking elsewhere).
-3. Every completed module should retain its **completion summary page** so the user can navigate back and review their stats (time spent, mode used, next-up).
+### Root cause
 
-### Investigation needed
-Confirm where the mode selector renders relative to the completion screen and where the completion UI lives. Likely candidates: `LearnPathModuleContent.tsx`, `LearnPathModeSelector.tsx`, `LearningModulePage.tsx`. I'll verify before implementing.
+When the learner finishes a module, `handleModuleComplete` in `LearnPathContent.tsx` calls `notifyModuleCompleted` with the **next step's ID**. But for an assessment step (e.g. `RAT-ASM-001`), it stores that ID in the `nextModuleId` field without indicating it's an assessment. The chat then injects this hint:
 
-### Implementation
+> *"Suggest moving to ... (moduleId: RAT-ASM-001) using an **open_module** action."*
 
-**1. Hide mode selector on completion screen**
-- In `LearnPathContent.tsx` (Embark) and `LearningModulePage.tsx` (standalone) and `TraditionalContentViewer.tsx` (Skill Target): when the active module's internal `completed` state is true, suppress the mode selector row.
-- Cleanest path: lift a `completed` flag out of `EmbarkModuleContent` via an `onCompletedChange` callback so the parent can conditionally hide the selector. Alternative: render the selector inside `EmbarkModuleContent` and gate it on internal state. Will pick whichever requires fewer touchpoints after exploring.
+The AI obediently emits `<!--ACTION:{"type":"open_module","moduleId":"RAT-ASM-001"}-->`. The client then calls `embark.openModule("RAT-ASM-001")` → `contentView` switches to `"module"` → `resolveModule("RAT-ASM-001")` returns undefined (it's an assessment, not in the module catalog) → **"Module not found."**
 
-**2. Auto-advance countdown (5s) on completion screen**
-- Inside the completion view of `EmbarkModuleContent` (or `LearnPathModuleContent` — wherever the "Continue to Next Chapter" button lives), add:
-  - A `useEffect` that starts a 5s timer when `completed === true` AND a `nextModuleId` exists
-  - A `<Progress>` bar (existing `src/components/ui/progress.tsx`) animating 0 → 100% over 5s
-  - Label: *"Auto-advancing in 5s…"* with a small "Stay here" button to cancel
-  - On timer expiry → call the same handler that "Continue to Next Chapter" uses (`openModule(nextId)` or navigate)
-  - Cancel timer if user hovers the completion card, scrolls, or clicks anywhere on the card → switches to "Click to continue" state
-  - If no next module exists, skip timer and show only "Back to Modules"
+The screenshot confirms this: 3 chapter-completion nudges in chat, then the right pane stuck on "Module not found" because the AI's auto-action navigated to an assessment ID via `openModule`.
 
-**3. Persist completion summary for revisit**
-- Already mostly works: re-opening a completed module currently re-mounts (per the previous `key={module.id}` fix) which **resets** `completed` to false. To let users **revisit** the summary, add a check: when entering a module whose underlying step status is `"completed"`, mount with `completed = true` (initial state derived from `step.status`).
-- Source: `step.status === "completed"` is already tracked in `SkillTargetsContext`. Pass `initialCompleted` prop to `EmbarkModuleContent` from each parent that knows the step status.
-- Time-spent stat for re-visits: show "Previously completed" instead of live timer when `initialCompleted` is true.
+The CompletionScreen's local "Continue" button works correctly (it branches on `nextStepType`) — only the AI-driven auto-navigation is broken.
 
-### Files to edit
-- `src/components/learnpath/LearnPathModuleContent.tsx` (or `EmbarkModuleContent` source) — add countdown timer, progress bar, `initialCompleted` prop, `onCompletedChange` callback
-- `src/components/learnpath/LearnPathContent.tsx` — hide `EmbarkModeSelector` when completed; pass `initialCompleted` based on step status
-- `src/pages/LearningModulePage.tsx` — hide local mode selector row when completed; pass `initialCompleted`
-- `src/components/skill-target/TraditionalContentViewer.tsx` — same hide + pass `initialCompleted`
-- (Possibly) `src/components/learnpath/LearnPathModeSelector.tsx` — accept a `hidden` prop, or just conditionally render at parent level
+### Fix
 
-### What you'll see
-1. Finish a chapter → completion summary appears (no mode tabs above it)
-2. A thin progress bar fills over 5 seconds with "Auto-advancing in 5s — Stay here" label
-3. At 0s → next chapter content loads automatically
-4. Hover / click completion card → timer cancels, button reverts to "Continue to Next Chapter"
-5. Open any previously-completed module from the grid → summary screen appears immediately (no timer, just stats + "Back to Modules" / "Continue" if applicable)
+**1. Carry `nextStepType` through the completion notification**
+
+- `src/contexts/LearnPathContext.tsx` — extend `CompletedModuleInfo` with `nextStepType?: "module" | "assessment" | "role_play"`.
+- `src/components/learnpath/LearnPathContent.tsx` — include `nextStepType: nextStep?.type` in the `notifyModuleCompleted` call.
+- `src/components/skill-target/TraditionalContentViewer.tsx` & `src/pages/LearningModulePage.tsx` — pass it through wherever `notifyModuleCompleted` is called (audit and update).
+
+**2. Pick the correct action verb in the chat hint**
+
+`src/components/learnpath/LearnPathChat.tsx` (around line 431):
+
+```ts
+const action = nextStepType === "assessment" ? "open_assessment" : "open_module";
+const nextHint = nextModuleId
+  ? `Suggest moving to "${nextModuleTitle}" (id: ${nextModuleId}, skillTargetId: ${skillTargetId}) using an ${action} action.`
+  : "Let them know they've finished all assigned modules — great job!";
+```
+
+**3. Defensive guard in the action handler**
+
+`src/components/learnpath/LearnPathChat.tsx` (around line 362) — if `open_module` is emitted with an ID that doesn't resolve as a module, fall back to opening it as an assessment instead of routing to a dead "Module not found" view:
+
+```ts
+if (action.type === "open_module" && action.moduleId) {
+  const resolved = resolveModule(action.moduleId, skillTargets, accountModules);
+  if (resolved) {
+    embark.openModule(resolved.id, action.skillTargetId);
+  } else if (/^RAT-ASM-|assessment/i.test(action.moduleId)) {
+    embark.openAssessment(action.moduleId);
+  } else {
+    embark.showModuleGrid(); // safe fallback
+  }
+}
+```
+
+**4. Better empty-state message**
+
+`src/components/learnpath/LearnPathContent.tsx` line 128-134 — replace the bare "Module not found." with a friendlier card containing a "Back to all chapters" button so the user is never stranded.
+
+### What you'll see after the fix
+
+1. Complete chapter 3 (Your First 90 Days) → completion screen → 5s auto-advance triggers `openAssessment("RAT-ASM-001")` → Baseline Assessment renders correctly.
+2. Even if the AI emits `open_module` for an assessment ID (legacy chat sessions), the guard catches it and opens the assessment.
+3. If anything genuinely can't be resolved, the user sees a "Back to all chapters" button instead of a dead-end message.
+
+### Files touched
+- Edit: `src/contexts/LearnPathContext.tsx`, `src/components/learnpath/LearnPathContent.tsx`, `src/components/learnpath/LearnPathChat.tsx`
+- Audit + edit if they call `notifyModuleCompleted`: `src/components/skill-target/TraditionalContentViewer.tsx`, `src/pages/LearningModulePage.tsx`
 

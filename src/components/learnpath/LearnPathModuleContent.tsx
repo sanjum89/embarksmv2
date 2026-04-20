@@ -688,6 +688,7 @@ interface CompletionScreenProps {
   isRevisit: boolean;
   onContinue: () => void;
   onBackToGrid: () => void;
+  onBackToChapter?: () => void;
 }
 
 function CompletionScreen({
@@ -700,6 +701,7 @@ function CompletionScreen({
   isRevisit,
   onContinue,
   onBackToGrid,
+  onBackToChapter,
 }: CompletionScreenProps) {
   const AUTO_ADVANCE_MS = 5000;
   const TICK_MS = 50;

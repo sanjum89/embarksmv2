@@ -62,6 +62,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   const transcript = substitute(module.transcript ?? "No content available for this module.");
   const [microExpanded, setMicroExpanded] = useState(false);
   const [completed, setCompleted] = useState(initialCompleted);
+  const [showSummary, setShowSummary] = useState(initialCompleted);
   const [isRevisit] = useState(initialCompleted);
   const [showAllBullets, setShowAllBullets] = useState(false);
   const startTimeRef = useRef(Date.now());

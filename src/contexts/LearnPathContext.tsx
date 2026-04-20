@@ -339,6 +339,8 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
         showModuleGrid,
         notifyModuleCompleted,
         clearCompletedModule,
+        canGoBack: viewHistory.length > 0,
+        goBack,
         engagementMode,
         setEngagementMode,
         engagementTimings,

@@ -274,16 +274,16 @@ function LearningPathVisual({ data }: { data: LearningPathVisualData }) {
       <div className="relative pl-4">
         <div className="absolute left-[7px] top-1 bottom-1 w-0.5 bg-border" />
         {data.modules.map((mod, i) => (
-          <div key={i} className="relative flex items-start gap-3 py-1.5">
-            <div className="relative z-10 bg-card">
+          <div key={i} className="relative flex items-start gap-3 py-1.5 min-w-0">
+            <div className="relative z-10 bg-card shrink-0">
               {STATUS_ICONS[mod.status] || STATUS_ICONS.available}
             </div>
-            <div className="min-w-0">
-              <p className={cn("text-xs font-medium truncate", mod.status === "locked" ? "text-muted-foreground/50" : "text-foreground")}>
+            <div className="min-w-0 flex-1">
+              <p className={cn("text-xs font-medium truncate min-w-0", mod.status === "locked" ? "text-muted-foreground/50" : "text-foreground")}>
                 {mod.title}
               </p>
               {mod.skillTarget && (
-                <p className="text-[10px] text-muted-foreground">{mod.skillTarget}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{mod.skillTarget}</p>
               )}
             </div>
           </div>

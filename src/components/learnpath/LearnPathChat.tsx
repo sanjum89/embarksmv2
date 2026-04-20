@@ -576,6 +576,51 @@ export function EmbarkChat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingNudge?.id]);
 
+  // Quiz completion: inject a [SYSTEM] result message and let the AI debrief.
+  const handledQuizMessageIdsRef = useRef<Set<string>>(new Set());
+  const handleQuizComplete = useCallback(
+    (messageId: string, result: InlineQuizResult) => {
+      if (handledQuizMessageIdsRef.current.has(messageId)) return;
+      handledQuizMessageIdsRef.current.add(messageId);
+
+      const ctx = buildContext();
+      const moduleTitle = ctx.activeModuleTitle || "the current chapter";
+      const missedLines = result.missed.length
+        ? result.missed
+            .map((m) => `- "${m.question}" — correct answer: "${m.correctAnswer}"`)
+            .join("\n")
+        : "- (none — all correct)";
+
+      const systemMsg: ChatMessage = {
+        id: createMessageId("system"),
+        role: "user",
+        content: `[SYSTEM] The learner just finished the inline quiz on "${moduleTitle}".
+Score: ${result.score}% (${result.correct}/${result.total}).
+Missed questions:
+${missedLines}
+
+Respond now: do NOT ask "how did it go" — you already know.
+- If score >= 80: congratulate briefly and offer to mark the module complete (suggest the next chapter).
+- If 60-79: positive but specific — name the 1-2 topics they missed and point to the section in **${moduleTitle}** that covers them. Offer a quick re-read or a switch to visual mode.
+- If < 60: warm + supportive. List the missed topics, recommend revisiting the relevant headings/sections of the current module, and offer to summarise those sections.
+Keep it to 2-4 short sentences plus a one-line closing question.`,
+      };
+      const assistantId = createMessageId("assistant");
+      const assistantPlaceholder: ChatMessage = {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+      };
+
+      setMessages((prev) => {
+        const next = [...prev, systemMsg, assistantPlaceholder];
+        void sendToAI(next.filter((m) => m.id !== assistantId), assistantId);
+        return next;
+      });
+    },
+    [buildContext, sendToAI]
+  );
+
   return (
     <div className="h-full flex flex-col bg-background border-r border-border">
       <div className="px-4 min-h-[60px] border-b border-border flex items-center gap-2">

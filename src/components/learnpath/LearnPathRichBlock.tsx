@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, XCircle, Trophy, ChevronRight, BookOpen, Circle, CircleCheck, CircleDot } from "lucide-react";

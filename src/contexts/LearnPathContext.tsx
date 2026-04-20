@@ -29,11 +29,14 @@ export interface EmbarkState {
   learningMode: LearningMode;
   assessmentModuleId: string | null;
   lastCompletedModule: CompletedModuleInfo | null;
+  previewMode: boolean;
 }
 
 interface EmbarkContextType extends EmbarkState {
   setContentView: (view: ContentView) => void;
   openModule: (moduleId: string, skillTargetId?: string) => void;
+  openModulePreview: (moduleId: string, skillTargetId?: string) => void;
+  openAssessmentPreview: (stepId: string) => void;
   closeModule: () => void;
   setLearningMode: (mode: LearningMode) => void;
   openAssessment: (moduleId: string) => void;

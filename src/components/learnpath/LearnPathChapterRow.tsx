@@ -161,12 +161,17 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
               </div>
             </div>
 
-            {!isLocked && !isInProgress && (
+            {!isInProgress && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handlePreview}
-                className="h-7 px-2 text-xs opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity gap-1 shrink-0"
+                className={cn(
+                  "h-7 px-2 text-xs gap-1 shrink-0 transition-opacity",
+                  isLocked
+                    ? "opacity-100 pointer-events-auto"
+                    : "opacity-0 group-hover:opacity-100 focus:opacity-100"
+                )}
               >
                 <Eye className="h-3 w-3" />
                 Preview

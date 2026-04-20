@@ -62,6 +62,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   const transcript = substitute(module.transcript ?? "No content available for this module.");
   const [microExpanded, setMicroExpanded] = useState(false);
   const [completed, setCompleted] = useState(initialCompleted);
+  const [showSummary, setShowSummary] = useState(initialCompleted);
   const [isRevisit] = useState(initialCompleted);
   const [showAllBullets, setShowAllBullets] = useState(false);
   const startTimeRef = useRef(Date.now());
@@ -104,6 +105,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
 
   const handleMarkComplete = () => {
     setCompleted(true);
+    setShowSummary(true);
     // Always update skill target to unlock next step
     if (skillTargetId && stepId) {
       updateSkillTarget(skillTargetId, (target) => {
@@ -149,16 +151,33 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
         </div>
       </div>
       {!previewMode && (
-        <Button
-          size="sm"
-          variant={completed ? "ghost" : "default"}
-          disabled={completed}
-          onClick={handleMarkComplete}
-          className={cn("shrink-0 gap-1.5 text-xs", completed && "text-emerald-600")}
-        >
-          <CheckCircle2 className="h-3.5 w-3.5" />
-          {completed ? "Completed" : "Mark as Complete"}
-        </Button>
+        completed ? (
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              Completed
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setShowSummary(true)}
+              className="gap-1.5 text-xs"
+            >
+              <BarChart3 className="h-3.5 w-3.5" />
+              View Summary
+            </Button>
+          </div>
+        ) : (
+          <Button
+            size="sm"
+            variant="default"
+            onClick={handleMarkComplete}
+            className="shrink-0 gap-1.5 text-xs"
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Mark as Complete
+          </Button>
+        )
       )}
     </div>
   );
@@ -603,7 +622,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
     return { timeSpent, assessmentScore, progressText, streakText };
   }, [completed, skillTargetId, skillTargets, stepId]);
 
-  if (completed && !previewMode) {
+  if (showSummary && !previewMode) {
     const handleContinue = () => {
       if (!nextModuleId) return;
       if (nextStepType === "assessment") {
@@ -624,6 +643,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
         isRevisit={isRevisit}
         onContinue={handleContinue}
         onBackToGrid={() => learnPathCtx.showModuleGrid()}
+        onBackToChapter={completed ? () => setShowSummary(false) : undefined}
       />
     );
   }
@@ -668,6 +688,7 @@ interface CompletionScreenProps {
   isRevisit: boolean;
   onContinue: () => void;
   onBackToGrid: () => void;
+  onBackToChapter?: () => void;
 }
 
 function CompletionScreen({
@@ -680,6 +701,7 @@ function CompletionScreen({
   isRevisit,
   onContinue,
   onBackToGrid,
+  onBackToChapter,
 }: CompletionScreenProps) {
   const AUTO_ADVANCE_MS = 5000;
   const TICK_MS = 50;
@@ -781,6 +803,18 @@ function CompletionScreen({
       ) : (
         <Button variant="outline" onClick={onBackToGrid} className="w-full gap-2">
           Back to All Chapters
+        </Button>
+      )}
+
+      {onBackToChapter && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBackToChapter}
+          className="mt-3 gap-1.5 text-xs text-muted-foreground"
+        >
+          <BookOpen className="h-3.5 w-3.5" />
+          Back to chapter
         </Button>
       )}
     </div>

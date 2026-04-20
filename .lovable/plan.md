@@ -1,81 +1,42 @@
 
 
-## Plan: Redesign "All Modules" view as a hierarchical, status-aware journey
+## Plan: Carry the tour's learning style into Embark and apply it to the resumed module
 
 ### Problem
+On the last step of the Manage Profile tour, picking a learning style (Visual / Listening / Reading / Hands-on) and clicking **Start Learning on Embark AI** lands the learner on `/` but Embark always defaults to `combined` mode. The chosen style is thrown away.
 
-Today the **All Modules** view (`EmbarkContent` → `contentView === "modules"`) is a flat 2-column grid of every step — chapters, assessments and role plays all mixed together, with the parent skill target shown only as a small badge inside each card. As a learner you can't tell:
-- which **module (skill target)** a chapter belongs to
-- which one you're **currently on**
-- which **module + chapter** is **complete vs locked vs upcoming**
-- and there's no quick **preview** affordance
+### Fix — persist the choice and consume it on Embark
 
-### New design — Accordion grouped by Skill Target ("Module")
+**1. Persist the selected style when the tour ends with "Start Learning"**
 
-Replace the flat grid with one expandable section per skill target. Each section is the parent **Module**; its `steps` are the **Chapters** (chapter / assessment / role play) listed in order inside.
+In `src/components/onboarding/FirstLoginTour.tsx`, the **Start Learning on Embark AI** button (line 420–432):
 
-```text
-┌──────────────────────────────────────────────────────────────┐
-│ Your Embark Journey       ████████░░ 2 of 6 modules • 33%    │
-│ [All]  [In progress]  [Completed]  [Locked]                  │
-└──────────────────────────────────────────────────────────────┘
+- Map the tour's id (`"handson"`) → the `LearningMode` value (`"hands-on"`); other ids (`visual`, `reading`, `listening`) match directly.
+- Write the resolved mode to `localStorage` under `embark-ai-pending-learning-mode` *before* navigating.
+- Then call `handleComplete()` and `navigate("/")` as today.
 
-▼ ① Introduction to Rathbones                   IN PROGRESS
-   ─────────────────────────────────────────────────────────
-   3 of 4 chapters • ████████░░ 75%
-   ─────────────────────────────────────────────────────────
-   ✓ 1. Welcome & Orientation              Reading · 5 min
-   ✓ 2. Our Heritage & Values              Reading · 8 min
-   ► 3. Your First 90 Days   ← YOU ARE HERE  Visual · 10 min
-   • 4. Baseline Assessment                Assessment · 6 q
-                                                    [Preview ▸]
+The plain **Complete Setup** button (line 433) keeps current behavior — no mode override, no navigation. (The same persist step can be applied if we want it to also influence Embark next time the learner opens it; per the request, we apply it specifically to the "Start Embark" CTA.)
 
-▶ ② Investment Management Foundations           UP NEXT
-   0 of 5 chapters • ░░░░░░░░░░ 0%
+**2. Consume the pending mode in `EmbarkProvider`**
 
-▶ ③ Professional Standards & Ownership          🔒 LOCKED
-   Complete "Investment Management Foundations" to unlock
-```
+In `src/contexts/LearnPathContext.tsx`:
 
-### Behavior
+- On mount, read `embark-ai-pending-learning-mode`. If it is a valid `LearningMode`, initialize `state.learningMode` with that value and remove the key from localStorage (one-shot — don't keep overriding subsequent sessions).
+- Existing `setLearningMode` keeps working; the user can still switch modes manually after landing.
 
-**Header strip (always visible):**
-- Title "Your Embark Journey"
-- Overall progress: `X of Y modules complete` + thin bar
-- Filter chips: **All / In progress / Completed / Locked** — filters which modules expand and dims the rest
+**3. Make sure the resumed module uses it**
 
-**Module (skill target) row — collapsed:**
-- Number badge, title, status pill (`IN PROGRESS` / `COMPLETED` / `UP NEXT` / `LOCKED`)
-- One-line meta: `N of M chapters · progress bar · due date`
-- Locked modules show prerequisite hint
-- Click row → expand. The module containing the **active chapter** is **expanded by default**
-
-**Module row — expanded:** vertical chapter list reusing the timeline pattern from `TraditionalActivitiesPanel` (icon circle + connector line):
-- ✓ green filled = completed
-- ► accent-filled with "YOU ARE HERE" pill = current `in_progress` chapter
-- • outline = available / upcoming
-- 🔒 muted = locked
-- Chapter row shows: order number, title, type label (Chapter / Assessment / Role Play), duration
-- **Hover/right side**: secondary `Preview ▸` button — opens that chapter without changing journey state (read-only viewer flag — see Tech section)
-- **Click row**: opens chapter normally (`openModule` / `openAssessment`)
-
-**"You are here" anchor:** on first render of the modules view, scroll the active chapter into view inside its expanded module so the learner immediately sees where they are.
+`EmbarkContent` already auto-resumes the first `in_progress` / `available` step on mount (line 84–96), and `EmbarkModuleContent` reads `learningMode` from `useEmbark()` when no `learningModeOverride` prop is passed. So once step 2 lands, the auto-resumed module renders directly in the chosen mode — **no extra wiring needed in the content viewer.**
 
 ### What you'll see
+1. Open Manage Profile → walk through to step 6 → select **Reading** → click **Start Learning on Embark AI**.
+2. Embark opens at `/`, auto-resumes the first incomplete chapter, and the active learning mode pill is **Reading** with the reading view rendered.
+3. Same for Visual, Listening, Hands-on.
+4. Reload the page later → Embark goes back to `combined` (one-shot is consumed) and the user keeps whatever mode they last chose in-session.
 
-- Open All Modules → "Introduction to Rathbones" is expanded by default with chapter 3 highlighted as "YOU ARE HERE"; other modules are collapsed one-liners with their own status pills
-- Filter to **Completed** → only finished modules expand; everything else dims
-- Click `Preview ▸` on a future chapter → opens that chapter for read-only browsing without altering progress
-- Click the chapter row itself → normal open (resumes / starts the chapter)
-- Locked modules clearly show what unlocks them (existing `prerequisiteId` data)
+### Files touched
+- `src/components/onboarding/FirstLoginTour.tsx` — write `embark-ai-pending-learning-mode` to localStorage on the **Start Learning on Embark AI** click, mapping `"handson"` → `"hands-on"`.
+- `src/contexts/LearnPathContext.tsx` — initialize `state.learningMode` from `embark-ai-pending-learning-mode` (one-shot read + delete) instead of the hard-coded `"combined"`.
 
-### Files to touch
-
-- **New** `src/components/learnpath/LearnPathJourneyAccordion.tsx` — the grouped accordion view (uses `@/components/ui/accordion` already in the project, plus `Progress`, `Badge`, `Button`).
-- **Edit** `src/components/learnpath/LearnPathContent.tsx` — in the `contentView === "modules"` branch, replace the flat grid with `<LearnPathJourneyAccordion steps={allSteps} activeChapterId={activeModuleId} />`. Keep the existing header.
-- **New** `src/components/learnpath/LearnPathChapterRow.tsx` — single chapter row (icon, status, title, type, duration, Preview button). Reuses status-icon pattern from `TraditionalActivitiesPanel`.
-- **Edit** `src/contexts/LearnPathContext.tsx` — add an optional `previewMode: boolean` flag on state plus `openModulePreview(moduleId, skillTargetId)` / `openAssessmentPreview(stepId)` actions that set `previewMode = true` and open the content. Reset to `false` whenever a chapter is opened normally or completed.
-- **Edit** `src/components/learnpath/LearnPathModuleContent.tsx` — when `previewMode` is true, hide the "Mark Complete / Continue" footer and show a small "Preview — progress not tracked" banner with a "Back to all chapters" button.
-
-No data-model changes, no new edge-function work, no changes to chat or completion logic — purely a presentation redesign on top of the existing `allSteps` array already computed in `LearnPathContent`.
+No changes to `EmbarkContent`, `EmbarkModuleContent`, or any chapter resolver — they already honor whatever mode the context exposes.
 

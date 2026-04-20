@@ -1,65 +1,81 @@
 
 
-## Plan: Improve readability and contextual relevance of Embark AI responses
+## Plan: Redesign "All Modules" view as a hierarchical, status-aware journey
 
-### Problems (from screenshot)
+### Problem
 
-1. **Redundancy** — AI describes skill gaps in prose ("Professional Integrity, Attention to Detail, Wealth Planning Collaboration") AND renders the `skill_gaps_chart` rich block right below with the same data.
-2. **Jumps ahead** — Learner is mid-way through *Heritage & Values* (their first module). AI recommends "Professional Standards, Integrity, and Ownership" (a chapter from a different/later module) without acknowledging the current module.
-3. **Generic closer** — "Shall I open the Professional Standards module for you?" ignores active context.
-4. **Wall of text** — No paragraph spacing, no bolded module names as scannable anchors.
+Today the **All Modules** view (`EmbarkContent` → `contentView === "modules"`) is a flat 2-column grid of every step — chapters, assessments and role plays all mixed together, with the parent skill target shown only as a small badge inside each card. As a learner you can't tell:
+- which **module (skill target)** a chapter belongs to
+- which one you're **currently on**
+- which **module + chapter** is **complete vs locked vs upcoming**
+- and there's no quick **preview** affordance
 
-All four are governed by the **system prompt** in `supabase/functions/learnpath-chat/index.ts`. No client/component changes required.
+### New design — Accordion grouped by Skill Target ("Module")
 
-### Fix — tighten the system prompt
+Replace the flat grid with one expandable section per skill target. Each section is the parent **Module**; its `steps` are the **Chapters** (chapter / assessment / role play) listed in order inside.
 
-**A. Add a "Current Module Awareness" rule** (highest priority)
-When `activeModuleId` exists AND its status is `in_progress`:
-- Acknowledge the active module in the first sentence ("Since you're already in *Heritage & Values*…")
-- Frame all suggestions as *next steps after this module*, not replacements
-- The closing question must reference the current module (e.g. *"Want a quick summary of Heritage & Values to make it easier to follow?"*) — NOT a jump to another module
+```text
+┌──────────────────────────────────────────────────────────────┐
+│ Your Embark Journey       ████████░░ 2 of 6 modules • 33%    │
+│ [All]  [In progress]  [Completed]  [Locked]                  │
+└──────────────────────────────────────────────────────────────┘
 
-**B. Anti-redundancy rule for rich blocks**
-When emitting `skill_gaps_chart`:
-- Do NOT enumerate the same skills in prose above the block
-- Lead with one short framing sentence ("You have High Gaps in three areas — see below")
-- Let the chart carry the data
+▼ ① Introduction to Rathbones                   IN PROGRESS
+   ─────────────────────────────────────────────────────────
+   3 of 4 chapters • ████████░░ 75%
+   ─────────────────────────────────────────────────────────
+   ✓ 1. Welcome & Orientation              Reading · 5 min
+   ✓ 2. Our Heritage & Values              Reading · 8 min
+   ► 3. Your First 90 Days   ← YOU ARE HERE  Visual · 10 min
+   • 4. Baseline Assessment                Assessment · 6 q
+                                                    [Preview ▸]
 
-When emitting `learning_path_visual`:
-- Same rule — don't list module titles in prose, let the visual show them
+▶ ② Investment Management Foundations           UP NEXT
+   0 of 5 chapters • ░░░░░░░░░░ 0%
 
-**C. Readability rules for text responses**
-Add explicit formatting requirements:
-- Insert a blank line between paragraphs (markdown requires `\n\n`)
-- **Bold** module/skill names so they stand out as scannable anchors
-- When listing 2+ recommended modules, use a markdown bullet list (`- **Module Name** — one-line reason`), not run-on prose
+▶ ③ Professional Standards & Ownership          🔒 LOCKED
+   Complete "Investment Management Foundations" to unlock
+```
 
-**D. Prefer current-module help over recommendations**
-New guidance line: *"If the learner is mid-module, default to helping with that module (summary, key points, quiz, mode switch). Only recommend other modules when explicitly asked or when the current module is complete."*
+### Behavior
 
-### What you'll see after the fix
+**Header strip (always visible):**
+- Title "Your Embark Journey"
+- Overall progress: `X of Y modules complete` + thin bar
+- Filter chips: **All / In progress / Completed / Locked** — filters which modules expand and dims the rest
 
-For the same scenario in your screenshot:
+**Module (skill target) row — collapsed:**
+- Number badge, title, status pill (`IN PROGRESS` / `COMPLETED` / `UP NEXT` / `LOCKED`)
+- One-line meta: `N of M chapters · progress bar · due date`
+- Locked modules show prerequisite hint
+- Click row → expand. The module containing the **active chapter** is **expanded by default**
 
-> Since you've just started **Our Heritage & Values**, let's keep momentum there.
->
-> You do have three High Gaps to close over the path — see below:
->
-> [skill_gaps_chart block]
->
-> Your current module helps with the **Professional Integrity** gap directly. After this one, **Professional Standards, Integrity & Ownership** and **Internal Collaboration** are your next two priorities.
->
-> Want me to summarise the key points of *Heritage & Values* so it's easier to follow?
+**Module row — expanded:** vertical chapter list reusing the timeline pattern from `TraditionalActivitiesPanel` (icon circle + connector line):
+- ✓ green filled = completed
+- ► accent-filled with "YOU ARE HERE" pill = current `in_progress` chapter
+- • outline = available / upcoming
+- 🔒 muted = locked
+- Chapter row shows: order number, title, type label (Chapter / Assessment / Role Play), duration
+- **Hover/right side**: secondary `Preview ▸` button — opens that chapter without changing journey state (read-only viewer flag — see Tech section)
+- **Click row**: opens chapter normally (`openModule` / `openAssessment`)
 
-- No duplicated skill names in prose + chart
-- Acknowledges the in-progress module first
-- Lists upcoming modules as a follow-up, not a redirect
-- Closing question is grounded in what the learner is actively doing
-- Paragraph spacing + bold anchors make it scannable
+**"You are here" anchor:** on first render of the modules view, scroll the active chapter into view inside its expanded module so the learner immediately sees where they are.
 
-### Files to edit
+### What you'll see
 
-- `supabase/functions/learnpath-chat/index.ts` — system prompt only (sections "Response Style", "Closing Each Response", "Rich Response Formats", and a new "Current Module Awareness" section)
+- Open All Modules → "Introduction to Rathbones" is expanded by default with chapter 3 highlighted as "YOU ARE HERE"; other modules are collapsed one-liners with their own status pills
+- Filter to **Completed** → only finished modules expand; everything else dims
+- Click `Preview ▸` on a future chapter → opens that chapter for read-only browsing without altering progress
+- Click the chapter row itself → normal open (resumes / starts the chapter)
+- Locked modules clearly show what unlocks them (existing `prerequisiteId` data)
 
-No frontend or schema changes.
+### Files to touch
+
+- **New** `src/components/learnpath/LearnPathJourneyAccordion.tsx` — the grouped accordion view (uses `@/components/ui/accordion` already in the project, plus `Progress`, `Badge`, `Button`).
+- **Edit** `src/components/learnpath/LearnPathContent.tsx` — in the `contentView === "modules"` branch, replace the flat grid with `<LearnPathJourneyAccordion steps={allSteps} activeChapterId={activeModuleId} />`. Keep the existing header.
+- **New** `src/components/learnpath/LearnPathChapterRow.tsx` — single chapter row (icon, status, title, type, duration, Preview button). Reuses status-icon pattern from `TraditionalActivitiesPanel`.
+- **Edit** `src/contexts/LearnPathContext.tsx` — add an optional `previewMode: boolean` flag on state plus `openModulePreview(moduleId, skillTargetId)` / `openAssessmentPreview(stepId)` actions that set `previewMode = true` and open the content. Reset to `false` whenever a chapter is opened normally or completed.
+- **Edit** `src/components/learnpath/LearnPathModuleContent.tsx` — when `previewMode` is true, hide the "Mark Complete / Continue" footer and show a small "Preview — progress not tracked" banner with a "Back to all chapters" button.
+
+No data-model changes, no new edge-function work, no changes to chat or completion logic — purely a presentation redesign on top of the existing `allSteps` array already computed in `LearnPathContent`.
 

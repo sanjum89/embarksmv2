@@ -622,7 +622,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
     return { timeSpent, assessmentScore, progressText, streakText };
   }, [completed, skillTargetId, skillTargets, stepId]);
 
-  if (completed && !previewMode) {
+  if (showSummary && !previewMode) {
     const handleContinue = () => {
       if (!nextModuleId) return;
       if (nextStepType === "assessment") {
@@ -643,6 +643,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
         isRevisit={isRevisit}
         onContinue={handleContinue}
         onBackToGrid={() => learnPathCtx.showModuleGrid()}
+        onBackToChapter={completed ? () => setShowSummary(false) : undefined}
       />
     );
   }

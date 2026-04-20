@@ -52,6 +52,9 @@ interface EmbarkContextType extends EmbarkState {
   showModuleGrid: () => void;
   notifyModuleCompleted: (info: CompletedModuleInfo) => void;
   clearCompletedModule: () => void;
+  // Navigation history
+  canGoBack: boolean;
+  goBack: () => void;
   // Engagement settings
   engagementMode: EngagementMode;
   setEngagementMode: (mode: EngagementMode) => void;

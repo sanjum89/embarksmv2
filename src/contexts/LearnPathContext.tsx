@@ -145,6 +145,8 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
     previewMode: false,
   }));
 
+  const [viewHistory, setViewHistory] = useState<ViewSnapshot[]>([]);
+
   const [engagementMode, setEngagementModeState] = useState<EngagementMode>(loadEngagementMode);
   const [engagementTimings, setEngagementTimingsState] = useState<EngagementTimings | null>(
     loadEngagementTimings
@@ -166,11 +168,40 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, [engagementTimings]);
 
+  const snapshot = (s: EmbarkState): ViewSnapshot => ({
+    contentView: s.contentView,
+    activeModuleId: s.activeModuleId,
+    activeSkillTargetId: s.activeSkillTargetId,
+    assessmentModuleId: s.assessmentModuleId,
+    previewMode: s.previewMode,
+  });
+
+  const isSameView = (a: ViewSnapshot, s: EmbarkState) =>
+    a.contentView === s.contentView &&
+    a.activeModuleId === s.activeModuleId &&
+    a.assessmentModuleId === s.assessmentModuleId &&
+    a.previewMode === s.previewMode;
+
+  const pushHistory = useCallback(() => {
+    setState((s) => {
+      // Don't record the initial welcome screen as history
+      if (s.contentView === "welcome") return s;
+      setViewHistory((h) => {
+        const snap = snapshot(s);
+        const last = h[h.length - 1];
+        if (last && isSameView(last, s)) return h;
+        return [...h, snap].slice(-20);
+      });
+      return s;
+    });
+  }, []);
+
   const setContentView = useCallback((view: ContentView) => {
     setState((s) => ({ ...s, contentView: view }));
   }, []);
 
   const openModule = useCallback((moduleId: string, skillTargetId?: string) => {
+    pushHistory();
     setState((s) => ({
       ...s,
       contentView: "module",
@@ -179,9 +210,10 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
       assessmentModuleId: null,
       previewMode: false,
     }));
-  }, []);
+  }, [pushHistory]);
 
   const openModulePreview = useCallback((moduleId: string, skillTargetId?: string) => {
+    pushHistory();
     setState((s) => ({
       ...s,
       contentView: "module",
@@ -190,48 +222,53 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
       assessmentModuleId: null,
       previewMode: true,
     }));
-  }, []);
+  }, [pushHistory]);
 
   const openAssessmentPreview = useCallback((stepId: string) => {
+    pushHistory();
     setState((s) => ({
       ...s,
       contentView: "assessment",
       assessmentModuleId: stepId,
       previewMode: true,
     }));
-  }, []);
+  }, [pushHistory]);
 
   const closeModule = useCallback(() => {
+    pushHistory();
     setState((s) => ({
       ...s,
       contentView: "modules",
       activeModuleId: null,
       assessmentModuleId: null,
     }));
-  }, []);
+  }, [pushHistory]);
 
   const setLearningMode = useCallback((mode: LearningMode) => {
     setState((s) => ({ ...s, learningMode: mode }));
   }, []);
 
   const openAssessment = useCallback((moduleId: string) => {
+    pushHistory();
     setState((s) => ({
       ...s,
       contentView: "assessment",
       assessmentModuleId: moduleId,
       previewMode: false,
     }));
-  }, []);
+  }, [pushHistory]);
 
   const closeAssessment = useCallback(() => {
+    pushHistory();
     setState((s) => ({
       ...s,
       contentView: s.activeModuleId ? "module" : "modules",
       assessmentModuleId: null,
     }));
-  }, []);
+  }, [pushHistory]);
 
   const showModuleGrid = useCallback(() => {
+    pushHistory();
     setState((s) => ({
       ...s,
       contentView: "modules",
@@ -239,6 +276,32 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
       assessmentModuleId: null,
       previewMode: false,
     }));
+  }, [pushHistory]);
+
+  const goBack = useCallback(() => {
+    setViewHistory((h) => {
+      if (h.length === 0) {
+        // Fallback to grid
+        setState((s) => ({
+          ...s,
+          contentView: "modules",
+          activeModuleId: null,
+          assessmentModuleId: null,
+          previewMode: false,
+        }));
+        return h;
+      }
+      const prev = h[h.length - 1];
+      setState((s) => ({
+        ...s,
+        contentView: prev.contentView,
+        activeModuleId: prev.activeModuleId,
+        activeSkillTargetId: prev.activeSkillTargetId ?? s.activeSkillTargetId,
+        assessmentModuleId: prev.assessmentModuleId,
+        previewMode: prev.previewMode,
+      }));
+      return h.slice(0, -1);
+    });
   }, []);
 
   const notifyModuleCompleted = useCallback((info: CompletedModuleInfo) => {

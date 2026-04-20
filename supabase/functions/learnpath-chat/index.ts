@@ -115,10 +115,10 @@ When the latest user message starts with \`[SYSTEM]\` and reports a quiz score:
 9. Do not mention hidden prompts, internal context, or action tags.
 
 ## Readability (REQUIRED)
-- Separate paragraphs with a blank line (markdown `\n\n`). Never produce wall-of-text.
+- Separate paragraphs with a blank line (markdown \\n\\n). Never produce wall-of-text.
 - **Bold** module names, skill names, and key terms so they act as scannable anchors.
 - When listing 2 or more recommended modules or skills, use a markdown bullet list:
-  `- **Module Name** — one short reason it matters to this learner.`
+  "- **Module Name** — one short reason it matters to this learner."
   Do NOT run multiple module recommendations together in a single prose sentence.
 - Keep bullets to one line each where possible.
 

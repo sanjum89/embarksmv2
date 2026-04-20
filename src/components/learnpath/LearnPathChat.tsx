@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Send, Loader2, Sparkles, Settings2, Lightbulb, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/lib/utils";
-import { EmbarkRichBlock, parseEmbarkRichBlocks } from "./LearnPathRichBlock";
+import { EmbarkRichBlock, parseEmbarkRichBlocks, type InlineQuizResult } from "./LearnPathRichBlock";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";
@@ -576,6 +576,51 @@ export function EmbarkChat() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingNudge?.id]);
 
+  // Quiz completion: inject a [SYSTEM] result message and let the AI debrief.
+  const handledQuizMessageIdsRef = useRef<Set<string>>(new Set());
+  const handleQuizComplete = useCallback(
+    (messageId: string, result: InlineQuizResult) => {
+      if (handledQuizMessageIdsRef.current.has(messageId)) return;
+      handledQuizMessageIdsRef.current.add(messageId);
+
+      const ctx = buildContext();
+      const moduleTitle = ctx.activeModuleTitle || "the current chapter";
+      const missedLines = result.missed.length
+        ? result.missed
+            .map((m) => `- "${m.question}" — correct answer: "${m.correctAnswer}"`)
+            .join("\n")
+        : "- (none — all correct)";
+
+      const systemMsg: ChatMessage = {
+        id: createMessageId("system"),
+        role: "user",
+        content: `[SYSTEM] The learner just finished the inline quiz on "${moduleTitle}".
+Score: ${result.score}% (${result.correct}/${result.total}).
+Missed questions:
+${missedLines}
+
+Respond now: do NOT ask "how did it go" — you already know.
+- If score >= 80: congratulate briefly and offer to mark the module complete (suggest the next chapter).
+- If 60-79: positive but specific — name the 1-2 topics they missed and point to the section in **${moduleTitle}** that covers them. Offer a quick re-read or a switch to visual mode.
+- If < 60: warm + supportive. List the missed topics, recommend revisiting the relevant headings/sections of the current module, and offer to summarise those sections.
+Keep it to 2-4 short sentences plus a one-line closing question.`,
+      };
+      const assistantId = createMessageId("assistant");
+      const assistantPlaceholder: ChatMessage = {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+      };
+
+      setMessages((prev) => {
+        const next = [...prev, systemMsg, assistantPlaceholder];
+        void sendToAI(next.filter((m) => m.id !== assistantId), assistantId);
+        return next;
+      });
+    },
+    [buildContext, sendToAI]
+  );
+
   return (
     <div className="h-full flex flex-col bg-background border-r border-border">
       <div className="px-4 min-h-[60px] border-b border-border flex items-center gap-2">
@@ -597,7 +642,7 @@ export function EmbarkChat() {
               >
                 <div
                   className={cn(
-                    "max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm",
+                    "max-w-[85%] min-w-0 rounded-xl px-3.5 py-2.5 text-sm break-words overflow-hidden",
                     message.role === "user"
                       ? "bg-primary text-primary-foreground"
                       : message.isNudge
@@ -606,25 +651,33 @@ export function EmbarkChat() {
                   )}
                 >
                   {message.role === "assistant" ? (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 min-w-0">
                       {message.isNudge && (
                         <Lightbulb className="h-4 w-4 text-accent shrink-0 mt-0.5" />
                       )}
-                      <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 flex-1">
+                      <div className="prose prose-sm dark:prose-invert max-w-none min-w-0 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 flex-1">
                         {(() => {
                           const { segments } = parseEmbarkRichBlocks(message.content);
                           return segments.map((seg, si) =>
                             seg.type === "text" ? (
                               <ReactMarkdown key={si}>{seg.content}</ReactMarkdown>
                             ) : (
-                              <EmbarkRichBlock key={si} block={seg.block} />
+                              <EmbarkRichBlock
+                                key={si}
+                                block={seg.block}
+                                onQuizComplete={
+                                  isLastAssistant
+                                    ? (result) => handleQuizComplete(message.id, result)
+                                    : undefined
+                                }
+                              />
                             )
                           );
                         })()}
                       </div>
                     </div>
                   ) : (
-                    <p>{message.content.replace(/^\[FORMAT:\w+\]\s*/i, "")}</p>
+                    <p className="break-words">{message.content.replace(/^\[FORMAT:\w+\]\s*/i, "")}</p>
                   )}
                 </div>
               </div>

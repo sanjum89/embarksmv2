@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, XCircle, Trophy, ChevronRight, BookOpen, Circle, CircleCheck, CircleDot } from "lucide-react";
@@ -18,12 +18,20 @@ interface InlineQuizData {
   questions: QuizQuestion[];
 }
 
-function InlineQuiz({ data }: { data: InlineQuizData }) {
+export interface InlineQuizResult {
+  score: number;
+  correct: number;
+  total: number;
+  missed: { question: string; correctAnswer: string }[];
+}
+
+function InlineQuiz({ data, onComplete }: { data: InlineQuizData; onComplete?: (result: InlineQuizResult) => void }) {
   const [currentQ, setCurrentQ] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [results, setResults] = useState<boolean[]>([]);
   const [finished, setFinished] = useState(false);
+  const completedFiredRef = useRef(false);
 
   const q = data.questions[currentQ];
   const isCorrect = selected === q?.correctIndex;
@@ -44,18 +52,34 @@ function InlineQuiz({ data }: { data: InlineQuizData }) {
     }
   };
 
+  useEffect(() => {
+    if (!finished || completedFiredRef.current) return;
+    completedFiredRef.current = true;
+    const correct = results.filter(Boolean).length;
+    const total = data.questions.length;
+    const score = Math.round((correct / total) * 100);
+    const missed = data.questions
+      .map((qq, i) => ({ qq, ok: results[i] }))
+      .filter((entry) => !entry.ok)
+      .map(({ qq }) => ({
+        question: qq.question,
+        correctAnswer: qq.options[qq.correctIndex] ?? "",
+      }));
+    onComplete?.({ score, correct, total, missed });
+  }, [finished, results, data.questions, onComplete]);
+
   if (finished) {
     const correct = results.filter(Boolean).length;
     const total = data.questions.length;
     const pct = Math.round((correct / total) * 100);
     return (
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-3">
+      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 min-w-0">
         <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Trophy className="h-4 w-4 text-chart-4" />
           Quiz Complete!
         </div>
-        <div className="flex items-center gap-4">
-          <div className="relative h-16 w-16">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="relative h-16 w-16 shrink-0">
             <svg viewBox="0 0 36 36" className="h-16 w-16 -rotate-90">
               <circle cx="18" cy="18" r="15" fill="none" className="stroke-muted" strokeWidth="3" />
               <circle
@@ -70,22 +94,22 @@ function InlineQuiz({ data }: { data: InlineQuizData }) {
               {pct}%
             </span>
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-foreground">{correct}/{total} correct</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5 break-words">
               {pct >= 80 ? "Great job! You've got a solid grasp 🎉" : pct >= 60 ? "Good effort — review a couple of areas 💪" : "Worth revisiting this chapter 📖"}
             </p>
           </div>
         </div>
-        <div className="space-y-1">
+        <div className="space-y-1 min-w-0">
           {data.questions.map((question, i) => (
-            <div key={i} className="flex items-center gap-2 text-xs">
+            <div key={i} className="flex items-center gap-2 text-xs min-w-0">
               {results[i] ? (
                 <CheckCircle2 className="h-3.5 w-3.5 text-chart-2 shrink-0" />
               ) : (
                 <XCircle className="h-3.5 w-3.5 text-destructive shrink-0" />
               )}
-              <span className="text-muted-foreground truncate">{question.question}</span>
+              <span className="text-muted-foreground truncate min-w-0 flex-1">{question.question}</span>
             </div>
           ))}
         </div>
@@ -250,16 +274,16 @@ function LearningPathVisual({ data }: { data: LearningPathVisualData }) {
       <div className="relative pl-4">
         <div className="absolute left-[7px] top-1 bottom-1 w-0.5 bg-border" />
         {data.modules.map((mod, i) => (
-          <div key={i} className="relative flex items-start gap-3 py-1.5">
-            <div className="relative z-10 bg-card">
+          <div key={i} className="relative flex items-start gap-3 py-1.5 min-w-0">
+            <div className="relative z-10 bg-card shrink-0">
               {STATUS_ICONS[mod.status] || STATUS_ICONS.available}
             </div>
-            <div className="min-w-0">
-              <p className={cn("text-xs font-medium truncate", mod.status === "locked" ? "text-muted-foreground/50" : "text-foreground")}>
+            <div className="min-w-0 flex-1">
+              <p className={cn("text-xs font-medium truncate min-w-0", mod.status === "locked" ? "text-muted-foreground/50" : "text-foreground")}>
                 {mod.title}
               </p>
               {mod.skillTarget && (
-                <p className="text-[10px] text-muted-foreground">{mod.skillTarget}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{mod.skillTarget}</p>
               )}
             </div>
           </div>
@@ -278,23 +302,31 @@ export interface EmbarkRichBlockData {
   data: any;
 }
 
-const RENDERERS: Record<string, React.FC<{ data: any }>> = {
+const RENDERERS: Record<string, React.FC<any>> = {
   inline_quiz: InlineQuiz,
   skill_gaps_chart: SkillGapsChart,
   learning_path_visual: LearningPathVisual,
 };
 
-export function EmbarkRichBlock({ block }: { block: EmbarkRichBlockData }) {
+export function EmbarkRichBlock({
+  block,
+  onQuizComplete,
+}: {
+  block: EmbarkRichBlockData;
+  onQuizComplete?: (result: InlineQuizResult) => void;
+}) {
   const Renderer = RENDERERS[block.type];
   if (!Renderer) return null;
+
+  const extraProps = block.type === "inline_quiz" ? { onComplete: onQuizComplete } : {};
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-xl border border-border bg-card p-3 my-2"
+      className="rounded-xl border border-border bg-card p-3 my-2 w-full max-w-full overflow-hidden min-w-0"
     >
-      <Renderer data={block.data} />
+      <Renderer data={block.data} {...extraProps} />
     </motion.div>
   );
 }

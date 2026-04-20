@@ -151,6 +151,27 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
       activeModuleId: moduleId,
       activeSkillTargetId: skillTargetId ?? s.activeSkillTargetId,
       assessmentModuleId: null,
+      previewMode: false,
+    }));
+  }, []);
+
+  const openModulePreview = useCallback((moduleId: string, skillTargetId?: string) => {
+    setState((s) => ({
+      ...s,
+      contentView: "module",
+      activeModuleId: moduleId,
+      activeSkillTargetId: skillTargetId ?? s.activeSkillTargetId,
+      assessmentModuleId: null,
+      previewMode: true,
+    }));
+  }, []);
+
+  const openAssessmentPreview = useCallback((stepId: string) => {
+    setState((s) => ({
+      ...s,
+      contentView: "assessment",
+      assessmentModuleId: stepId,
+      previewMode: true,
     }));
   }, []);
 

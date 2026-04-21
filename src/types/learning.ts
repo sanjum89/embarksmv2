@@ -32,6 +32,8 @@ export interface StepItem {
   adaptiveReason?: string;
   /** Topic tag linking this step (especially refreshers) to the gap it reinforces. */
   topicTag?: string;
+  /** Set when the assessment was locked due to a critical-fail (<20%). Cleared on re-pass. */
+  criticallyLocked?: boolean;
 }
 
 export interface SkillProficiencyTarget {

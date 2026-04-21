@@ -158,7 +158,7 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
     contentView: "welcome",
     activeModuleId: null,
     activeSkillTargetId: null,
-    learningMode: loadPendingLearningMode(),
+    learningMode: resolveInitialLearningMode(),
     assessmentModuleId: null,
     lastCompletedModule: null,
     previewMode: false,

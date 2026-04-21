@@ -126,6 +126,14 @@ export function EmbarkContent() {
   if (contentView === "module" && activeModuleId) {
     const mod = resolveModule(activeModuleId, skillTargets, normalizedAccount?.learningModules);
     if (!mod) {
+      // If this ID belongs to a role-play step, route to the role-play page instead of "unavailable"
+      const rpStep = allSteps.find(
+        (s) => s.type === "role_play" && (s.stepId === activeModuleId || s.moduleId === activeModuleId || s.referenceId === activeModuleId)
+      );
+      if (rpStep) {
+        navigate(`/role-play/${rpStep.referenceId ?? rpStep.stepId}`);
+        return null;
+      }
       return (
         <div className="h-full flex items-center justify-center p-6">
           <div className="max-w-sm text-center space-y-4 rounded-xl border border-border bg-card p-6">

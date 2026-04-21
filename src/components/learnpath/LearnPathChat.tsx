@@ -23,6 +23,12 @@ import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
 import { SuggestionPillsRow, computeSuggestionPills, type SuggestionPill } from "./SuggestionPills";
 import { useEmbarkEngagement } from "@/hooks/useEmbarkEngagement";
+import { subscribeEngagementEvents } from "@/lib/embarkEngagementEvents";
+import {
+  pickRefresherInjectionMessage,
+  pickCriticalFailMessage,
+  pickReopenNudge,
+} from "@/lib/embarkSupportiveMessages";
 
 interface ChatMessage {
   id: string;
@@ -528,6 +534,45 @@ export function EmbarkChat() {
     inputHasText: input.trim().length > 0,
     buildContext: buildNudgeContext,
   });
+
+  // Subscribe directly to engagement events that should appear as AI chat messages
+  // (refresher injections, module reopens, and critical-fail lockouts).
+  const handledEngagementMsgsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!hasGreeted) return;
+    const unsubscribe = subscribeEngagementEvents((event) => {
+      let msgKey: string | null = null;
+      let content: string | null = null;
+
+      if (event.type === "retention_gap_detected") {
+        msgKey = `retention-${event.skillTargetId ?? "x"}-${event.weakTopics.join("|")}-${event.score}`;
+        content = pickRefresherInjectionMessage(event.weakTopics, event.score);
+      } else if (event.type === "module_reopened") {
+        msgKey = `reopen-${event.moduleTitle}`;
+        content = pickReopenNudge(event.moduleTitle);
+      } else if (event.type === "assessment_locked_critical_fail") {
+        msgKey = `critical-${event.skillTargetId ?? "x"}-${event.assessmentTitle ?? "x"}-${event.score}`;
+        content = pickCriticalFailMessage({
+          assessmentTitle: event.assessmentTitle,
+          reopenedModuleTitles: event.reopenedModuleTitles,
+          weakTopics: event.weakTopics,
+        });
+      }
+
+      if (!msgKey || !content) return;
+      if (handledEngagementMsgsRef.current.has(msgKey)) return;
+      handledEngagementMsgsRef.current.add(msgKey);
+
+      const aiMsg: ChatMessage = {
+        id: createMessageId("engagement"),
+        role: "assistant",
+        content,
+        isNudge: true,
+      };
+      setMessages((prev) => [...prev, aiMsg]);
+    });
+    return unsubscribe;
+  }, [hasGreeted]);
 
   const injectedNudgeIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {

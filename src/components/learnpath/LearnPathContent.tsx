@@ -8,7 +8,7 @@ import { EmbarkJourneyAccordion } from "./LearnPathJourneyAccordion";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";
 import { EmbarkAssessment } from "./LearnPathAssessment";
 import { EmbarkModeSelector } from "./LearnPathModeSelector";
-import { BookOpen, GraduationCap, Sparkles, AlertTriangle, ArrowRight } from "lucide-react";
+import { BookOpen, GraduationCap, Sparkles, AlertTriangle, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getRecommendationsForUser } from "@/lib/skillRecommendations";
@@ -33,7 +33,7 @@ export interface UnifiedStep {
 }
 
 export function EmbarkContent() {
-  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted } = useEmbark();
+  const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted, canGoBack, goBack } = useEmbark();
   const { skillTargets } = useSkillTargets();
   const { user } = useUser();
   const { normalizedAccount } = useAccount();
@@ -197,12 +197,36 @@ export function EmbarkContent() {
   }
 
   if (contentView === "modules") {
+    // Derive a "back to chapter" target from the most recent non-modules history entry.
+    // We don't have direct access to viewHistory here, so just rely on canGoBack +
+    // the activeModuleId that was set before the user opened the grid.
+    const lastChapterTitle = (() => {
+      if (!activeModuleId) return null;
+      const step = allSteps.find(
+        (s) => s.moduleId === activeModuleId || s.stepId === activeModuleId
+      );
+      return step?.title ?? null;
+    })();
+
     return (
       <div className="h-full overflow-y-auto">
         <div className="p-6 space-y-4">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-accent" />
-            <h2 className="text-lg font-semibold text-foreground">Your Embark Journey</h2>
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-2">
+              <BookOpen className="h-5 w-5 text-accent" />
+              <h2 className="text-lg font-semibold text-foreground">Your Embark Journey</h2>
+            </div>
+            {canGoBack && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={goBack}
+                className="gap-1.5 text-xs"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                {lastChapterTitle ? `Back to ${lastChapterTitle}` : "Back"}
+              </Button>
+            )}
           </div>
           {allSteps.length === 0 ? (
             <p className="text-sm text-muted-foreground">No chapters assigned yet.</p>

@@ -67,6 +67,12 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   const [isRevisit] = useState(initialCompleted);
   const [showAllBullets, setShowAllBullets] = useState(false);
   const startTimeRef = useRef(Date.now());
+  const usedModesRef = useRef<Set<LearningMode>>(new Set([learningMode]));
+
+  // Track distinct modes used during this session
+  useEffect(() => {
+    usedModesRef.current.add(learningMode);
+  }, [learningMode]);
 
   // Notify parent of completion state changes
   useEffect(() => {

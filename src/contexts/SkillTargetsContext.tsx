@@ -175,17 +175,25 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
 
       // Apply gate actions + inject adaptive refresher steps if needed
       let insertedAdaptiveCount = 0;
+      let criticalFailReopenedTitles: string[] = [];
+      let criticalFailTriggered = false;
+
       setPerUserTargets((prevState) => {
         const targets = prevState[key] ?? [];
         const updated = targets.map((target) => {
           if (target.id !== skillTargetId) return target;
 
-          // 1. Standard gate logic
+          // 1. Standard gate logic (now returns criticalFail metadata)
           const gated = applyGateActions(target.steps, assessment.id, analysis.overallScore);
           let nextSteps = gated.steps;
+          if (gated.criticalFail.triggered) {
+            criticalFailTriggered = true;
+            criticalFailReopenedTitles = gated.criticalFail.reopenedModuleTitles;
+          }
 
-          // 2. Inject adaptive steps for weak topics (only if not perfect)
-          if (analysis.weakTopics.length > 0) {
+          // 2. Inject adaptive steps for weak topics (only if not perfect AND not critical fail —
+          //    a critical fail means revisit the source modules, not pile on more refreshers)
+          if (analysis.weakTopics.length > 0 && !gated.criticalFail.triggered) {
             const injected = injectAdaptiveSteps(
               nextSteps,
               assessment.id,
@@ -211,7 +219,16 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
         moduleTitle: assessment.title ?? null,
       });
 
-      if (analysis.weakTopics.length > 0 && insertedAdaptiveCount > 0) {
+      if (criticalFailTriggered) {
+        emitEngagementEvent({
+          type: "assessment_locked_critical_fail",
+          score: analysis.overallScore,
+          assessmentTitle: assessment.title ?? null,
+          reopenedModuleTitles: criticalFailReopenedTitles,
+          skillTargetId,
+          weakTopics: analysis.weakTopics,
+        });
+      } else if (analysis.weakTopics.length > 0 && insertedAdaptiveCount > 0) {
         emitEngagementEvent({
           type: "retention_gap_detected",
           weakTopics: analysis.weakTopics,
@@ -221,7 +238,7 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
         });
       }
 
-      if (next >= STRUGGLING_STREAK_TRIGGER) {
+      if (next >= STRUGGLING_STREAK_TRIGGER && !criticalFailTriggered) {
         emitEngagementEvent({
           type: "struggling_streak",
           consecutiveLowScores: next,
@@ -236,6 +253,48 @@ export function SkillTargetsProvider({ children }: { children: ReactNode }) {
     },
     [compositeKey]
   );
+
+  // Auto-unlock critically-locked assessments once all preceding non-adaptive
+  // module steps in the same target have been (re)completed.
+  useEffect(() => {
+    if (loading) return;
+    const targets = perUserTargets[compositeKey];
+    if (!targets) return;
+
+    let changed = false;
+    const updated = targets.map((target) => {
+      const lockedAssessments = target.steps.filter(
+        (s) => s.type === "assessment" && s.criticallyLocked && s.status === "locked"
+      );
+      if (lockedAssessments.length === 0) return target;
+
+      let stepsChanged = false;
+      const newSteps = target.steps.map((s) => {
+        if (!s.criticallyLocked || s.status !== "locked" || s.type !== "assessment") return s;
+        const precedingModules = target.steps.filter(
+          (m) => m.type === "module" && !m.isAdaptive && m.order < s.order
+        );
+        const allDone =
+          precedingModules.length > 0 &&
+          precedingModules.every((m) => m.status === "completed" || m.status === "skipped");
+        if (allDone) {
+          stepsChanged = true;
+          return { ...s, status: "available" as const, criticallyLocked: false };
+        }
+        return s;
+      });
+
+      if (stepsChanged) {
+        changed = true;
+        return { ...target, steps: newSteps, progress: recomputeProgress(newSteps) };
+      }
+      return target;
+    });
+
+    if (changed) {
+      setPerUserTargets((prev) => ({ ...prev, [compositeKey]: updated }));
+    }
+  }, [perUserTargets, compositeKey, loading]);
 
   return (
     <SkillTargetsContext.Provider value={{ skillTargets, addSkillTargets, updateSkillTarget, recordAssessmentResult }}>

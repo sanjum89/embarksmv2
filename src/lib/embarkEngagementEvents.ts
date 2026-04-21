@@ -41,6 +41,14 @@ export type EngagementEvent =
   | {
       type: "struggling_streak";
       consecutiveLowScores: number;
+    }
+  | {
+      type: "assessment_locked_critical_fail";
+      score: number;
+      assessmentTitle: string | null;
+      reopenedModuleTitles: string[];
+      skillTargetId: string | null;
+      weakTopics: string[];
     };
 
 type Listener = (event: EngagementEvent) => void;

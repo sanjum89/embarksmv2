@@ -9,6 +9,9 @@ export const STEP_TO_ASSESSMENT: Record<string, string> = {
   "RAT-ASM-003": "a-rb-st2-final",
 };
 
+/* ─── Critical-fail threshold ─── */
+export const CRITICAL_FAIL_THRESHOLD = 20;
+
 /* ─── Gate actions ─── */
 export interface GateAction {
   skip?: string[];
@@ -95,13 +98,64 @@ export function resolveAssessment(
     if (found) return found;
   }
 
-  // 4. Generate fallback from step data
+  // 4. Generate fallback from step data — match by referenceId OR by step.id
   for (const target of skillTargets) {
-    const step = target.steps.find((s) => s.referenceId === aid);
+    const step = target.steps.find(
+      (s) => s.type === "assessment" && (s.referenceId === aid || s.id === aid)
+    );
     if (step) {
-      const topicName = step.title.replace(/Pre-Assessment:|Post-Assessment:/gi, "").trim() || target.title || "General Knowledge";
-      // Spread the 5 questions across 2 topic tags so the retention engine
-      // can detect which sub-area the learner is weak on.
+      const isAdaptiveMicro = !!step.isAdaptive && (step.learningFormat === "micro" || step.learningFormat === "micro_refresher");
+      const topicName = (step.topicTag || step.title.replace(/Pre-Assessment:|Post-Assessment:|Quick Check:/gi, "").trim()) || target.title || "General Knowledge";
+
+      // Adaptive micro-check: short 3-question focused check on the weak topic
+      if (isAdaptiveMicro) {
+        return {
+          id: aid,
+          title: step.title,
+          type: "post" as const,
+          passingScore: 60,
+          questions: [
+            {
+              id: `${aid}-q1`,
+              question: `Which best describes the core idea behind ${topicName}?`,
+              options: [
+                "It's primarily about reducing costs",
+                "It's about applying clear principles to real situations",
+                "It's an optional skill for advanced practitioners",
+                "It only applies in theoretical contexts",
+              ],
+              correctIndex: 1,
+              topicTag: topicName,
+            },
+            {
+              id: `${aid}-q2`,
+              question: `When working with ${topicName}, the most reliable next step is to:`,
+              options: [
+                "Skip planning and act fast",
+                "Assess the current situation before deciding",
+                "Defer the decision indefinitely",
+                "Copy what someone else did",
+              ],
+              correctIndex: 1,
+              topicTag: topicName,
+            },
+            {
+              id: `${aid}-q3`,
+              question: `A strong indicator that you understand ${topicName} is:`,
+              options: [
+                "You can recite the definition",
+                "You can apply it in a fresh, unfamiliar scenario",
+                "You've heard the term used by colleagues",
+                "You completed a related course years ago",
+              ],
+              correctIndex: 1,
+              topicTag: topicName,
+            },
+          ],
+        };
+      }
+
+      // Standard generated assessment: 5 questions split across 2 sub-topics
       const skills = target.skills?.map(s => s.name).filter(Boolean) ?? [];
       const topicA = skills[0] ?? topicName;
       const topicB = skills[1] ?? `${topicName} in Practice`;
@@ -124,28 +178,88 @@ export function resolveAssessment(
   return null;
 }
 
+/* ─── Critical-fail result (for callers that need to know which modules were reopened) ─── */
+export interface CriticalFailResult {
+  triggered: boolean;
+  reopenedModuleTitles: string[];
+}
+
 /* ─── Apply gate actions to steps after assessment submission ─── */
 export function applyGateActions(
   steps: StepItem[],
   assessmentId: string,
   score: number
-): { steps: StepItem[]; progress: number } {
+): { steps: StepItem[]; progress: number; criticalFail: CriticalFailResult } {
   const gate = GATE_MAP[assessmentId];
+  const isCriticalFail = score < CRITICAL_FAIL_THRESHOLD;
 
-  // Mark the assessment step itself as completed
+  // Mark the assessment step itself — completed by default, OR locked on critical fail
   let updatedSteps = steps.map((step) => {
-    if (step.referenceId === assessmentId && step.type === "assessment") {
-      return { ...step, status: "completed" as const };
-    }
-    // Also match by step ID via STEP_TO_ASSESSMENT
-    const mappedAssessmentId = STEP_TO_ASSESSMENT[step.id];
-    if (mappedAssessmentId === assessmentId && step.type === "assessment") {
-      return { ...step, status: "completed" as const };
+    const isThisAssessment =
+      (step.referenceId === assessmentId && step.type === "assessment") ||
+      (STEP_TO_ASSESSMENT[step.id] === assessmentId && step.type === "assessment") ||
+      (step.id === assessmentId && step.type === "assessment");
+    if (isThisAssessment) {
+      return {
+        ...step,
+        status: (isCriticalFail ? "locked" : "completed") as StepItem["status"],
+        criticallyLocked: isCriticalFail || step.criticallyLocked,
+      };
     }
     return step;
   });
 
-  if (gate) {
+  // Find the assessment step (for ordering)
+  const assessmentStep = updatedSteps.find(
+    (s) =>
+      s.type === "assessment" &&
+      (s.referenceId === assessmentId || STEP_TO_ASSESSMENT[s.id] === assessmentId || s.id === assessmentId)
+  );
+
+  let reopenedModuleTitles: string[] = [];
+
+  if (isCriticalFail && assessmentStep) {
+    // Critical fail — reopen source modules
+    let moduleIdsToReopen: Set<string> = new Set();
+
+    if (gate) {
+      // Use gate map heuristic: any module step listed across the gate's actions
+      const gateStepIds = new Set([
+        ...(gate.onPass.skip ?? []),
+        ...(gate.onPass.complete ?? []),
+        ...(gate.onPass.unlock ?? []),
+        ...(gate.onFail.reset ?? []),
+        ...(gate.onFail.unlock ?? []),
+      ]);
+      updatedSteps.forEach((s) => {
+        if (s.type === "module" && gateStepIds.has(s.id)) {
+          moduleIdsToReopen.add(s.id);
+        }
+      });
+    }
+
+    // If gate yielded nothing, fallback: all preceding completed/skipped non-adaptive modules in the same target
+    if (moduleIdsToReopen.size === 0) {
+      updatedSteps.forEach((s) => {
+        if (
+          s.type === "module" &&
+          !s.isAdaptive &&
+          s.order < assessmentStep.order &&
+          (s.status === "completed" || s.status === "skipped")
+        ) {
+          moduleIdsToReopen.add(s.id);
+        }
+      });
+    }
+
+    updatedSteps = updatedSteps.map((s) => {
+      if (moduleIdsToReopen.has(s.id)) {
+        reopenedModuleTitles.push(s.title);
+        return { ...s, status: "available" as const };
+      }
+      return s;
+    });
+  } else if (gate) {
     const passed = score >= gate.passThreshold;
     const actions = passed ? gate.onPass : gate.onFail;
 
@@ -157,19 +271,14 @@ export function applyGateActions(
       if (!passed && actions.retryId === step.id) return { ...step, status: "available" as const };
       return step;
     });
-  } else {
-    // Fallback: unlock the next locked step
-    const assessmentStep = updatedSteps.find(
-      (s) => (s.referenceId === assessmentId || STEP_TO_ASSESSMENT[s.id] === assessmentId) && s.type === "assessment"
-    );
-    if (assessmentStep) {
-      const sorted = [...updatedSteps].sort((a, b) => a.order - b.order);
-      const nextLocked = sorted.find((s) => s.order > assessmentStep.order && s.status === "locked");
-      if (nextLocked) {
-        updatedSteps = updatedSteps.map((s) =>
-          s.id === nextLocked.id ? { ...s, status: "available" as const } : s
-        );
-      }
+  } else if (assessmentStep) {
+    // No gate — unlock the next locked step
+    const sorted = [...updatedSteps].sort((a, b) => a.order - b.order);
+    const nextLocked = sorted.find((s) => s.order > assessmentStep.order && s.status === "locked");
+    if (nextLocked) {
+      updatedSteps = updatedSteps.map((s) =>
+        s.id === nextLocked.id ? { ...s, status: "available" as const } : s
+      );
     }
   }
 
@@ -178,5 +287,9 @@ export function applyGateActions(
   ).length;
   const progress = Math.round((completedCount / updatedSteps.length) * 100);
 
-  return { steps: updatedSteps, progress };
+  return {
+    steps: updatedSteps,
+    progress,
+    criticalFail: { triggered: isCriticalFail, reopenedModuleTitles },
+  };
 }

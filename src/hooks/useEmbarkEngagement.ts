@@ -333,29 +333,19 @@ export function useEmbarkEngagement({
         return;
       }
 
-      if (event.type === "retention_gap_detected") {
-        dispatchNudge({
-          id: `nudge-retention-${Date.now()}`,
-          message: pickRetentionNudge(event.weakTopics, event.score),
-          source: "retention",
-        });
-        return;
-      }
+      // NOTE: retention_gap_detected, module_reopened, and assessment_locked_critical_fail
+      // are now handled directly in the Embark chat as synthetic assistant messages
+      // (see LearnPathChat.tsx). We deliberately do NOT show transient banner nudges
+      // for them here, to avoid duplicating the message in two places.
+      if (event.type === "retention_gap_detected") return;
+      if (event.type === "module_reopened") return;
+      if (event.type === "assessment_locked_critical_fail") return;
 
       if (event.type === "struggling_streak") {
         dispatchNudge({
           id: `nudge-struggling-${Date.now()}`,
           message: pickStrugglingStreakNudge(),
           source: "struggling",
-        });
-        return;
-      }
-
-      if (event.type === "module_reopened") {
-        dispatchNudge({
-          id: `nudge-reopen-${Date.now()}`,
-          message: pickReopenNudge(event.moduleTitle),
-          source: "reopen",
         });
         return;
       }

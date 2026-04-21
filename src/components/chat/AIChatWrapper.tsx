@@ -41,12 +41,14 @@ function ThinkingIndicator() {
   );
 }
 
+const HIDE_ON_PATHS = new Set(["/chat", "/", "/embark", "/embark-v2"]);
+
 export function AIChatWrapper() {
   const ctx = useContext(AgentOneContext);
   const location = useLocation();
-  const isChatPage = location.pathname === "/chat";
+  const isHidden = HIDE_ON_PATHS.has(location.pathname);
 
-  if (!ctx || isChatPage) return null;
+  if (!ctx || isHidden) return null;
 
   return <AIChatWrapperInner />;
 }

@@ -58,7 +58,8 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   const navigate = useNavigate();
   const { substitute, substituteDeep } = useContentSubstitution();
   const { normalizedAccount } = useAccount();
-  const isMicro = learningFormat === "micro";
+  const isMicroRefresher = learningFormat === "micro_refresher";
+  const isMicro = learningFormat === "micro" || isMicroRefresher;
   const transcript = substitute(module.transcript ?? "No content available for this module.");
   const [microExpanded, setMicroExpanded] = useState(false);
   const [completed, setCompleted] = useState(initialCompleted);
@@ -140,12 +141,14 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
             <Clock className="h-3 w-3" /> {module.duration}
           </span>
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-            <FileText className="h-3 w-3" /> {isMicro ? "Microlearning" : (module.contentType === "video" ? "Video" : "Full Module")}
-          </span>
-          {isMicro && (
+          {isMicro ? (
             <span className="inline-flex items-center gap-1 text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full font-medium">
-              <Zap className="h-3 w-3" /> Condensed
+              <Zap className="h-3 w-3" />
+              {isMicroRefresher ? "Microlearning · Quick Refresher" : "Microlearning"}
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+              <FileText className="h-3 w-3" /> {module.contentType === "video" ? "Video" : "Full Module"}
             </span>
           )}
         </div>

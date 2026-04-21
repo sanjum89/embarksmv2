@@ -187,6 +187,13 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
     } catch {}
   }, [engagementTimings]);
 
+  // Persist user-selected learning mode so it carries across modules and reloads
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(LEARNING_MODE_KEY, state.learningMode);
+    } catch {}
+  }, [state.learningMode]);
+
   const snapshot = (s: EmbarkState): ViewSnapshot => ({
     contentView: s.contentView,
     activeModuleId: s.activeModuleId,

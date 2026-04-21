@@ -628,8 +628,8 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
     }
     const streakText = streak > 0 ? `${streak} in a row` : "—";
 
-    return { timeSpent, assessmentScore, progressText, streakText };
-  }, [completed, skillTargetId, skillTargets, stepId]);
+    return { timeSpent, assessmentScore, progressText, streakText, modesUsed: Array.from(usedModesRef.current) };
+  }, [completed, skillTargetId, skillTargets, stepId, learningMode]);
 
   if (showSummary && !previewMode) {
     const handleContinue = () => {

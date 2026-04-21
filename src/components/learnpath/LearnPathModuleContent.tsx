@@ -689,7 +689,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
 
 interface CompletionScreenProps {
   moduleTitle: string;
-  completionStats: { timeSpent: string; assessmentScore: string; progressText: string; streakText: string } | null;
+  completionStats: { timeSpent: string; assessmentScore: string; progressText: string; streakText: string; modesUsed: LearningMode[] } | null;
   nextModuleId?: string;
   nextModuleTitle?: string;
   nextSkillTargetId?: string;

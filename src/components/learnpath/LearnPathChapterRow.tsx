@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useEmbark } from "@/contexts/LearnPathContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +40,7 @@ const typeIcon = {
 export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowProps) {
   const { openModule, openAssessment, openModulePreview, openAssessmentPreview } = useEmbark();
   const { substitute } = useContentSubstitution();
+  const navigate = useNavigate();
 
   const isLocked = step.status === "locked";
   const isCompleted = step.status === "completed";
@@ -48,12 +50,14 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
   const handleOpen = () => {
     if (isLocked) return;
     if (step.type === "assessment") openAssessment(step.stepId);
+    else if (step.type === "role_play") navigate(`/role-play/${step.referenceId ?? step.stepId}`);
     else openModule(step.moduleId, step.skillTargetId);
   };
 
   const handlePreview = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (step.type === "assessment") openAssessmentPreview(step.stepId);
+    else if (step.type === "role_play") navigate(`/role-play/${step.referenceId ?? step.stepId}?preview=1`);
     else openModulePreview(step.moduleId, step.skillTargetId);
   };
 

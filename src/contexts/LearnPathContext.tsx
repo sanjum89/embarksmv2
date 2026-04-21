@@ -102,7 +102,7 @@ const EmbarkContext = createContext<EmbarkContextType>({
   contentView: "welcome",
   activeModuleId: null,
   activeSkillTargetId: null,
-  learningMode: "combined",
+  learningMode: "reading",
   assessmentModuleId: null,
   lastCompletedModule: null,
   previewMode: false,

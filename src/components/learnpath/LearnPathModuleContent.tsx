@@ -779,6 +779,34 @@ function CompletionScreen({
         </div>
       )}
 
+      {completionStats && completionStats.modesUsed.length > 0 && (
+        <div className="w-full mb-6 rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center justify-center gap-1.5 mb-3">
+            <Layers className="h-4 w-4 text-primary" />
+            <span className="text-xs text-muted-foreground">Learning Modes Used</span>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {completionStats.modesUsed.map((m) => {
+              const banner = modeBanners[m];
+              if (!banner) return null;
+              const Icon = banner.icon;
+              return (
+                <span
+                  key={m}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border",
+                    banner.className
+                  )}
+                >
+                  <Icon className="h-3 w-3" />
+                  {banner.label.replace(" Mode", "")}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {hasNext ? (
         <div className="w-full space-y-3">
           <div className="rounded-xl border border-border bg-card p-4 text-left">

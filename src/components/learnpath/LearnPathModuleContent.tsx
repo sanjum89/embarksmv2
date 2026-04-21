@@ -67,6 +67,12 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   const [isRevisit] = useState(initialCompleted);
   const [showAllBullets, setShowAllBullets] = useState(false);
   const startTimeRef = useRef(Date.now());
+  const usedModesRef = useRef<Set<LearningMode>>(new Set([learningMode]));
+
+  // Track distinct modes used during this session
+  useEffect(() => {
+    usedModesRef.current.add(learningMode);
+  }, [learningMode]);
 
   // Notify parent of completion state changes
   useEffect(() => {
@@ -622,8 +628,8 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
     }
     const streakText = streak > 0 ? `${streak} in a row` : "—";
 
-    return { timeSpent, assessmentScore, progressText, streakText };
-  }, [completed, skillTargetId, skillTargets, stepId]);
+    return { timeSpent, assessmentScore, progressText, streakText, modesUsed: Array.from(usedModesRef.current) };
+  }, [completed, skillTargetId, skillTargets, stepId, learningMode]);
 
   if (showSummary && !previewMode) {
     const handleContinue = () => {
@@ -683,7 +689,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
 
 interface CompletionScreenProps {
   moduleTitle: string;
-  completionStats: { timeSpent: string; assessmentScore: string; progressText: string; streakText: string } | null;
+  completionStats: { timeSpent: string; assessmentScore: string; progressText: string; streakText: string; modesUsed: LearningMode[] } | null;
   nextModuleId?: string;
   nextModuleTitle?: string;
   nextSkillTargetId?: string;
@@ -769,6 +775,34 @@ function CompletionScreen({
             <Flame className="h-5 w-5 text-primary" />
             <span className="text-xs text-muted-foreground">Streak</span>
             <span className="text-lg font-bold text-foreground">{completionStats.streakText}</span>
+          </div>
+        </div>
+      )}
+
+      {completionStats && completionStats.modesUsed.length > 0 && (
+        <div className="w-full mb-6 rounded-xl border border-border bg-card p-4">
+          <div className="flex items-center justify-center gap-1.5 mb-3">
+            <Layers className="h-4 w-4 text-primary" />
+            <span className="text-xs text-muted-foreground">Learning Modes Used</span>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {completionStats.modesUsed.map((m) => {
+              const banner = modeBanners[m];
+              if (!banner) return null;
+              const Icon = banner.icon;
+              return (
+                <span
+                  key={m}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border",
+                    banner.className
+                  )}
+                >
+                  <Icon className="h-3 w-3" />
+                  {banner.label.replace(" Mode", "")}
+                </span>
+              );
+            })}
           </div>
         </div>
       )}

@@ -66,24 +66,43 @@ interface EmbarkContextType extends EmbarkState {
 const ENGAGEMENT_MODE_KEY = "embark-ai-engagement-mode";
 const ENGAGEMENT_TIMINGS_KEY = "embark-ai-engagement-timings";
 const PENDING_LEARNING_MODE_KEY = "embark-ai-pending-learning-mode";
+const LEARNING_MODE_KEY = "embark-ai-learning-mode";
 
-function loadPendingLearningMode(): LearningMode {
-  if (typeof window === "undefined") return "combined";
+function isValidLearningMode(v: unknown): v is LearningMode {
+  return v === "visual" || v === "reading" || v === "listening" || v === "hands-on" || v === "combined";
+}
+
+function loadPendingLearningMode(): LearningMode | null {
+  if (typeof window === "undefined") return null;
   try {
     const v = window.localStorage.getItem(PENDING_LEARNING_MODE_KEY);
-    if (v === "visual" || v === "reading" || v === "listening" || v === "hands-on" || v === "combined") {
+    if (isValidLearningMode(v)) {
       window.localStorage.removeItem(PENDING_LEARNING_MODE_KEY);
       return v;
     }
   } catch {}
-  return "combined";
+  return null;
+}
+
+function loadPersistedLearningMode(): LearningMode | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const v = window.localStorage.getItem(LEARNING_MODE_KEY);
+    if (isValidLearningMode(v)) return v;
+  } catch {}
+  return null;
+}
+
+function resolveInitialLearningMode(): LearningMode {
+  // Priority: pending (psychometric/manual) > persisted last-used > default "reading"
+  return loadPendingLearningMode() ?? loadPersistedLearningMode() ?? "reading";
 }
 
 const EmbarkContext = createContext<EmbarkContextType>({
   contentView: "welcome",
   activeModuleId: null,
   activeSkillTargetId: null,
-  learningMode: "combined",
+  learningMode: "reading",
   assessmentModuleId: null,
   lastCompletedModule: null,
   previewMode: false,
@@ -139,7 +158,7 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
     contentView: "welcome",
     activeModuleId: null,
     activeSkillTargetId: null,
-    learningMode: loadPendingLearningMode(),
+    learningMode: resolveInitialLearningMode(),
     assessmentModuleId: null,
     lastCompletedModule: null,
     previewMode: false,
@@ -167,6 +186,13 @@ export function EmbarkProvider({ children }: { children: ReactNode }) {
       }
     } catch {}
   }, [engagementTimings]);
+
+  // Persist user-selected learning mode so it carries across modules and reloads
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(LEARNING_MODE_KEY, state.learningMode);
+    } catch {}
+  }, [state.learningMode]);
 
   const snapshot = (s: EmbarkState): ViewSnapshot => ({
     contentView: s.contentView,

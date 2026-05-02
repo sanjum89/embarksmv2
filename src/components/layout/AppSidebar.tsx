@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
-import { Loader2, LogOut, LogIn, Paintbrush, GitGraph, Code } from "lucide-react";
+import { Loader2, LogOut, LogIn, Paintbrush, GitGraph, Code, Type } from "lucide-react";
+import { AccessibilityPanel } from "@/components/layout/AccessibilityPanel";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -397,6 +398,23 @@ export function AppSidebar() {
               </PopoverContent>
             </Popover>
 
+            {/* Accessibility */}
+            <AccessibilityPanel
+              expanded={expanded}
+              trigger={
+                expanded ? (
+                  <button className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors text-sm font-medium">
+                    <Type className="h-4 w-4 shrink-0" />
+                    <span>Accessibility</span>
+                  </button>
+                ) : (
+                  <button className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors">
+                    <Type className="h-4 w-4" />
+                  </button>
+                )
+              }
+            />
+
             {/* Branding */}
             <BrandingPanel
               trigger={
@@ -755,6 +773,24 @@ export function AppSidebar() {
             </button>
           </PopoverContent>
         </Popover>
+      </div>
+
+      {/* Accessibility */}
+      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
+        <AccessibilityPanel
+          expanded={expanded}
+          trigger={
+            <button
+              className={cn(
+                "flex items-center rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                expanded ? "h-9 gap-3 w-full px-3" : "h-10 w-10 justify-center"
+              )}
+            >
+              <Type className="h-4 w-4 shrink-0" />
+              {expanded && <span className="text-sm font-medium">Accessibility</span>}
+            </button>
+          }
+        />
       </div>
 
       {/* Branding */}

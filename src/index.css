@@ -238,6 +238,11 @@
 }
 
 @layer base {
+  /* Larger, more readable default. Overridden inline by AccessibilityContext. */
+  html {
+    font-size: 19px;
+  }
+
   * {
     @apply border-border;
   }
@@ -245,11 +250,40 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'DM Sans', system-ui, sans-serif;
+    line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Space Grotesk', system-ui, sans-serif;
     @apply tracking-tight;
+  }
+
+  /* ===== Accessibility helpers (toggled by AccessibilityContext) ===== */
+  .a11y-relaxed body,
+  .a11y-relaxed p,
+  .a11y-relaxed li {
+    line-height: 1.85;
+  }
+  .a11y-relaxed h1,
+  .a11y-relaxed h2,
+  .a11y-relaxed h3,
+  .a11y-relaxed h4,
+  .a11y-relaxed h5,
+  .a11y-relaxed h6 {
+    line-height: 1.4;
+  }
+
+  .a11y-wide body {
+    letter-spacing: 0.02em;
+  }
+
+  .a11y-dyslexic body {
+    font-family: 'Atkinson Hyperlegible', 'DM Sans', system-ui, sans-serif;
+  }
+
+  .a11y-underline a {
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 }
 

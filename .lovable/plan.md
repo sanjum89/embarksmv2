@@ -1,52 +1,53 @@
+## Plan: Global accessibility settings + larger, more readable type
 
-
-## Plan: Default to reading mode, persist user-selected mode, track mode in completion summary
-
-Three small, focused changes to learning-mode handling.
+The app currently uses Tailwind defaults (16px base on `body`, plenty of `text-sm`/`text-xs` everywhere). We'll do two things: (1) raise the global readable baseline a notch, and (2) add a real Accessibility panel users can tune themselves, persisted across sessions.
 
 ---
 
-### 1. Default learning mode is now **Reading**
+### 1. New `AccessibilityContext`
 
-Today `LearnPathContext.tsx` defaults `learningMode` to `"combined"` (line 71 fallback in `loadPendingLearningMode`, plus the default value across the context). Change the **fallback default to `"reading"`** so any module opened without a prior selection lands in Reading mode.
+Create `src/contexts/AccessibilityContext.tsx` exposing:
+- `fontScale`: `"compact" | "default" | "large" | "xlarge"` → maps to root font-size `15px / 17px / 19px / 21px` (Tailwind `rem` units scale automatically — every `text-sm`, `text-base`, spacing, etc. grows proportionally).
+- `lineSpacing`: `"normal" | "relaxed"` → toggles a `.a11y-relaxed` class that bumps `line-height` on `body, p, li, h1-h6` via index.css.
+- `letterSpacing`: `"normal" | "wide"` → `.a11y-wide` adds `letter-spacing: 0.02em` on body text.
+- `dyslexiaFriendly`: boolean → `.a11y-dyslexic` class swaps body font to `Atkinson Hyperlegible` (Google Font) with fallback to current DM Sans; headings stay Space Grotesk.
+- `underlineLinks`: boolean → `.a11y-underline a { text-decoration: underline; }`.
 
-This preserves the existing override flow:
-- **First-Login Tour / Manage Profile psychometric or manual selection** writes to `localStorage["embark-ai-pending-learning-mode"]` (already wired in `FirstLoginTour.tsx` line 432). On next mount, `loadPendingLearningMode()` consumes it and seeds context with that mode. ✅ Unchanged.
-- If no pending mode is present **and** no persisted user choice exists → context seeds to `"reading"` (was `"combined"`).
+All values persist to `localStorage` under `a11y-settings`. Defaults: `fontScale="large"` (≈19px) so the app is more readable out of the box, others off.
 
-### 2. Persist the user's last-chosen mode across modules
+Provider wraps everything inside `ThemeProvider` in `App.tsx` and applies the relevant classes to `document.documentElement` via `useEffect` (same pattern `ThemeContext` already uses for `dark` / `traditional` / `super-light`).
 
-Today every selection in `EmbarkModeSelector` (and the chat `set_mode` action) updates context state but is **not persisted**. So opening a new module re-reads the initial default and the user's prior choice is lost mid-session and after refresh.
+### 2. Baseline readability bumps in `src/index.css`
 
-**Fix in `src/contexts/LearnPathContext.tsx`:**
-- Add a new key `LEARNING_MODE_KEY = "embark-ai-learning-mode"`.
-- Add `loadPersistedLearningMode()` that reads this key and validates it.
-- Update initial-state seeding precedence:
-  1. **Pending mode** (from psychometric/manual selection on Manage Profile) — consumed and cleared. *Highest priority.*
-  2. **Persisted last-used mode** (from this new key).
-  3. **Default `"reading"`**.
-- Add a `useEffect` that writes `learningMode` to `localStorage[LEARNING_MODE_KEY]` whenever it changes (mirroring how `engagementMode` is persisted on lines 124–128). This ensures every subsequent module — including after a page refresh — opens in the user's last-used mode.
+- Add `html { font-size: 17px; }` as the new default (was browser default 16px). The accessibility context overrides this when the user picks a different scale.
+- Add the `.a11y-relaxed`, `.a11y-wide`, `.a11y-dyslexic`, `.a11y-underline` rules described above.
+- Import Atkinson Hyperlegible from Google Fonts (only loaded when dyslexia mode toggled on — use a `<link>` injected by the context to avoid blocking initial paint).
+- Slightly raise default body `line-height` from Tailwind's default (1.5) to `1.6` for prose readability.
 
-No change to `setLearningMode` callers; persistence is automatic.
+### 3. Accessibility panel UI
 
-### 3. Track learning modes used in the Completion Summary
+Add to the Settings/Theme popover that already lives in `src/components/layout/AppSidebar.tsx` (around lines 370–420 where `Palette` / `Paintbrush` controls are). Add a new section "Accessibility" with:
+- Segmented control for **Text size** (Compact / Default / Large / X-Large) with a live "Aa" preview.
+- Toggle for **Comfortable line spacing**.
+- Toggle for **Wider letter spacing**.
+- Toggle for **Dyslexia-friendly font**.
+- Toggle for **Always underline links**.
+- "Reset to defaults" link button.
 
-Today `CompletionScreen` (lines 736–823) shows four stat tiles: Time Spent, Assessment, Progress, Streak. Add a 5th fact: **Modes Used** — the distinct learning modes the user spent time in for *this* module session.
+Use existing `Switch`, `Button`, and a small custom segmented group built from `button` + `cn` (matches the styleTheme picker already in the popover). New icon: `Type` from lucide-react for the section header.
 
-**Fix in `src/components/learnpath/LearnPathModuleContent.tsx`:**
-- Track mode usage during the chapter:
-  - Add `const usedModesRef = useRef<Set<LearningMode>>(new Set([learningMode]));`
-  - Add a `useEffect` watching `learningMode` that inserts the current mode into the set on every change.
-- Build `modesUsed: LearningMode[]` from `usedModesRef.current` inside the `completionStats` `useMemo` (add `learningMode` to the deps so the memo recomputes when needed). Include it on the returned object.
-- Render in `CompletionScreen`:
-  - Change the stats grid from `grid-cols-2` to keep Time/Assessment/Progress/Streak as-is, then add a **full-width tile below** titled "Learning Modes Used" listing each mode as a small pill (re-use the `Eye / BookOpen / Headphones / Wrench / Layers` icons + labels from `modeBanners` already defined at the top of the file). Example: a single row of pills like `📖 Reading · 🎧 Listening`.
-  - On revisit (`isRevisit`), show "Reading" (or whatever was active on open) as a single pill — don't fabricate a history.
-- Pass `modesUsed` through `CompletionScreenProps` and render only when the array has ≥1 entry.
+Also expose a quick keyboard shortcut hint: `Ctrl/Cmd +` and `Ctrl/Cmd −` cycle through the four font scales (registered via `useEffect` global listener in the provider). Skip this if user is typing in an input.
 
-### Files touched
+### 4. Files touched
 
-- `src/contexts/LearnPathContext.tsx` — change default fallback to `"reading"`; add persisted-mode load + write effect; preserve pending-mode precedence.
-- `src/components/learnpath/LearnPathModuleContent.tsx` — track distinct modes used per session via ref; surface in `completionStats`; render new "Learning Modes Used" row in `CompletionScreen`.
+- `src/contexts/AccessibilityContext.tsx` *(new)* — context, persistence, root-class application, keyboard shortcuts.
+- `src/App.tsx` — wrap tree with `<AccessibilityProvider>` directly inside `ThemeProvider`.
+- `src/index.css` — `html { font-size: 17px }`, body line-height bump, `.a11y-*` utility rules, optional Atkinson font import rule.
+- `src/components/layout/AppSidebar.tsx` — add Accessibility section to the existing theme popover, wire it to the new context.
 
-No changes to `FirstLoginTour.tsx`, `LearnPathModeSelector.tsx`, schema, or edge functions.
+No schema, edge function, or data changes. No memory updates needed (this is additive UX).
 
+### Tradeoffs / notes
+
+- Bumping `html` to 17px will visually enlarge essentially every component by ~6%. Layouts built with Tailwind already use `rem` so they'll reflow gracefully; a few hardcoded `px` values in custom components (e.g., `py-[18px]` headers per the visual-alignment rule in memory) stay fixed and remain aligned.
+- We default `fontScale` to `"large"` (19px). Users who prefer the previous density can pick "Compact" (15px) and it persists.

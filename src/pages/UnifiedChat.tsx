@@ -297,7 +297,7 @@ function UnifiedChatInner() {
                 <motion.h1
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="font-display text-[1.6rem] font-bold text-foreground mb-6"
+                  className="font-display text-[1.6rem] font-bold text-foreground mb-6 leading-tight break-words"
                 >
                   Hi {firstName}, let's grow together
                 </motion.h1>
@@ -330,13 +330,13 @@ function UnifiedChatInner() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.05 + i * 0.04 }}
                       onClick={() => handleCardSend(card.prompt)}
-                      className="flex flex-col rounded-xl border border-border bg-card p-3 text-left hover:shadow-md hover:border-primary/30 transition-all group"
+                      className="flex flex-col rounded-xl border border-border bg-card p-3 text-left hover:shadow-md hover:border-primary/30 transition-all group min-w-0"
                     >
                       <div className="bg-primary/5 rounded-lg p-2 mb-3">
                         <CardIllustration type={card.illustration} />
                       </div>
-                      <span className="text-[0.8rem] font-medium text-foreground leading-snug mb-1">{card.label}</span>
-                      <span className="text-[0.7rem] text-muted-foreground leading-snug line-clamp-2">{card.description}</span>
+                      <span className="text-[0.8rem] font-medium text-foreground leading-snug mb-1 break-words">{card.label}</span>
+                      <span className="text-[0.7rem] text-muted-foreground leading-snug line-clamp-3 break-words">{card.description}</span>
                     </motion.button>
                   ))}
                 </div>

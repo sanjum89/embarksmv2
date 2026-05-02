@@ -330,31 +330,31 @@ export default function RolePlayBank() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ delay: i * 0.06, duration: 0.35 }}
-                  className="group relative rounded-xl bg-card border border-border p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300"
+                  className="group relative rounded-xl bg-card border border-border p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300 min-w-0"
                 >
                   <Link
                     to={`/role-play-bank/${rp.id}`}
-                    className="block"
+                    className="block min-w-0"
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10">
+                    <div className="flex items-start justify-between gap-2 mb-3 flex-wrap">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10 shrink-0">
                         <MessageSquare className="h-4.5 w-4.5 text-accent" />
                       </div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap justify-end">
                         {activeTab === "all" && rp.assignedTo?.includes(user.id) && (
-                          <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary">
+                          <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary whitespace-nowrap">
                             Assigned to you
                           </span>
                         )}
-                        <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium capitalize", difficultyColors[rp.difficulty])}>
+                        <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium capitalize whitespace-nowrap", difficultyColors[rp.difficulty])}>
                           {rp.difficulty}
                         </span>
                       </div>
                     </div>
-                    <h4 className="font-display text-sm font-semibold text-foreground mb-1.5 group-hover:text-accent transition-colors">
+                    <h4 className="font-display text-sm font-semibold text-foreground mb-1.5 group-hover:text-accent transition-colors break-words">
                       {rp.title}
                     </h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{rp.scenario}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-3 mb-3 break-words">{rp.scenario}</p>
                     <div className="flex items-center gap-2">
                       <Bot className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-xs text-muted-foreground truncate">

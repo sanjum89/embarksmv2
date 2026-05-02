@@ -7,6 +7,7 @@ import { AccountProvider } from "@/contexts/AccountContext";
 import { UserProvider } from "@/contexts/UserContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 import { SkillTargetsProvider } from "@/contexts/SkillTargetsContext";
 import { RolePlayProvider } from "@/contexts/RolePlayContext";
 import { AgentOneProvider } from "@/contexts/AgentOneContext";
@@ -43,6 +44,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
+    <AccessibilityProvider>
     <AccountProvider>
     <UserProvider>
       <SkillTargetsProvider>
@@ -91,6 +93,7 @@ const App = () => (
       </SkillTargetsProvider>
     </UserProvider>
     </AccountProvider>
+    </AccessibilityProvider>
     </ThemeProvider>
   </QueryClientProvider>
 );

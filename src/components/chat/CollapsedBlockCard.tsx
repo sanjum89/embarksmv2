@@ -18,7 +18,7 @@ export function CollapsedBlockCard({ block, onExpand }: { block: RichBlock; onEx
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       onClick={onExpand}
-      className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-1.5 text-[11px] font-medium text-foreground hover:bg-primary/10 hover:border-primary/40 transition-all my-1"
+      className="inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-1.5 text-[0.7rem] font-medium text-foreground hover:bg-primary/10 hover:border-primary/40 transition-all my-1"
     >
       <Icon className="h-3.5 w-3.5 text-primary" />
       {meta.label}

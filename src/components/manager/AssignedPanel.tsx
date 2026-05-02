@@ -63,7 +63,7 @@ export default function AssignedPanel() {
       <div className="mb-3">
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-semibold text-foreground">Assigned Learners</p>
-          <Badge variant="secondary" className="text-[10px]">{mockNewHires.length} assigned</Badge>
+          <Badge variant="secondary" className="text-[0.65rem]">{mockNewHires.length} assigned</Badge>
         </div>
       </div>
 
@@ -83,7 +83,7 @@ export default function AssignedPanel() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-foreground">{hire.user.name}</p>
-                  <Badge variant="outline" className="text-[9px] text-success border-success/30">Assigned</Badge>
+                  <Badge variant="outline" className="text-[0.6rem] text-success border-success/30">Assigned</Badge>
                 </div>
                 <p className="text-xs text-muted-foreground">{hire.title}</p>
               </div>
@@ -114,7 +114,7 @@ export default function AssignedPanel() {
               {hire.skills.map((skill) => (
                 <span
                   key={skill.name}
-                  className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium", levelColors[skill.level] || "bg-secondary text-foreground")}
+                  className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[0.65rem] font-medium", levelColors[skill.level] || "bg-secondary text-foreground")}
                 >
                   {skill.name} · {skill.level}
                 </span>
@@ -124,7 +124,7 @@ export default function AssignedPanel() {
             {/* Training status */}
             <div className="mt-3 pt-3 border-t border-border flex items-center gap-2">
               <Target className="h-3 w-3 text-accent" />
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[0.65rem] text-muted-foreground">
                 {steps.length} chapters · Pass threshold {program.assessmentPassPercentage}% · Adaptive skipping enabled
               </span>
             </div>

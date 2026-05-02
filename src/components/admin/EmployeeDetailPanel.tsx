@@ -28,7 +28,7 @@ function SignalBar({ label, value, max, color, suffix }: { label: string; value:
       <div className="flex-1 h-2 rounded-full bg-muted relative">
         <div className={cn("h-full rounded-full transition-all", color)} style={{ width: `${pct}%` }} />
         {pct < 90 && (
-          <span className="absolute text-[10px] text-muted-foreground font-medium" style={{ left: `${pct + 2}%`, top: "-2px" }}>
+          <span className="absolute text-[0.65rem] text-muted-foreground font-medium" style={{ left: `${pct + 2}%`, top: "-2px" }}>
             {typeof value === "number" && value % 1 !== 0 ? value.toFixed(1) : value}
           </span>
         )}
@@ -148,7 +148,7 @@ export default function EmployeeDetailPanel({ row, account, onClose }: Props) {
           <div className="flex items-center gap-3">
             <div className="text-right">
               <p className="text-2xl font-bold tabular-nums text-foreground">{signalScore}</p>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Signal Score</p>
+              <p className="text-[0.65rem] text-muted-foreground uppercase tracking-wider">Signal Score</p>
             </div>
             <button onClick={onClose} className="p-1 rounded-md hover:bg-muted transition-colors">
               <X className="h-4 w-4 text-muted-foreground" />
@@ -165,7 +165,7 @@ export default function EmployeeDetailPanel({ row, account, onClose }: Props) {
                 <span className="text-sm font-medium text-foreground">Needs Attention</span>
               </div>
               {alerts.length > 0 && (
-                <span className="text-[10px] font-medium uppercase tracking-wider text-warning bg-warning/10 px-2 py-0.5 rounded-full border border-warning/20">
+                <span className="text-[0.65rem] font-medium uppercase tracking-wider text-warning bg-warning/10 px-2 py-0.5 rounded-full border border-warning/20">
                   Action Required
                 </span>
               )}
@@ -181,7 +181,7 @@ export default function EmployeeDetailPanel({ row, account, onClose }: Props) {
         {/* Signal Breakdown */}
         <div className="mx-5 mb-4 rounded-lg bg-muted/30 border border-border p-4">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Signal Breakdown</h4>
+            <h4 className="text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground">Signal Breakdown</h4>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <span>{row.role}</span>
               <span className="font-semibold text-foreground tabular-nums">{Math.round((workQuality + processAdherence + compliance) / 3)}%</span>
@@ -217,7 +217,7 @@ export default function EmployeeDetailPanel({ row, account, onClose }: Props) {
         {/* Recent Activity */}
         {activities.length > 0 && (
           <div className="mx-5 mb-4 rounded-lg bg-muted/30 border border-border p-4">
-            <h4 className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-3">Recent Activity</h4>
+            <h4 className="text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground mb-3">Recent Activity</h4>
             <div className="space-y-2">
               {activities.map((act, i) => (
                 <div key={i} className="flex items-center gap-2.5">

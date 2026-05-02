@@ -47,7 +47,7 @@ export default function ProgramContextPanel() {
         <p className="text-sm text-foreground mb-2 font-medium">About</p>
         <p className="text-xs text-muted-foreground leading-relaxed">{program.description}</p>
         <div className="flex gap-3 mt-3">
-          <Badge variant="secondary" className="text-[10px]">{program.category}</Badge>
+          <Badge variant="secondary" className="text-[0.65rem]">{program.category}</Badge>
         </div>
       </div>
 
@@ -101,7 +101,7 @@ export default function ProgramContextPanel() {
               <span className={cn("text-xs flex-1", enabledSteps.has(step.id) ? "text-foreground" : "text-muted-foreground line-through")}>
                 {step.title}
               </span>
-              <Badge variant="outline" className="text-[9px] shrink-0">{step.type}</Badge>
+              <Badge variant="outline" className="text-[0.6rem] shrink-0">{step.type}</Badge>
             </label>
           ))}
         </div>
@@ -125,12 +125,12 @@ export default function ProgramContextPanel() {
         <div className="space-y-2">
           {newHires.filter((h) => program.assignedLearners.includes(h.user.id)).map((hire) => (
             <div key={hire.user.id} className="flex items-center gap-2.5">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground shrink-0">
                 {hire.user.name.split(" ").map((n) => n[0]).join("")}
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-foreground truncate">{hire.user.name}</p>
-                <p className="text-[10px] text-muted-foreground">{hire.location}</p>
+                <p className="text-[0.65rem] text-muted-foreground">{hire.location}</p>
               </div>
             </div>
           ))}

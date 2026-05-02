@@ -54,7 +54,7 @@ function LogoUploadSlot({
           <Button variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={uploading} className="h-7 text-xs">
             {uploading ? "Uploading…" : "Upload"}
           </Button>
-          <p className="text-[10px] text-muted-foreground mt-0.5">{hint}</p>
+          <p className="text-[0.65rem] text-muted-foreground mt-0.5">{hint}</p>
         </div>
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onUpload} />
       </div>
@@ -191,7 +191,7 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
                   <div className="h-6 w-6 rounded-l-md" style={{ backgroundColor: preset.swatch[0] }} />
                   <div className="h-6 w-6 rounded-r-md" style={{ backgroundColor: preset.swatch[1] }} />
                 </div>
-                <span className="text-[10px] font-medium text-muted-foreground leading-tight text-center">{preset.label}</span>
+                <span className="text-[0.65rem] font-medium text-muted-foreground leading-tight text-center">{preset.label}</span>
                 {currentPreset === key && <Check className="h-3 w-3 text-primary" />}
               </button>
             ))}

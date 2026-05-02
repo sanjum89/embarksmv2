@@ -96,7 +96,7 @@ export default function ReflectionReviewPanel({ accountId, employeeId, account }
               <StatusIcon status={ref.status} />
               <div>
                 <p className="text-xs font-medium text-foreground">{ref.topic || "Reflection"}</p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-[0.65rem] text-muted-foreground">
                   {ref.submitted_at ? new Date(ref.submitted_at).toLocaleDateString() : "Pending"} · {ref.trigger_type.replace(/_/g, " ")}
                 </p>
               </div>
@@ -108,14 +108,14 @@ export default function ReflectionReviewPanel({ accountId, employeeId, account }
             <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
               {ref.summary && (
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Summary</p>
+                  <p className="text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground mb-1">Summary</p>
                   <p className="text-xs text-foreground leading-relaxed">{ref.summary}</p>
                 </div>
               )}
 
               {ref.questions && ref.questions.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Q&A</p>
+                  <p className="text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground mb-1">Q&A</p>
                   <div className="space-y-2">
                     {ref.questions.map((qa: any, i: number) => (
                       <div key={i} className="text-xs">
@@ -129,10 +129,10 @@ export default function ReflectionReviewPanel({ accountId, employeeId, account }
 
               {ref.skills_extracted && ref.skills_extracted.length > 0 && (
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Skills Identified</p>
+                  <p className="text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground mb-1">Skills Identified</p>
                   <div className="flex flex-wrap gap-1">
                     {ref.skills_extracted.map((skill: any, i: number) => (
-                      <span key={i} className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      <span key={i} className="text-[0.65rem] bg-primary/10 text-primary px-2 py-0.5 rounded-full">
                         {typeof skill === "string" ? skill : skill.name || skill.skill}
                       </span>
                     ))}
@@ -142,7 +142,7 @@ export default function ReflectionReviewPanel({ accountId, employeeId, account }
 
               {ref.manager_feedback && (
                 <div>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1">Manager Feedback</p>
+                  <p className="text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground mb-1">Manager Feedback</p>
                   <p className="text-xs text-foreground">{ref.manager_feedback}</p>
                 </div>
               )}

@@ -71,12 +71,12 @@ export default function PeopleGraphPanel({ account }: Props) {
                   <th
                     key={key}
                     onClick={() => toggleSort(key)}
-                    className="text-left px-4 py-2.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground select-none"
+                    className="text-left px-4 py-2.5 text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground cursor-pointer hover:text-foreground select-none"
                   >
                     <span className="inline-flex items-center gap-1">{label}<SortIcon col={key} /></span>
                   </th>
                 ))}
-                <th className="text-left px-4 py-2.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Flags</th>
+                <th className="text-left px-4 py-2.5 text-[0.65rem] font-medium uppercase tracking-wider text-muted-foreground">Flags</th>
               </tr>
             </thead>
             <tbody>
@@ -99,7 +99,7 @@ export default function PeopleGraphPanel({ account }: Props) {
                       {row.flags?.length ? (
                         <div className="flex flex-wrap gap-1">
                           {row.flags.map((f, i) => (
-                            <span key={i} className="rounded-full bg-warning/10 text-warning text-[10px] font-medium px-2 py-0.5">
+                            <span key={i} className="rounded-full bg-warning/10 text-warning text-[0.65rem] font-medium px-2 py-0.5">
                               {f}
                             </span>
                           ))}

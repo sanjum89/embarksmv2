@@ -105,7 +105,7 @@ export default function LearningSkillsPanel({ account }: Props) {
               <div key={i} className="rounded-lg bg-card border border-border px-3 py-2">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-foreground">{gap.skill}</span>
-                  <span className="text-[10px] font-medium rounded-full px-2 py-0.5 bg-destructive/10 text-destructive">{gap.urgency}</span>
+                  <span className="text-[0.65rem] font-medium rounded-full px-2 py-0.5 bg-destructive/10 text-destructive">{gap.urgency}</span>
                 </div>
                 {gap.affected != null && <p className="text-xs text-muted-foreground mt-0.5">{gap.affected} employees affected</p>}
               </div>
@@ -144,7 +144,7 @@ export default function LearningSkillsPanel({ account }: Props) {
 function MetricCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div className="flex items-center gap-2 mb-1 text-muted-foreground">{icon}<span className="text-[10px] uppercase tracking-wider">{label}</span></div>
+      <div className="flex items-center gap-2 mb-1 text-muted-foreground">{icon}<span className="text-[0.65rem] uppercase tracking-wider">{label}</span></div>
       <p className="text-2xl font-bold text-foreground">{value}</p>
     </div>
   );

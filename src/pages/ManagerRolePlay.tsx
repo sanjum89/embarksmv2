@@ -243,25 +243,25 @@ export default function ManagerRolePlay() {
                     <div className="flex items-center gap-2 mb-1">
                       <Mic className="h-4 w-4 text-primary shrink-0" />
                       <h4 className="text-sm font-semibold text-foreground truncate">{rp.title}</h4>
-                      <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-medium capitalize shrink-0", difficultyColors[rp.difficulty])}>
+                      <span className={cn("rounded-full px-2 py-0.5 text-[0.65rem] font-medium capitalize shrink-0", difficultyColors[rp.difficulty])}>
                         {rp.difficulty}
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-1 ml-6">{rp.scenario}</p>
                     <div className="flex items-center gap-2 mt-1.5 ml-6">
                       <Bot className="h-3 w-3 text-muted-foreground shrink-0" />
-                      <span className="text-[10px] text-muted-foreground truncate">{rp.persona}</span>
+                      <span className="text-[0.65rem] text-muted-foreground truncate">{rp.persona}</span>
                     </div>
                     {rp.assignedTo.length > 0 && (
                       <div className="flex items-center gap-1.5 mt-2 ml-6">
-                        <span className="text-[10px] text-muted-foreground">Assigned to:</span>
+                        <span className="text-[0.65rem] text-muted-foreground">Assigned to:</span>
                         <div className="flex -space-x-1.5">
                           {rp.assignedTo.map((id) => {
                             const hire = mockNewHires.find((h) => h.user.id === id);
                             return hire ? (
                               <div
                                 key={id}
-                                className="h-5 w-5 rounded-full bg-primary text-[8px] font-bold text-primary-foreground flex items-center justify-center border-2 border-card"
+                                className="h-5 w-5 rounded-full bg-primary text-[0.55rem] font-bold text-primary-foreground flex items-center justify-center border-2 border-card"
                                 title={hire.user.name}
                               >
                                 {hire.user.name.split(" ").map((n) => n[0]).join("")}
@@ -269,7 +269,7 @@ export default function ManagerRolePlay() {
                             ) : null;
                           })}
                         </div>
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[0.65rem] text-muted-foreground">
                           ({rp.assignedTo.length})
                         </span>
                       </div>
@@ -315,7 +315,7 @@ export default function ManagerRolePlay() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium text-foreground">{hire.user.name}</p>
-                                  <p className="text-[10px] text-muted-foreground">{hire.title}</p>
+                                  <p className="text-[0.65rem] text-muted-foreground">{hire.title}</p>
                                 </div>
                                 {isAssigned && <Check className="h-4 w-4 text-primary shrink-0" />}
                               </button>

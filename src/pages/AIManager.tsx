@@ -299,7 +299,7 @@ export default function AIManager() {
                 </Button>
               </div>
             </div>
-            <p className="text-[10px] text-muted-foreground text-center mt-2">
+            <p className="text-[0.65rem] text-muted-foreground text-center mt-2">
               AI Manager — your personal onboarding guide
             </p>
           </div>

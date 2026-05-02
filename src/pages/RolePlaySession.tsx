@@ -396,7 +396,7 @@ export default function RolePlaySession() {
                   >
                     <MessageSquare className="h-6 w-6" />
                     <span className="text-xs font-medium">Chat Role Play</span>
-                    <span className="text-[10px] text-muted-foreground">Text-based conversation</span>
+                    <span className="text-[0.65rem] text-muted-foreground">Text-based conversation</span>
                   </button>
                   <button
                     onClick={() => setMode("voice")}
@@ -409,7 +409,7 @@ export default function RolePlaySession() {
                   >
                     <Phone className="h-6 w-6" />
                     <span className="text-xs font-medium">Voice Role Play</span>
-                    <span className="text-[10px] text-muted-foreground">Speak with AI persona</span>
+                    <span className="text-[0.65rem] text-muted-foreground">Speak with AI persona</span>
                   </button>
                 </div>
               </div>
@@ -489,7 +489,7 @@ export default function RolePlaySession() {
                           ? "bg-card/90 border border-border text-foreground"
                           : "bg-primary/90 text-primary-foreground"
                       )}>
-                        <span className="text-[10px] uppercase tracking-wider opacity-70 block mb-1">
+                        <span className="text-[0.65rem] uppercase tracking-wider opacity-70 block mb-1">
                           {activeSubtitle.role === "ai" ? "AI" : "You"}
                         </span>
                         <p className="whitespace-pre-line text-xs">{activeSubtitle.text}</p>
@@ -563,14 +563,14 @@ export default function RolePlaySession() {
                       {/* Sentiment row */}
                       <div className="grid grid-cols-2 gap-3">
                         <div className="rounded-xl border border-border bg-card p-4">
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Customer Sentiment</p>
+                          <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mb-2">Customer Sentiment</p>
                           <div className="flex items-center gap-2">
                             <CustIcon className={cn("h-5 w-5", custConf.color)} />
                             <span className={cn("text-sm font-medium", custConf.color)}>{custConf.label}</span>
                           </div>
                         </div>
                         <div className="rounded-xl border border-border bg-card p-4">
-                          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Your Performance</p>
+                          <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mb-2">Your Performance</p>
                           <div className="flex items-center gap-2">
                             <LearnIcon className={cn("h-5 w-5", learnConf.color)} />
                             <span className={cn("text-sm font-medium", learnConf.color)}>{learnConf.label}</span>

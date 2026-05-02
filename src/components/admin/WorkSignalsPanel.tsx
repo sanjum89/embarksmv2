@@ -39,12 +39,12 @@ export default function WorkSignalsPanel({ account }: Props) {
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-foreground">{m.value}{m.unit ? ` ${m.unit}` : ""}</span>
                     {m.trend && (
-                      <span className={`text-[10px] ${m.trend === "up" ? "text-success" : m.trend === "down" ? "text-destructive" : "text-muted-foreground"}`}>
+                      <span className={`text-[0.65rem] ${m.trend === "up" ? "text-success" : m.trend === "down" ? "text-destructive" : "text-muted-foreground"}`}>
                         {m.trend === "up" ? "↑" : m.trend === "down" ? "↓" : "→"}
                       </span>
                     )}
                     {m.benchmark != null && (
-                      <span className="text-[10px] text-muted-foreground">(bench: {m.benchmark})</span>
+                      <span className="text-[0.65rem] text-muted-foreground">(bench: {m.benchmark})</span>
                     )}
                   </div>
                 </div>
@@ -62,7 +62,7 @@ export default function WorkSignalsPanel({ account }: Props) {
                   }`} />
                   <div>
                     <p className="text-xs font-medium text-foreground">{f.label}</p>
-                    {f.description && <p className="text-[10px] text-muted-foreground">{f.description}</p>}
+                    {f.description && <p className="text-[0.65rem] text-muted-foreground">{f.description}</p>}
                   </div>
                 </div>
               ))}

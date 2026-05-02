@@ -31,7 +31,7 @@ function SkillsChart({ data, cta }: { data: any; cta?: RichBlock["cta"] }) {
       <div className="space-y-1.5">
         {skills.map((s: any) => (
           <div key={s.name} className="flex items-center gap-2">
-            <span className="text-[11px] text-muted-foreground w-[110px] truncate shrink-0">{s.name}</span>
+            <span className="text-[0.7rem] text-muted-foreground w-[110px] truncate shrink-0">{s.name}</span>
             <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
@@ -40,12 +40,12 @@ function SkillsChart({ data, cta }: { data: any; cta?: RichBlock["cta"] }) {
                 className={cn("h-full rounded-full", PROFICIENCY_COLORS[s.level] || "bg-primary")}
               />
             </div>
-            <span className="text-[10px] font-medium text-muted-foreground w-[70px] text-right shrink-0">{s.level}</span>
+            <span className="text-[0.65rem] font-medium text-muted-foreground w-[70px] text-right shrink-0">{s.level}</span>
           </div>
         ))}
       </div>
       {cta && (
-        <Link to={cta.path} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary hover:underline mt-1">
+        <Link to={cta.path} className="inline-flex items-center gap-1.5 text-[0.7rem] font-medium text-primary hover:underline mt-1">
           {cta.label} <ArrowRight className="h-3 w-3" />
         </Link>
       )}
@@ -66,13 +66,13 @@ function SkillTargetsTable({ data, cta }: { data: any; cta?: RichBlock["cta"] })
           const content = (
             <>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-medium text-foreground truncate">{t.title}</p>
-                <p className="text-[10px] text-muted-foreground">{t.completedSteps}/{t.totalSteps} steps</p>
+                <p className="text-xs font-medium text-foreground truncate">{t.title}</p>
+                <p className="text-[0.65rem] text-muted-foreground">{t.completedSteps}/{t.totalSteps} steps</p>
               </div>
               <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden shrink-0">
                 <div className="h-full bg-primary rounded-full" style={{ width: `${t.progress}%` }} />
               </div>
-              <span className="text-[11px] font-semibold text-foreground w-10 text-right">{Math.round(t.progress)}%</span>
+              <span className="text-[0.7rem] font-semibold text-foreground w-10 text-right">{Math.round(t.progress)}%</span>
             </>
           );
           return t.id ? (
@@ -87,7 +87,7 @@ function SkillTargetsTable({ data, cta }: { data: any; cta?: RichBlock["cta"] })
         })}
       </div>
       {cta && (
-        <Link to={cta.path} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary hover:underline mt-1">
+        <Link to={cta.path} className="inline-flex items-center gap-1.5 text-[0.7rem] font-medium text-primary hover:underline mt-1">
           {cta.label} <ArrowRight className="h-3 w-3" />
         </Link>
       )}
@@ -107,13 +107,13 @@ function InboxCards({ data, cta }: { data: any; cta?: RichBlock["cta"] }) {
       <div className="space-y-1.5">
         {notifications.map((n: any, i: number) => (
           <div key={i} className="bg-muted/50 rounded-lg px-3 py-2 border border-border/50">
-            <p className="text-[12px] font-medium text-foreground">{typeIcons[n.type] || "📩"} {n.title}</p>
-            <p className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
+            <p className="text-xs font-medium text-foreground">{typeIcons[n.type] || "📩"} {n.title}</p>
+            <p className="text-[0.65rem] text-muted-foreground mt-0.5 line-clamp-2">{n.message}</p>
           </div>
         ))}
       </div>
       {cta && (
-        <Link to={cta.path} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary hover:underline mt-1">
+        <Link to={cta.path} className="inline-flex items-center gap-1.5 text-[0.7rem] font-medium text-primary hover:underline mt-1">
           {cta.label} <ArrowRight className="h-3 w-3" />
         </Link>
       )}
@@ -132,13 +132,13 @@ function ProgressSummary({ data, cta }: { data: any; cta?: RichBlock["cta"] }) {
       <div className="grid grid-cols-2 gap-2">
         {metrics.map((m: any, i: number) => (
           <div key={i} className="bg-muted/50 rounded-lg px-3 py-2 text-center">
-            <p className="text-[16px] font-bold text-foreground">{m.value}</p>
-            <p className="text-[10px] text-muted-foreground">{m.label}</p>
+            <p className="text-base font-bold text-foreground">{m.value}</p>
+            <p className="text-[0.65rem] text-muted-foreground">{m.label}</p>
           </div>
         ))}
       </div>
       {cta && (
-        <Link to={cta.path} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary hover:underline mt-1">
+        <Link to={cta.path} className="inline-flex items-center gap-1.5 text-[0.7rem] font-medium text-primary hover:underline mt-1">
           {cta.label} <ArrowRight className="h-3 w-3" />
         </Link>
       )}

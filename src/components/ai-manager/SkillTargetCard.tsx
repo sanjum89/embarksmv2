@@ -52,7 +52,7 @@ export function SkillTargetCard() {
                 <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
               )}
               <span className="text-xs font-medium text-foreground flex-1">{item.title}</span>
-              <span className="text-[10px] text-muted-foreground capitalize">{item.status.replace("_", " ")}</span>
+              <span className="text-[0.65rem] text-muted-foreground capitalize">{item.status.replace("_", " ")}</span>
             </div>
           );
         })}
@@ -66,7 +66,7 @@ export function SkillTargetCard() {
             style={{ width: `${(completed / allItems.length) * 100}%` }}
           />
         </div>
-        <span className="text-[10px] font-medium text-muted-foreground">
+        <span className="text-[0.65rem] font-medium text-muted-foreground">
           {completed}/{allItems.length}
         </span>
       </div>

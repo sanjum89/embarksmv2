@@ -58,10 +58,10 @@ export default function ReflectionsPanel({ account }: Props) {
                 <span className="text-xs font-medium text-foreground">
                   {account.employeesById[entry.employeeId]?.name || entry.employeeId}
                 </span>
-                {entry.date && <span className="text-[10px] text-muted-foreground">{entry.date}</span>}
+                {entry.date && <span className="text-[0.65rem] text-muted-foreground">{entry.date}</span>}
               </div>
               {entry.content && <p className="text-xs text-muted-foreground">{entry.content}</p>}
-              <div className="flex items-center gap-3 mt-2 text-[10px] text-muted-foreground">
+              <div className="flex items-center gap-3 mt-2 text-[0.65rem] text-muted-foreground">
                 {entry.confidence != null && <span>Confidence: {entry.confidence}</span>}
                 {entry.workload != null && <span>Workload: {entry.workload}</span>}
                 {entry.sentiment && <span>Sentiment: {entry.sentiment}</span>}
@@ -69,7 +69,7 @@ export default function ReflectionsPanel({ account }: Props) {
               {entry.themes?.length ? (
                 <div className="flex flex-wrap gap-1 mt-1.5">
                   {entry.themes.map((t, i) => (
-                    <span key={i} className="rounded-full bg-primary/10 text-primary text-[10px] px-2 py-0.5">{t}</span>
+                    <span key={i} className="rounded-full bg-primary/10 text-primary text-[0.65rem] px-2 py-0.5">{t}</span>
                   ))}
                 </div>
               ) : null}
@@ -87,7 +87,7 @@ export default function ReflectionsPanel({ account }: Props) {
 function SummaryCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div className="flex items-center gap-2 mb-1 text-muted-foreground">{icon}<span className="text-[10px] uppercase tracking-wider">{label}</span></div>
+      <div className="flex items-center gap-2 mb-1 text-muted-foreground">{icon}<span className="text-[0.65rem] uppercase tracking-wider">{label}</span></div>
       <p className="text-2xl font-bold text-foreground">{value}</p>
     </div>
   );

@@ -67,7 +67,7 @@ export function ReflectionsAnalysis({ employeeId, employeeName }: Props) {
                     </div>
                     <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full ${sent.bg}`}>
                       <SentIcon className={`h-3 w-3 ${sent.color}`} />
-                      <span className={`text-[10px] font-medium ${sent.color}`}>{ref.sentiment}</span>
+                      <span className={`text-[0.65rem] font-medium ${sent.color}`}>{ref.sentiment}</span>
                     </div>
                   </div>
 
@@ -77,20 +77,20 @@ export function ReflectionsAnalysis({ employeeId, employeeName }: Props) {
                   {/* Themes */}
                   <div className="flex flex-wrap gap-1.5">
                     {ref.themes.map(t => (
-                      <Badge key={t} variant="secondary" className="text-[10px]">{t}</Badge>
+                      <Badge key={t} variant="secondary" className="text-[0.65rem]">{t}</Badge>
                     ))}
                   </div>
 
                   {/* Extracted Skills */}
                   {ref.extractedSkills.length > 0 && (
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Extracted Skills</p>
+                      <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mb-1.5">Extracted Skills</p>
                       <div className="flex flex-wrap gap-2">
                         {ref.extractedSkills.map((sk, j) => (
                           <div key={j} className="flex items-center gap-1.5 rounded-md bg-background/80 px-2 py-1">
                             <span className="text-xs text-foreground/80">{sk.skill}</span>
-                            <Badge variant="outline" className="text-[9px]">{sk.proficiency}</Badge>
-                            <span className="text-[9px] text-muted-foreground">({Math.round(sk.confidence * 100)}%)</span>
+                            <Badge variant="outline" className="text-[0.6rem]">{sk.proficiency}</Badge>
+                            <span className="text-[0.6rem] text-muted-foreground">({Math.round(sk.confidence * 100)}%)</span>
                           </div>
                         ))}
                       </div>
@@ -100,13 +100,13 @@ export function ReflectionsAnalysis({ employeeId, employeeName }: Props) {
                   {/* Concerns */}
                   {ref.concerns.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                      <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" /> Flagged Concerns
                       </p>
                       {ref.concerns.map((c, j) => (
                         <div key={j} className="flex items-center justify-between rounded-lg bg-background/60 p-3">
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={`text-[9px] ${severityColors[c.severity]}`}>
+                            <Badge variant="outline" className={`text-[0.6rem] ${severityColors[c.severity]}`}>
                               {c.severity}
                             </Badge>
                             <span className="text-xs text-foreground/80">{c.topic}</span>

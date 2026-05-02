@@ -148,7 +148,7 @@ export function FirstLoginTour({ open, onClose }: FirstLoginTourProps) {
       <div className="flex items-center gap-2">
         <span className="font-medium text-foreground">{skill.skill_name}</span>
         {inferred && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 border border-accent/20 px-2 py-0.5 text-[10px] font-medium text-accent">
+          <span className="inline-flex items-center gap-1 rounded-full bg-accent/10 border border-accent/20 px-2 py-0.5 text-[0.65rem] font-medium text-accent">
             <Sparkles className="h-3 w-3" /> Inferred
           </span>
         )}

@@ -289,27 +289,27 @@ export function EmbarkJourneyAccordion({ steps, activeChapterId }: Props) {
 function StatusPill({ status }: { status: ModuleGroup["status"] }) {
   if (status === "completed") {
     return (
-      <Badge className="h-5 px-1.5 text-[10px] bg-green-500/15 text-green-600 hover:bg-green-500/15 border-0">
+      <Badge className="h-5 px-1.5 text-[0.65rem] bg-green-500/15 text-green-600 hover:bg-green-500/15 border-0">
         COMPLETED
       </Badge>
     );
   }
   if (status === "in_progress") {
     return (
-      <Badge className="h-5 px-1.5 text-[10px] bg-accent text-accent-foreground hover:bg-accent border-0">
+      <Badge className="h-5 px-1.5 text-[0.65rem] bg-accent text-accent-foreground hover:bg-accent border-0">
         IN PROGRESS
       </Badge>
     );
   }
   if (status === "locked") {
     return (
-      <Badge variant="outline" className="h-5 px-1.5 text-[10px] gap-1">
+      <Badge variant="outline" className="h-5 px-1.5 text-[0.65rem] gap-1">
         <Lock className="h-2.5 w-2.5" /> LOCKED
       </Badge>
     );
   }
   return (
-    <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
+    <Badge variant="outline" className="h-5 px-1.5 text-[0.65rem]">
       UP NEXT
     </Badge>
   );

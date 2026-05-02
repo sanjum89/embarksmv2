@@ -51,12 +51,12 @@ export default function ExplainabilityPanel({ account }: Props) {
             {sources.map((src) => (
               <div key={src.id} className="rounded-lg bg-muted/50 px-3 py-2.5">
                 <p className="text-sm font-medium text-foreground">{src.name}</p>
-                {src.type && <p className="text-[10px] text-muted-foreground mt-0.5">{src.type}</p>}
+                {src.type && <p className="text-[0.65rem] text-muted-foreground mt-0.5">{src.type}</p>}
                 {src.description && <p className="text-xs text-muted-foreground mt-1">{src.description}</p>}
                 {src.signalTypes?.length ? (
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {src.signalTypes.map((st, i) => (
-                      <span key={i} className="rounded-full bg-primary/10 text-primary text-[10px] px-2 py-0.5">{st}</span>
+                      <span key={i} className="rounded-full bg-primary/10 text-primary text-[0.65rem] px-2 py-0.5">{st}</span>
                     ))}
                   </div>
                 ) : null}
@@ -100,7 +100,7 @@ export default function ExplainabilityPanel({ account }: Props) {
                     <div className="flex items-center gap-3">
                       <span className="text-sm font-medium text-foreground">{c.title}</span>
                       {c.riskLabel && (
-                        <span className="rounded-full bg-warning/10 text-warning text-[10px] font-medium px-2 py-0.5">
+                        <span className="rounded-full bg-warning/10 text-warning text-[0.65rem] font-medium px-2 py-0.5">
                           {c.riskLabel}
                         </span>
                       )}
@@ -117,7 +117,7 @@ export default function ExplainabilityPanel({ account }: Props) {
                       {/* Input signals */}
                       {c.inputSignals?.length ? (
                         <div>
-                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Input Signals</p>
+                          <p className="text-[0.65rem] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Input Signals</p>
                           <div className="space-y-1">
                             {c.inputSignals.map((sig: any, i: number) => (
                               <div key={i} className="rounded bg-muted/50 px-2.5 py-1.5 text-xs text-muted-foreground">
@@ -131,11 +131,11 @@ export default function ExplainabilityPanel({ account }: Props) {
                       {/* Reasoning chain */}
                       {c.reasoningChain?.length ? (
                         <div>
-                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Reasoning Chain</p>
+                          <p className="text-[0.65rem] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Reasoning Chain</p>
                           <div className="space-y-1.5">
                             {c.reasoningChain.map((step, i) => (
                               <div key={i} className="flex gap-3 items-start">
-                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary text-[10px] font-bold shrink-0 mt-0.5">
+                                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary text-[0.65rem] font-bold shrink-0 mt-0.5">
                                   {step.stepNumber || i + 1}
                                 </span>
                                 <div className="text-xs">
@@ -152,7 +152,7 @@ export default function ExplainabilityPanel({ account }: Props) {
                       {/* Synthesis */}
                       {c.synthesis && (
                         <div className="rounded-lg bg-accent/5 border border-accent/20 p-3">
-                          <p className="text-[10px] font-medium text-accent uppercase tracking-wider mb-1">Synthesis</p>
+                          <p className="text-[0.65rem] font-medium text-accent uppercase tracking-wider mb-1">Synthesis</p>
                           <p className="text-xs text-foreground">{c.synthesis}</p>
                         </div>
                       )}
@@ -160,7 +160,7 @@ export default function ExplainabilityPanel({ account }: Props) {
                       {/* Recommended actions */}
                       {c.recommendedActions?.length ? (
                         <div>
-                          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Recommended Actions</p>
+                          <p className="text-[0.65rem] font-medium text-muted-foreground uppercase tracking-wider mb-1.5">Recommended Actions</p>
                           <ul className="space-y-1 list-disc list-inside text-xs text-muted-foreground">
                             {c.recommendedActions.map((action, i) => (
                               <li key={i}>{action}</li>
@@ -203,7 +203,7 @@ export default function ExplainabilityPanel({ account }: Props) {
             <div key={ti} className="rounded-lg border border-border p-4 space-y-3 mb-3">
               {trace.inputSignals?.length ? (
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Input Signals</p>
+                  <p className="text-[0.65rem] font-medium text-muted-foreground uppercase tracking-wider mb-1">Input Signals</p>
                   <div className="space-y-1">
                     {trace.inputSignals.map((sig: any, i: number) => (
                       <div key={i} className="rounded bg-muted/50 px-2.5 py-1.5 text-xs text-muted-foreground">
@@ -216,11 +216,11 @@ export default function ExplainabilityPanel({ account }: Props) {
 
               {trace.reasoningSteps?.length ? (
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Reasoning Steps</p>
+                  <p className="text-[0.65rem] font-medium text-muted-foreground uppercase tracking-wider mb-1">Reasoning Steps</p>
                   <div className="space-y-1.5">
                     {trace.reasoningSteps.map((step, i) => (
                       <div key={i} className="flex gap-3 items-start">
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-info/10 text-info text-[10px] font-bold shrink-0 mt-0.5">
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-info/10 text-info text-[0.65rem] font-bold shrink-0 mt-0.5">
                           {step.stepNumber || i + 1}
                         </span>
                         <div className="text-xs">
@@ -236,7 +236,7 @@ export default function ExplainabilityPanel({ account }: Props) {
 
               {trace.synthesizedOutput && (
                 <div className="rounded-lg bg-info/5 border border-info/20 p-3">
-                  <p className="text-[10px] font-medium text-info uppercase tracking-wider mb-1">Synthesized Output</p>
+                  <p className="text-[0.65rem] font-medium text-info uppercase tracking-wider mb-1">Synthesized Output</p>
                   <p className="text-xs text-foreground">{trace.synthesizedOutput}</p>
                 </div>
               )}
@@ -247,7 +247,7 @@ export default function ExplainabilityPanel({ account }: Props) {
 
               {trace.recommendedCTAs?.length ? (
                 <div>
-                  <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Recommended CTAs</p>
+                  <p className="text-[0.65rem] font-medium text-muted-foreground uppercase tracking-wider mb-1">Recommended CTAs</p>
                   <ul className="list-disc list-inside text-xs text-muted-foreground">
                     {trace.recommendedCTAs.map((cta, i) => <li key={i}>{cta}</li>)}
                   </ul>

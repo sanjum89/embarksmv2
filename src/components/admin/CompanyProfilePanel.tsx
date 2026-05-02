@@ -103,7 +103,7 @@ export default function CompanyProfilePanel({ account }: Props) {
 function MetaItem({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-muted/50 px-3 py-2">
-      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+      <p className="text-[0.65rem] font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
       <p className="text-sm font-medium text-foreground mt-0.5">{value}</p>
     </div>
   );

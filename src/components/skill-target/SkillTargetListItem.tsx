@@ -49,19 +49,19 @@ export function SkillTargetListItem({ target, index }: SkillTargetListItemProps)
           <div className="flex-1 min-w-0">
             <h4 className={cn(
               "font-display font-semibold text-foreground group-hover:text-primary transition-colors",
-              isTraditional ? "text-[15px] mb-1" : "text-base mb-1.5"
+              isTraditional ? "text-[0.9rem] mb-1" : "text-base mb-1.5"
             )}>
               {substitute(target.title)}
             </h4>
             <p className={cn(
               "line-clamp-1 mb-2",
-              isTraditional ? "text-[13px] text-muted-foreground/70" : "text-sm text-muted-foreground"
+              isTraditional ? "text-[0.8rem] text-muted-foreground/70" : "text-sm text-muted-foreground"
             )}>
               {substitute(target.description)}
             </p>
             <div className={cn(
               "flex items-center gap-1.5",
-              isTraditional ? "text-[12px] text-muted-foreground/60" : "text-xs text-muted-foreground"
+              isTraditional ? "text-xs text-muted-foreground/60" : "text-xs text-muted-foreground"
             )}>
               <span>{isTraditional ? "1 day ago" : timeAgo}</span>
               <span>•</span>

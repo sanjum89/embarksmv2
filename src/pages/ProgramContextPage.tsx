@@ -145,7 +145,7 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
                   </div>
                   <div>
                     <p className="font-display text-sm font-semibold text-foreground">{cohort.name}</p>
-                    <Badge variant="outline" className={cn("text-[10px] mt-1", statusColor(cohort.status))}>{cohort.status}</Badge>
+                    <Badge variant="outline" className={cn("text-[0.65rem] mt-1", statusColor(cohort.status))}>{cohort.status}</Badge>
                   </div>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0 mt-1" />
@@ -155,7 +155,7 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
 
               {/* Progress */}
               <div className="mb-3">
-                <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                <div className="flex justify-between text-[0.65rem] text-muted-foreground mb-1">
                   <span>Overall Progress</span><span className="font-semibold text-foreground">{avgProgress}%</span>
                 </div>
                 <Progress value={avgProgress} className="h-1.5" />
@@ -163,14 +163,14 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
 
               {/* Meta row */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-3 text-[0.65rem] text-muted-foreground">
                   <span className="flex items-center gap-1"><Users className="h-3 w-3" />{cohort.assignedLearnerIds.length}</span>
                   <span className="flex items-center gap-1"><Target className="h-3 w-3" />{cohort.skillTargetIds.length} targets</span>
                   <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{cohort.startDate}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {risingStar > 0 && <span className="flex items-center gap-0.5 text-[10px] text-amber-600"><Star className="h-3 w-3" />{risingStar}</span>}
-                  {atRisk > 0 && <span className="flex items-center gap-0.5 text-[10px] text-destructive"><AlertTriangle className="h-3 w-3" />{atRisk}</span>}
+                  {risingStar > 0 && <span className="flex items-center gap-0.5 text-[0.65rem] text-amber-600"><Star className="h-3 w-3" />{risingStar}</span>}
+                  {atRisk > 0 && <span className="flex items-center gap-0.5 text-[0.65rem] text-destructive"><AlertTriangle className="h-3 w-3" />{atRisk}</span>}
                 </div>
               </div>
 
@@ -181,13 +181,13 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
                     const hire = learnerMap.get(lid);
                     const initials = hire ? hire.user.name.split(" ").map(n => n[0]).join("") : "?";
                     return (
-                      <div key={lid} className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground border-2 border-card">
+                      <div key={lid} className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[0.6rem] font-bold text-primary-foreground border-2 border-card">
                         {initials}
                       </div>
                     );
                   })}
                   {cohort.assignedLearnerIds.length > 5 && (
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-[9px] font-medium text-muted-foreground border-2 border-card">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-[0.6rem] font-medium text-muted-foreground border-2 border-card">
                       +{cohort.assignedLearnerIds.length - 5}
                     </div>
                   )}
@@ -281,7 +281,7 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
                 i + 1 < step ? "bg-primary/10 text-primary cursor-pointer" :
                 "bg-muted text-muted-foreground"
               )}>
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-background/20 text-[10px] font-bold shrink-0">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-background/20 text-[0.65rem] font-bold shrink-0">
                 {i + 1 < step ? <Check className="h-3 w-3" /> : i + 1}
               </span>
               <span className="hidden sm:inline">{s}</span>
@@ -315,14 +315,14 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
               {newHires.filter((h) => h?.user?.name?.toLowerCase().includes(searchLearner.toLowerCase())).map((hire) => (
                 <label key={hire.user.id} className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-secondary/50 transition-colors cursor-pointer">
                   <Checkbox checked={selectedLearners.has(hire.user.id)} onCheckedChange={() => toggleLearner(hire.user.id)} />
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground shrink-0">
                     {hire.user.name.split(" ").map(n => n[0]).join("")}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">{hire.user.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{hire.title} · {hire.location}</p>
+                    <p className="text-[0.65rem] text-muted-foreground">{hire.title} · {hire.location}</p>
                   </div>
-                  <Badge variant="outline" className="text-[10px] shrink-0">{hire.yearsExperience} yrs exp</Badge>
+                  <Badge variant="outline" className="text-[0.65rem] shrink-0">{hire.yearsExperience} yrs exp</Badge>
                 </label>
               ))}
             </div>
@@ -346,8 +346,8 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
                     <p className="text-sm font-medium text-foreground">{st.title}</p>
                     {selectedTargets.has(st.id) && <Check className="h-4 w-4 text-primary shrink-0" />}
                   </div>
-                  <p className="text-[10px] text-muted-foreground mt-1">{st.category}</p>
-                  <div className="flex gap-3 mt-2 text-[10px] text-muted-foreground">
+                  <p className="text-[0.65rem] text-muted-foreground mt-1">{st.category}</p>
+                  <div className="flex gap-3 mt-2 text-[0.65rem] text-muted-foreground">
                     <span>{st.steps?.length ?? 0} steps</span>
                     <span>{st.steps?.reduce((a, s) => a + (parseInt(s.duration || "0") || 0), 0) ?? 0} min est.</span>
                   </div>
@@ -363,21 +363,21 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
             <div>
               <div className="flex items-center justify-between mb-2"><Label>Pass Percentage</Label><span className="text-sm font-bold text-foreground">{passPercent}%</span></div>
               <Slider value={[passPercent]} onValueChange={([v]) => setPassPercent(v)} min={50} max={100} step={5} />
-              <p className="text-[10px] text-muted-foreground mt-1">Minimum score learners must achieve to pass assessments</p>
+              <p className="text-[0.65rem] text-muted-foreground mt-1">Minimum score learners must achieve to pass assessments</p>
             </div>
             <div>
               <div className="flex items-center justify-between mb-2"><Label>Adaptive Skip — Level 1</Label><span className="text-sm font-bold text-foreground">{skipOne}%</span></div>
               <Slider value={[skipOne]} onValueChange={([v]) => setSkipOne(v)} min={60} max={100} step={5} />
-              <p className="text-[10px] text-muted-foreground mt-1">Score above this to skip the next module</p>
+              <p className="text-[0.65rem] text-muted-foreground mt-1">Score above this to skip the next module</p>
             </div>
             <div>
               <div className="flex items-center justify-between mb-2"><Label>Adaptive Skip — Level 2</Label><span className="text-sm font-bold text-foreground">{skipTwo}%</span></div>
               <Slider value={[skipTwo]} onValueChange={([v]) => setSkipTwo(v)} min={70} max={100} step={5} />
-              <p className="text-[10px] text-muted-foreground mt-1">Score above this to skip two modules ahead</p>
+              <p className="text-[0.65rem] text-muted-foreground mt-1">Score above this to skip two modules ahead</p>
             </div>
             <div className="rounded-lg border border-border p-4 bg-secondary/30">
               <p className="text-xs font-medium text-foreground mb-2">Automated Rules</p>
-              <div className="space-y-2 text-[11px] text-muted-foreground">
+              <div className="space-y-2 text-[0.7rem] text-muted-foreground">
                 <div className="flex items-center gap-2"><AlertTriangle className="h-3 w-3 text-destructive" />Flag learner as "At Risk" after 7 days of inactivity</div>
                 <div className="flex items-center gap-2"><Star className="h-3 w-3 text-amber-500" />Tag learner as "Rising Star" when progress &gt;80% and ahead of pace</div>
                 <div className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-emerald-500" />Mark cohort complete when all learners pass all assessments</div>
@@ -392,27 +392,27 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
             <h3 className="text-base font-semibold text-foreground">Review Your Cohort</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="rounded-lg border border-border p-4">
-                <p className="text-[10px] text-muted-foreground mb-1">Cohort Name</p>
+                <p className="text-[0.65rem] text-muted-foreground mb-1">Cohort Name</p>
                 <p className="text-sm font-medium text-foreground">{name || "—"}</p>
               </div>
               <div className="rounded-lg border border-border p-4">
-                <p className="text-[10px] text-muted-foreground mb-1">Category</p>
+                <p className="text-[0.65rem] text-muted-foreground mb-1">Category</p>
                 <p className="text-sm font-medium text-foreground">{category || "General"}</p>
               </div>
               <div className="rounded-lg border border-border p-4">
-                <p className="text-[10px] text-muted-foreground mb-1">Date Range</p>
+                <p className="text-[0.65rem] text-muted-foreground mb-1">Date Range</p>
                 <p className="text-sm font-medium text-foreground">{startDate || "TBD"} → {endDate || "TBD"}</p>
               </div>
               <div className="rounded-lg border border-border p-4">
-                <p className="text-[10px] text-muted-foreground mb-1">Pass Percentage</p>
+                <p className="text-[0.65rem] text-muted-foreground mb-1">Pass Percentage</p>
                 <p className="text-sm font-medium text-foreground">{passPercent}%</p>
               </div>
               <div className="rounded-lg border border-border p-4">
-                <p className="text-[10px] text-muted-foreground mb-1">Learners</p>
+                <p className="text-[0.65rem] text-muted-foreground mb-1">Learners</p>
                 <p className="text-sm font-medium text-foreground">{selectedLearners.size} selected</p>
               </div>
               <div className="rounded-lg border border-border p-4">
-                <p className="text-[10px] text-muted-foreground mb-1">Skill Targets</p>
+                <p className="text-[0.65rem] text-muted-foreground mb-1">Skill Targets</p>
                 <p className="text-sm font-medium text-foreground">{selectedTargets.size} selected</p>
               </div>
             </div>
@@ -476,7 +476,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
           <p className="text-sm text-muted-foreground mt-1">{cohort.description}</p>
           <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{cohort.startDate} → {cohort.endDate}</span>
-            <Badge variant="secondary" className="text-[10px]">{cohort.category}</Badge>
+            <Badge variant="secondary" className="text-[0.65rem]">{cohort.category}</Badge>
           </div>
         </div>
       </div>
@@ -491,7 +491,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
           { label: "At Risk", value: atRisk, icon: AlertTriangle },
         ].map(({ label, value, icon: Icon }) => (
           <div key={label} className="rounded-xl border border-border bg-card p-4">
-            <div className="flex items-center gap-2 mb-1"><Icon className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-[10px] text-muted-foreground">{label}</span></div>
+            <div className="flex items-center gap-2 mb-1"><Icon className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-[0.65rem] text-muted-foreground">{label}</span></div>
             <p className="text-lg font-bold text-foreground">{value}</p>
           </div>
         ))}
@@ -554,31 +554,31 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
                         <p className="text-sm font-medium text-foreground">{name}</p>
                         {lp.tags.map((tag) => {
                           const b = tagBadge(tag);
-                          return <Badge key={tag} variant="outline" className={cn("text-[9px]", b.cls)}>{b.label}</Badge>;
+                          return <Badge key={tag} variant="outline" className={cn("text-[0.6rem]", b.cls)}>{b.label}</Badge>;
                         })}
                       </div>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{hire?.title ?? ""} · {hire?.location ?? ""}</p>
+                      <p className="text-[0.65rem] text-muted-foreground mt-0.5">{hire?.title ?? ""} · {hire?.location ?? ""}</p>
                       <div className="flex items-center gap-4 mt-2">
                         <div className="flex-1 max-w-xs">
-                          <div className="flex justify-between text-[10px] mb-0.5"><span className="text-muted-foreground">Progress</span><span className="font-medium text-foreground">{lp.overallProgress}%</span></div>
+                          <div className="flex justify-between text-[0.65rem] mb-0.5"><span className="text-muted-foreground">Progress</span><span className="font-medium text-foreground">{lp.overallProgress}%</span></div>
                           <Progress value={lp.overallProgress} className="h-1.5" />
                         </div>
-                        <span className="text-[10px] text-muted-foreground">Score: {lp.avgScore}%</span>
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{lp.lastActive || "—"}</span>
+                        <span className="text-[0.65rem] text-muted-foreground">Score: {lp.avgScore}%</span>
+                        <span className="text-[0.65rem] text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />{lp.lastActive || "—"}</span>
                       </div>
-                      <p className="text-[10px] text-muted-foreground mt-1">Current: {lp.currentStep}</p>
+                      <p className="text-[0.65rem] text-muted-foreground mt-1">Current: {lp.currentStep}</p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
-                      <Button variant="outline" size="sm" className="h-7 text-[10px] px-2" onClick={() => toast.success(`1:1 scheduled with ${name}`)}>
+                      <Button variant="outline" size="sm" className="h-7 text-[0.65rem] px-2" onClick={() => toast.success(`1:1 scheduled with ${name}`)}>
                         <Calendar className="h-3 w-3 mr-1" />1:1
                       </Button>
-                      <Button variant="outline" size="sm" className="h-7 text-[10px] px-2" onClick={() => toast.success(`Kudos sent to ${name}!`)}>
+                      <Button variant="outline" size="sm" className="h-7 text-[0.65rem] px-2" onClick={() => toast.success(`Kudos sent to ${name}!`)}>
                         <Award className="h-3 w-3 mr-1" />Kudos
                       </Button>
-                      <Button variant="outline" size="sm" className="h-7 text-[10px] px-2" onClick={() => toast.success(`Mentor assigned to ${name}`)}>
+                      <Button variant="outline" size="sm" className="h-7 text-[0.65rem] px-2" onClick={() => toast.success(`Mentor assigned to ${name}`)}>
                         <UserPlus className="h-3 w-3 mr-1" />Mentor
                       </Button>
-                      <Button variant="outline" size="sm" className="h-7 text-[10px] px-2" onClick={() => toast.success(`Nudge sent to ${name}`)}>
+                      <Button variant="outline" size="sm" className="h-7 text-[0.65rem] px-2" onClick={() => toast.success(`Nudge sent to ${name}`)}>
                         <Send className="h-3 w-3 mr-1" />Nudge
                       </Button>
                     </div>
@@ -606,7 +606,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <p className="text-sm font-semibold text-foreground">{st.title}</p>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">{st.category} · {st.steps?.length ?? 0} steps</p>
+                      <p className="text-[0.65rem] text-muted-foreground mt-0.5">{st.category} · {st.steps?.length ?? 0} steps</p>
                     </div>
                     <span className="text-lg font-bold text-foreground">{avgTargetProgress}%</span>
                   </div>
@@ -650,7 +650,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
             </div>
             <div className="rounded-lg border border-border p-4 bg-secondary/30">
               <p className="text-xs font-medium text-foreground mb-2">Automated Rules</p>
-              <div className="space-y-2 text-[11px] text-muted-foreground">
+              <div className="space-y-2 text-[0.7rem] text-muted-foreground">
                 <div className="flex items-center gap-2"><AlertTriangle className="h-3 w-3 text-destructive" />Flag as "At Risk" after 7 days inactive</div>
                 <div className="flex items-center gap-2"><Star className="h-3 w-3 text-amber-500" />Tag "Rising Star" at &gt;80% ahead of pace</div>
                 <div className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-emerald-500" />Complete when all learners pass</div>

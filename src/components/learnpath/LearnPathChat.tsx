@@ -897,7 +897,7 @@ function EngagementSettingsButton() {
                         value={[value]}
                         onValueChange={(v) => updateTiming(key, v[0] ?? value)}
                       />
-                      <p className="text-[10px] text-muted-foreground">{bounds.help}</p>
+                      <p className="text-[0.65rem] text-muted-foreground">{bounds.help}</p>
                     </div>
                   );
                 })}

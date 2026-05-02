@@ -183,17 +183,17 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <h3 className="text-[15px] font-bold leading-tight">Agent One</h3>
-                  <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">
+                  <h3 className="text-[0.9rem] font-bold leading-tight">Agent One</h3>
+                  <span className="rounded-full bg-white/20 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider">
                     Live
                   </span>
                   {hasCards && (
-                    <span className="rounded-full bg-white/25 px-1.5 py-0.5 text-[10px] font-semibold">
+                    <span className="rounded-full bg-white/25 px-1.5 py-0.5 text-[0.65rem] font-semibold">
                       {totalCount} update{totalCount !== 1 ? "s" : ""}
                     </span>
                   )}
                 </div>
-                <span className="text-[13px] text-primary-foreground/75 leading-snug line-clamp-2">
+                <span className="text-[0.8rem] text-primary-foreground/75 leading-snug line-clamp-2">
                   {hasCards ? summaryLine : "Hey! I'm here to help you get started →"}
                 </span>
               </div>
@@ -262,7 +262,7 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
                             {card.count > 1 && (
                               <span
                                 className={cn(
-                                  "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+                                  "rounded-full px-1.5 py-0.5 text-[0.65rem] font-semibold",
                                   pastel.bg,
                                   pastel.text
                                 )}

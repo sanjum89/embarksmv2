@@ -120,13 +120,13 @@ export function EmployeeSignalExplorer({ employees, rolesById, projectsById, get
                           <div className="px-4 pb-4 space-y-4">
                             {/* Formula */}
                             <div className="rounded-lg bg-background/80 p-3">
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Formula</p>
+                              <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mb-1">Formula</p>
                               <code className="text-xs font-mono text-foreground/80">{lr.formula}</code>
                             </div>
 
                             {/* Contributing Signals */}
                             <div>
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Contributing Signals</p>
+                              <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mb-2">Contributing Signals</p>
                               <div className="space-y-2">
                                 {lr.contributingSignals.map((cs, i) => (
                                   <div key={i} className="flex items-center gap-3 text-xs">
@@ -141,7 +141,7 @@ export function EmployeeSignalExplorer({ employees, rolesById, projectsById, get
                                     </div>
                                     <Badge
                                       variant="outline"
-                                      className={`text-[9px] ${
+                                      className={`text-[0.6rem] ${
                                         cs.direction === "positive" ? "text-emerald-600 border-emerald-500/40" :
                                         cs.direction === "negative" ? "text-red-600 border-red-500/40" :
                                         "text-slate-500 border-slate-400/40"
@@ -156,11 +156,11 @@ export function EmployeeSignalExplorer({ employees, rolesById, projectsById, get
 
                             {/* Thresholds */}
                             <div>
-                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Thresholds</p>
+                              <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mb-2">Thresholds</p>
                               <div className="grid gap-2 grid-cols-1 sm:grid-cols-3">
                                 {lr.thresholds.map((th, i) => (
                                   <div key={i} className="rounded-md bg-background/60 p-2 text-center">
-                                    <p className="text-[10px] text-muted-foreground">{th.metric}</p>
+                                    <p className="text-[0.65rem] text-muted-foreground">{th.metric}</p>
                                     <p className="text-xs font-mono">{th.threshold}</p>
                                     <p className="text-xs font-semibold text-foreground">{th.actual}</p>
                                   </div>
@@ -218,9 +218,9 @@ function SkillGapCard({ title, gaps, emptyText, accentColor }: {
               <div key={i} className="flex items-center justify-between text-xs">
                 <span className="text-foreground/80">{gap.skillName}</span>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="text-[10px]">{gap.currentProficiency}</Badge>
+                  <Badge variant="outline" className="text-[0.65rem]">{gap.currentProficiency}</Badge>
                   <ArrowRight className="h-3 w-3 text-muted-foreground/50" />
-                  <Badge variant="outline" className={`text-[10px] ${accentColor}`}>{gap.targetProficiency}</Badge>
+                  <Badge variant="outline" className={`text-[0.65rem] ${accentColor}`}>{gap.targetProficiency}</Badge>
                 </div>
               </div>
             ))}

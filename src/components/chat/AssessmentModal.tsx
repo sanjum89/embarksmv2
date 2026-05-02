@@ -148,7 +148,7 @@ export function AssessmentModal({ open, onClose, onComplete, assessmentId, skill
                 return (
                   <div key={q.id} className={cn("rounded-lg border p-2.5 text-sm", correct ? "border-emerald-500/30 bg-emerald-500/5" : "border-destructive/30 bg-destructive/5")}>
                     <p className="font-medium text-foreground text-xs">{i + 1}. {q.question}</p>
-                    <p className={cn("text-[11px] mt-0.5", correct ? "text-emerald-500" : "text-destructive")}>
+                    <p className={cn("text-[0.7rem] mt-0.5", correct ? "text-emerald-500" : "text-destructive")}>
                       {correct ? "✓ Correct" : `✗ ${q.options[answers[q.id]]} → ${q.options[q.correctIndex]}`}
                     </p>
                   </div>
@@ -183,7 +183,7 @@ export function AssessmentModal({ open, onClose, onComplete, assessmentId, skill
                   )}
                 >
                   <span className="flex items-center gap-2.5">
-                    <span className={cn("flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-medium", answers[question.id] === i ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground")}>
+                    <span className={cn("flex h-5 w-5 items-center justify-center rounded-full text-[0.7rem] font-medium", answers[question.id] === i ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground")}>
                       {String.fromCharCode(65 + i)}
                     </span>
                     <span className={cn("leading-snug", i === question.correctIndex && "font-medium")}>{opt}</span>

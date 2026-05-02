@@ -124,7 +124,7 @@ export default function TeamInsights() {
                   : "bg-secondary text-muted-foreground hover:text-foreground"
               )}
             >
-              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[10px] font-medium">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-[0.65rem] font-medium">
                 {member.name.split(" ").map((n) => n[0]).join("")}
               </div>
               {member.name}

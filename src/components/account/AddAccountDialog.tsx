@@ -110,7 +110,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 function SectionStatusBadge({ s }: { s: SectionStatus }) {
   if (s.detected) {
     return (
-      <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-green-500/30 text-green-700 dark:text-green-400 bg-green-500/10 gap-1">
+      <Badge variant="outline" className="text-[0.65rem] px-1.5 py-0 border-green-500/30 text-green-700 dark:text-green-400 bg-green-500/10 gap-1">
         <Check className="h-3 w-3" />
         {s.count !== undefined ? s.count : "Yes"}
       </Badge>
@@ -118,13 +118,13 @@ function SectionStatusBadge({ s }: { s: SectionStatus }) {
   }
   if (s.category === "required") {
     return (
-      <Badge variant="destructive" className="text-[10px] px-1.5 py-0 gap-1">
+      <Badge variant="destructive" className="text-[0.65rem] px-1.5 py-0 gap-1">
         <AlertCircle className="h-3 w-3" /> Missing
       </Badge>
     );
   }
   return (
-    <Badge variant="outline" className="text-[10px] px-1.5 py-0 border-yellow-500/30 text-yellow-700 dark:text-yellow-400 bg-yellow-500/10">
+    <Badge variant="outline" className="text-[0.65rem] px-1.5 py-0 border-yellow-500/30 text-yellow-700 dark:text-yellow-400 bg-yellow-500/10">
       Not provided
     </Badge>
   );
@@ -543,7 +543,7 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
                   {items.filter((s) => !s.detected && s.note).map((s) => (
                     <div key={s.key + "-note"} className="flex items-start gap-1.5 pl-2">
                       <Info className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
-                      <p className="text-[11px] text-muted-foreground">{s.label}: {s.note}</p>
+                      <p className="text-[0.7rem] text-muted-foreground">{s.label}: {s.note}</p>
                     </div>
                   ))}
                 </div>
@@ -618,7 +618,7 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-medium text-foreground truncate">{row.name}</span>
                     {row.inferredRole !== currentRole && (
-                      <span className="text-[10px] text-muted-foreground">(was {row.inferredRole})</span>
+                      <span className="text-[0.65rem] text-muted-foreground">(was {row.inferredRole})</span>
                     )}
                   </div>
                   {row.title && (
@@ -626,10 +626,10 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
                   )}
                   <div className="flex flex-wrap gap-x-3 gap-y-0 mt-0.5">
                     {row.reportsToName && (
-                      <p className="text-[11px] text-muted-foreground">Reports to {row.reportsToName}</p>
+                      <p className="text-[0.7rem] text-muted-foreground">Reports to {row.reportsToName}</p>
                     )}
                     {row.hasDirectReports && (
-                      <p className="text-[11px] text-muted-foreground">{row.directReportCount} direct report{row.directReportCount !== 1 ? "s" : ""}</p>
+                      <p className="text-[0.7rem] text-muted-foreground">{row.directReportCount} direct report{row.directReportCount !== 1 ? "s" : ""}</p>
                     )}
                   </div>
                 </div>
@@ -714,7 +714,7 @@ export function AddAccountDialog({ open, onOpenChange }: AddAccountDialogProps) 
                 </div>
                 {row.title && <p className="text-xs text-muted-foreground truncate">{row.title}</p>}
               </div>
-              <Badge variant="outline" className="text-[10px] capitalize shrink-0">{currentRole}</Badge>
+              <Badge variant="outline" className="text-[0.65rem] capitalize shrink-0">{currentRole}</Badge>
             </label>
           );
         })}

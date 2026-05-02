@@ -212,7 +212,7 @@ export function TraditionalActivitiesPanel({
                   onClick={() => isClickable && onActivityClick(step)}
                 >
                   {isUpNext && (
-                    <span className="inline-block text-[10px] font-medium border border-border rounded-full px-2 py-0.5 text-muted-foreground mb-1.5">
+                    <span className="inline-block text-[0.65rem] font-medium border border-border rounded-full px-2 py-0.5 text-muted-foreground mb-1.5">
                       Up next
                     </span>
                   )}

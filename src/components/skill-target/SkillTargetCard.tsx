@@ -80,13 +80,13 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
                 {visibleSkills.map((skill) => (
                   <span
                     key={skill.name}
-                    className="inline-flex items-center gap-1 rounded-md bg-primary/8 border border-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary"
+                    className="inline-flex items-center gap-1 rounded-md bg-primary/8 border border-primary/15 px-2 py-0.5 text-[0.65rem] font-medium text-primary"
                   >
                     {skill.name}
                   </span>
                 ))}
                 {remainingCount > 0 && (
-                  <span className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                  <span className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
                     +{remainingCount} more
                   </span>
                 )}
@@ -170,7 +170,7 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
               {visibleSkills.map((skill) => (
                 <span
                   key={skill.name}
-                  className="inline-flex items-center gap-1 rounded-md bg-primary/8 border border-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary"
+                  className="inline-flex items-center gap-1 rounded-md bg-primary/8 border border-primary/15 px-2 py-0.5 text-[0.65rem] font-medium text-primary"
                 >
                   {skill.name} {proficiencyShort[skill.current]}→{proficiencyShort[skill.target]}
                 </span>
@@ -182,7 +182,7 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
                     e.stopPropagation();
                     setSkillsDialogOpen(true);
                   }}
-                  className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
+                  className="inline-flex items-center rounded-md bg-secondary px-2 py-0.5 text-[0.65rem] font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 transition-colors"
                 >
                   +{remainingCount} more
                 </button>
@@ -193,7 +193,7 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
           {/* Next step indicator */}
           {nextStep && (
             <div className="mb-4 rounded-lg bg-secondary/50 border border-border/50 px-3 py-2.5">
-              <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-1">
+              <p className="text-[0.65rem] font-medium text-muted-foreground uppercase tracking-wide mb-1">
                 {nextStep.status === "in_progress" ? "Continue" : "Up Next"}
               </p>
               <div className="flex items-center gap-2">
@@ -210,7 +210,7 @@ export function SkillTargetCard({ target, index }: SkillTargetCardProps) {
                 })()}
                 <span className="text-xs font-medium text-foreground truncate">{substitute(nextStep.title)}</span>
                 {nextStep.duration && (
-                  <span className="inline-flex items-center gap-0.5 text-[10px] text-muted-foreground ml-auto whitespace-nowrap">
+                  <span className="inline-flex items-center gap-0.5 text-[0.65rem] text-muted-foreground ml-auto whitespace-nowrap">
                     <Clock className="h-2.5 w-2.5" />
                     {nextStep.duration}
                   </span>

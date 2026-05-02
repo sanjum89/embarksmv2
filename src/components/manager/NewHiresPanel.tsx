@@ -66,7 +66,7 @@ export default function NewHiresPanel() {
               {hire.skills.map((skill) => (
                 <span
                   key={skill.name}
-                  className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium", levelColors[skill.level] || "bg-secondary text-foreground")}
+                  className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[0.65rem] font-medium", levelColors[skill.level] || "bg-secondary text-foreground")}
                 >
                   {skill.name} · {skill.level}
                 </span>

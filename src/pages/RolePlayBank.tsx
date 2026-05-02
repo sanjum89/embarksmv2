@@ -363,7 +363,7 @@ export default function RolePlayBank() {
                     </div>
                     <div className="mt-3 flex flex-wrap gap-1">
                       {(rp.tags || []).map((tag) => (
-                        <span key={tag} className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        <span key={tag} className="rounded-md bg-secondary px-2 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
                           {tag}
                         </span>
                       ))}
@@ -373,14 +373,14 @@ export default function RolePlayBank() {
                   {/* Manager: assigned avatars */}
                   {isManager && rpAssignments.length > 0 && (
                     <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border">
-                      <span className="text-[10px] text-muted-foreground">Assigned:</span>
+                      <span className="text-[0.65rem] text-muted-foreground">Assigned:</span>
                       <div className="flex -space-x-1.5">
                         {rpAssignments.map((id) => {
                           const hire = mockNewHires.find((h) => h.user.id === id);
                           return hire ? (
                             <div
                               key={id}
-                              className="h-5 w-5 rounded-full bg-primary text-[8px] font-bold text-primary-foreground flex items-center justify-center border-2 border-card"
+                              className="h-5 w-5 rounded-full bg-primary text-[0.55rem] font-bold text-primary-foreground flex items-center justify-center border-2 border-card"
                               title={hire.user.name}
                             >
                               {hire.user.name.split(" ").map((n) => n[0]).join("")}
@@ -388,7 +388,7 @@ export default function RolePlayBank() {
                           ) : null;
                         })}
                       </div>
-                      <span className="text-[10px] text-muted-foreground">({rpAssignments.length})</span>
+                      <span className="text-[0.65rem] text-muted-foreground">({rpAssignments.length})</span>
                     </div>
                   )}
 
@@ -462,7 +462,7 @@ export default function RolePlayBank() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <p className="text-sm font-medium text-foreground">{hire.user.name}</p>
-                                      <p className="text-[10px] text-muted-foreground">{hire.title}</p>
+                                      <p className="text-[0.65rem] text-muted-foreground">{hire.title}</p>
                                     </div>
                                     {isAssigned && <Check className="h-4 w-4 text-primary shrink-0" />}
                                   </button>

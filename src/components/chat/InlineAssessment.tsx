@@ -273,7 +273,7 @@ export function InlineAssessment({ onComplete }: InlineAssessmentProps) {
         {/* Progress bar */}
         <div className="px-5 pt-4 pb-2">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{question.topic}</span>
+            <span className="text-[0.7rem] font-medium text-muted-foreground uppercase tracking-wider">{question.topic}</span>
             <span className="text-xs text-muted-foreground">
               {currentQ + 1} / {QUESTIONS.length}
             </span>
@@ -314,7 +314,7 @@ export function InlineAssessment({ onComplete }: InlineAssessmentProps) {
                 >
                   <div className="flex items-start gap-2.5">
                     <span className={cn(
-                      "shrink-0 h-5 w-5 rounded-full border text-[11px] font-medium flex items-center justify-center mt-0.5",
+                      "shrink-0 h-5 w-5 rounded-full border text-[0.7rem] font-medium flex items-center justify-center mt-0.5",
                       !showFeedback && isSelected ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30 text-muted-foreground",
                       showFeedback && isCorrect && "border-green-600 bg-green-600 text-white",
                       showFeedback && isSelected && !isCorrect && "border-red-500 bg-red-500 text-white"

@@ -227,11 +227,11 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
                         </div>
                         <div className="flex items-center gap-1.5">
                           {isSimulated ? (
-                            <Badge variant="destructive" className="text-[10px] px-2 py-0.5 animate-pulse">
+                            <Badge variant="destructive" className="text-[0.65rem] px-2 py-0.5 animate-pulse">
                               Simulating Off
                             </Badge>
                           ) : (
-                            <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
+                            <span className="flex items-center gap-1 text-[0.65rem] text-emerald-600 font-medium">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                               Live
                             </span>
@@ -246,7 +246,7 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
                         }`}>
                           {sys.name}
                         </h4>
-                        <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+                        <p className="text-[0.7rem] text-muted-foreground mt-0.5 line-clamp-2">
                           {sys.description}
                         </p>
                       </div>
@@ -258,17 +258,17 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
                           {sys.signalCount.toLocaleString()}
                           <span className="text-muted-foreground font-normal">signals</span>
                         </div>
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-500/10 text-emerald-700 border-emerald-500/20">
+                        <Badge variant="secondary" className="text-[0.65rem] px-1.5 py-0 bg-emerald-500/10 text-emerald-700 border-emerald-500/20">
                           {directCount} direct
                         </Badge>
-                        <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-purple-500/10 text-purple-700 border-purple-500/20">
+                        <Badge variant="secondary" className="text-[0.65rem] px-1.5 py-0 bg-purple-500/10 text-purple-700 border-purple-500/20">
                           {derivedCount} derived
                         </Badge>
                       </div>
 
                       {/* Category + sync */}
-                      <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                      <div className="flex items-center justify-between text-[0.65rem] text-muted-foreground">
+                        <Badge variant="outline" className="text-[0.65rem] px-1.5 py-0">
                           {categoryLabels[sys.category] || sys.category}
                         </Badge>
                         <span className="flex items-center gap-1">
@@ -278,7 +278,7 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
 
                       {/* Expand indicator */}
                       <div className="flex items-center justify-center pt-1 border-t border-border/30">
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <span className="text-[0.65rem] text-muted-foreground flex items-center gap-1">
                           {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                           {isExpanded ? "Collapse" : "View signals & actions"}
                         </span>
@@ -298,19 +298,19 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
                           <div className="px-4 pb-4 space-y-3 border-t border-border/40">
                             {/* Signal list */}
                             <div className="pt-3">
-                              <p className="text-[11px] font-semibold text-foreground mb-2">
+                              <p className="text-[0.7rem] font-semibold text-foreground mb-2">
                                 Signals ({sys.signals.length})
                               </p>
                               <div className="space-y-1.5 max-h-48 overflow-y-auto">
                                 {sys.signals.map((sig) => (
                                   <div key={sig.id} className="flex items-start justify-between gap-2 py-1 px-2 rounded-md bg-muted/30">
                                     <div className="min-w-0 flex-1">
-                                      <p className="text-[11px] font-medium text-foreground">{sig.name}</p>
-                                      <p className="text-[10px] text-muted-foreground">{sig.description}</p>
+                                      <p className="text-[0.7rem] font-medium text-foreground">{sig.name}</p>
+                                      <p className="text-[0.65rem] text-muted-foreground">{sig.description}</p>
                                     </div>
                                     <Badge
                                       variant="outline"
-                                      className={`text-[9px] shrink-0 ${
+                                      className={`text-[0.6rem] shrink-0 ${
                                         sig.type === "direct"
                                           ? "border-emerald-500/40 text-emerald-600"
                                           : "border-purple-500/40 text-purple-600"
@@ -439,7 +439,7 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
                               {n.label}
                             </span>
                             {isAffected && (
-                              <Badge variant="destructive" className="text-[9px] px-1.5 py-0 h-4">
+                              <Badge variant="destructive" className="text-[0.6rem] px-1.5 py-0 h-4">
                                 Impacted
                               </Badge>
                             )}
@@ -517,7 +517,7 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
                           </h4>
                         </div>
                         {isAffected && (
-                          <Badge variant="destructive" className="text-[10px] px-2 py-0.5 shrink-0">
+                          <Badge variant="destructive" className="text-[0.65rem] px-2 py-0.5 shrink-0">
                             Data Reduced
                           </Badge>
                         )}
@@ -526,7 +526,7 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
                       {/* Signal bullets preview */}
                       <ul className="space-y-0.5">
                         {n.signals.slice(0, 3).map((s, j) => (
-                          <li key={j} className="text-[11px] text-muted-foreground flex items-center gap-1.5">
+                          <li key={j} className="text-[0.7rem] text-muted-foreground flex items-center gap-1.5">
                             <span className={`h-1 w-1 rounded-full shrink-0 ${isAffected ? "bg-destructive" : "bg-primary/60"}`} />
                             {s}
                           </li>
@@ -534,7 +534,7 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
                       </ul>
 
                       <div className="flex items-center justify-center pt-1 border-t border-border/20">
-                        <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <span className="text-[0.65rem] text-muted-foreground flex items-center gap-1">
                           {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                           {isExpanded ? "Collapse" : "View details"}
                         </span>
@@ -551,7 +551,7 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
                           className="overflow-hidden"
                         >
                           <div className="px-4 pb-4 pt-1 space-y-2 border-t border-border/30">
-                            <p className="text-[11px] font-semibold text-foreground">
+                            <p className="text-[0.7rem] font-semibold text-foreground">
                               Feeds from compute nodes:
                             </p>
                             <div className="flex flex-wrap gap-1.5">
@@ -563,7 +563,7 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
                                     <Badge
                                       key={cn.id}
                                       variant={cnAffected ? "destructive" : "secondary"}
-                                      className="text-[10px] px-2 py-0.5"
+                                      className="text-[0.65rem] px-2 py-0.5"
                                     >
                                       {cn.label}
                                       {cnAffected && " ⚠"}
@@ -571,10 +571,10 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
                                   );
                                 })}
                             </div>
-                            <p className="text-[11px] font-semibold text-foreground mt-2">All signals:</p>
+                            <p className="text-[0.7rem] font-semibold text-foreground mt-2">All signals:</p>
                             <ul className="space-y-1">
                               {n.signals.map((s, j) => (
-                                <li key={j} className="text-[11px] text-foreground/80 flex items-center gap-1.5">
+                                <li key={j} className="text-[0.7rem] text-foreground/80 flex items-center gap-1.5">
                                   <span className={`h-1 w-1 rounded-full shrink-0 ${isAffected ? "bg-destructive" : "bg-primary/60"}`} />
                                   {s}
                                 </li>
@@ -597,7 +597,7 @@ export function DataFlowWorkflow({ foundational = [], engagement = [], work = []
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.8 }}
-        className="flex items-center gap-5 justify-center pt-4 text-[11px] text-muted-foreground flex-wrap"
+        className="flex items-center gap-5 justify-center pt-4 text-[0.7rem] text-muted-foreground flex-wrap"
       >
         <span className="flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Live data flow

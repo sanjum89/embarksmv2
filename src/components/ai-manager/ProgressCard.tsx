@@ -21,14 +21,14 @@ export function ProgressCard() {
         <div className="rounded-lg bg-secondary/50 p-3 text-center">
           <ClipboardCheck className="h-4 w-4 text-primary mx-auto mb-1" />
           <p className="text-lg font-bold text-foreground">{assessmentScore}%</p>
-          <p className="text-[10px] text-muted-foreground">Assessment Score</p>
+          <p className="text-[0.65rem] text-muted-foreground">Assessment Score</p>
         </div>
         <div className="rounded-lg bg-secondary/50 p-3 text-center">
           <Target className="h-4 w-4 text-primary mx-auto mb-1" />
           <p className="text-lg font-bold text-foreground">
             {modulesCompleted}/{modulesTotal}
           </p>
-          <p className="text-[10px] text-muted-foreground">Modules Done</p>
+          <p className="text-[0.65rem] text-muted-foreground">Modules Done</p>
         </div>
       </div>
 
@@ -39,13 +39,13 @@ export function ProgressCard() {
           {rolePlayDone ? (
             <CheckCircle2 className="h-3.5 w-3.5 text-[hsl(var(--success))]" />
           ) : (
-            <span className="text-[10px] text-muted-foreground">Pending</span>
+            <span className="text-[0.65rem] text-muted-foreground">Pending</span>
           )}
         </div>
         <div className="flex items-center gap-2">
           <Target className="h-3.5 w-3.5 text-muted-foreground" />
           <span className="text-xs text-foreground flex-1">Learning Path</span>
-          <span className="text-[10px] font-medium text-primary">{skillTargetProgress}%</span>
+          <span className="text-[0.65rem] font-medium text-primary">{skillTargetProgress}%</span>
         </div>
       </div>
 
@@ -57,7 +57,7 @@ export function ProgressCard() {
             style={{ width: `${skillTargetProgress}%` }}
           />
         </div>
-        <p className="text-[10px] text-muted-foreground text-center mt-1">
+        <p className="text-[0.65rem] text-muted-foreground text-center mt-1">
           Overall onboarding progress
         </p>
       </div>

@@ -44,7 +44,7 @@ export function TrainingRecommendationCard() {
                 <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
               )}
               <span className="text-xs font-medium text-foreground flex-1">{mod.title}</span>
-              <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1 text-[0.65rem] text-muted-foreground">
                 <Clock className="h-2.5 w-2.5" />
                 {mod.duration}
               </span>
@@ -53,7 +53,7 @@ export function TrainingRecommendationCard() {
         })}
       </div>
 
-      <p className="text-[10px] text-muted-foreground mt-3">
+      <p className="text-[0.65rem] text-muted-foreground mt-3">
         Click a module to mark as reviewed
       </p>
     </motion.div>

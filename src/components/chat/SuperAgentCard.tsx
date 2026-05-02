@@ -49,7 +49,7 @@ export function SuperAgentCard({ hasUnread = true, unreadCount = 0, lastMessage 
             <Sparkles className="h-5.5 w-5.5" />
           </motion.div>
           {unreadCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-green-500 text-white text-[11px] font-bold shadow-md border-2 border-primary">
+            <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-green-500 text-white text-[0.7rem] font-bold shadow-md border-2 border-primary">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -63,11 +63,11 @@ export function SuperAgentCard({ hasUnread = true, unreadCount = 0, lastMessage 
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
-            <h3 className="text-[15px] font-bold leading-tight">Agent One</h3>
-            <span className="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider">Live</span>
+            <h3 className="text-[0.9rem] font-bold leading-tight">Agent One</h3>
+            <span className="rounded-full bg-white/20 px-2 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider">Live</span>
           </div>
           <motion.p
-            className="text-[13px] text-primary-foreground/75 leading-snug truncate"
+            className="text-[0.8rem] text-primary-foreground/75 leading-snug truncate"
             animate={hasUnread ? { opacity: [0.7, 1, 0.7] } : {}}
             transition={{ duration: 2, repeat: Infinity }}
           >

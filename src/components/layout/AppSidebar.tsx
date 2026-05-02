@@ -775,6 +775,24 @@ export function AppSidebar() {
         </Popover>
       </div>
 
+      {/* Accessibility */}
+      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
+        <AccessibilityPanel
+          expanded={expanded}
+          trigger={
+            <button
+              className={cn(
+                "flex items-center rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                expanded ? "h-9 gap-3 w-full px-3" : "h-10 w-10 justify-center"
+              )}
+            >
+              <Type className="h-4 w-4 shrink-0" />
+              {expanded && <span className="text-sm font-medium">Accessibility</span>}
+            </button>
+          }
+        />
+      </div>
+
       {/* Branding */}
       <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
         <BrandingPanel

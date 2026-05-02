@@ -248,7 +248,7 @@ export default function MyInbox() {
                           {item.title}
                         </h4>
                       </div>
-                      <span className="text-[11px] text-muted-foreground shrink-0">{item.time}</span>
+                      <span className="text-[0.7rem] text-muted-foreground shrink-0">{item.time}</span>
                     </div>
                     <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
                       {item.message}

@@ -262,7 +262,7 @@ export function AssessmentCreator({ existingModules, onAdd, onCancel }: Props) {
                   <p className="text-xs font-medium text-foreground">Q{qi + 1}: {q.question}</p>
                   <div className="grid grid-cols-2 gap-1">
                     {q.options.map((opt, oi) => (
-                      <span key={oi} className={cn("text-[11px] px-2 py-0.5 rounded", oi === q.correctIndex ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground")}>
+                      <span key={oi} className={cn("text-[0.7rem] px-2 py-0.5 rounded", oi === q.correctIndex ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground")}>
                         {opt}
                       </span>
                     ))}
@@ -285,7 +285,7 @@ export function AssessmentCreator({ existingModules, onAdd, onCancel }: Props) {
         <div>
           <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Skip Threshold: {skipThreshold}%</label>
           <Slider value={[skipThreshold]} onValueChange={([v]) => setSkipThreshold(v)} min={50} max={100} step={5} />
-          <p className="text-[11px] text-muted-foreground mt-1">Modules linked above will be skipped if the learner scores above {skipThreshold}%.</p>
+          <p className="text-[0.7rem] text-muted-foreground mt-1">Modules linked above will be skipped if the learner scores above {skipThreshold}%.</p>
         </div>
       )}
 

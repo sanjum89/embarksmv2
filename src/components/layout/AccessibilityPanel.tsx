@@ -66,12 +66,12 @@ export function AccessibilityPanel({ trigger, expanded, side }: Props) {
                   title={s.label}
                 >
                   <span style={{ fontSize: `${px}px`, lineHeight: 1 }} className="font-semibold">{s.sample}</span>
-                  <span className="text-[10px] leading-none">{s.label}</span>
+                  <span className="text-[0.65rem] leading-none">{s.label}</span>
                 </button>
               );
             })}
           </div>
-          <p className="mt-1.5 text-[11px] text-muted-foreground">Tip: Ctrl/⌘ + or − to resize.</p>
+          <p className="mt-1.5 text-[0.7rem] text-muted-foreground">Tip: Ctrl/⌘ + or − to resize.</p>
         </div>
 
         <Separator className="mb-3" />

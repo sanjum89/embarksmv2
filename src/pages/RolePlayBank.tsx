@@ -330,31 +330,31 @@ export default function RolePlayBank() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ delay: i * 0.06, duration: 0.35 }}
-                  className="group relative rounded-xl bg-card border border-border p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300"
+                  className="group relative rounded-xl bg-card border border-border p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300 min-w-0"
                 >
                   <Link
                     to={`/role-play-bank/${rp.id}`}
-                    className="block"
+                    className="block min-w-0"
                   >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10">
+                    <div className="flex items-start justify-between gap-2 mb-3 flex-wrap">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/10 shrink-0">
                         <MessageSquare className="h-4.5 w-4.5 text-accent" />
                       </div>
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 flex-wrap justify-end">
                         {activeTab === "all" && rp.assignedTo?.includes(user.id) && (
-                          <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary">
+                          <span className="rounded-full px-2.5 py-0.5 text-xs font-medium bg-primary/10 text-primary whitespace-nowrap">
                             Assigned to you
                           </span>
                         )}
-                        <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium capitalize", difficultyColors[rp.difficulty])}>
+                        <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium capitalize whitespace-nowrap", difficultyColors[rp.difficulty])}>
                           {rp.difficulty}
                         </span>
                       </div>
                     </div>
-                    <h4 className="font-display text-sm font-semibold text-foreground mb-1.5 group-hover:text-accent transition-colors">
+                    <h4 className="font-display text-sm font-semibold text-foreground mb-1.5 group-hover:text-accent transition-colors break-words">
                       {rp.title}
                     </h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{rp.scenario}</p>
+                    <p className="text-xs text-muted-foreground line-clamp-3 mb-3 break-words">{rp.scenario}</p>
                     <div className="flex items-center gap-2">
                       <Bot className="h-3.5 w-3.5 text-muted-foreground" />
                       <span className="text-xs text-muted-foreground truncate">
@@ -363,7 +363,7 @@ export default function RolePlayBank() {
                     </div>
                     <div className="mt-3 flex flex-wrap gap-1">
                       {(rp.tags || []).map((tag) => (
-                        <span key={tag} className="rounded-md bg-secondary px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                        <span key={tag} className="rounded-md bg-secondary px-2 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
                           {tag}
                         </span>
                       ))}
@@ -373,14 +373,14 @@ export default function RolePlayBank() {
                   {/* Manager: assigned avatars */}
                   {isManager && rpAssignments.length > 0 && (
                     <div className="flex items-center gap-1.5 mt-3 pt-3 border-t border-border">
-                      <span className="text-[10px] text-muted-foreground">Assigned:</span>
+                      <span className="text-[0.65rem] text-muted-foreground">Assigned:</span>
                       <div className="flex -space-x-1.5">
                         {rpAssignments.map((id) => {
                           const hire = mockNewHires.find((h) => h.user.id === id);
                           return hire ? (
                             <div
                               key={id}
-                              className="h-5 w-5 rounded-full bg-primary text-[8px] font-bold text-primary-foreground flex items-center justify-center border-2 border-card"
+                              className="h-5 w-5 rounded-full bg-primary text-[0.55rem] font-bold text-primary-foreground flex items-center justify-center border-2 border-card"
                               title={hire.user.name}
                             >
                               {hire.user.name.split(" ").map((n) => n[0]).join("")}
@@ -388,7 +388,7 @@ export default function RolePlayBank() {
                           ) : null;
                         })}
                       </div>
-                      <span className="text-[10px] text-muted-foreground">({rpAssignments.length})</span>
+                      <span className="text-[0.65rem] text-muted-foreground">({rpAssignments.length})</span>
                     </div>
                   )}
 
@@ -462,7 +462,7 @@ export default function RolePlayBank() {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <p className="text-sm font-medium text-foreground">{hire.user.name}</p>
-                                      <p className="text-[10px] text-muted-foreground">{hire.title}</p>
+                                      <p className="text-[0.65rem] text-muted-foreground">{hire.title}</p>
                                     </div>
                                     {isAssigned && <Check className="h-4 w-4 text-primary shrink-0" />}
                                   </button>

@@ -94,14 +94,14 @@ export default function ManagerSkillTargetDetail() {
 
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Badge variant="outline" className="text-[10px]">{target.category}</Badge>
-              <Badge variant="outline" className="text-[10px]">{target.difficulty}</Badge>
+              <Badge variant="outline" className="text-[0.65rem]">{target.category}</Badge>
+              <Badge variant="outline" className="text-[0.65rem]">{target.difficulty}</Badge>
             </div>
             <h1 className="font-display text-2xl font-bold text-foreground">{target.title}</h1>
             <p className="text-sm text-muted-foreground mt-1">{target.description}</p>
             <div className="flex flex-wrap gap-1.5 mt-3">
               {target.skills.map((s) => (
-                <span key={s} className="rounded-full bg-blue-50 dark:bg-blue-900/20 px-2.5 py-0.5 text-[10px] font-medium text-blue-700 dark:text-blue-400">{s}</span>
+                <span key={s} className="rounded-full bg-blue-50 dark:bg-blue-900/20 px-2.5 py-0.5 text-[0.65rem] font-medium text-blue-700 dark:text-blue-400">{s}</span>
               ))}
             </div>
           </div>
@@ -128,18 +128,18 @@ export default function ManagerSkillTargetDetail() {
                     </button>
                     <p className="text-xs text-muted-foreground mt-0.5">{step.description}</p>
                     <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <Badge variant="outline" className="text-[10px] gap-1">
+                      <Badge variant="outline" className="text-[0.65rem] gap-1">
                         <Icon className="h-3 w-3" />
                         {typeLabel[step.type]}
                       </Badge>
                       {step.duration && (
-                        <Badge variant="outline" className="text-[10px] gap-1">
+                        <Badge variant="outline" className="text-[0.65rem] gap-1">
                           <Clock className="h-3 w-3" />
                           {step.duration}
                         </Badge>
                       )}
                       {step.skipCondition && (
-                        <Badge className="text-[10px] gap-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 hover:bg-amber-100">
+                        <Badge className="text-[0.65rem] gap-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 hover:bg-amber-100">
                           <SkipForward className="h-3 w-3" />
                           {step.skipCondition}
                         </Badge>
@@ -160,7 +160,7 @@ export default function ManagerSkillTargetDetail() {
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-semibold text-foreground">Assigned To</span>
-                <Badge variant="secondary" className="text-[10px]">{assignees.length}</Badge>
+                <Badge variant="secondary" className="text-[0.65rem]">{assignees.length}</Badge>
               </div>
               {showAssignees ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
             </button>
@@ -176,15 +176,15 @@ export default function ManagerSkillTargetDetail() {
                   <div className="divide-y divide-border">
                     {assignees.map((a) => (
                       <div key={a.userId} className="flex items-center gap-3 px-4 py-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground shrink-0">
                           {a.name.split(" ").map((n) => n[0]).join("")}
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground">{a.name}</p>
-                          <p className="text-[10px] text-muted-foreground">{a.title}</p>
+                          <p className="text-[0.65rem] text-muted-foreground">{a.title}</p>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
-                          <Badge variant="outline" className={cn("text-[10px]", statusColor[a.status])}>{statusLabel[a.status]}</Badge>
+                          <Badge variant="outline" className={cn("text-[0.65rem]", statusColor[a.status])}>{statusLabel[a.status]}</Badge>
                           <div className="w-20">
                             <Progress value={a.progress} className="h-1.5" />
                           </div>
@@ -192,7 +192,7 @@ export default function ManagerSkillTargetDetail() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-7 text-[10px] gap-1 text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/20"
+                            className="h-7 text-[0.65rem] gap-1 text-blue-600 border-blue-200 hover:bg-blue-50 dark:text-blue-400 dark:border-blue-800 dark:hover:bg-blue-900/20"
                             onClick={(e) => { e.stopPropagation(); handleAskAgent(a); }}
                           >
                             <Sparkles className="h-3 w-3" />

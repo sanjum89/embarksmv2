@@ -241,7 +241,7 @@ export default function SkillTargetDetail() {
                         >
                           <span className="mb-1.5">{card.icon}</span>
                           <span className="text-xl font-bold text-foreground leading-none">{card.count}</span>
-                          <span className="text-[11px] text-muted-foreground mt-1">{card.label}</span>
+                          <span className="text-[0.7rem] text-muted-foreground mt-1">{card.label}</span>
                         </div>
                       ))}
                     </div>
@@ -469,7 +469,7 @@ function TraditionalChatArea({ target }: { target: SkillTarget }) {
             </button>
           </div>
         </div>
-        <p className="text-[10px] text-muted-foreground text-center mt-2">
+        <p className="text-[0.65rem] text-muted-foreground text-center mt-2">
           AI can make mistakes. Check for accuracy.
         </p>
       </div>

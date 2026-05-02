@@ -156,7 +156,7 @@ function SystemCard({ system, isPending, isEnabled, onToggle }: {
             </div>
             <div className="flex items-center gap-2">
               {isPending && (
-                <Badge variant="outline" className="text-[10px] border-amber-500/50 text-amber-600">
+                <Badge variant="outline" className="text-[0.65rem] border-amber-500/50 text-amber-600">
                   Pending
                 </Badge>
               )}
@@ -169,10 +169,10 @@ function SystemCard({ system, isPending, isEnabled, onToggle }: {
           </div>
 
           <div className="flex items-center gap-2">
-            <Badge variant="secondary" className="text-[10px] bg-emerald-500/15 text-emerald-700 border-emerald-500/30">
+            <Badge variant="secondary" className="text-[0.65rem] bg-emerald-500/15 text-emerald-700 border-emerald-500/30">
               {directCount} Direct
             </Badge>
-            <Badge variant="secondary" className="text-[10px] bg-purple-500/15 text-purple-700 border-purple-500/30">
+            <Badge variant="secondary" className="text-[0.65rem] bg-purple-500/15 text-purple-700 border-purple-500/30">
               {derivedCount} Derived
             </Badge>
           </div>
@@ -196,7 +196,7 @@ function SystemCard({ system, isPending, isEnabled, onToggle }: {
                       <span className="text-xs text-foreground/80">{sig.name}</span>
                       <Badge
                         variant="outline"
-                        className={`text-[9px] ${
+                        className={`text-[0.6rem] ${
                           sig.type === "direct"
                             ? "border-emerald-500/40 text-emerald-600"
                             : "border-purple-500/40 text-purple-600"

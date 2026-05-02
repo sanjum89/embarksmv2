@@ -502,7 +502,7 @@ export function AppSidebar() {
                         isActive ? "bg-primary/10 text-foreground font-medium" : isSignedIn ? "text-foreground hover:bg-secondary" : "text-muted-foreground/50 cursor-default"
                       )}
                     >
-                      <div className={cn("flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold shrink-0", isSignedIn ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+                      <div className={cn("flex h-7 w-7 items-center justify-center rounded-full text-[0.65rem] font-bold shrink-0", isSignedIn ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
                         {u.name.split(" ").map((n) => n[0]).join("")}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -512,7 +512,7 @@ export function AppSidebar() {
                         </div>
                         <p className="text-xs text-muted-foreground truncate">{u.title}</p>
                         {isSignedIn && (
-                          <p className="text-[10px] text-emerald-500 flex items-center gap-1">
+                          <p className="text-[0.65rem] text-emerald-500 flex items-center gap-1">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
                             Signed in
                           </p>
@@ -877,7 +877,7 @@ export function AppSidebar() {
                     isActive ? "bg-accent/10 text-foreground font-medium" : isSignedIn ? "text-foreground hover:bg-secondary" : "text-muted-foreground/50 cursor-default"
                   )}
                 >
-                  <div className={cn("flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-bold shrink-0", isSignedIn ? "bg-sidebar-accent text-sidebar-accent-foreground" : "bg-muted text-muted-foreground")}>
+                  <div className={cn("flex h-7 w-7 items-center justify-center rounded-full text-[0.65rem] font-bold shrink-0", isSignedIn ? "bg-sidebar-accent text-sidebar-accent-foreground" : "bg-muted text-muted-foreground")}>
                     {u.name.split(" ").map((n) => n[0]).join("")}
                   </div>
                   <div className="min-w-0 flex-1">
@@ -887,7 +887,7 @@ export function AppSidebar() {
                     </div>
                     <p className="text-xs text-muted-foreground truncate">{u.title}</p>
                     {isSignedIn && (
-                      <p className="text-[10px] text-emerald-500 flex items-center gap-1">
+                      <p className="text-[0.65rem] text-emerald-500 flex items-center gap-1">
                         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 inline-block" />
                         Signed in
                       </p>

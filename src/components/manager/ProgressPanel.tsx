@@ -88,9 +88,9 @@ export default function ProgressPanel() {
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <Badge variant="outline" className="text-[9px]">{step.type}</Badge>
-                  <span className={cn("text-[10px]", config.color)}>{config.label}</span>
-                  {step.duration && <span className="text-[10px] text-muted-foreground">· {step.duration}</span>}
+                  <Badge variant="outline" className="text-[0.6rem]">{step.type}</Badge>
+                  <span className={cn("text-[0.65rem]", config.color)}>{config.label}</span>
+                  {step.duration && <span className="text-[0.65rem] text-muted-foreground">· {step.duration}</span>}
                 </div>
               </div>
             </motion.div>

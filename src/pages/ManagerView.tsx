@@ -252,7 +252,7 @@ export default function ManagerView() {
           {showHome ? (
             <div className="flex flex-col items-center justify-center min-h-full px-6">
               <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[680px] pt-16 pb-8">
-                <h1 className="font-display text-[28px] font-bold text-foreground mb-8">
+                <h1 className="font-display text-[1.6rem] font-bold text-foreground mb-8">
                   Hi {firstName}, let's dive in
                 </h1>
 
@@ -276,7 +276,7 @@ export default function ManagerView() {
                       <div className="bg-primary/5 rounded-lg p-2 mb-3">
                         <CardIllustration type={card.illustration} />
                       </div>
-                      <span className="text-[13px] font-medium text-foreground leading-snug">{card.label}</span>
+                      <span className="text-[0.8rem] font-medium text-foreground leading-snug">{card.label}</span>
                     </motion.button>
                   ))}
                 </div>
@@ -376,7 +376,7 @@ export default function ManagerView() {
                     className="absolute bottom-full mb-2 left-0 right-0 z-20 rounded-xl border border-border bg-card shadow-lg overflow-hidden"
                   >
                     <div className="px-3 py-2 border-b border-border">
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Programs</p>
+                      <p className="text-[0.65rem] font-medium text-muted-foreground uppercase tracking-wider">Programs</p>
                     </div>
                     {filteredPrograms.map((program) => (
                       <button
@@ -389,7 +389,7 @@ export default function ManagerView() {
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-medium text-foreground">{program.name}</p>
-                          <p className="text-[10px] text-muted-foreground">{program.category}</p>
+                          <p className="text-[0.65rem] text-muted-foreground">{program.category}</p>
                         </div>
                       </button>
                     ))}
@@ -427,7 +427,7 @@ export default function ManagerView() {
                 </Button>
               </div>
             </div>
-            <p className="text-[10px] text-muted-foreground text-center mt-2">
+            <p className="text-[0.65rem] text-muted-foreground text-center mt-2">
               AI can make mistakes. Check for accuracy.
             </p>
           </div>

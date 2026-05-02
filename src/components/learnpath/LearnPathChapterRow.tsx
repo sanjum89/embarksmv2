@@ -146,7 +146,7 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
                   {substitute(step.title)}
                 </h4>
                 {isInProgress && (
-                  <Badge className="h-5 px-1.5 text-[10px] bg-accent text-accent-foreground hover:bg-accent">
+                  <Badge className="h-5 px-1.5 text-[0.65rem] bg-accent text-accent-foreground hover:bg-accent">
                     YOU ARE HERE
                   </Badge>
                 )}

@@ -34,7 +34,7 @@ const levelColors: Record<string, string> = {
 const proficiencyLevels = ["B", "I", "A", "E", "M"] as const;
 
 function LevelBadge({ level, size = "sm" }: { level: string | null; size?: "sm" | "md" }) {
-  const dim = size === "md" ? "h-7 w-7 text-xs" : "h-6 w-6 text-[10px]";
+  const dim = size === "md" ? "h-7 w-7 text-xs" : "h-6 w-6 text-[0.65rem]";
   if (!level) {
     return (
       <span className={cn("flex items-center justify-center rounded-full bg-muted font-bold text-muted-foreground", dim)}>
@@ -455,7 +455,7 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
                               <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                             )}
                             <span className="text-xs font-medium text-foreground flex-1">{m.title}</span>
-                            <span className="text-[10px] text-muted-foreground">{m.duration}</span>
+                            <span className="text-[0.65rem] text-muted-foreground">{m.duration}</span>
                           </div>
                         ))}
                       </div>
@@ -537,7 +537,7 @@ export function CreateSkillTargetDialog({ open, onOpenChange }: Props) {
                           <ModuleIcon mod={m} />
                           <span className="text-xs font-medium text-foreground flex-1 truncate">{m.title}</span>
                           {m.duration && (
-                            <span className="text-[10px] text-muted-foreground">{m.duration}</span>
+                            <span className="text-[0.65rem] text-muted-foreground">{m.duration}</span>
                           )}
                         </label>
                       ))}
@@ -668,7 +668,7 @@ function GapGroupCard({
           >
             <span className="text-sm font-medium text-foreground flex-1 truncate">{rec.skill}</span>
             {rec.isNew && (
-              <span className="rounded-full bg-accent/10 border border-accent/20 px-2 py-0.5 text-[10px] font-semibold text-accent shrink-0">
+              <span className="rounded-full bg-accent/10 border border-accent/20 px-2 py-0.5 text-[0.65rem] font-semibold text-accent shrink-0">
                 NEW
               </span>
             )}

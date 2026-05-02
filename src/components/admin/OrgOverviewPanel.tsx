@@ -101,7 +101,7 @@ export default function OrgOverviewPanel({ account }: Props) {
             <div key={i} className="rounded-xl border border-border bg-card p-4 shadow-sm text-center">
               <p className="text-2xl font-bold text-foreground">{block.value}</p>
               <p className="text-xs text-muted-foreground mt-1">{block.label}</p>
-              {block.description && <p className="text-[10px] text-muted-foreground mt-0.5">{block.description}</p>}
+              {block.description && <p className="text-[0.65rem] text-muted-foreground mt-0.5">{block.description}</p>}
             </div>
           ))}
         </div>
@@ -118,7 +118,7 @@ export default function OrgOverviewPanel({ account }: Props) {
             {alerts.map((alert) => (
               <div key={alert.id} className="rounded-lg bg-card border border-border px-3 py-2">
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] font-medium rounded-full px-2 py-0.5 ${
+                  <span className={`text-[0.65rem] font-medium rounded-full px-2 py-0.5 ${
                     alert.severity === "high" || alert.severity === "critical"
                       ? "bg-destructive/10 text-destructive"
                       : "bg-warning/10 text-warning"
@@ -157,7 +157,7 @@ export default function OrgOverviewPanel({ account }: Props) {
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | number }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4 shadow-sm">
-      <div className="flex items-center gap-2 mb-1 text-muted-foreground">{icon}<span className="text-[10px] uppercase tracking-wider">{label}</span></div>
+      <div className="flex items-center gap-2 mb-1 text-muted-foreground">{icon}<span className="text-[0.65rem] uppercase tracking-wider">{label}</span></div>
       <p className="text-2xl font-bold text-foreground">{value}</p>
     </div>
   );

@@ -75,12 +75,12 @@ export function EmbarkModuleCard({ step }: { step: StepEntry }) {
               <Clock className="h-3 w-3" /> {step.duration}
             </span>
           )}
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+          <Badge variant="secondary" className="text-[0.65rem] px-1.5 py-0">
             {substitute(step.skillTargetTitle)}
           </Badge>
           <Badge
             variant={isCompleted ? "default" : isSkipped ? "outline" : "outline"}
-            className={cn("text-[10px] px-1.5 py-0", isSkipped && "text-amber-600 border-amber-400")}
+            className={cn("text-[0.65rem] px-1.5 py-0", isSkipped && "text-amber-600 border-amber-400")}
           >
             {isSkipped ? "skipped" : step.status}
           </Badge>
@@ -88,7 +88,7 @@ export function EmbarkModuleCard({ step }: { step: StepEntry }) {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Badge className="text-[10px] px-1.5 py-0 bg-accent/15 text-accent ring-1 ring-accent/30 hover:bg-accent/15 gap-1">
+                  <Badge className="text-[0.65rem] px-1.5 py-0 bg-accent/15 text-accent ring-1 ring-accent/30 hover:bg-accent/15 gap-1">
                     <Sparkles className="h-3 w-3" />
                     Micro Refresher · Added for you
                   </Badge>

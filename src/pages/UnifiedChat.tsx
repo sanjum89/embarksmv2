@@ -123,7 +123,7 @@ function ThinkingIndicator() {
             <motion.div key={d} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: d }} className="h-1.5 w-1.5 rounded-full bg-primary" />
           ))}
         </div>
-        <span className="text-[11px] italic text-muted-foreground">Thinking...</span>
+        <span className="text-[0.7rem] italic text-muted-foreground">Thinking...</span>
       </div>
     </motion.div>
   );
@@ -297,7 +297,7 @@ function UnifiedChatInner() {
                 <motion.h1
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="font-display text-[28px] font-bold text-foreground mb-6"
+                  className="font-display text-[1.6rem] font-bold text-foreground mb-6 leading-tight break-words"
                 >
                   Hi {firstName}, let's grow together
                 </motion.h1>
@@ -330,13 +330,13 @@ function UnifiedChatInner() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.05 + i * 0.04 }}
                       onClick={() => handleCardSend(card.prompt)}
-                      className="flex flex-col rounded-xl border border-border bg-card p-3 text-left hover:shadow-md hover:border-primary/30 transition-all group"
+                      className="flex flex-col rounded-xl border border-border bg-card p-3 text-left hover:shadow-md hover:border-primary/30 transition-all group min-w-0"
                     >
                       <div className="bg-primary/5 rounded-lg p-2 mb-3">
                         <CardIllustration type={card.illustration} />
                       </div>
-                      <span className="text-[13px] font-medium text-foreground leading-snug mb-1">{card.label}</span>
-                      <span className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{card.description}</span>
+                      <span className="text-[0.8rem] font-medium text-foreground leading-snug mb-1 break-words">{card.label}</span>
+                      <span className="text-[0.7rem] text-muted-foreground leading-snug line-clamp-3 break-words">{card.description}</span>
                     </motion.button>
                   ))}
                 </div>
@@ -356,7 +356,7 @@ function UnifiedChatInner() {
                         }
                       }}
                       placeholder="Ask anything..."
-                      className="h-11 rounded-xl border-border text-[13px] focus-visible:ring-primary/30 pl-9 pr-11"
+                      className="h-11 rounded-xl border-border text-[0.8rem] focus-visible:ring-primary/30 pl-9 pr-11"
                       disabled={isStreaming}
                     />
                     <Button
@@ -409,15 +409,15 @@ function UnifiedChatInner() {
                   <div className="flex-1 min-w-0 flex items-center gap-2">
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="text-[14px] font-bold leading-tight">Agent One</h3>
-                        <span className="rounded-full bg-white/20 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider">Live</span>
+                        <h3 className="text-sm font-bold leading-tight">Agent One</h3>
+                        <span className="rounded-full bg-white/20 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wider">Live</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="relative flex h-1.5 w-1.5">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
                           <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400" />
                         </span>
-                        <p className="text-[10px] text-primary-foreground/75">Online now</p>
+                        <p className="text-[0.65rem] text-primary-foreground/75">Online now</p>
                       </div>
                     </div>
                     <button
@@ -433,7 +433,7 @@ function UnifiedChatInner() {
                   <button
                     onClick={() => setEmbarkOpen((p) => !p)}
                     className={cn(
-                      "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-all",
+                      "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[0.7rem] font-medium transition-all",
                       embarkOpen
                         ? "bg-white/20 text-primary-foreground"
                         : "bg-white/10 text-primary-foreground/70 hover:bg-white/15 hover:text-primary-foreground"
@@ -446,7 +446,7 @@ function UnifiedChatInner() {
                   </button>
                   <button
                     onClick={() => setChatActive(false)}
-                    className="text-[11px] text-primary-foreground/60 hover:text-primary-foreground transition-colors px-2 py-1 rounded-md hover:bg-white/10 flex items-center gap-1"
+                    className="text-[0.7rem] text-primary-foreground/60 hover:text-primary-foreground transition-colors px-2 py-1 rounded-md hover:bg-white/10 flex items-center gap-1"
                   >
                     <Home className="h-3 w-3" />
                     Home
@@ -463,7 +463,7 @@ function UnifiedChatInner() {
                     onClick={() => {
                       messagesContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
                     }}
-                    className="flex items-center gap-1 rounded-full bg-card border border-border shadow-sm px-3 py-1 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+                    className="flex items-center gap-1 rounded-full bg-card border border-border shadow-sm px-3 py-1 text-[0.7rem] text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <ChevronUp className="h-3 w-3" />
                     Earlier messages
@@ -491,7 +491,7 @@ function UnifiedChatInner() {
                         <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
                           {msg.role === "user" ? (
                             <div className="flex justify-end mb-1" ref={isLastUserMsg ? lastUserMsgRef : undefined}>
-                              <div className="rounded-2xl bg-primary text-primary-foreground px-3.5 py-2.5 text-[13px] max-w-[75%] shadow-sm">
+                              <div className="rounded-2xl bg-primary text-primary-foreground px-3.5 py-2.5 text-[0.8rem] max-w-[75%] shadow-sm">
                                 {msg.content}
                               </div>
                             </div>
@@ -502,7 +502,7 @@ function UnifiedChatInner() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <div className="bg-secondary/50 border border-border/50 rounded-2xl px-3.5 py-3 shadow-sm max-w-[90%]">
-                                  <div className="prose prose-sm max-w-none text-foreground text-[13px] leading-relaxed [&_p]:mb-1.5 [&_ul]:mb-1.5 [&_li]:mb-0.5">
+                                  <div className="prose prose-sm max-w-none text-foreground text-[0.8rem] leading-relaxed [&_p]:mb-1.5 [&_ul]:mb-1.5 [&_li]:mb-0.5">
                                     <ReactMarkdown>{parseSuggestions(msg.content).clean}</ReactMarkdown>
                                   </div>
                                 </div>
@@ -529,7 +529,7 @@ function UnifiedChatInner() {
                   {isStreaming && (
                     <div>
                       {ctaLabel && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[11px] italic text-muted-foreground mb-1 px-1">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[0.7rem] italic text-muted-foreground mb-1 px-1">
                           {ctaLabel}
                         </motion.div>
                       )}
@@ -550,7 +550,7 @@ function UnifiedChatInner() {
                             const action = resolvePillAction(pill, skillTargets);
                             if (action) { navigate(action.navigate); } else { handleSend(pill); }
                           }}
-                          className="rounded-full border border-primary/20 bg-card px-3 py-1 text-[11px] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]"
+                          className="rounded-full border border-primary/20 bg-card px-3 py-1 text-[0.7rem] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]"
                         >
                           {pill}
                         </button>
@@ -573,7 +573,7 @@ function UnifiedChatInner() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") handleSend(input); }}
                   placeholder="Ask anything..."
-                  className="h-11 rounded-xl border-border text-[13px] focus-visible:ring-primary/30 pl-9 pr-11"
+                  className="h-11 rounded-xl border-border text-[0.8rem] focus-visible:ring-primary/30 pl-9 pr-11"
                   disabled={isStreaming}
                 />
                 <Button

@@ -93,7 +93,7 @@ export function CareerTimeline({ userId }: CareerTimelineProps) {
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
-        <h4 className="font-display text-[28px] font-bold text-foreground leading-tight">Career Timeline</h4>
+        <h4 className="font-display text-[1.6rem] font-bold text-foreground leading-tight">Career Timeline</h4>
         <div className="flex items-center gap-2">
           <select
             value={roleFilter}
@@ -166,7 +166,7 @@ export function CareerTimeline({ userId }: CareerTimelineProps) {
                     {entry.month ?? entry.year}
                   </span>
                   {entry.month && (
-                    <span className="absolute -left-[5rem] top-5 text-[11px] text-muted-foreground/60 w-14 text-right">
+                    <span className="absolute -left-[5rem] top-5 text-[0.7rem] text-muted-foreground/60 w-14 text-right">
                       {entry.year}
                     </span>
                   )}
@@ -208,7 +208,7 @@ export function CareerTimeline({ userId }: CareerTimelineProps) {
                         onMouseLeave={() => setHoverCard(null)}
                       >
                         {isSelected && (
-                          <span className="inline-flex items-center rounded-full bg-accent px-3 py-1 text-[11px] font-semibold text-accent-foreground shadow-sm mb-2">
+                          <span className="inline-flex items-center rounded-full bg-accent px-3 py-1 text-[0.7rem] font-semibold text-accent-foreground shadow-sm mb-2">
                             Current
                           </span>
                         )}

@@ -525,13 +525,13 @@ function SourceDetail({
               <Zap className="h-3 w-3 text-amber-500" />
               {system.signalCount.toLocaleString()} signals
             </span>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-emerald-500/10 text-emerald-700 border-emerald-500/20">
+            <Badge variant="secondary" className="text-[0.65rem] px-1.5 py-0 bg-emerald-500/10 text-emerald-700 border-emerald-500/20">
               {directCount} direct
             </Badge>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-purple-500/10 text-purple-700 border-purple-500/20">
+            <Badge variant="secondary" className="text-[0.65rem] px-1.5 py-0 bg-purple-500/10 text-purple-700 border-purple-500/20">
               {derivedCount} derived
             </Badge>
-            <span className="text-[10px] text-muted-foreground flex items-center gap-1 ml-auto">
+            <span className="text-[0.65rem] text-muted-foreground flex items-center gap-1 ml-auto">
               <Clock className="h-2.5 w-2.5" /> {system.lastSync}
             </span>
           </div>
@@ -543,12 +543,12 @@ function SourceDetail({
         {system.signals.map((sig) => (
           <div key={sig.id} className="flex items-start justify-between gap-2 py-1.5 px-2.5 rounded-lg bg-muted/40">
             <div className="min-w-0 flex-1">
-              <p className="text-[11px] font-medium text-foreground">{sig.name}</p>
-              <p className="text-[10px] text-muted-foreground line-clamp-1">{sig.description}</p>
+              <p className="text-[0.7rem] font-medium text-foreground">{sig.name}</p>
+              <p className="text-[0.65rem] text-muted-foreground line-clamp-1">{sig.description}</p>
             </div>
             <Badge
               variant="outline"
-              className={`text-[9px] shrink-0 ${
+              className={`text-[0.6rem] shrink-0 ${
                 sig.type === "direct" ? "border-emerald-500/40 text-emerald-600" : "border-purple-500/40 text-purple-600"
               }`}
             >
@@ -609,12 +609,12 @@ function EngineDetail({ affectedCompute }: { affectedCompute: Set<string> }) {
                   {node.label}
                 </span>
                 {isAffected && (
-                  <Badge variant="destructive" className="text-[9px] px-1.5 py-0 ml-auto">
+                  <Badge variant="destructive" className="text-[0.6rem] px-1.5 py-0 ml-auto">
                     Impacted
                   </Badge>
                 )}
               </div>
-              <p className="text-[10px] text-muted-foreground leading-relaxed">{node.description}</p>
+              <p className="text-[0.65rem] text-muted-foreground leading-relaxed">{node.description}</p>
             </div>
           );
         })}
@@ -642,7 +642,7 @@ function ConsumerDetail({ consumer, isAffected }: { consumer: ConsumerNode; isAf
             {consumer.label}
           </h3>
           {isAffected && (
-            <Badge variant="destructive" className="text-[10px] px-2 py-0.5 mt-1">
+            <Badge variant="destructive" className="text-[0.65rem] px-2 py-0.5 mt-1">
               Data Reduced — Simulation Active
             </Badge>
           )}
@@ -652,12 +652,12 @@ function ConsumerDetail({ consumer, isAffected }: { consumer: ConsumerNode; isAf
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Signals received */}
         <div>
-          <p className="text-[11px] font-semibold text-foreground mb-2">Signals Received</p>
+          <p className="text-[0.7rem] font-semibold text-foreground mb-2">Signals Received</p>
           <div className="space-y-1">
             {consumer.signals.map((sig, i) => (
               <div key={i} className="flex items-center gap-2 py-1 px-2 rounded-md bg-muted/40">
                 <Zap className="h-2.5 w-2.5 text-amber-500 shrink-0" />
-                <span className="text-[11px] text-foreground">{sig}</span>
+                <span className="text-[0.7rem] text-foreground">{sig}</span>
               </div>
             ))}
           </div>
@@ -665,7 +665,7 @@ function ConsumerDetail({ consumer, isAffected }: { consumer: ConsumerNode; isAf
 
         {/* Fed by compute nodes */}
         <div>
-          <p className="text-[11px] font-semibold text-foreground mb-2">Fed by Compute Nodes</p>
+          <p className="text-[0.7rem] font-semibold text-foreground mb-2">Fed by Compute Nodes</p>
           <div className="space-y-1">
             {feedingComputes.map((cn) => {
               const isCompAffected = isAffected;
@@ -677,7 +677,7 @@ function ConsumerDetail({ consumer, isAffected }: { consumer: ConsumerNode; isAf
                   }`}
                 >
                   <span className={isCompAffected ? "text-destructive" : cn.color}>{cn.icon}</span>
-                  <span className={`text-[11px] ${isCompAffected ? "text-destructive" : "text-foreground"}`}>
+                  <span className={`text-[0.7rem] ${isCompAffected ? "text-destructive" : "text-foreground"}`}>
                     {cn.label}
                   </span>
                 </div>

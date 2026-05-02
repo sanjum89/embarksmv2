@@ -212,7 +212,7 @@ export function EmbarkPodcastPlayer({ script, staticAudioUrl }: Props) {
           <Volume2 className="h-3.5 w-3.5" />
           <span className="font-medium">Audio Playback</span>
           {isStatic && (
-            <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
+            <span className="text-[0.65rem] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">
               Pre-generated
             </span>
           )}

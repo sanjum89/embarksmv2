@@ -232,7 +232,7 @@ export default function My360() {
                 <div className="flex items-center gap-2">
                   <h4 className="font-display text-lg font-bold text-foreground">{user.name}</h4>
                   {profileData.status && (
-                    <span className="rounded-full bg-info/10 border border-info/20 px-2.5 py-0.5 text-[10px] font-medium text-info">
+                    <span className="rounded-full bg-info/10 border border-info/20 px-2.5 py-0.5 text-[0.65rem] font-medium text-info">
                       {profileData.status}
                     </span>
                   )}
@@ -289,7 +289,7 @@ export default function My360() {
                 >
                   <div className="mt-3 rounded-lg bg-muted/50 border border-border p-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="rounded-full border border-border px-2.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      <span className="rounded-full border border-border px-2.5 py-0.5 text-[0.65rem] font-medium text-muted-foreground">
                         Summarised by WFAI
                       </span>
                     </div>
@@ -538,7 +538,7 @@ export default function My360() {
                                   <span className="text-sm font-medium text-foreground">{substitute(cohort.name)}</span>
                                 </div>
                                 {cohort.type && (
-                                  <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground capitalize">
+                                  <span className="rounded-full border border-border px-2 py-0.5 text-[0.65rem] font-medium text-muted-foreground capitalize">
                                     {cohort.type}
                                   </span>
                                 )}
@@ -553,7 +553,7 @@ export default function My360() {
                                 <span className="text-xs font-medium text-muted-foreground w-8 text-right">{progress}%</span>
                               </div>
                               {cohort.skillTargetIds.length > 0 && (
-                                <p className="text-[10px] text-muted-foreground">
+                                <p className="text-[0.65rem] text-muted-foreground">
                                   {cohort.skillTargetIds.length} skill target{cohort.skillTargetIds.length !== 1 ? "s" : ""}
                                 </p>
                               )}
@@ -573,7 +573,7 @@ export default function My360() {
                             </div>
                             <div className="flex items-center gap-2">
                               {cohort.type && (
-                                <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-muted-foreground capitalize">
+                                <span className="rounded-full border border-border px-2 py-0.5 text-[0.65rem] font-medium text-muted-foreground capitalize">
                                   {cohort.type}
                                 </span>
                               )}
@@ -642,7 +642,7 @@ export default function My360() {
                             )}>
                               <span className="truncate">{row.skill}</span>
                               <span className={cn(
-                                "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0 ml-auto",
+                                "flex h-6 w-6 items-center justify-center rounded-full text-[0.65rem] font-bold shrink-0 ml-auto",
                                 row.level === "—"
                                   ? "bg-muted text-muted-foreground"
                                   : row.hasGap ? "bg-accent/15 text-accent" : "bg-success/15 text-success"
@@ -652,11 +652,11 @@ export default function My360() {
                             </span>
 
                             {/* Arrow */}
-                            <span className="text-muted-foreground text-[10px] shrink-0 text-center">{">>"}</span>
+                            <span className="text-muted-foreground text-[0.65rem] shrink-0 text-center">{">>"}</span>
 
                             {/* Target badge */}
                             <span className={cn(
-                              "flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold shrink-0",
+                              "flex h-6 w-6 items-center justify-center rounded-full text-[0.65rem] font-bold shrink-0",
                               !row.hasGap ? "bg-success/15 text-success" : row.gapLevel === "High gap" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"
                             )}>
                               {!row.hasGap ? "✓" : row.target}
@@ -666,7 +666,7 @@ export default function My360() {
                             <span className="w-[72px]">
                               {row.hasGap ? (
                                 <span className={cn(
-                                  "rounded-full px-2 py-0.5 text-[10px] font-medium whitespace-nowrap",
+                                  "rounded-full px-2 py-0.5 text-[0.65rem] font-medium whitespace-nowrap",
                                   row.gapLevel === "High gap" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"
                                 )}>
                                   {row.gapLevel}

@@ -254,7 +254,7 @@ export default function RequestReflectionDialog({ open, onOpenChange, accountId,
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">{account.employeesById[managerEmployeeId]?.name || "Manager"}</p>
-                  <p className="text-[10px] text-muted-foreground">Requested a reflection</p>
+                  <p className="text-[0.65rem] text-muted-foreground">Requested a reflection</p>
                 </div>
               </div>
               <div className="text-sm text-foreground">
@@ -267,7 +267,7 @@ export default function RequestReflectionDialog({ open, onOpenChange, accountId,
                   <p key={i}>{i + 1}. {q}</p>
                 ))}
               </div>
-              <p className="text-[10px] text-muted-foreground border-t border-border pt-2">
+              <p className="text-[0.65rem] text-muted-foreground border-t border-border pt-2">
                 Sending to: {employeeNames.join(", ")}
               </p>
             </div>

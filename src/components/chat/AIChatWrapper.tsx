@@ -35,7 +35,7 @@ function ThinkingIndicator() {
             <motion.div key={d} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: d }} className="h-1.5 w-1.5 rounded-full bg-primary" />
           ))}
         </div>
-        <span className="text-[11px] italic text-muted-foreground">Thinking...</span>
+        <span className="text-[0.7rem] italic text-muted-foreground">Thinking...</span>
       </div>
     </motion.div>
   );
@@ -179,7 +179,7 @@ function AIChatWrapperInner() {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
                       <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400" />
                     </span>
-                    <p className="text-[10px] text-primary-foreground/75">Online now</p>
+                    <p className="text-[0.65rem] text-primary-foreground/75">Online now</p>
                   </div>
                 </div>
                 <button
@@ -231,7 +231,7 @@ function AIChatWrapperInner() {
                         {msg.role === "user" ? (
                           <div className="flex flex-col items-end mb-1" ref={isLastUserMsg ? lastUserMsgRef : undefined}>
                             {msg.sourceBreadcrumb && (
-                              <div className="flex items-center gap-0.5 text-[11px] text-muted-foreground/60 mb-1 mr-1">
+                              <div className="flex items-center gap-0.5 text-[0.7rem] text-muted-foreground/60 mb-1 mr-1">
                                 {msg.sourceBreadcrumb.split(" › ").map((seg, si, arr) => (
                                   <Fragment key={si}>
                                     <span>{seg}</span>
@@ -240,7 +240,7 @@ function AIChatWrapperInner() {
                                 ))}
                               </div>
                             )}
-                            <div className="rounded-2xl bg-primary text-primary-foreground px-3 py-2 text-[13px] max-w-[85%] shadow-sm">
+                            <div className="rounded-2xl bg-primary text-primary-foreground px-3 py-2 text-[0.8rem] max-w-[85%] shadow-sm">
                               {msg.content}
                             </div>
                           </div>
@@ -251,7 +251,7 @@ function AIChatWrapperInner() {
                             </div>
                             <div className="flex-1 min-w-0">
                               <div className="bg-secondary/50 border border-border/50 rounded-2xl px-3.5 py-3 shadow-sm max-w-[95%]">
-                                <div className="prose prose-sm max-w-none text-foreground text-[13px] leading-relaxed [&_p]:mb-1.5 [&_ul]:mb-1.5 [&_li]:mb-0.5">
+                                <div className="prose prose-sm max-w-none text-foreground text-[0.8rem] leading-relaxed [&_p]:mb-1.5 [&_ul]:mb-1.5 [&_li]:mb-0.5">
                                   <ReactMarkdown>{parseSuggestions(msg.content).clean}</ReactMarkdown>
                                 </div>
                               </div>
@@ -296,12 +296,12 @@ function AIChatWrapperInner() {
                       <button key={pill} onClick={() => {
                               const action = resolvePillAction(pill, skillTargets);
                               if (action) { navigate(action.navigate); } else { handleSend(pill); }
-                            }} className="rounded-full border border-primary/20 bg-card px-2.5 py-0.5 text-[10px] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]">
+                            }} className="rounded-full border border-primary/20 bg-card px-2.5 py-0.5 text-[0.65rem] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]">
                         {pill}
                       </button>
                     ))}
                     {extra > 0 && (
-                      <span className="rounded-full px-2 py-0.5 text-[10px] text-muted-foreground">+{extra}</span>
+                      <span className="rounded-full px-2 py-0.5 text-[0.65rem] text-muted-foreground">+{extra}</span>
                     )}
                   </motion.div>
                 </div>
@@ -317,7 +317,7 @@ function AIChatWrapperInner() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") handleSend(input); }}
                   placeholder="Ask anything..."
-                  className="pr-10 h-10 rounded-xl border-border text-[13px] focus-visible:ring-primary/30"
+                  className="pr-10 h-10 rounded-xl border-border text-[0.8rem] focus-visible:ring-primary/30"
                   disabled={isStreaming}
                 />
                 <div className="absolute right-1.5 top-1/2 -translate-y-1/2">

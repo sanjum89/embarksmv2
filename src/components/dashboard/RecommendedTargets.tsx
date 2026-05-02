@@ -113,18 +113,18 @@ export function RecommendedTargets({ traditional }: Props) {
               {target.description}
             </p>
             <div className="flex items-center gap-2 flex-wrap">
-              <Badge variant="secondary" className="text-[10px] px-2 py-0">
+              <Badge variant="secondary" className="text-[0.65rem] px-2 py-0">
                 {target.category}
               </Badge>
               <span
                 className={cn(
-                  "text-[10px] px-2 py-0.5 rounded-full font-medium",
+                  "text-[0.65rem] px-2 py-0.5 rounded-full font-medium",
                   difficultyColor[target.difficulty] || "bg-secondary text-secondary-foreground"
                 )}
               >
                 {target.difficulty}
               </span>
-              <span className="text-[10px] text-muted-foreground">
+              <span className="text-[0.65rem] text-muted-foreground">
                 {target.steps.length} steps
               </span>
             </div>

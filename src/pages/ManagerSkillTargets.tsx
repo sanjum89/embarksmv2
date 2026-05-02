@@ -109,7 +109,7 @@ export default function ManagerSkillTargets() {
                       <p className="text-xs text-muted-foreground truncate">{target.description}</p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
-                      <Badge variant="outline" className={cn("text-[10px]", difficultyColor[target.difficulty])}>{target.difficulty}</Badge>
+                      <Badge variant="outline" className={cn("text-[0.65rem]", difficultyColor[target.difficulty])}>{target.difficulty}</Badge>
                       <span className="text-xs text-muted-foreground">{target.steps.length} steps</span>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
                         <Users className="h-3.5 w-3.5" />

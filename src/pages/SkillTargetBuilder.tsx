@@ -665,7 +665,7 @@ function UploadModal({ open, onClose, addedIds, onAdd }: { open: boolean; onClos
                       {item.kind === "module" && (item.data as LearningModule).duration && ` · ${(item.data as LearningModule).duration}`}
                     </p>
                   </div>
-                  {added && <Badge variant="secondary" className="text-[10px]">Added</Badge>}
+                  {added && <Badge variant="secondary" className="text-[0.65rem]">Added</Badge>}
                 </label>
               );
             })}
@@ -749,7 +749,7 @@ function BuilderPanel({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium text-foreground truncate">{step.title}</p>
-                        <p className="text-[10px] text-muted-foreground">
+                        <p className="text-[0.65rem] text-muted-foreground">
                           {step.type === "module" ? "Module" : step.type === "assessment" ? "Assessment" : "Role Play"}
                           {step.duration && ` · ${step.duration}`}
                           {step.skippable && step.skipCondition && (

@@ -68,7 +68,7 @@ export function NudgeStack({ onChatAction }: { onChatAction?: (prompt: string) =
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         <button
           onClick={() => setCollapsed(false)}
-          className="flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[11px] font-medium text-primary hover:bg-primary/10 transition-colors"
+          className="flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[0.7rem] font-medium text-primary hover:bg-primary/10 transition-colors"
         >
           <Sparkles className="h-3 w-3" />
           {activeNudges.length} action{activeNudges.length !== 1 ? "s" : ""}
@@ -102,12 +102,12 @@ export function NudgeStack({ onChatAction }: { onChatAction?: (prompt: string) =
                   <Icon className="h-3.5 w-3.5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <span className={cn("text-[12px] font-medium truncate block", theme.text)}>{nudge.title}</span>
-                  <span className="text-[10px] text-muted-foreground truncate block">{nudge.subtitle}</span>
+                  <span className={cn("text-xs font-medium truncate block", theme.text)}>{nudge.title}</span>
+                  <span className="text-[0.65rem] text-muted-foreground truncate block">{nudge.subtitle}</span>
                 </div>
                 <button
                   onClick={() => handleCTA(nudge)}
-                  className={cn("shrink-0 inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] font-medium text-white transition-colors", theme.cta, theme.ctaHover)}
+                  className={cn("shrink-0 inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[0.7rem] font-medium text-white transition-colors", theme.cta, theme.ctaHover)}
                 >
                   {nudge.ctaLabel}
                   <ArrowRight className="h-3 w-3" />
@@ -123,8 +123,8 @@ export function NudgeStack({ onChatAction }: { onChatAction?: (prompt: string) =
 
       {/* Footer */}
       <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/30 border-t border-border/50">
-        {hiddenCount > 0 && <span className="text-[10px] text-muted-foreground">+{hiddenCount} more</span>}
-        <button onClick={() => setCollapsed(true)} className="ml-auto text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">
+        {hiddenCount > 0 && <span className="text-[0.65rem] text-muted-foreground">+{hiddenCount} more</span>}
+        <button onClick={() => setCollapsed(true)} className="ml-auto text-[0.65rem] text-muted-foreground/60 hover:text-muted-foreground transition-colors">
           Minimize
         </button>
       </div>

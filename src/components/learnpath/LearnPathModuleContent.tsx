@@ -346,7 +346,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
                         )}
                       >
                         {level <= 2 && (
-                          <span className="h-5 w-5 rounded-md bg-primary/10 text-primary text-[10px] font-bold flex items-center justify-center shrink-0">
+                          <span className="h-5 w-5 rounded-md bg-primary/10 text-primary text-[0.65rem] font-bold flex items-center justify-center shrink-0">
                             {headings.filter((hh, ii) => ii <= i && (hh.match(/^#+/) ?? [""])[0].length <= 2).length}
                           </span>
                         )}
@@ -392,7 +392,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
                   </div>
                 ),
                 p: ({ children }) => (
-                  <p className="text-[15px] text-muted-foreground leading-[1.85] mb-4">{children}</p>
+                  <p className="text-[0.9rem] text-muted-foreground leading-[1.85] mb-4">{children}</p>
                 ),
                 strong: ({ children }) => (
                   <strong className="font-semibold text-foreground bg-accent/10 px-1 py-0.5 rounded-sm">{children}</strong>
@@ -404,7 +404,7 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
                   <ol className="space-y-1.5 my-4 list-none counter-reset-none">{children}</ol>
                 ),
                 li: ({ children }) => (
-                  <li className="flex items-start gap-2.5 rounded-lg bg-muted/30 px-3.5 py-2.5 text-[15px] text-muted-foreground leading-relaxed">
+                  <li className="flex items-start gap-2.5 rounded-lg bg-muted/30 px-3.5 py-2.5 text-[0.9rem] text-muted-foreground leading-relaxed">
                     <CheckCircle2 className="h-4 w-4 text-success mt-0.5 shrink-0" />
                     <span>{children}</span>
                   </li>

@@ -86,7 +86,7 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
         </div>
         <Slider value={[passPercent]} onValueChange={([v]) => setPassPercent(v)} min={50} max={100} step={5} />
         {program?.adaptiveSkipThresholds && (
-          <p className="text-[10px] text-muted-foreground mt-2">
+          <p className="text-[0.65rem] text-muted-foreground mt-2">
             &gt;{program.adaptiveSkipThresholds.skipOne}% skips Module 2 · ≥{program.adaptiveSkipThresholds.skipTwo}% skips Modules 2 & 3
           </p>
         )}
@@ -109,7 +109,7 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
               <span className={cn("text-xs flex-1", enabledSteps.has(step.id) ? "text-foreground" : "text-muted-foreground line-through")}>
                 {step.title}
               </span>
-              <Badge variant="outline" className="text-[9px] shrink-0">{step.type}</Badge>
+              <Badge variant="outline" className="text-[0.6rem] shrink-0">{step.type}</Badge>
             </label>
           ))}
         </div>
@@ -125,12 +125,12 @@ export default function TrainingAssignPanel({ onAssigned }: TrainingAssignPanelP
                 checked={selectedLearners.has(hire.user.id)}
                 onCheckedChange={() => toggleLearner(hire.user.id)}
               />
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shrink-0">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[0.65rem] font-bold text-primary-foreground shrink-0">
                 {hire.user.name.split(" ").map((n) => n[0]).join("")}
               </div>
               <div className="min-w-0">
                 <p className="text-xs font-medium text-foreground">{hire.user.name}</p>
-                <p className="text-[10px] text-muted-foreground">{hire.location}</p>
+                <p className="text-[0.65rem] text-muted-foreground">{hire.location}</p>
               </div>
             </label>
           ))}

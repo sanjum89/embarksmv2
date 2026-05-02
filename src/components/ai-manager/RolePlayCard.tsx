@@ -16,7 +16,7 @@ export function RolePlayCard() {
       <div className="flex items-center gap-2 mb-3">
         <Drama className="h-4 w-4 text-primary" />
         <span className="text-sm font-semibold text-foreground">Role Play Scenario</span>
-        <span className="ml-auto rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent">
+        <span className="ml-auto rounded-full bg-accent/15 px-2 py-0.5 text-[0.65rem] font-medium text-accent">
           {rolePlayScenario.difficulty}
         </span>
       </div>
@@ -24,7 +24,7 @@ export function RolePlayCard() {
       <h4 className="text-sm font-medium text-foreground mb-1">{rolePlayScenario.title}</h4>
       <p className="text-xs text-muted-foreground mb-3">{rolePlayScenario.description}</p>
 
-      <div className="flex items-center gap-2 text-[10px] text-muted-foreground mb-3">
+      <div className="flex items-center gap-2 text-[0.65rem] text-muted-foreground mb-3">
         <Clock className="h-3 w-3" />
         {rolePlayScenario.duration}
       </div>

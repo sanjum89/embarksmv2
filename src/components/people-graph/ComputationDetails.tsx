@@ -36,23 +36,23 @@ export function ComputationDetails() {
                   <div className="px-4 pb-4 space-y-3">
                     {/* Formula */}
                     <div className="rounded-lg bg-slate-900/5 dark:bg-slate-100/5 p-3">
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Formula</p>
+                      <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mb-1">Formula</p>
                       <code className="text-xs font-mono text-foreground/80 break-all">{metric.formula}</code>
                     </div>
 
                     {/* Inputs */}
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Input Sources</p>
+                      <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mb-1.5">Input Sources</p>
                       <div className="flex flex-wrap gap-1.5">
                         {metric.inputs.map((inp, j) => (
-                          <Badge key={j} variant="secondary" className="text-[10px]">{inp}</Badge>
+                          <Badge key={j} variant="secondary" className="text-[0.65rem]">{inp}</Badge>
                         ))}
                       </div>
                     </div>
 
                     {/* Thresholds */}
                     <div>
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1.5">Thresholds</p>
+                      <p className="text-[0.65rem] uppercase tracking-wider text-muted-foreground mb-1.5">Thresholds</p>
                       <div className="flex gap-2 flex-wrap">
                         {Object.entries(metric.thresholds).map(([level, val]) => (
                           <div key={level} className={`rounded-md px-2.5 py-1.5 text-xs ${

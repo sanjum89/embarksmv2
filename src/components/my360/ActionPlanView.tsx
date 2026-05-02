@@ -176,7 +176,7 @@ function RecommendationRow({
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <span className="text-sm font-medium text-foreground truncate">{rec.skill}</span>
           {rec.isNew && (
-            <span className="rounded-full bg-accent/10 border border-accent/20 px-2 py-0.5 text-[10px] font-semibold text-accent shrink-0">
+            <span className="rounded-full bg-accent/10 border border-accent/20 px-2 py-0.5 text-[0.65rem] font-semibold text-accent shrink-0">
               NEW
             </span>
           )}
@@ -185,16 +185,16 @@ function RecommendationRow({
         {/* Level transition */}
         <div className="flex items-center gap-1.5 shrink-0">
           {rec.currentLevel ? (
-            <span className={cn("flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold", levelColors[rec.currentLevel])}>
+            <span className={cn("flex h-6 w-6 items-center justify-center rounded-full text-[0.65rem] font-bold", levelColors[rec.currentLevel])}>
               {rec.currentLevel}
             </span>
           ) : (
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[10px] font-bold text-muted-foreground">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[0.65rem] font-bold text-muted-foreground">
               —
             </span>
           )}
           <ArrowRight className="h-3 w-3 text-muted-foreground" />
-          <span className={cn("flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold", levelColors[rec.targetLevel])}>
+          <span className={cn("flex h-6 w-6 items-center justify-center rounded-full text-[0.65rem] font-bold", levelColors[rec.targetLevel])}>
             {rec.targetLevel}
           </span>
         </div>
@@ -223,7 +223,7 @@ function RecommendationRow({
                     mod.type === "video" ? "text-info" : "text-muted-foreground"
                   )} />
                   <span className="text-xs font-medium text-foreground flex-1 truncate">{mod.title}</span>
-                  <span className="text-[10px] text-muted-foreground shrink-0">{mod.duration}</span>
+                  <span className="text-[0.65rem] text-muted-foreground shrink-0">{mod.duration}</span>
                 </div>
               ))}
             </div>

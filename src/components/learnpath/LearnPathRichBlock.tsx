@@ -123,7 +123,7 @@ function InlineQuiz({ data, onComplete }: { data: InlineQuizData; onComplete?: (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-foreground">{data.title || "Quick Quiz"}</span>
-        <span className="text-[10px] text-muted-foreground">{currentQ + 1}/{data.questions.length}</span>
+        <span className="text-[0.65rem] text-muted-foreground">{currentQ + 1}/{data.questions.length}</span>
       </div>
       <div className="h-1 bg-muted rounded-full overflow-hidden">
         <div className="h-full bg-primary rounded-full transition-all duration-300" style={{ width: `${((currentQ + (confirmed ? 1 : 0)) / data.questions.length) * 100}%` }} />
@@ -213,8 +213,8 @@ function SkillGapsChart({ data }: { data: SkillGapsChartData }) {
           return (
             <div key={skill.name} className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-medium text-foreground truncate max-w-[55%]">{skill.name}</span>
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                <span className="text-[0.7rem] font-medium text-foreground truncate max-w-[55%]">{skill.name}</span>
+                <div className="flex items-center gap-2 text-[0.65rem] text-muted-foreground">
                   <span>{skill.currentLevel || `${skill.current}%`}</span>
                   <span>→</span>
                   <span className="font-medium text-foreground">{skill.requiredLevel || `${skill.required}%`}</span>
@@ -237,7 +237,7 @@ function SkillGapsChart({ data }: { data: SkillGapsChartData }) {
           );
         })}
       </div>
-      <div className="flex items-center gap-3 text-[10px] text-muted-foreground pt-1">
+      <div className="flex items-center gap-3 text-[0.65rem] text-muted-foreground pt-1">
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-foreground/60 inline-block" /> Required</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary inline-block" /> Current</span>
       </div>
@@ -283,7 +283,7 @@ function LearningPathVisual({ data }: { data: LearningPathVisualData }) {
                 {mod.title}
               </p>
               {mod.skillTarget && (
-                <p className="text-[10px] text-muted-foreground truncate">{mod.skillTarget}</p>
+                <p className="text-[0.65rem] text-muted-foreground truncate">{mod.skillTarget}</p>
               )}
             </div>
           </div>

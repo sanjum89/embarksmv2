@@ -95,7 +95,7 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
       {/* Step number + icon */}
       <div className="flex flex-col items-center gap-1">
         {statusIndicator()}
-        <span className="text-[10px] font-medium text-muted-foreground">
+        <span className="text-[0.65rem] font-medium text-muted-foreground">
           {step.order}
         </span>
       </div>
@@ -132,7 +132,7 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
         {/* Badges */}
         <div className="mt-2 flex flex-wrap gap-1.5">
           <span className={cn(
-            "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium capitalize",
+            "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[0.65rem] font-medium capitalize",
             "bg-secondary text-muted-foreground"
           )}>
             <TypeIcon className="h-3 w-3" />
@@ -142,7 +142,7 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span className="inline-flex items-center gap-1 rounded-md bg-accent/15 px-2 py-0.5 text-[10px] font-medium text-accent ring-1 ring-accent/30">
+                  <span className="inline-flex items-center gap-1 rounded-md bg-accent/15 px-2 py-0.5 text-[0.65rem] font-medium text-accent ring-1 ring-accent/30">
                     <Sparkles className="h-3 w-3" />
                     Micro Refresher · Added for you
                   </span>
@@ -154,25 +154,25 @@ export function StepListItem({ step, index, skillTargetId, isLast, showAccentLin
             </TooltipProvider>
           )}
           {step.learningFormat === "micro" && !step.isAdaptive && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-300">
+            <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 text-[0.65rem] font-medium text-amber-700 dark:text-amber-300">
               <Zap className="h-3 w-3" />
               Microlearning
             </span>
           )}
           {step.learningFormat === "auto_skip" && step.status !== "skipped" && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:text-blue-300">
+            <span className="inline-flex items-center gap-1 rounded-md bg-blue-100 dark:bg-blue-900/30 px-2 py-0.5 text-[0.65rem] font-medium text-blue-700 dark:text-blue-300">
               <FastForward className="h-3 w-3" />
               Auto-skipped (experience)
             </span>
           )}
           {step.status === "skipped" && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">
+            <span className="inline-flex items-center gap-1 rounded-md bg-success/10 px-2 py-0.5 text-[0.65rem] font-medium text-success">
               <Check className="h-3 w-3" />
               {step.learningFormat === "auto_skip" ? "Skipped — prior experience" : "Skipped based on assessment"}
             </span>
           )}
           {step.skippable && step.skipCondition && step.status !== "skipped" && step.learningFormat !== "auto_skip" && (
-            <span className="inline-flex items-center gap-1 rounded-md bg-warning/10 px-2 py-0.5 text-[10px] font-medium text-warning">
+            <span className="inline-flex items-center gap-1 rounded-md bg-warning/10 px-2 py-0.5 text-[0.65rem] font-medium text-warning">
               <SkipForward className="h-3 w-3" />
               {step.skipCondition}
             </span>

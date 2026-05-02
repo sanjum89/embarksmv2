@@ -38,15 +38,15 @@ export function HandsOnRolePlayCard({ rolePlay, skillTargetId }: Props) {
           {initials}
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-semibold text-foreground leading-tight">{personaName}</h4>
+          <h4 className="text-sm font-semibold text-foreground leading-tight break-words">{personaName}</h4>
           {personaRole && (
-            <p className="text-xs text-muted-foreground mt-0.5">{personaRole}</p>
+            <p className="text-xs text-muted-foreground mt-0.5 break-words">{personaRole}</p>
           )}
         </div>
       </div>
 
       {/* Description */}
-      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">
+      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3 break-words">
         {personaDesc}
       </p>
 

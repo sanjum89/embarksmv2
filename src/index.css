@@ -6,6 +6,10 @@
 
 @layer base {
   :root {
+    /* Font stacks (overridden by .a11y-dyslexic) */
+    --font-sans: 'DM Sans', system-ui, sans-serif;
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+
     /* Deep navy + warm amber palette */
     --background: 220 20% 97%;
     --foreground: 222 47% 11%;
@@ -249,12 +253,12 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: var(--font-sans);
     line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: var(--font-display);
     @apply tracking-tight;
   }
 
@@ -277,8 +281,9 @@
     letter-spacing: 0.02em;
   }
 
-  .a11y-dyslexic body {
-    font-family: 'Atkinson Hyperlegible', 'DM Sans', system-ui, sans-serif;
+  .a11y-dyslexic {
+    --font-sans: 'Atkinson Hyperlegible', 'DM Sans', system-ui, sans-serif;
+    --font-display: 'Atkinson Hyperlegible', 'Space Grotesk', system-ui, sans-serif;
   }
 
   .a11y-underline a {

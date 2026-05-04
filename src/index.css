@@ -281,8 +281,9 @@
     letter-spacing: 0.02em;
   }
 
-  .a11y-dyslexic body {
-    font-family: 'Atkinson Hyperlegible', 'DM Sans', system-ui, sans-serif;
+  .a11y-dyslexic {
+    --font-sans: 'Atkinson Hyperlegible', 'DM Sans', system-ui, sans-serif;
+    --font-display: 'Atkinson Hyperlegible', 'Space Grotesk', system-ui, sans-serif;
   }
 
   .a11y-underline a {

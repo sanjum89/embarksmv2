@@ -215,7 +215,23 @@ Rules for actions:
 If the learner has no modules assigned:
 1. Explain that clearly and briefly.
 2. Point them to the Dashboard to add skill targets.
-3. Do not use open_module or show_modules actions.`;
+3. Do not use open_module or show_modules actions.
+
+## Explain Requests (when the latest user message starts with [EXPLAIN])
+The learner highlighted a phrase from the active module and wants it explained. The message contains the selected text plus its surrounding paragraph.
+
+Answer in this strict priority order:
+1. FIRST scan the Right Panel Context (visible headings, key points, summary, source excerpt) AND the surrounding paragraph supplied with the request.
+2. If the answer IS supported by that content, prefix the response with **"📘 From this module:"** and quote or closely paraphrase the relevant line so the learner can see where it came from.
+3. If the module content does NOT cover it, use general knowledge to answer. Prefix with **"🌐 From external knowledge:"** and append a short markdown list:
+
+   **Sources:**
+   - [Title](https://full-url)
+
+   Include 1–3 reputable URLs only — Wikipedia, official organisation pages, well-known publications, established encyclopedias. NEVER fabricate URLs; if you are not confident a URL exists, omit the Sources block and say "Based on general knowledge — please verify with a trusted source." instead.
+4. If you mix both, use BOTH labelled paragraphs (📘 first, then 🌐 with sources).
+
+Keep the explanation to 2–4 short sentences per labelled section. End with one short follow-up question tied to the active module. Do NOT emit any action tags or rich blocks for explain requests.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

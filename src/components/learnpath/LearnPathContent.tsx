@@ -8,6 +8,7 @@ import { EmbarkJourneyAccordion } from "./LearnPathJourneyAccordion";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";
 import { EmbarkAssessment } from "./LearnPathAssessment";
 import { EmbarkModeSelector } from "./LearnPathModeSelector";
+import { ExplainSelectionPopover } from "./ExplainSelectionPopover";
 import { BookOpen, GraduationCap, Sparkles, AlertTriangle, ArrowRight, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -172,10 +173,11 @@ export function EmbarkContent() {
 
     return (
       <div className="h-full flex flex-col">
+        <ExplainSelectionPopover />
         {!moduleCompletedView && (
           <EmbarkModeSelector skillTargetTitle={stepInfo?.skillTargetTitle} />
         )}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto" data-explainable="true">
           <EmbarkModuleContent
             key={mod.id}
             module={mod}

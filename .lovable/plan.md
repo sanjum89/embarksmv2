@@ -1,56 +1,76 @@
-## Plan: Make dyslexia-friendly font apply everywhere
+## Goal
 
-### Problem
+When a learner highlights text in the right-side module content, show a small floating "✨ Explain" button. Clicking it sends the selection to Embark AI in the left chat, which answers grounded in the current module first and clearly labels whether the answer came from the module or from external knowledge (with source links). Also add a small "AI can make mistakes. Check important info." disclaimer above the chat input.
 
-When "Dyslexia-friendly font" is toggled on, only a few elements switch to Atkinson Hyperlegible. Most of the UI (sidebar, cards, buttons, badges, pills, body copy) stays on DM Sans / Space Grotesk.
+---
 
-### Root cause
+## 1. Floating "Explain" popover on text selection
 
-Fonts are hardcoded in two layers that beat the accessibility override:
+**New file:** `src/components/learnpath/ExplainSelectionPopover.tsx`
+- Listens to `selectionchange` / `mouseup` / `touchend` on a wrapper element.
+- When the user selects ≥ 3 chars inside the wrapper, render a small floating button positioned above the selection rect (via portal so it isn't clipped):
+  `✨ Explain` — Sparkles icon, primary-styled pill.
+- On click:
+  1. Capture selected text.
+  2. Capture surrounding paragraph (closest block element's `textContent`, capped ~600 chars) for context.
+  3. Call `embark.explainSelection(text, surrounding)`.
+  4. Clear selection and hide popover.
+- Hides on outside click, scroll, or `Escape`. Truncates selections > 400 chars.
 
-1. `tailwind.config.ts` defines:
-   - `font-sans` → `["DM Sans", "system-ui", "sans-serif"]`
-   - `font-display` → `["Space Grotesk", "system-ui", "sans-serif"]`
-2. `src/index.css` applies `font-sans` to `body` and `font-family: 'Space Grotesk'` to `h1–h6`.
+**Mount:** wrap the right-panel content area in `EmbarkContent` (`src/components/learnpath/LearnPathContent.tsx`) with the popover provider so any text inside `EmbarkModuleContent` is selectable.
 
-The accessibility rule `.a11y-dyslexic body { font-family: 'Atkinson Hyperlegible', ... }` only targets `body`, and is overridden whenever a child element carries the `font-sans` or `font-display` Tailwind utility (which produces a literal font stack, not a variable).
+## 2. Wire selection → chat
 
-### Fix: route both font stacks through CSS custom properties
+**Update** `src/contexts/LearnPathContext.tsx`:
+- Add an event-style `explainSelection(text, surrounding)` method (uses a small subscriber ref pattern, mirroring the existing `lastCompletedModule` flow).
 
-#### 1. `src/index.css`
-- Add two root variables in `:root`:
-  - `--font-sans: 'DM Sans', system-ui, sans-serif;`
-  - `--font-display: 'Space Grotesk', system-ui, sans-serif;`
-- Update `body` and `h1–h6` rules to reference `var(--font-sans)` / `var(--font-display)`.
-- Replace the current `.a11y-dyslexic body { ... }` block with a root-scoped override that swaps both variables:
-  ```css
-  .a11y-dyslexic {
-    --font-sans: 'Atkinson Hyperlegible', 'DM Sans', system-ui, sans-serif;
-    --font-display: 'Atkinson Hyperlegible', 'Space Grotesk', system-ui, sans-serif;
-  }
-  ```
-  This way every element that resolves `font-family` against the cascade picks up Atkinson, including elements styled by Tailwind utilities defined below.
+**Update** `src/components/learnpath/LearnPathChat.tsx`:
+- Subscribe to explain requests. When triggered:
+  - Render a visible user message styled as a quote chip: `🔍 Explain: "<selected text>"`
+  - Send to the edge function with a hidden `[EXPLAIN]` system message containing the selection, surrounding paragraph, active module title/id (the existing `buildContext()` already supplies module + right-panel content).
+- Strip `[EXPLAIN]` from the visible transcript the same way `[SYSTEM]` and `[FORMAT:…]` are.
 
-#### 2. `tailwind.config.ts`
-- Change the `fontFamily` extension to reference the same variables:
-  ```ts
-  fontFamily: {
-    sans: ["var(--font-sans)"],
-    display: ["var(--font-display)"],
-  }
-  ```
-- Result: every existing `font-sans` / `font-display` Tailwind class now resolves through the variable, so flipping `.a11y-dyslexic` on `<html>` instantly switches the entire app's font without touching any component.
+## 3. Source-aware answer in the edge function
 
-#### 3. No component changes needed
-Because all font usage already goes through either `body`/heading defaults or the Tailwind utilities, redirecting the source of truth to CSS variables makes the dyslexia toggle apply universally — sidebar, cards, buttons, badges, role-play pills, chat cards, etc.
+**Update** `supabase/functions/learnpath-chat/index.ts` system prompt — add:
 
-### Files touched
+```
+## Explain Requests (when the latest user message starts with [EXPLAIN])
+The learner highlighted a phrase from the current module and wants it explained.
 
-- `src/index.css` — add `--font-sans`/`--font-display` variables, switch body/heading rules to use them, replace `.a11y-dyslexic body` rule with root-level variable swap.
-- `tailwind.config.ts` — point `fontFamily.sans` and `fontFamily.display` at the new variables.
+Answer in this priority order:
+1. FIRST scan the Right Panel Context (headings, key points, summary, source
+   excerpt) and the surrounding paragraph supplied with the request.
+2. If the module content covers it, prefix your answer with:
+   "📘 From this module:" and quote/paraphrase the relevant line.
+3. If the module does NOT cover it, use general knowledge. Prefix with:
+   "🌐 From external knowledge:" and append a short markdown
+   "**Sources:**" list with 1–3 reputable URLs (Wikipedia, official org
+   pages, well-known publications). Only cite URLs you are confident exist.
+4. If you mix both, use both labelled paragraphs.
 
-### QA after build
+Keep the explanation to 2–4 short sentences. End with one short follow-up
+question tied to the active module.
+```
 
-- Toggle "Dyslexia-friendly font" on and confirm Atkinson Hyperlegible is visible on: sidebar nav labels, dashboard cards, role-play card titles and pills, chat cards, buttons, badges, headings, and form inputs.
-- Toggle off and confirm DM Sans / Space Grotesk return everywhere.
-- Verify the other accessibility toggles (size, spacing, letter spacing, underline) still work unchanged.
+> Note: True live web search isn't available through the standard Lovable AI gateway, so the "external" portion relies on the model's training knowledge. The prompt restricts it to well-known reputable sources to minimise hallucinated links. If real-time grounding is required later, we can wire in a Gemini Enterprise grounding connector.
+
+## 4. Disclaimer above the chat input
+
+**Update** `src/components/learnpath/LearnPathChat.tsx` (around the input wrapper, line ~749):
+- Add a small muted line above the input row:
+  `AI can make mistakes. Check important info.`
+- Class: `text-[0.7rem] text-muted-foreground text-center mb-1.5` so it scales with the accessibility font setting and stays unobtrusive — same wording Google ships under Gemini.
+
+## 5. Files touched
+
+- New: `src/components/learnpath/ExplainSelectionPopover.tsx`
+- `src/contexts/LearnPathContext.tsx` — add explainSelection event channel
+- `src/components/learnpath/LearnPathContent.tsx` — wrap content area with popover
+- `src/components/learnpath/LearnPathChat.tsx` — subscribe + render quote bubble + disclaimer
+- `supabase/functions/learnpath-chat/index.ts` — prompt additions for source-labelled explain answers
+
+## Out of scope
+
+- Live web search with verified URL fetching (would need a search/grounding connector).
+- Persisting explain history across reloads.

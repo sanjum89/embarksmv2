@@ -24,6 +24,7 @@ import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTa
 import { SuggestionPillsRow, computeSuggestionPills, type SuggestionPill } from "./SuggestionPills";
 import { useEmbarkEngagement } from "@/hooks/useEmbarkEngagement";
 import { subscribeEngagementEvents } from "@/lib/embarkEngagementEvents";
+import { subscribeExplainRequests } from "@/lib/explainSelectionEvents";
 import {
   pickRefresherInjectionMessage,
   pickCriticalFailMessage,
@@ -511,8 +512,45 @@ export function EmbarkChat() {
   };
 
   const visibleMessages = messages.filter(
-    (message) => !message.content.startsWith("[SYSTEM]") && !(message.role === "assistant" && !message.content)
+    (message) =>
+      !message.content.startsWith("[SYSTEM]") &&
+      !message.content.startsWith("[EXPLAIN]") &&
+      !(message.role === "assistant" && !message.content)
   );
+
+  // Subscribe to "Explain this selection" requests fired from the right panel
+  useEffect(() => {
+    const unsubscribe = subscribeExplainRequests((req) => {
+      if (isStreaming) return;
+
+      const visibleUserMsg: ChatMessage = {
+        id: createMessageId("user"),
+        role: "user",
+        content: `🔍 Explain: "${req.selection}"`,
+      };
+      const explainMsg: ChatMessage = {
+        id: createMessageId("explain"),
+        role: "user",
+        content: `[EXPLAIN] The learner highlighted the following phrase from the active module and wants it explained.
+
+Selection: "${req.selection}"
+
+Surrounding paragraph (from the same module): "${req.surrounding}"
+
+Follow the "Explain Requests" rules: try to answer FROM THE MODULE FIRST (use the 📘 prefix and quote the relevant line). Only if the module truly doesn't cover it, use general knowledge with the 🌐 prefix and append a short **Sources:** list with 1–3 reputable URLs.`,
+      };
+      const assistantId = createMessageId("assistant");
+      const assistantPlaceholder: ChatMessage = {
+        id: assistantId,
+        role: "assistant",
+        content: "",
+      };
+
+      setMessages((prev) => [...prev, visibleUserMsg, explainMsg, assistantPlaceholder]);
+      void sendToAI([...messages, visibleUserMsg, explainMsg], assistantId);
+    });
+    return unsubscribe;
+  }, [isStreaming, messages, sendToAI]);
 
   // === Proactive engagement / nudges ===
   const buildNudgeContext = useCallback(() => {

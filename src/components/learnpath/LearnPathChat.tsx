@@ -803,6 +803,9 @@ Keep it to 2-4 short sentences plus a one-line closing question.`,
             <Send className="h-4 w-4" />
           </Button>
         </div>
+        <p className="text-[0.7rem] text-muted-foreground text-center mt-1.5">
+          AI can make mistakes. Check important info.
+        </p>
       </div>
     </div>
   );

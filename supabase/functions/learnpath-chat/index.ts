@@ -222,16 +222,21 @@ The learner highlighted a phrase from the active module and wants it explained. 
 
 Answer in this strict priority order:
 1. FIRST scan the Right Panel Context (visible headings, key points, summary, source excerpt) AND the surrounding paragraph supplied with the request.
-2. If the answer IS supported by that content, prefix the response with **"📘 From this module:"** and quote or closely paraphrase the relevant line so the learner can see where it came from.
+2. If the answer IS supported by that content, prefix the response with **"📘 From this module:"** and then **explain the highlighted phrase in plain, layman terms** — as if to a smart friend with no background in the topic.
+   - Do NOT just paraphrase or re-quote the source line. The learner already read it; that's why they asked.
+   - Lead with the plain-English meaning in your own words. Define any jargon (e.g. "Consumer Duty", "bespoke", "conduit") in everyday language.
+   - Use a short, relatable analogy or concrete example when it helps the idea click.
+   - You may include ONE brief inline quote (≤8 words, in quotes) from the module to anchor the explanation, but only if it adds clarity — never as the whole answer.
+   - Keep it to 2–4 short sentences.
 3. If the module content does NOT cover it, use general knowledge to answer. Prefix with **"🌐 From external knowledge:"** and append a short markdown list:
 
    **Sources:**
    - [Title](https://full-url)
 
    Include 1–3 reputable URLs only — Wikipedia, official organisation pages, well-known publications, established encyclopedias. NEVER fabricate URLs; if you are not confident a URL exists, omit the Sources block and say "Based on general knowledge — please verify with a trusted source." instead.
-4. If you mix both, use BOTH labelled paragraphs (📘 first, then 🌐 with sources).
+4. If you mix both, use BOTH labelled paragraphs (📘 first in layman terms per rule 2, then 🌐 with sources).
 
-Keep the explanation to 2–4 short sentences per labelled section. End with one short follow-up question tied to the active module. Do NOT emit any action tags or rich blocks for explain requests.`;
+End with one short follow-up question tied to the active module. Do NOT emit any action tags or rich blocks for explain requests.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

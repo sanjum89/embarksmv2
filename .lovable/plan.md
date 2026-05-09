@@ -1,85 +1,44 @@
 ## Goal
 
-Clean-slate Rathbones: one admin, one manager, nine learner personas (Clara is one of them). Only Clara is enrolled in the Associate IM cohort with the full module curriculum. Everyone else exists but has no cohort, no modules. Rathbones shows up as its own account in the switcher with branding.
+Complete Step 7: make the Rathbones account appear in the account switcher with proper branding and a working normalized data structure.
 
-## ID scheme (numeric, per your choice)
+## Approach
 
-- `rb-admin` — Rathbones Admin (top, no manager)
-- `rb-mgr` — Julian Wexford (Investment Director, reports to `rb-admin`)
-- `rb-l1` Sophie Linden — Early × Outside FS
-- `rb-l2` Maya Holloway — Early × FS non-IM
-- `rb-l3` Theo Marchant — Early × In IM
-- `rb-l4` Owen Castell — Mid × Outside FS
-- `rb-l5` Priya Aldridge — Mid × FS non-IM
-- `rb-l6` **Clara Wren** — Mid × In IM
-- `rb-l7` Rosa Belmont — Experienced × Outside FS
-- `rb-l8` Felix Arden — Experienced × FS non-IM
-- `rb-l9` Elliot Hayes — Experienced × In IM
+Mirror the existing **Pinnacle Capital** pattern in `src/contexts/AccountContext.tsx`:
 
-All `rb-l*` report to `rb-mgr`. All `rb-l*` are role `learner`, title `Associate Investment Manager`.
+1. **Special-case Rathbones in `loadAccounts`** (parallel to the Pinnacle branch). Instead of running it through generic `normalizeFromLegacy`, build it by deep-cloning the Cornerstone Demo normalized account and overriding:
+   - `branding.name = "Rathbones"`
+   - `branding.accentColor = "#1a2547"` (deep navy, per Rathbones palette memory)
+   - `branding.logo = null` (placeholder building icon)
+   - `isDefault = false`, `id = <Rathbones DB id>`
+   - `contentNameMap = { "Cornerstone": "Rathbones", "cornerstone": "rathbones", "CORNERSTONE": "RATHBONES" }`
 
-## Plan
+2. **Replace the user/employee/hierarchy slice** with the 11 rb-* records from `accounts.data.employees`:
+   - `rb-admin` → admin (top)
+   - `rb-mgr` (Julian Wexford) → manager, reports to `rb-admin`
+   - `rb-l1`–`rb-l9` → learners, all report to `rb-mgr`
+   - Build `usersById`, `employeesById`, `hierarchyMap`, `teamMembers`, `namedEmployees` from these 11 only (drop cloned Cornerstone people).
 
-### Step 1 — Create the Rathbones account in DB
+3. **Keep the cloned demo fixtures** (`profileData`, `skillTargets`, `learningModules`, `rolePlays`, `assessments`, `peopleGraph`, `signals`, etc.) so pages render. For Clara (`rb-l6`), alias the rich Cornerstone primary-persona profileData to her id so My360 / Embark AI work end-to-end. The other 8 personas fall back to `generateProfileData`.
 
-- Insert a new `accounts` row: `name = 'Rathbones'`, `is_default = false`, `accent_color` + `logo` from the existing Rathbones palette (deep navy primary, peach accent per the saved Rathbones palette memory).
-- This is a brand-new account ID. Cornerstone Demo and Pinnacle Capital are untouched at the account level.
+4. **Pinnacle clone source.** Existing Pinnacle code already searches for `branding.name === "Rathbones"` in the cache. Order the passes so Rathbones is built before Pinnacle — no Pinnacle logic change needed.
 
-### Step 2 — Wipe all old `rb*` records
+5. **Account switcher.** No changes — `AccountSwitcher.tsx` already iterates `accounts` from context.
 
-Across the existing default account, delete every row tied to the previous `rb01`–`rb19` set:
-- `cohort_enrollments` for any `employee_id` starting `rb`
-- `employee_persona_assignments` for any `employee_id` starting `rb`
-- `learner_progress`, `assessment_instances`, `chapter_lock_events`, `learner_analytics`, `readiness_gate_results`, `promotion_signals`, `mentor_assignments` for any `employee_id` starting `rb`
-- Remove `rb01`–`rb19` from `accounts.data.employees` on the default account
-- `employee_personas` rows we created last round can stay (they're archetype tags, not user records) but will be re-pointed to the new Rathbones account_id
+## Out of scope
 
-### Step 3 — Seed the 11 fresh employees inside the Rathbones account
+- No DB changes, no migrations.
+- No catalog/cohort/persona table changes (already done).
+- No fresh fixture authoring — fixtures are cloned + relabeled (per your "proceed as planned" choice).
+- No Rathbones logo asset.
 
-Write the 11 records above into the new Rathbones account's `data.employees` array with the hierarchy `rb-admin → rb-mgr → rb-l1..rb-l9`.
+## Files touched
 
-### Step 4 — Re-point Rathbones-only catalog & cohorts to the new account
+- `src/contexts/AccountContext.tsx` — add `buildRathbonesNormalized(...)` helper + special-case branch in `loadAccounts`.
 
-Move from the default account → the new Rathbones account:
-- `cohorts` (Associate IM, IM shell, IM Director shell, Sr IM Director shell)
-- `learning_tracks`, `domains`, `role_progressions`
-- `catalog_modules`, `catalog_chapters`, `catalog_assessment_blueprints`, `catalog_evidence_tasks`, `catalog_readiness_gates`, `catalog_gate_requirements`
-- `employee_personas` (the 9 archetypes)
+## Verification
 
-Cornerstone Demo's original `u*` content stays put.
-
-### Step 5 — Persona assignments + Clara's cohort enrollment
-
-- Insert 9 `employee_persona_assignments` mapping `rb-l1..rb-l9` → their persona archetype code.
-- Insert exactly **one** `cohort_enrollments` row: `rb-l6` (Clara) → Associate IM cohort.
-- No other cohort enrollments. No `learner_progress` seeding.
-
-### Step 6 — Finish the Associate IM module catalog
-
-- Run the existing `catalog-import` edge function against the new Rathbones `account_id` for the 17 module codes already defined in `supabase/functions/catalog-import/skeleton.ts` but not yet imported (`bs1–bs5`, `cps1–cps5`, `oe1–oe4`, `str1–str3`).
-- Result: Associate IM cohort has the full ~29-module curriculum, all visible to Clara.
-- IM and IM Director cohorts remain empty shells (out of scope for this slice).
-
-### Step 7 — UI fix so Rathbones appears in the switcher
-
-- In `src/contexts/AccountContext.tsx`, the Pinnacle clone block already searches for an entry whose `branding.name === "Rathbones"` and falls back if missing. With Step 1 in place, this just works — Pinnacle will properly clone from Rathbones.
-- Update `AccountContext` so the new Rathbones account (a non-default DB row containing `data.employees` in the v1 shape) is normalized correctly with branding name "Rathbones" and the navy/peach colors.
-- No changes to Cornerstone Demo's existing branding/normalization.
-- Account switcher will now list three accounts: **Cornerstone Demo**, **Rathbones**, **Pinnacle Capital**.
-
-### Step 8 — Verify
-
-- `accounts` returns 3 rows.
-- New Rathbones account has 11 employees (`rb-admin`, `rb-mgr`, `rb-l1..rb-l9`).
-- `cohort_enrollments` for the Rathbones account = 1 row (Clara).
-- `catalog_modules` for the Rathbones account ≈ 29 with `role_cohort_code = 'assoc_im'`.
-- In the UI: switch to Rathbones, see navy/peach branding; open Clara, see Associate IM cohort + full module list; open another persona (e.g. Felix), see no cohort and no modules.
-
-## Out of scope (explicit)
-
-- IM and IM Director module authoring.
-- Promotion-signal logic (auto-suggest Clara for IM based on performance).
-- Persona descriptions, skill / proficiency / competency mapping.
-- Seeding any `learner_progress`.
-
-Reply **go** to execute.
+- Switcher shows three accounts: Cornerstone Demo, **Rathbones**, Pinnacle Capital.
+- Switching to Rathbones → sidebar reads "Rathbones", navy accent, org tree shows admin → Julian → 9 learners.
+- Pinnacle still works (clones from new Rathbones normalized object).
+- Logging in as Clara (rb-l6) → My360 + Embark AI render with Associate IM cohort content.

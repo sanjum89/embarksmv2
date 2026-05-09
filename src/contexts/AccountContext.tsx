@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, ty
 import type { Account, AccountData } from "@/types/account";
 import type { NormalizedAccount } from "@/types/account-v2";
 import { supabase } from "@/integrations/supabase/client";
-import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized, buildPinnacleNormalized } from "@/lib/accountDefaults";
+import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized, buildPinnacleNormalized, buildRathbonesNormalized } from "@/lib/accountDefaults";
 import { seedDemoNotifications, bootstrapInitialNotifications } from "@/data/agentOneSeeds";
 import { parseAccountJSON } from "@/lib/accountParser";
 import { generateProfileData } from "@/lib/profileDataGenerator";
@@ -281,9 +281,17 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
     // Build normalized cache
     const cache: Record<string, NormalizedAccount> = {};
-    // First pass: normalize all non-Pinnacle accounts
+    // First pass: normalize default + Rathbones (Pinnacle clones from Rathbones)
     for (const acct of accts) {
-      if (acct.name !== "Pinnacle Capital") {
+      if (acct.is_default) {
+        cache[acct.id] = normalizeFromLegacy(acct);
+      } else if (acct.name === "Rathbones") {
+        const rb = buildRathbonesNormalized(acct.id);
+        // Apply DB-stored branding overrides
+        rb.branding.logo = acct.logo || rb.branding.logo;
+        rb.branding.accentColor = acct.accent_color || rb.branding.accentColor;
+        cache[acct.id] = rb;
+      } else if (acct.name !== "Pinnacle Capital") {
         cache[acct.id] = normalizeFromLegacy(acct);
       }
     }
@@ -295,10 +303,13 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         if (rathbonesEntry) {
           cache[acct.id] = {
             ...JSON.parse(JSON.stringify(rathbonesEntry)),
+            id: acct.id,
             isDefault: false,
             branding: {
               ...rathbonesEntry.branding,
               name: "Pinnacle Capital",
+              logo: acct.logo || rathbonesEntry.branding.logo,
+              accentColor: acct.accent_color || rathbonesEntry.branding.accentColor,
             },
             contentNameMap: {
               "Rathbones": "Pinnacle Capital",

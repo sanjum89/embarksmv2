@@ -1586,6 +1586,12 @@ export type Database = {
         | "quiz"
         | "observed_practice"
         | "workplace_assignment"
+        | "coaching"
+        | "shadowing"
+        | "scenario_walkthrough"
+        | "self_study"
+        | "presentation_assessed"
+        | "role_play_assessed"
       delivery_mode:
         | "digital"
         | "offline"
@@ -1799,6 +1805,12 @@ export const Constants = {
         "quiz",
         "observed_practice",
         "workplace_assignment",
+        "coaching",
+        "shadowing",
+        "scenario_walkthrough",
+        "self_study",
+        "presentation_assessed",
+        "role_play_assessed",
       ],
       delivery_mode: [
         "digital",

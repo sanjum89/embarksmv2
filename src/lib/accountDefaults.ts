@@ -1090,7 +1090,7 @@ export function buildRathbonesNormalized(id: string): NormalizedAccount {
       (hierarchyMap[e.reportsTo] ||= []).push(e.id);
     }
     if (sourceProfile) {
-      profileData[e.id] = { ...sourceProfile, name: e.name, email: e.email, title: e.title };
+      profileData[e.id] = { ...sourceProfile };
     }
   }
 

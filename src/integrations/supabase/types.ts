@@ -1571,6 +1571,22 @@ export type Database = {
         | "cpd_reflection"
         | "system_workflow_completion"
         | "ai_tool_usage_reflection"
+        | "calculation_exercise"
+        | "case_analysis"
+        | "client_simulation_chat"
+        | "client_simulation_voice"
+        | "compliance_review_task"
+        | "external_certification"
+        | "knowledge_check_mcq"
+        | "manager_observation"
+        | "mentor_signoff"
+        | "peer_review"
+        | "portfolio_construction_task"
+        | "presentation_assessed"
+        | "reflective_journal"
+        | "scenario_response"
+        | "system_task_simulation"
+        | "written_long_form"
       chapter_content_type:
         | "reading"
         | "video"
@@ -1600,6 +1616,7 @@ export type Database = {
         | "simulation"
         | "workplace_practice"
         | "coaching"
+        | "self_study"
       difficulty_level:
         | "foundation"
         | "practitioner"
@@ -1618,6 +1635,14 @@ export type Database = {
         | "workplace_assignment"
         | "client_meeting_observation"
         | "readiness_board_pack"
+        | "case_writeup"
+        | "manager_observation_form"
+        | "mentor_feedback_form"
+        | "peer_feedback"
+        | "presentation_deck"
+        | "shadowing_log"
+        | "system_screenshot_pack"
+        | "trade_rationale"
       gate_requirement_kind: "track" | "module" | "assessment" | "evidence"
       promotion_trigger:
         | "readiness_gate"
@@ -1789,6 +1814,22 @@ export const Constants = {
         "cpd_reflection",
         "system_workflow_completion",
         "ai_tool_usage_reflection",
+        "calculation_exercise",
+        "case_analysis",
+        "client_simulation_chat",
+        "client_simulation_voice",
+        "compliance_review_task",
+        "external_certification",
+        "knowledge_check_mcq",
+        "manager_observation",
+        "mentor_signoff",
+        "peer_review",
+        "portfolio_construction_task",
+        "presentation_assessed",
+        "reflective_journal",
+        "scenario_response",
+        "system_task_simulation",
+        "written_long_form",
       ],
       chapter_content_type: [
         "reading",
@@ -1820,6 +1861,7 @@ export const Constants = {
         "simulation",
         "workplace_practice",
         "coaching",
+        "self_study",
       ],
       difficulty_level: [
         "foundation",
@@ -1840,6 +1882,14 @@ export const Constants = {
         "workplace_assignment",
         "client_meeting_observation",
         "readiness_board_pack",
+        "case_writeup",
+        "manager_observation_form",
+        "mentor_feedback_form",
+        "peer_feedback",
+        "presentation_deck",
+        "shadowing_log",
+        "system_screenshot_pack",
+        "trade_rationale",
       ],
       gate_requirement_kind: ["track", "module", "assessment", "evidence"],
       promotion_trigger: [

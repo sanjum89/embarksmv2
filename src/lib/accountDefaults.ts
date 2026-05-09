@@ -1024,6 +1024,106 @@ export function buildDefaultNormalized(id: string): NormalizedAccount {
 }
 
 /**
+ * Rathbones learner persona roster — 11 employees in a flat hierarchy.
+ * rb-admin → rb-mgr → rb-l1..rb-l9. Clara Wren is rb-l6.
+ */
+const RATHBONES_EMPLOYEES: Array<{
+  id: string;
+  name: string;
+  email: string;
+  role: "admin" | "manager" | "learner";
+  title: string;
+  reportsTo: string | null;
+  /** Map this rb-* id to a default-account user id to inherit profileData/skills. */
+  profileSourceId?: string;
+}> = [
+  { id: "rb-admin", name: "Rathbones Admin", email: "admin@rathbones.com", role: "admin", title: "HR / Learning Admin", reportsTo: null, profileSourceId: "u11" },
+  { id: "rb-mgr", name: "Julian Wexford", email: "julian.wexford@rathbones.com", role: "manager", title: "Investment Director", reportsTo: "rb-admin", profileSourceId: "u1" },
+  { id: "rb-l1", name: "Sophie Linden", email: "sophie.linden@rathbones.com", role: "learner", title: "Associate Investment Manager", reportsTo: "rb-mgr" },
+  { id: "rb-l2", name: "Maya Holloway", email: "maya.holloway@rathbones.com", role: "learner", title: "Associate Investment Manager", reportsTo: "rb-mgr" },
+  { id: "rb-l3", name: "Theo Marchant", email: "theo.marchant@rathbones.com", role: "learner", title: "Associate Investment Manager", reportsTo: "rb-mgr" },
+  { id: "rb-l4", name: "Owen Castell", email: "owen.castell@rathbones.com", role: "learner", title: "Associate Investment Manager", reportsTo: "rb-mgr" },
+  { id: "rb-l5", name: "Priya Aldridge", email: "priya.aldridge@rathbones.com", role: "learner", title: "Associate Investment Manager", reportsTo: "rb-mgr" },
+  { id: "rb-l6", name: "Clara Wren", email: "clara.wren@rathbones.com", role: "learner", title: "Associate Investment Manager", reportsTo: "rb-mgr", profileSourceId: "u12" },
+  { id: "rb-l7", name: "Rosa Belmont", email: "rosa.belmont@rathbones.com", role: "learner", title: "Associate Investment Manager", reportsTo: "rb-mgr" },
+  { id: "rb-l8", name: "Felix Arden", email: "felix.arden@rathbones.com", role: "learner", title: "Associate Investment Manager", reportsTo: "rb-mgr" },
+  { id: "rb-l9", name: "Elliot Hayes", email: "elliot.hayes@rathbones.com", role: "learner", title: "Associate Investment Manager", reportsTo: "rb-mgr" },
+];
+
+/**
+ * Build the dedicated Rathbones account: deep-cloned from the default template,
+ * but with the people slice replaced by the 11 rb-* personas. Demo fixtures
+ * (skill targets, role plays, people graph, etc.) stay so pages render; only
+ * Clara (rb-l6) gets the curated u12 profileData mapping.
+ */
+export function buildRathbonesNormalized(id: string): NormalizedAccount {
+  const base: NormalizedAccount = JSON.parse(JSON.stringify(buildDefaultNormalized(id)));
+
+  const usersById: Record<string, AccountUser> = {};
+  const employeesById: Record<string, import("@/types/account-v2").AccountEmployee> = {};
+  const hierarchyMap: Record<string, string[]> = {};
+  const profileData: NormalizedAccount["profileData"] = {};
+
+  for (const e of RATHBONES_EMPLOYEES) {
+    usersById[e.id] = {
+      id: e.id,
+      name: e.name,
+      email: e.email,
+      role: e.role,
+      title: e.title,
+      canManage: e.role === "admin" || e.role === "manager",
+      linkedEmployeeId: e.id,
+    };
+    const sourceProfile = e.profileSourceId ? base.profileData[e.profileSourceId] : undefined;
+    const sourceEmp = e.profileSourceId ? base.employeesById[e.profileSourceId] : undefined;
+    employeesById[e.id] = {
+      id: e.id,
+      name: e.name,
+      email: e.email,
+      title: e.title,
+      reportsTo: e.reportsTo,
+      skills: sourceEmp?.skills,
+      roleId: sourceEmp?.roleId,
+      department: sourceEmp?.department,
+    };
+    if (e.reportsTo) {
+      (hierarchyMap[e.reportsTo] ||= []).push(e.id);
+    }
+    if (sourceProfile) {
+      profileData[e.id] = { ...sourceProfile, name: e.name, email: e.email, title: e.title };
+    }
+  }
+
+  const teamMembers = Object.values(usersById);
+
+  return {
+    ...base,
+    id,
+    isDefault: false,
+    branding: {
+      ...base.branding,
+      name: "Rathbones",
+    },
+    usersById,
+    employeesById,
+    hierarchyMap,
+    teamMembers,
+    namedEmployees: [],
+    profileData,
+    demoScenarios: {
+      ...(base.demoScenarios || {}),
+      onboardingLearnerEmployeeId: "rb-l6",
+      managerEmployeeId: "rb-mgr",
+      adminEmployeeId: "rb-admin",
+      risingStarEmployeeId: "rb-l3",
+      underperformerEmployeeId: "rb-l1",
+      promotionCandidateEmployeeId: "rb-l6",
+      reflectionTargetEmployeeIds: ["rb-l6", "rb-l8", "rb-l9"],
+    },
+  };
+}
+
+/**
  * Build a "Pinnacle Capital" account — a clone of the default Rathbones
  * account with name substitutions applied at render time.
  */

@@ -168,6 +168,54 @@ export function useLearnerJourney(
           .is("unlocked_at", null);
         if (lkErr) throw lkErr;
 
+        // 7b. Persona for this employee + adaptations for that persona
+        const { data: personaRow } = await supabase
+          .from("employee_persona_assignments")
+          .select("persona_code")
+          .eq("account_id", accountId)
+          .eq("employee_id", employeeId)
+          .maybeSingle();
+        const personaCode = personaRow?.persona_code ?? null;
+
+        let adaptationByModule = new Map<string, ModuleAdaptation>();
+        if (personaCode && moduleCodes.length) {
+          const [{ data: adapts }, { data: tags }, { data: reqs }, { data: profiles }, { data: comps }] = await Promise.all([
+            supabase.from("persona_module_adaptations").select("module_code, adaptation_type, reason, visible_to_learner, manager_note")
+              .eq("account_id", accountId).eq("persona_code", personaCode).in("module_code", moduleCodes),
+            supabase.from("module_competency_tags").select("module_code, primary_competency_id, risk_critical")
+              .eq("account_id", accountId).in("module_code", moduleCodes),
+            supabase.from("role_competency_requirements").select("competency_id, required_level")
+              .eq("account_id", accountId).eq("role_cohort_code", cohortRow.role_cohort_code),
+            supabase.from("persona_competency_profiles").select("competency_id, current_level, validation_needed")
+              .eq("account_id", accountId).eq("persona_code", personaCode),
+            supabase.from("competency_catalog").select("competency_id, competency_name").eq("account_id", accountId),
+          ]);
+          const tagBy = new Map<string, { primary_competency_id: string; risk_critical: boolean }>();
+          (tags ?? []).forEach((t) => tagBy.set(t.module_code, { primary_competency_id: t.primary_competency_id, risk_critical: !!t.risk_critical }));
+          const reqBy = new Map<string, number>();
+          (reqs ?? []).forEach((r) => reqBy.set(r.competency_id, r.required_level));
+          const profBy = new Map<string, { current_level: number; validation_needed: boolean }>();
+          (profiles ?? []).forEach((p) => profBy.set(p.competency_id, { current_level: p.current_level, validation_needed: !!p.validation_needed }));
+          const nameBy = new Map<string, string>();
+          (comps ?? []).forEach((c) => nameBy.set(c.competency_id, c.competency_name));
+          (adapts ?? []).forEach((a) => {
+            const tag = tagBy.get(a.module_code);
+            const compId = tag?.primary_competency_id;
+            const prof = compId ? profBy.get(compId) : undefined;
+            adaptationByModule.set(a.module_code, {
+              adaptationType: a.adaptation_type as ModuleAdaptation["adaptationType"],
+              reason: a.reason ?? "",
+              visibleToLearner: a.visible_to_learner !== false,
+              managerNote: a.manager_note ?? undefined,
+              competencyName: compId ? nameBy.get(compId) : undefined,
+              currentLevel: prof?.current_level,
+              requiredLevel: compId ? reqBy.get(compId) : undefined,
+              validationNeeded: prof?.validation_needed,
+              riskCritical: tag?.risk_critical,
+            });
+          });
+        }
+
         const progressMap = new Map<string, string>();
         (progress ?? []).forEach((p) => {
           const k = `${p.module_code}::${p.chapter_code ?? ""}`;

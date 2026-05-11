@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { EmbarkChapterRow } from "./LearnPathChapterRow";
 import type { JourneyModule, JourneyTrack } from "@/hooks/useLearnerJourney";
-import { formatAdaptationLabel, sanitizeReason, type ModuleAdaptation } from "@/lib/embarkAdaptation";
+import { formatAdaptationLabel, sanitizeReason, adaptationExplanation, type ModuleAdaptation } from "@/lib/embarkAdaptation";
 import type { UnifiedStep } from "./LearnPathContent";
 import type { StepType } from "@/types/learning";
 
@@ -141,31 +141,35 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                 </div>
               ) : (
                 <div className="space-y-1 pt-1">
-                  {m.chapters.map((c, sIdx) => {
-                    const step: UnifiedStep = {
-                      stepId: c.code,
-                      moduleId: c.code,
-                      type: "module" as StepType,
-                      title: c.title,
-                      description: "",
-                      duration: c.minutes ? `${c.minutes} min` : undefined,
-                      contentType: c.contentType,
-                      status: statusToStepStatus(c.status),
-                      skillTargetId: cohortId,
-                      skillTargetTitle: m.title,
-                      progress: m.pct,
-                      referenceId: c.code,
-                    };
-                    return (
-                      <EmbarkChapterRow
-                        key={c.code}
-                        step={step}
-                        index={sIdx}
-                        isActive={c.code === activeChapterCode}
-                        isLast={sIdx === m.chapters.length - 1}
-                      />
-                    );
-                  })}
+                  {(() => {
+                    const lensType = m.adaptation?.adaptationType ?? "full_module";
+                    const displayChapters = buildLensChapters(m.chapters, lensType);
+                    return displayChapters.map((c, sIdx) => {
+                      const step: UnifiedStep = {
+                        stepId: c.code,
+                        moduleId: c.code,
+                        type: "module" as StepType,
+                        title: c.title,
+                        description: "",
+                        duration: c.minutes ? `${c.minutes} min` : undefined,
+                        contentType: c.contentType,
+                        status: statusToStepStatus(c.status),
+                        skillTargetId: cohortId,
+                        skillTargetTitle: m.title,
+                        progress: m.pct,
+                        referenceId: c.code,
+                      };
+                      return (
+                        <EmbarkChapterRow
+                          key={c.code}
+                          step={step}
+                          index={sIdx}
+                          isActive={c.code === activeChapterCode}
+                          isLast={sIdx === displayChapters.length - 1}
+                        />
+                      );
+                    });
+                  })()}
                 </div>
               )}
             </AccordionContent>
@@ -205,6 +209,50 @@ function StatusPill({ status }: { status: JourneyModule["status"] }) {
   );
 }
 
+/**
+ * Reshape the chapter list based on the persona's delivery lens.
+ * - diagnostic_only → one synthetic 5-min entry that opens a 3-question MCQ on the first chapter's content
+ * - evidence_required → one synthetic 15-min entry that opens the practical activity on the first chapter
+ * - microlearning → same chapters, durations × 0.4
+ * - full_module / skip_after_validation → unchanged
+ */
+function buildLensChapters(
+  chapters: JourneyModule["chapters"],
+  lens: ModuleAdaptation["adaptationType"]
+): JourneyModule["chapters"] {
+  if (chapters.length === 0) return chapters;
+  const first = chapters[0];
+
+  if (lens === "diagnostic_only") {
+    return [
+      {
+        ...first,
+        title: "Quick diagnostic — 3 questions",
+        minutes: 5,
+        contentType: "diagnostic",
+      },
+    ];
+  }
+  if (lens === "evidence_required") {
+    return [
+      {
+        ...first,
+        title: "Submit evidence — short written task",
+        minutes: 15,
+        contentType: "evidence",
+      },
+    ];
+  }
+  if (lens === "microlearning") {
+    return chapters.map((c) => ({
+      ...c,
+      title: c.title,
+      minutes: Math.max(5, Math.round((c.minutes || 25) * 0.4)),
+    }));
+  }
+  return chapters;
+}
+
 function AdaptationBadge({ adaptation }: { adaptation: ModuleAdaptation }) {
   const label = formatAdaptationLabel(adaptation.adaptationType);
   const tone: Record<ModuleAdaptation["adaptationType"], string> = {
@@ -234,23 +282,31 @@ function AdaptationBadge({ adaptation }: { adaptation: ModuleAdaptation }) {
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-72 text-xs space-y-2"
+        className="w-80 text-xs space-y-2"
         side="top"
         align="start"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="font-semibold text-sm text-foreground">{label}</div>
-        {reason && <p className="text-muted-foreground leading-relaxed">{reason}</p>}
+        <p className="text-muted-foreground leading-relaxed">
+          {adaptationExplanation(adaptation.adaptationType)}
+        </p>
+        {reason && reason.length > 0 && (
+          <p className="text-muted-foreground leading-relaxed border-t border-border pt-2">
+            <span className="font-medium text-foreground">Why for you: </span>
+            {reason}
+          </p>
+        )}
         {adaptation.competencyName && (
           <div className="pt-1 border-t border-border space-y-0.5">
             <div className="font-medium text-foreground">{adaptation.competencyName}</div>
             {(adaptation.currentLevel != null || adaptation.requiredLevel != null) && (
               <div className="text-muted-foreground">
-                Current level {adaptation.currentLevel ?? "—"} · Target level {adaptation.requiredLevel ?? "—"}
+                Your current level {adaptation.currentLevel ?? "—"} · Target for this role {adaptation.requiredLevel ?? "—"}
               </div>
             )}
             {adaptation.validationNeeded && (
-              <div className="text-amber-600 dark:text-amber-400">Validation needed</div>
+              <div className="text-amber-600 dark:text-amber-400">Validation needed before this counts</div>
             )}
           </div>
         )}

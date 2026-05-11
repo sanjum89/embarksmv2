@@ -277,6 +277,7 @@ export type Database = {
         Row: {
           account_id: string
           chapter_code: string
+          chapter_long_form_content: string | null
           chapter_summary: string | null
           chapter_title: string
           complexity: number
@@ -300,6 +301,7 @@ export type Database = {
         Insert: {
           account_id: string
           chapter_code: string
+          chapter_long_form_content?: string | null
           chapter_summary?: string | null
           chapter_title: string
           complexity?: number
@@ -323,6 +325,7 @@ export type Database = {
         Update: {
           account_id?: string
           chapter_code?: string
+          chapter_long_form_content?: string | null
           chapter_summary?: string | null
           chapter_title?: string
           complexity?: number

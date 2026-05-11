@@ -1,97 +1,108 @@
+## Goals
 
-## Final plan — approved scope, with learner-friendly UI labels
+1. Fix the visible bug: chapters render real DB content, not a one-line placeholder.
+2. Make Theo and Clara see meaningfully different journeys — not just different badges.
+3. Make the badge tooltips actually explain what each delivery mode means.
+4. Author the long-form lesson body for the highest-need persona (early career outside FS), pilot first.
 
-Backend adaptation values are unchanged. Only the **UI label layer** is updated.
+---
 
-## Label mapping (UI only)
+## Step 1 — Render the real DB content (immediate fix)
 
-| Backend `adaptation_type` | Learner-facing badge | Tone notes |
-|---|---|---|
-| `full_module` | **Full module** | neutral |
-| `microlearning` | **Condensed module** | neutral / positive |
-| `diagnostic_only` | **Quick diagnostic** | neutral |
-| `evidence_required` | **Evidence task** | neutral, action-oriented |
-| `skip_after_validation` | **Already covered** | positive, never "skipped" |
-
-A single helper `formatAdaptationLabel(adaptation_type)` lives in `src/lib/embarkAdaptation.ts` and is the only place these strings are produced. Anywhere the adaptation appears in copy (badges, tooltips, chat, manager view later) it goes through this helper.
-
-### Reason / tooltip phrasing rules (Clara-safe)
-
-When a tooltip or chat sentence references an `Already covered` or `Quick diagnostic` decision, phrasing must use one of:
-
-- *"Already covered based on your current profile."*
-- *"Not required in this pathway view — your profile already evidences this."*
-- *"Confirmed via your existing experience; a short check-in is enough."*
-
-Forbidden phrasings: *"skipped"*, *"bypassed"*, *"removed"*, *"you don't need this"*. A unit test asserts none of those words appear in the generated `reason` strings inserted into `persona_module_adaptations` for any risk-critical module.
-
-## Everything else — unchanged from approved plan
-
-(Recap, no changes.)
-
-- **5 tracks**, **16 sub-competencies**, with Investment Expertise + Research & Analysis correctly placed under **Technical Knowledge**.
-- **Conservative skip rule**: risk-critical modules (suitability, Consumer Duty, AML, judgement, portfolio suitability, regulatory) **never** become `skip_after_validation`. They become `evidence_required` or `diagnostic_only`.
-- **Outside-FS bridging modules: not built** in this pass.
-- **Persona profiles**: Clara + Theo only.
-- **Theo enrolled** in `cohort.assoc_im.2026_01` alongside Clara.
-- **No changes** to existing 29 Associate IM modules (only tagged with competencies).
-
-## Tables (one migration)
+In `src/components/learnpath/LearnPathContent.tsx` (~line 134), when the chapter ID matches a cohort chapter code (e.g. `bk1.c1`), fetch the row from `catalog_chapters` (new `useCatalogChapter(accountId, chapterCode)` hook) and replace the placeholder transcript with structured markdown:
 
 ```text
-competency_catalog
-role_competency_requirements
-persona_competency_profiles
-module_competency_tags
-persona_module_adaptations
+# {chapter_title}
+
+## Learning objective
+{learning_objective}
+
+## Overview
+{chapter_summary}
+
+## In this chapter
+{realistic_content_outline}
+
+## Try it yourself
+{practical_activity}
+
+## Reflect
+{reflection_prompt}
 ```
 
-RLS: anon CRUD (project pattern).
+Result: chapters jump from ~50 words to ~400-500 words today. `EmbarkModuleContent` already parses headings + bullets, so layout, key takeaways, and Embark AI right-panel context start working immediately.
 
-## UI wiring (smallest safe step)
+---
 
-1. `useLearnerJourney` joins `persona_module_adaptations` for the active learner's `persona_code`. Each module object gains `adaptationType`, `adaptationReason`, `visibleToLearner`.
-2. Modules with `adaptationType='skip_after_validation' && visibleToLearner=false` are filtered **out** of the rendered journey.
-3. `JourneyModuleAccordion` shows a badge using `formatAdaptationLabel(...)`.
-4. Hovering / clicking the badge opens a popover (reuses `ExplainSelectionPopover`) with:
-   - Friendly label.
-   - `adaptationReason` (sanitised, Clara-safe phrasing).
-   - Underlying competency name + current vs required level + validation flag.
-5. `learnpath-chat` system prompt receives an additional context block listing each visible module's `{ moduleCode, label, reason }`. Prompt instructs the AI to use the friendly labels and never the words "skip"/"bypass"/etc.
+## Step 2 — Add a long-form lesson body
 
-## Build sequence
+Add one column to `catalog_chapters`:
 
-1. Migration — 5 new tables + RLS.
-2. Insert `competency_catalog` (16) + `role_competency_requirements` (16) for `assoc_im`.
-3. Insert `module_competency_tags` (29).
-4. Insert `persona_competency_profiles` for Clara + Theo (32 rows).
-5. Compute + insert `persona_module_adaptations` deterministically (58 rows = 29 × 2). All `reason` strings pass through Clara-safe phrasing rules.
-6. Insert `cohort_enrollments` row for Theo.
-7. Add `src/lib/embarkAdaptation.ts` with `formatAdaptationLabel` + reason-phrasing helper + unit test.
-8. Update `useLearnerJourney` hook (join + filter).
-9. Update `JourneyModuleAccordion` to render badge + popover.
-10. Update `learnpath-chat` edge function context payload + system prompt.
+- `chapter_long_form_content TEXT` — canonical 800-1,200-word lesson written for early-career, outside-FS learners. Becomes the default body in **Full module** delivery.
 
-## Verification — outputs after build
+Renderer prefers `chapter_long_form_content` when present; falls back to the structured-from-fields version (Step 1) when empty.
 
-After implementation I will produce, in order:
+---
 
-1. **Clara competency profile** — table of 16: competency, current, required, gap, validation_needed, rationale.
-2. **Theo competency profile** — same shape.
-3. **Associate IM role competency profile** — 16 rows with required level + risk-critical flag.
-4. **Module adaptation table for Clara** — 29 rows: module, primary competency, gap, adaptationType, friendly label, reason, visible.
-5. **Module adaptation table for Theo** — same shape.
-6. **Unmapped modules check** — expected empty.
-7. **Clara visible journey** — screenshot/list of what renders for Clara: filtered module list, badge per module (mostly *Condensed module* / *Evidence task* / *Quick diagnostic*, a small number of *Full module*, plus any *Already covered*).
-8. **Theo visible journey** — list for Theo: nearly all *Full module*, with a few *Condensed module* / *Quick diagnostic*.
-9. **Reason popover sample** — one example each from Clara and Theo, showing friendly label + competency + level + Clara-safe reason text.
-10. **Side-by-side adaptation count** — one summary table proving Clara and Theo now see meaningfully different Associate IM journeys (counts of each badge type per persona).
-11. **Phrasing audit** — grep over inserted `reason` strings + AI prompt to confirm zero occurrences of "skip", "bypass", "removed", "you don't need".
+## Step 3 — Adaptation types act as real lenses on the body
 
-## Out of scope (final)
+Today the adaptation type only flips a badge. After this step it changes what the learner actually sees and how long it takes:
 
-- Outside-FS bridging modules and the other 7 personas.
-- HRIS profile / capability proficiency / behavioural-rating tables.
-- N:1 microlearning bundles.
-- My 360 / Manager / Admin surfaces of the new tables (separate plan).
-- Pinnacle Capital propagation (will inherit on next clone).
+| Type | Chapter list shown | Body shown | Estimated time | Completion |
+|---|---|---|---|---|
+| **Full module** | All chapters, original durations | Full long-form body | Sum of chapter minutes | Complete every chapter |
+| **Condensed module** | Same chapters, durations × 0.4 | First 2 sections + key points only (~250 words) | 40% of full | Complete every chapter (short version) |
+| **Quick diagnostic** | **Replaced by a single 3-question MCQ entry** ("Diagnostic — 5 min") | MCQs generated from the body | 5 min | Pass diagnostic → module complete |
+| **Evidence task** | **Replaced by a single submission entry** ("Submit evidence — 15 min") | The `practical_activity` only | 15 min | Submit evidence → module complete |
+| **Already covered** | Module hidden entirely | n/a | 0 | Auto-complete on enrolment |
+
+The chapter list rendered inside each module accordion is built from the adaptation type, not blindly from `catalog_chapters`. So Clara's Module 1 ("Quick diagnostic") shows **one 5-minute diagnostic entry**, not three 25-30-60-minute chapters. That's the difference Theo and Clara will actually see.
+
+Implementation: in `JourneyModuleAccordion.tsx`, branch the chapter list on `m.adaptation?.adaptationType` and render the appropriate alternative entry. Module-level total time recomputes from this transformed list.
+
+---
+
+## Step 4 — Make the tooltips actually teach the model
+
+Replace the current popover content with a clear two-line explanation per mode:
+
+- **Full module** — "Read every chapter end-to-end. Recommended when this is new territory for you."
+- **Condensed module** — "A shorter pass through the same material. We've trimmed sections your profile already evidences, so you only see what's likely new."
+- **Quick diagnostic** — "Three questions to confirm you've got this. Pass and the module's done — no need to read it through."
+- **Evidence task** — "Skip straight to the practice. Submit a short piece of work that shows you can apply this — no reading required."
+- **Already covered** — "Your profile already evidences this. We're not adding it to your journey, but you can revisit it anytime from the catalog."
+
+Tooltip layout: bold title (the friendly label), one-paragraph explanation, then the contextual line (competency name + current/target level + validation flag if present).
+
+Add a one-time "What do these mean?" link at the top of the journey view that opens a small modal listing all five modes side by side, so a learner can self-serve the whole model in 30 seconds.
+
+---
+
+## Step 5 — Author the long-form body (Option A: pilot first)
+
+A one-off edge function `expand-chapter-content`:
+
+- Calls Lovable AI (`google/gemini-2.5-pro`).
+- Prompt: target persona = early-career, outside-FS Associate IM joiner; depth = 800-1,200 words; structure = Learning Objective → Overview → 3-4 substantive sections → Try it yourself → Reflect; voice = match the existing Rathbones onboarding tone in `chapter_summary`; ground it in the existing `realistic_content_outline` so we don't drift off-topic.
+- Writes back to `chapter_long_form_content`.
+
+Pilot scope: the 3 chapters in module `bk1` (Introduction to Wealth Management and the Rathbones Approach). You review one. If voice/depth/length is right, I batch-generate the remaining 53 chapters in one pass.
+
+---
+
+## Verification after build
+
+1. **Open Theo → Module 1, Chapter 1** — see ~500 words today (Step 1) or full ~1,000-word lesson (after Step 5 pilot).
+2. **Open Clara → Module 1** — instead of three chapters, see **one "Diagnostic — 5 min" entry**. Click it, get 3 MCQs. Pass → module marked complete. This is the visible difference from Theo.
+3. **Open Clara → Module 4 (Regulatory Landscape)** — see **one "Submit evidence — 15 min" entry**, not three chapters. Open it, see the practical activity prompt.
+4. **Hover the "Quick diagnostic" badge as Clara** — tooltip explains in plain English what a diagnostic is and why she's getting one, plus the competency/level context.
+5. **Click "What do these mean?" at top of journey** — modal shows all 5 modes with descriptions.
+6. **Ask Embark AI "summarise this chapter"** — answer cites real content from the long-form body.
+
+---
+
+## Out of scope
+
+- True per-persona variant text (separate body for "mid in-FS"). The lens model in Step 3 should cover the stated need; we can add variant text later if it doesn't.
+- Authoring assessments, role plays, or microlearnings — separate pipelines.
+- Touching the cohort/competency/adaptation tables themselves (only `catalog_chapters` gains one column).

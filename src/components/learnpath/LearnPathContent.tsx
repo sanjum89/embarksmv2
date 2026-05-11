@@ -5,6 +5,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { useLearnerJourney } from "@/hooks/useLearnerJourney";
+import { useCatalogChapter, composeChapterTranscript } from "@/hooks/useCatalogChapter";
 import { EmbarkJourneyView } from "./EmbarkJourneyView";
 import { EmbarkLoadingState } from "./EmbarkLoadingState";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";
@@ -131,12 +132,57 @@ export function EmbarkContent() {
     );
   }
 
+  // Determine if activeModuleId is a cohort chapter code, and look up its adaptation lens.
+  const cohortChapterCode = useMemo(() => {
+    if (!activeModuleId || !journey) return null;
+    for (const t of journey.tracks) {
+      for (const m of t.modules) {
+        if (m.chapters.some((c) => c.code === activeModuleId)) return activeModuleId;
+      }
+    }
+    return null;
+  }, [activeModuleId, journey]);
+
+  const cohortAdaptationType = useMemo(() => {
+    if (!cohortChapterCode || !journey) return null;
+    for (const t of journey.tracks) {
+      for (const m of t.modules) {
+        if (m.chapters.some((c) => c.code === cohortChapterCode)) {
+          return m.adaptation?.adaptationType ?? null;
+        }
+      }
+    }
+    return null;
+  }, [cohortChapterCode, journey]);
+
+  const { chapter: cohortChapterRow } = useCatalogChapter(activeAccountId, cohortChapterCode);
+
   if (contentView === "module" && activeModuleId) {
     let mod = resolveModule(activeModuleId, skillTargets, normalizedAccount?.learningModules);
 
-    // Cohort fallback: synthesize a LearningModule from journey chapter metadata when the
-    // ID is a cohort chapter code that isn't in the legacy module catalog.
-    if (!mod && journey) {
+    // Cohort path: when the active ID is a cohort chapter, render REAL DB content.
+    if (cohortChapterRow && cohortChapterCode === activeModuleId) {
+      const lens =
+        cohortAdaptationType === "microlearning"
+          ? "condensed"
+          : cohortAdaptationType === "diagnostic_only"
+            ? "diagnostic"
+            : cohortAdaptationType === "evidence_required"
+              ? "evidence"
+              : "full";
+      const transcript = composeChapterTranscript(cohortChapterRow, lens);
+      const minutes =
+        lens === "diagnostic" ? 5 : lens === "evidence" ? 15 : cohortChapterRow.estimatedTimeMinutes || 25;
+      mod = {
+        id: cohortChapterRow.chapterCode,
+        title: cohortChapterRow.chapterTitle,
+        contentType: "document",
+        contentUrl: "",
+        transcript,
+        duration: `${minutes} min`,
+      };
+    } else if (!mod && journey) {
+      // Last-ditch synthesis if a journey chapter exists but DB row hasn't loaded yet
       for (const t of journey.tracks) {
         for (const m of t.modules) {
           const ch = m.chapters.find((c) => c.code === activeModuleId);
@@ -146,7 +192,7 @@ export function EmbarkContent() {
               title: ch.title,
               contentType: (ch.contentType as any) ?? "document",
               contentUrl: "",
-              transcript: `# ${ch.title}\n\nThis chapter is part of **${m.title}** in the **${t.name}** track of your cohort journey. Content is being prepared — open the right panel to see your full journey, or ask Embark AI to summarise the topic.`,
+              transcript: `# ${ch.title}\n\nLoading chapter content…`,
               duration: ch.minutes ? `${ch.minutes} min` : "5 min",
             };
             break;

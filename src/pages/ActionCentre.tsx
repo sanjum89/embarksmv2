@@ -111,23 +111,47 @@ export default function ActionCentre() {
                           <p className="text-xs text-muted-foreground">{a.detail}</p>
                         </div>
                         <div className="flex items-center gap-1">
-                          {!decision ? (
+                          {a.group === "raised_hand" ? (
                             <>
-                              <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { recordDecision(a.id, "approved", user.name); toast.success("Approved"); }}>
-                                <Check className="mr-1 h-3 w-3" /> Approve
+                              <Button
+                                size="sm"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => setHandAction(a)}
+                                disabled={decision === "resolved"}
+                              >
+                                <MessageSquareReply className="mr-1 h-3 w-3" />
+                                {decision === "resolved" ? "Resolved" : "Reply"}
                               </Button>
-                              <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { recordDecision(a.id, "rejected", user.name); toast.success("Rejected"); }}>
-                                <X className="mr-1 h-3 w-3" /> Reject
+                              {decision === "resolved" && (
+                                <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => { clearDecision(a.id); toast.success("Reopened"); }}>
+                                  Reopen
+                                </Button>
+                              )}
+                              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setOpenId(a.employeeId)}>
+                                Open
                               </Button>
                             </>
                           ) : (
-                            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => { clearDecision(a.id); toast.success("Cleared"); }}>
-                              Undo
-                            </Button>
+                            <>
+                              {!decision ? (
+                                <>
+                                  <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { recordDecision(a.id, "approved", user.name); toast.success("Approved"); }}>
+                                    <Check className="mr-1 h-3 w-3" /> Approve
+                                  </Button>
+                                  <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { recordDecision(a.id, "rejected", user.name); toast.success("Rejected"); }}>
+                                    <X className="mr-1 h-3 w-3" /> Reject
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => { clearDecision(a.id); toast.success("Cleared"); }}>
+                                  Undo
+                                </Button>
+                              )}
+                              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setOpenId(a.employeeId)}>
+                                Open
+                              </Button>
+                            </>
                           )}
-                          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setOpenId(a.employeeId)}>
-                            Open
-                          </Button>
                         </div>
                       </div>
                     </Card>

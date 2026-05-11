@@ -148,9 +148,10 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                 <div className="space-y-1 pt-1">
                   {(() => {
                     const lensType = m.adaptation?.adaptationType ?? "full_module";
-                    const displayChapters = buildLensChapters(m.chapters, lensType);
+                    const recorded = diagState[m.code];
+                    const displayChapters = buildLensChapters(m.code, m.chapters, lensType, recorded);
                     return displayChapters.map((c, sIdx) => {
-                      const step: UnifiedStep = {
+                      const step: UnifiedStep & { lensState?: string } = {
                         stepId: c.code,
                         moduleId: c.code,
                         type: "module" as StepType,
@@ -158,11 +159,12 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                         description: "",
                         duration: c.minutes ? `${c.minutes} min` : undefined,
                         contentType: c.contentType,
-                        status: statusToStepStatus(c.status),
+                        status: statusToStepStatus(c.status as any),
                         skillTargetId: cohortId,
                         skillTargetTitle: m.title,
                         progress: m.pct,
                         referenceId: c.code,
+                        lensState: (c as any).lensState,
                       };
                       return (
                         <EmbarkChapterRow

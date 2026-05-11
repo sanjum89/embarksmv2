@@ -182,18 +182,13 @@ export function InlineQuiz({ title, questions, onPass, onSubmit }: Props) {
               ? `${answeredCount} of ${total} answered`
               : allCorrect
                 ? "Nice — you've got this. Module marked complete."
-                : "Review the explanations and try again."}
+                : "We've reopened the chapters you missed so you can read them next."}
           </p>
-          {!submitted ? (
+          {!submitted && (
             <Button size="sm" onClick={handleSubmit} disabled={!allAnswered}>
               Submit answers
             </Button>
-          ) : !allCorrect ? (
-            <Button size="sm" variant="outline" onClick={handleRetry} className="gap-1.5">
-              <RotateCcw className="h-3.5 w-3.5" />
-              Try again
-            </Button>
-          ) : null}
+          )}
         </div>
       </div>
     </div>

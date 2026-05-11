@@ -16,12 +16,14 @@ serve(async (req) => {
 
     const moduleList = (context?.modules || [])
       .map((module: any) => {
-        // Cohort module rows carry trackName + moduleCode + chapter counts.
         if (module.moduleCode || module.trackName) {
           const upNext = module.upNextChapterTitle
             ? `, up-next chapter: "${module.upNextChapterTitle}" (chapterCode: ${module.upNextChapterCode})`
             : "";
-          return `- [${module.trackName ?? "Track"}] ${module.title} (moduleCode: ${module.moduleCode}, ${module.completedChapters ?? 0}/${module.totalChapters ?? 0} chapters, status: ${module.status}${upNext})`;
+          const adapt = module.adaptationLabel
+            ? `, delivery: ${module.adaptationLabel}${module.adaptationReason ? ` — ${module.adaptationReason}` : ""}`
+            : "";
+          return `- [${module.trackName ?? "Track"}] ${module.title} (moduleCode: ${module.moduleCode}, ${module.completedChapters ?? 0}/${module.totalChapters ?? 0} chapters, status: ${module.status}${upNext}${adapt})`;
         }
         return `- ${module.title} (ID: ${module.moduleId}, status: ${module.status}, skill target: ${module.skillTargetTitle})`;
       })

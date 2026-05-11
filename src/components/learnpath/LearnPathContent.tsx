@@ -88,9 +88,9 @@ export function EmbarkContent() {
 
   const hasSteps = allSteps.length > 0;
 
-  // Auto-resume: open first incomplete step on mount
+  // Auto-resume: open first incomplete step on mount (legacy accounts only)
   useEffect(() => {
-    if (autoResumedRef.current || !hasSteps || contentView !== "welcome") return;
+    if (autoResumedRef.current || !hasSteps || contentView !== "welcome" || hasJourney) return;
     autoResumedRef.current = true;
     const resume = allSteps.find((s) => s.status === "in_progress") ?? allSteps.find((s) => s.status === "available");
     if (resume) {
@@ -100,7 +100,7 @@ export function EmbarkContent() {
         openModule(resume.moduleId, resume.skillTargetId);
       }
     }
-  }, [hasSteps, contentView]);
+  }, [hasSteps, contentView, hasJourney]);
 
   // Reset completion-view flag when active module changes (so mode selector returns)
   useEffect(() => {

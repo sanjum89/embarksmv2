@@ -101,10 +101,10 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
   const visibleRows = compare === "side" ? rows.slice(0, 2) : compare === "baseline" ? rows.slice(0, 1) : rows;
 
   // Geometry
-  const COL_W = 120;
-  const ROW_H = 56;
-  const PADDING_X = 16;
-  const PADDING_TOP = 36;
+  const COL_W = dense ? 120 : 160;
+  const ROW_H = dense ? 56 : 72;
+  const PADDING_X = dense ? 16 : 24;
+  const PADDING_TOP = dense ? 36 : 44;
   const NODE_W = 14;
   const totalWidth = PADDING_X * 2 + modules.length * COL_W;
   const headerOffset = compare === "baseline" ? ROW_H : 0;

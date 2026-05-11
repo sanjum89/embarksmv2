@@ -119,6 +119,7 @@ export default function NewMy360() {
           onRefresh={data.refresh}
         />
       )}
+      </div>
     </div>
   );
 }

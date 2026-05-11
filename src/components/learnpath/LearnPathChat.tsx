@@ -290,18 +290,23 @@ export function EmbarkChat() {
       employee?.performanceRating ? `Performance: ${employee.performanceRating}` : null,
     ].filter(Boolean).join(". ");
 
+    // Cohort modules first (they're the canonical source when present), then legacy steps.
+    const mergedModules = [...cohortModules, ...moduleSteps];
+    const hasModules = mergedModules.length > 0;
+
     return {
       userName: user.name,
       userRole: user.role,
       userTitle: user.title ?? "",
-      modules: moduleSteps,
+      modules: mergedModules,
+      cohortJourney,
       currentView: embark.contentView,
       activeModuleId: currentModuleId,
       activeModuleTitle: currentContent?.moduleTitle ?? null,
       activeSkillTargetId: embark.activeSkillTargetId,
       activeSkillTargetTitle: currentContent?.skillTargetTitle ?? null,
       learningMode: embark.learningMode,
-      hasModules: moduleSteps.length > 0,
+      hasModules,
       resumeModuleId: resumeModule?.moduleId ?? null,
       resumeModuleTitle: resumeModule?.title ?? null,
       resumeSkillTargetId: resumeModule?.skillTargetId ?? null,
@@ -321,6 +326,7 @@ export function EmbarkChat() {
     embark.assessmentModuleId,
     embark.contentView,
     embark.learningMode,
+    journey,
     normalizedAccount,
     skillTargets,
     substitute,

@@ -1,177 +1,245 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { CalendarPlus, Inbox, MessageSquarePlus, Sparkles, ChevronRight, Users } from "lucide-react";
-import { toast } from "sonner";
+import { Link } from "react-router-dom";
+import { ChevronRight } from "lucide-react";
 import BackButton from "@/components/layout/BackButton";
+import { useAccount } from "@/contexts/AccountContext";
+import { useUser } from "@/contexts/UserContext";
 import { useAccountCohorts } from "@/hooks/useManagerCohortData";
-import { getAllDemoOverlays, RATHBONES_COHORT_ID } from "@/data/managerDemoOverlay";
-import { LearnerStatusBadge } from "@/components/manager-hub/LearnerStatusBadge";
+import {
+  getAllDemoOverlays,
+  RATHBONES_COHORT_ID,
+  COHORT_MODULES_FALLBACK,
+  type LearnerOverlay,
+} from "@/data/managerDemoOverlay";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";
-import { COHORT_MODULES_FALLBACK } from "@/data/managerDemoOverlay";
+import { RosterHeatmap } from "@/components/manager-hub/RosterHeatmap";
+
+import { TeamHero } from "@/components/team-home/TeamHero";
+import { PulseStrip, type PulseTile } from "@/components/team-home/PulseStrip";
+import { TeamRoster } from "@/components/team-home/TeamRoster";
+import type { RosterEntry } from "@/components/team-home/RosterRow";
+import { ActionQueue, type ActionQueueItem } from "@/components/team-home/ActionQueue";
+import { MyCohortsCard, type CohortItem } from "@/components/team-home/MyCohortsCard";
+
+function progressFromOverlay(o: LearnerOverlay) {
+  const total = o.cells.length || 1;
+  const completed = o.cells.filter((c) => c.status === "completed").length;
+  const pct = Math.round((completed / total) * 100);
+  return { total, completed, pct };
+}
+
+function lastActivityLabel(o: LearnerOverlay) {
+  const inProg = o.cells.find((c) => c.status === "in_progress");
+  if (inProg) return "Active today";
+  const done = [...o.cells].reverse().find((c) => c.status === "completed");
+  if (done?.last_activity) return `Last: ${done.last_activity}`;
+  return "Not started";
+}
 
 export default function TeamMode() {
+  const { normalizedAccount } = useAccount();
+  const { user } = useUser();
   const { cohorts } = useAccountCohorts();
   const overlays = getAllDemoOverlays();
   const [openId, setOpenId] = useState<string | null>(null);
   const selected = overlays.find((o) => o.employeeId === openId) ?? null;
 
+  const employeesById = normalizedAccount?.employeesById ?? {};
+  const nameOf = (id: string) => employeesById[id]?.name || id;
+  const titleOf = (id: string) => employeesById[id]?.title || "Learner";
+
+  const entries: RosterEntry[] = useMemo(
+    () =>
+      overlays.map((o) => {
+        const { total, completed, pct } = progressFromOverlay(o);
+        const cpd = o.cpd;
+        const cpdHint = `${cpd.hours_logged}/${cpd.hours_required}h`;
+        const cpdTone =
+          cpd.status === "overdue" ? "rose" : cpd.status === "at_risk" ? "amber" : "emerald";
+        return {
+          employeeId: o.employeeId,
+          name: nameOf(o.employeeId),
+          title: titleOf(o.employeeId),
+          overlay: o,
+          progressPct: pct,
+          completed,
+          total,
+          cpdHint,
+          cpdTone,
+          lastActivity: lastActivityLabel(o),
+        };
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [overlays, normalizedAccount]
+  );
+
   const kpis = useMemo(() => {
-    const learners = overlays.length;
-    const atRisk = overlays.filter((o) => o.status === "at_risk" || o.status === "needs_check_in").length;
-    const stars = overlays.filter((o) => o.status === "rising_star").length;
-    const pending = overlays.reduce(
-      (acc, o) => acc + o.actions.filter((a) => a.severity !== "low").length + o.pathChanges.filter((c) => c.needs_approval).length,
+    const learners = entries.length;
+    const stars = entries.filter((e) => e.overlay.status === "rising_star").length;
+    const needsAttn = entries.filter(
+      (e) => e.overlay.status === "at_risk" || e.overlay.status === "needs_check_in"
+    ).length;
+    const avg = learners
+      ? Math.round(entries.reduce((s, e) => s + e.progressPct, 0) / learners)
+      : 0;
+    const pendingActions = entries.reduce(
+      (acc, e) =>
+        acc +
+        e.overlay.actions.filter((a) => a.severity !== "low").length +
+        e.overlay.pathChanges.filter((c) => c.needs_approval).length,
       0
     );
-    return { learners, atRisk, stars, pending };
-  }, [overlays]);
+    return { learners, stars, needsAttn, avg, pendingActions };
+  }, [entries]);
 
-  const ctas = overlays.flatMap((o) => o.actions.map((a) => ({ ...a, name: o.employeeId })));
+  const tiles: PulseTile[] = [
+    {
+      key: "learners",
+      label: "Active learners",
+      value: kpis.learners,
+      hint: "Across your reporting line",
+      tone: "primary",
+      icon: "users",
+    },
+    {
+      key: "avg",
+      label: "Avg progress",
+      value: `${kpis.avg}%`,
+      hint: "Mean across modules completed",
+      tone: "emerald",
+      icon: "trend",
+    },
+    {
+      key: "stars",
+      label: "Rising stars",
+      value: kpis.stars,
+      hint: "Outperforming targets",
+      tone: "primary",
+      icon: "spark",
+    },
+    {
+      key: "attn",
+      label: "Needs attention",
+      value: kpis.needsAttn,
+      hint: `${kpis.pendingActions} actions queued`,
+      tone: kpis.needsAttn > 0 ? "amber" : "emerald",
+      icon: "alert",
+    },
+  ];
+
+  const queueItems: ActionQueueItem[] = useMemo(() => {
+    const all: ActionQueueItem[] = [];
+    for (const o of overlays) {
+      for (const a of o.actions) {
+        all.push({
+          id: a.id,
+          employeeId: o.employeeId,
+          learnerName: nameOf(o.employeeId),
+          title: a.title,
+          detail: a.detail,
+          severity: a.severity,
+        });
+      }
+    }
+    const rank = { high: 0, medium: 1, low: 2 };
+    return all.sort((a, b) => rank[a.severity] - rank[b.severity]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [overlays, normalizedAccount]);
+
+  const cohortItems: CohortItem[] = useMemo(
+    () =>
+      cohorts.map((c) => ({
+        id: c.id,
+        title: c.cohort_title,
+        code: c.role_cohort_code ?? "",
+        learnerCount: 0,
+        progressPct: 0,
+      })),
+    [cohorts]
+  );
+
+  const summary = `${kpis.learners} associates · ${kpis.stars} rising stars · ${kpis.needsAttn} need attention · ${kpis.pendingActions} actions queued`;
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
-      <BackButton />
-      <div className="mb-6 mt-2">
-        <h1 className="font-display text-2xl font-bold text-foreground">Team Home</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Your team at a glance — risks, rising stars, and what to do next.</p>
-      </div>
+    <div className="flex-1 overflow-y-auto">
+      <div className="mx-auto w-full max-w-[1400px] p-4 sm:p-6 lg:p-8">
+        <BackButton />
 
-      {/* KPI strip */}
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {[
-          { label: "Learners", value: kpis.learners },
-          { label: "Rising stars", value: kpis.stars },
-          { label: "At risk", value: kpis.atRisk },
-          { label: "Pending approvals", value: kpis.pending },
-        ].map((k) => (
-          <Card key={k.label} className="p-4">
-            <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{k.label}</p>
-            <p className="mt-1 text-2xl font-bold text-foreground">{k.value}</p>
-          </Card>
-        ))}
-      </div>
+        <TeamHero
+          managerName={user?.name ?? "Manager"}
+          managerTitle={(user as any)?.title ?? "Team Lead"}
+          summary={summary}
+        />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        {/* Talent signals */}
-        <Card className="p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground">Talent Signals</p>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="space-y-2">
-            {overlays
-              .filter((o) => o.status === "rising_star" || o.status === "at_risk")
-              .map((o) => (
-                <button
-                  key={o.employeeId}
-                  type="button"
-                  onClick={() => setOpenId(o.employeeId)}
-                  className="flex w-full items-start justify-between gap-2 rounded-md border border-border p-2 text-left hover:bg-muted/40"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">{o.employeeId}</p>
-                    <p className="truncate text-xs text-muted-foreground">{o.headline}</p>
-                  </div>
-                  <LearnerStatusBadge status={o.status} />
-                </button>
-              ))}
-          </div>
-        </Card>
+        <PulseStrip tiles={tiles} />
 
-        {/* Recommended CTAs */}
-        <Card className="p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <p className="text-sm font-medium text-foreground">Recommended actions</p>
-            <Sparkles className="h-4 w-4 text-primary" />
+        {/* Two-column body */}
+        <div className="grid gap-6 lg:grid-cols-12">
+          <div className="min-w-0 lg:col-span-8">
+            <TeamRoster entries={entries} onOpen={setOpenId} />
           </div>
-          <div className="space-y-2">
-            {ctas.slice(0, 5).map((a) => (
-              <button
-                key={a.id}
-                type="button"
-                onClick={() => setOpenId(a.employeeId)}
-                className="flex w-full items-start gap-2 rounded-md border border-border p-2 text-left hover:bg-muted/40"
-              >
-                <Badge
-                  variant="outline"
-                  className={`text-[10px] ${
-                    a.severity === "high"
-                      ? "bg-rose-500/10 text-rose-700 border-rose-500/30"
-                      : a.severity === "medium"
-                      ? "bg-amber-500/10 text-amber-700 border-amber-500/30"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {a.severity}
-                </Badge>
-                <div className="min-w-0">
-                  <p className="truncate text-sm text-foreground">{a.title}</p>
-                  <p className="truncate text-xs text-muted-foreground">{a.detail}</p>
-                </div>
-              </button>
-            ))}
-            {ctas.length === 0 && <p className="text-sm text-muted-foreground">Nothing pressing right now.</p>}
+          <div className="space-y-6 lg:col-span-4">
+            <ActionQueue items={queueItems} onOpen={setOpenId} />
+            <MyCohortsCard cohorts={cohortItems} />
           </div>
-          <Button asChild size="sm" variant="ghost" className="mt-3 w-full justify-between">
-            <Link to="/action-centre">
-              Open Action Centre
-              <ChevronRight className="h-3 w-3" />
-            </Link>
-          </Button>
-        </Card>
+        </div>
 
-        {/* Cohorts */}
-        <Card className="p-4">
-          <p className="mb-3 text-sm font-medium text-foreground">Cohorts I manage</p>
-          <div className="space-y-2">
-            {cohorts.length === 0 && (
+        {/* Heatmap */}
+        <section className="mt-8">
+          <Card className="overflow-hidden">
+            <div className="flex items-center justify-between border-b border-border p-4">
+              <div className="min-w-0">
+                <h2 className="text-sm font-semibold text-foreground">Module progress</h2>
+                <p className="text-xs text-muted-foreground">
+                  Investment Management Readiness · Jan 2026
+                </p>
+              </div>
               <Link
                 to={`/manager/cohort/${RATHBONES_COHORT_ID}`}
-                className="block rounded-md border border-border p-3 hover:bg-muted/40"
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
               >
-                <p className="text-sm font-medium text-foreground">Investment Management Readiness — Jan 2026</p>
-                <p className="text-xs text-muted-foreground">assoc_im · demo</p>
+                Open cohort <ChevronRight className="h-3 w-3" />
               </Link>
-            )}
-            {cohorts.map((c) => (
-              <Link
-                key={c.id}
-                to={`/manager/cohort/${c.id}`}
-                className="block rounded-md border border-border p-3 hover:bg-muted/40"
-              >
-                <p className="text-sm font-medium text-foreground">{c.cohort_title}</p>
-                <p className="text-xs text-muted-foreground">{c.role_cohort_code}</p>
-              </Link>
-            ))}
-          </div>
-        </Card>
-      </div>
-
-      {/* Quick actions */}
-      <div className="mt-6 flex flex-wrap gap-2">
-        <Button size="sm" variant="outline" onClick={() => toast.success("1:1 scheduled in Teams (demo)")}>
-          <CalendarPlus className="mr-1 h-3 w-3" /> Schedule 1:1
-        </Button>
-        <Button size="sm" variant="outline" onClick={() => toast.success("Cohort check-in posted (demo)")}>
-          <MessageSquarePlus className="mr-1 h-3 w-3" /> Send check-in
-        </Button>
-        <Button size="sm" variant="outline" asChild>
-          <Link to="/action-centre"><Inbox className="mr-1 h-3 w-3" /> Action Centre</Link>
-        </Button>
-        <Button size="sm" variant="outline" asChild>
-          <Link to={`/manager/cohort/${RATHBONES_COHORT_ID}`}>Open Associate IM cohort →</Link>
-        </Button>
+            </div>
+            <div className="overflow-x-auto p-4">
+              <RosterHeatmap
+                learners={entries.map((e) => ({
+                  employeeId: e.employeeId,
+                  name: e.name,
+                  title: e.title,
+                  overlay: e.overlay,
+                }))}
+                modules={COHORT_MODULES_FALLBACK.map((m) => ({
+                  module_code: m.module_code,
+                  module_title: m.module_title,
+                  progression_stage: m.progression_stage,
+                }))}
+                onSelectLearner={(id) => setOpenId(id)}
+              />
+            </div>
+          </Card>
+        </section>
       </div>
 
       <LearnerDrawer
         open={!!openId}
         onOpenChange={(o) => !o && setOpenId(null)}
-        learner={selected ? { employeeId: selected.employeeId, name: selected.employeeId } : null}
+        learner={
+          selected
+            ? {
+                employeeId: selected.employeeId,
+                name: nameOf(selected.employeeId),
+                title: titleOf(selected.employeeId),
+              }
+            : null
+        }
         overlay={selected}
-        modules={COHORT_MODULES_FALLBACK.map((m) => ({ module_code: m.module_code, module_title: m.module_title, progression_stage: m.progression_stage }))}
+        modules={COHORT_MODULES_FALLBACK.map((m) => ({
+          module_code: m.module_code,
+          module_title: m.module_title,
+          progression_stage: m.progression_stage,
+        }))}
       />
     </div>
   );

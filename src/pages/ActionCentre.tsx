@@ -215,6 +215,26 @@ export default function ActionCentre() {
         overlay={selected}
         modules={COHORT_MODULES_FALLBACK.map((m) => ({ module_code: m.module_code, module_title: m.module_title, progression_stage: m.progression_stage }))}
       />
+
+      <RaisedHandDrawer
+        open={!!handAction}
+        onOpenChange={(o) => !o && setHandAction(null)}
+        action={handAction}
+        learner={handAction ? { employeeId: handAction.employeeId, name: nameOf(handAction.employeeId), title: titleOf(handAction.employeeId) } : null}
+        onScheduleOneOnOne={(id) => setScheduleId(id)}
+        onSendCheckIn={(id) => setCheckInId(id)}
+      />
+
+      <Schedule1on1Dialog
+        open={!!scheduleId}
+        onOpenChange={(o) => !o && setScheduleId(null)}
+        defaultLearnerId={scheduleId}
+      />
+      <SendCheckInDialog
+        open={!!checkInId}
+        onOpenChange={(o) => !o && setCheckInId(null)}
+        defaultLearnerId={checkInId}
+      />
     </div>
   );
 }

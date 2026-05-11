@@ -680,3 +680,314 @@ for (const id of Object.keys(OVERLAY)) {
   ov.pathChanges = ov.pathChanges.map(enrichPathChange);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Live-catalog projection: recipes per persona projected onto the real module
+// list returned from `catalog_modules`. Used by the cohort hub so Roster and
+// Adaptive Paths share a single source of truth regardless of catalog size.
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface ModuleSpine {
+  module_code: string;
+  module_title: string;
+  display_order?: number | null;
+  progression_stage?: string | null;
+}
+
+type RecipeChangeKind = AiPathChange["kind"];
+
+interface RecipeChange {
+  module_code: string; // live catalog module_code
+  kind: RecipeChangeKind;
+  reason: string;
+  evidence: string[];
+  confidence?: AiPathChange["confidence"];
+  risk?: AiPathChange["risk"];
+  needs_approval?: boolean;
+  daysAgo?: number;
+}
+
+interface PersonaRecipe {
+  /** Fraction of modules treated as completed (0..1). */
+  completedThrough: number;
+  /** How many modules sit in_progress immediately after the completed run. */
+  inProgressCount?: number;
+  /** Score band for synthetic completed-cell scores. */
+  scoreRange?: [number, number];
+  /** Optional explicit AI changes, keyed by live module_code. */
+  changes?: RecipeChange[];
+}
+
+const RECIPES: Record<string, PersonaRecipe> = {
+  // Sophie — outside FS, slow, full path with emphasis on Foundations
+  "rb-l1": {
+    completedThrough: 0.07,
+    inProgressCount: 1,
+    scoreRange: [80, 88],
+    changes: [
+      {
+        module_code: "bk1.intro_wealth_rathbones",
+        kind: "emphasis",
+        reason: "Sophie is new to FS — extra emphasis on terminology and market structure recommended.",
+        evidence: ["Diagnostic 42%", "Background: marketing"],
+        confidence: "high",
+        risk: "low",
+        needs_approval: false,
+        daysAgo: 6,
+      },
+    ],
+  },
+  // Maya — FS retail bg, diagnostic-only on Markets
+  "rb-l2": {
+    completedThrough: 0.11,
+    inProgressCount: 1,
+    scoreRange: [78, 91],
+    changes: [
+      {
+        module_code: "bk3.markets_macro_assets",
+        kind: "diagnostic_only",
+        reason: "FS background detected; diagnostic confirmed competence (91%).",
+        evidence: ["Diagnostic 91%", "Prior role: retail banking 3y"],
+        confidence: "high",
+        risk: "low",
+        needs_approval: false,
+        daysAgo: 5,
+      },
+    ],
+  },
+  // Theo — IM intern, struggling on Portfolio Construction
+  "rb-l3": {
+    completedThrough: 0.07,
+    inProgressCount: 2,
+    scoreRange: [54, 88],
+    changes: [
+      {
+        module_code: "bk4.portfolio_construction",
+        kind: "microlearning",
+        reason: "Two failed attempts on portfolio construction concepts. Targeted 12-min microlearning generated.",
+        evidence: ["Attempt 1: 54%", "Attempt 2: 61%", "Weak tag: efficient_frontier"],
+        confidence: "high",
+        risk: "medium",
+        needs_approval: true,
+        daysAgo: 1,
+      },
+    ],
+  },
+  // Owen — mid-career switcher, emphasis on Foundations
+  "rb-l4": {
+    completedThrough: 0.11,
+    inProgressCount: 1,
+    scoreRange: [79, 84],
+    changes: [
+      {
+        module_code: "bk1.intro_wealth_rathbones",
+        kind: "emphasis",
+        reason: "Mid-career switcher from consulting — extra worked examples added.",
+        evidence: ["Background: consulting", "Diagnostic 58%"],
+        confidence: "medium",
+        risk: "low",
+        needs_approval: false,
+        daysAgo: 7,
+      },
+    ],
+  },
+  // Priya — compliance background, two foundation skips
+  "rb-l5": {
+    completedThrough: 0.11,
+    inProgressCount: 1,
+    scoreRange: [85, 92],
+    changes: [
+      {
+        module_code: "bk1.intro_wealth_rathbones",
+        kind: "skipped",
+        reason: "Diagnostic 88% — competence demonstrated.",
+        evidence: ["Diagnostic 88%", "Prior role: compliance officer 4y"],
+        confidence: "high",
+        risk: "low",
+        needs_approval: false,
+        daysAgo: 8,
+      },
+      {
+        module_code: "bk2.kyc_suitability",
+        kind: "skipped",
+        reason: "Diagnostic 92% — KYC and suitability fluency confirmed.",
+        evidence: ["Diagnostic 92%"],
+        confidence: "high",
+        risk: "low",
+        needs_approval: false,
+        daysAgo: 8,
+      },
+    ],
+  },
+  // Clara — RISING STAR, 2y IM analyst, two foundation skips
+  "rb-l6": {
+    completedThrough: 0.18,
+    inProgressCount: 1,
+    scoreRange: [88, 95],
+    changes: [
+      {
+        module_code: "bk1.intro_wealth_rathbones",
+        kind: "skipped",
+        reason: "Diagnostic 94% + 2y IM analyst experience.",
+        evidence: ["Diagnostic 94%", "Prior role: IM analyst 2y"],
+        confidence: "high",
+        risk: "low",
+        needs_approval: false,
+        daysAgo: 9,
+      },
+      {
+        module_code: "bk2.kyc_suitability",
+        kind: "skipped",
+        reason: "Diagnostic 91% — KYC fluency confirmed.",
+        evidence: ["Diagnostic 91%"],
+        confidence: "high",
+        risk: "low",
+        needs_approval: false,
+        daysAgo: 9,
+      },
+    ],
+  },
+  // Rosa — senior tech hire, diagnostic-only on Foundations
+  "rb-l7": {
+    completedThrough: 0.04,
+    inProgressCount: 1,
+    scoreRange: [70, 80],
+    changes: [
+      {
+        module_code: "bk1.intro_wealth_rathbones",
+        kind: "diagnostic_only",
+        reason: "Senior hire — converted Foundations to diagnostic + reflection.",
+        evidence: ["Prior role: product mgmt 8y"],
+        confidence: "medium",
+        risk: "low",
+        needs_approval: false,
+        daysAgo: 5,
+      },
+    ],
+  },
+  // Felix — exp FS, diagnostic-only across foundations
+  "rb-l8": {
+    completedThrough: 0.18,
+    inProgressCount: 1,
+    scoreRange: [84, 90],
+    changes: [
+      { module_code: "bk1.intro_wealth_rathbones", kind: "diagnostic_only", reason: "10y FS experience; diagnostic 90%.", evidence: ["Diagnostic 90%"], daysAgo: 11 },
+      { module_code: "bk2.kyc_suitability", kind: "diagnostic_only", reason: "Diagnostic 87%.", evidence: ["Diagnostic 87%"], daysAgo: 11 },
+      { module_code: "bk3.markets_macro_assets", kind: "diagnostic_only", reason: "Diagnostic 84%.", evidence: ["Diagnostic 84%"], daysAgo: 11 },
+      { module_code: "bk4.portfolio_construction", kind: "diagnostic_only", reason: "Diagnostic 88%.", evidence: ["Diagnostic 88%"], daysAgo: 11 },
+    ],
+  },
+  // Elliot — exp IM, RISING STAR, deep foundation compression
+  "rb-l9": {
+    completedThrough: 0.21,
+    inProgressCount: 1,
+    scoreRange: [90, 96],
+    changes: [
+      { module_code: "bk1.intro_wealth_rathbones", kind: "skipped", reason: "8y IM experience; diagnostic 96%.", evidence: ["Diagnostic 96%", "Prior role: IM 8y"], daysAgo: 13 },
+      { module_code: "bk2.kyc_suitability", kind: "skipped", reason: "Diagnostic 95%.", evidence: ["Diagnostic 95%"], daysAgo: 13 },
+      { module_code: "bk3.markets_macro_assets", kind: "diagnostic_only", reason: "Diagnostic 93%.", evidence: ["Diagnostic 93%"], daysAgo: 13 },
+      { module_code: "bk4.portfolio_construction", kind: "diagnostic_only", reason: "Diagnostic 91%.", evidence: ["Diagnostic 91%"], daysAgo: 13 },
+      { module_code: "bk5.regulatory_landscape", kind: "diagnostic_only", reason: "Diagnostic 90%.", evidence: ["Diagnostic 90%"], daysAgo: 13 },
+    ],
+  },
+};
+
+const ADAPTATION_FOR: Record<RecipeChangeKind, ModuleCellOverlay["adaptation"]> = {
+  skipped: "skip_after_validation",
+  diagnostic_only: "diagnostic_only",
+  microlearning: "microlearning",
+  emphasis: "emphasis",
+  reordered: null,
+};
+
+function buildOverlayCellsAndChanges(
+  employeeId: string,
+  modules: ModuleSpine[],
+  recipe: PersonaRecipe,
+): { cells: ModuleCellOverlay[]; pathChanges: AiPathChange[] } {
+  const total = modules.length;
+  if (total === 0) return { cells: [], pathChanges: [] };
+
+  const completedCount = Math.max(0, Math.min(total, Math.floor(total * recipe.completedThrough)));
+  const inProg = Math.max(0, Math.min(total - completedCount, recipe.inProgressCount ?? 1));
+  const [scoreMin, scoreMax] = recipe.scoreRange ?? [78, 92];
+
+  const changeByCode = new Map<string, RecipeChange>();
+  for (const c of recipe.changes ?? []) changeByCode.set(c.module_code, c);
+
+  // Deterministic pseudo-random per employee+module so scores are stable.
+  const seedHash = (s: string) => {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+    return ((h >>> 0) % 1000) / 1000;
+  };
+
+  const cells: ModuleCellOverlay[] = modules.map((m, i) => {
+    const change = changeByCode.get(m.module_code);
+    let status: ModuleCellOverlay["status"];
+    if (change && (change.kind === "skipped" || change.kind === "diagnostic_only")) {
+      status = "completed";
+    } else if (i < completedCount) {
+      status = "completed";
+    } else if (i < completedCount + inProg) {
+      status = "in_progress";
+    } else if (i >= total - 1) {
+      status = "locked";
+    } else {
+      status = "not_started";
+    }
+
+    let score: number | undefined;
+    if (status === "completed") {
+      const r = seedHash(`${employeeId}::${m.module_code}`);
+      score = Math.round(scoreMin + r * (scoreMax - scoreMin));
+    }
+
+    return {
+      module_code: m.module_code,
+      status,
+      adaptation: change ? ADAPTATION_FOR[change.kind] ?? null : null,
+      score,
+      last_activity:
+        status === "completed" ? `${i + 1}d ago` : status === "in_progress" ? "today" : undefined,
+    };
+  });
+
+  const pathChanges: AiPathChange[] = (recipe.changes ?? [])
+    .filter((c) => modules.some((m) => m.module_code === c.module_code))
+    .map((c, idx) => {
+      const mod = modules.find((m) => m.module_code === c.module_code)!;
+      return enrichPathChange({
+        id: `pc-${employeeId}-live-${idx + 1}`,
+        employeeId,
+        module_code: c.module_code,
+        module_title: mod.module_title,
+        kind: c.kind,
+        reason: c.reason,
+        evidence: c.evidence,
+        confidence: c.confidence ?? "high",
+        risk: c.risk ?? "low",
+        needs_approval: c.needs_approval ?? false,
+        created_at: isoAgo(c.daysAgo ?? 5),
+      });
+    });
+
+  return { cells, pathChanges };
+}
+
+/**
+ * Cohort-aware overlay accessor. Projects the persona recipe onto the live
+ * module spine so cells and pathChanges always align with what the catalog
+ * actually contains. Falls back to the static overlay if no recipe exists.
+ */
+export function getDemoOverlayFor(
+  employeeId: string,
+  modules: ModuleSpine[],
+): LearnerOverlay | null {
+  const base = OVERLAY[employeeId];
+  if (!base) return null;
+  const recipe = RECIPES[employeeId];
+  if (!recipe || modules.length === 0) return base;
+  const { cells, pathChanges } = buildOverlayCellsAndChanges(employeeId, modules, recipe);
+  return { ...base, cells, pathChanges };
+}
+

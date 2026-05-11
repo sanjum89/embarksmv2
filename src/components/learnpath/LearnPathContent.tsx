@@ -7,7 +7,7 @@ import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { useLearnerJourney } from "@/hooks/useLearnerJourney";
 import { useCatalogChapter, composeChapterTranscript, composeDiagnosticTranscriptFromChapters } from "@/hooks/useCatalogChapter";
 import { useCatalogChaptersForModule } from "@/hooks/useCatalogChaptersForModule";
-import { diagnosticReopens } from "@/store/useDiagnosticReopens";
+import { diagnosticReopens, useDiagnosticReopens } from "@/store/useDiagnosticReopens";
 import { EmbarkJourneyView } from "./EmbarkJourneyView";
 import { EmbarkLoadingState } from "./EmbarkLoadingState";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";

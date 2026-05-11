@@ -5,11 +5,13 @@ import { GitBranch, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LearnerOverlay, AiPathChange } from "@/data/managerDemoOverlay";
 import { AdaptivePathDrawer } from "./AdaptivePathDrawer";
+import { deriveStageBuckets } from "@/lib/cohortStageBuckets";
 
 interface ModuleSpine {
   module_code: string;
   module_title: string;
   progression_stage: string;
+  display_order?: number | null;
 }
 
 interface LearnerInput {
@@ -152,33 +154,24 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
     });
   };
 
-  const overlayLen = Math.max(
-    0,
-    ...selected.map((id) => learners.find((l) => l.employeeId === id)?.overlay.cells.length ?? 0)
-  );
-  const spineLen = overlayLen > 0 ? Math.min(modules.length, overlayLen) : modules.length;
-  const spineModules = useMemo(() => modules.slice(0, spineLen), [modules, spineLen]);
-  const truncated = modules.length > spineLen;
+  // Spine = full live module list (overlay cells now always align to it).
+  const spineModules = modules;
+  const truncated = false;
+  const spineLen = spineModules.length;
 
   const rows = useMemo(() => {
     return selected
       .map((id) => learners.find((l) => l.employeeId === id))
       .filter((x): x is LearnerInput => !!x)
       .map((l) => {
-        const overlayCellIndexByCode = new Map(
-          l.overlay.cells.map((c, idx) => [c.module_code, idx])
-        );
-        const changeByIndex = new Map<number, AiPathChange>();
-        for (const pc of l.overlay.pathChanges) {
-          const idx = overlayCellIndexByCode.get(pc.module_code);
-          if (idx != null) changeByIndex.set(idx, pc);
-        }
-        const segments: Segment[] = spineModules.map((m, i) => {
-          const cell = l.overlay.cells[i];
+        const cellByCode = new Map(l.overlay.cells.map((c) => [c.module_code, c]));
+        const changeByCode = new Map(l.overlay.pathChanges.map((pc) => [pc.module_code, pc]));
+        const segments: Segment[] = spineModules.map((m) => {
+          const cell = cellByCode.get(m.module_code);
           return {
             status: cell?.status ?? "not_started",
             adaptation: cell?.adaptation,
-            pathChange: changeByIndex.get(i),
+            pathChange: changeByCode.get(m.module_code),
             module: m,
           };
         });
@@ -188,29 +181,36 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
 
   const visibleRows = compare === "side" ? rows.slice(0, 2) : compare === "baseline" ? rows.slice(0, 1) : rows;
 
-  // Stage groups (contiguous run of columns sharing the same progression_stage)
-  const stageGroups = useMemo(() => {
-    const out: { stage: string; startIdx: number; span: number }[] = [];
-    spineModules.forEach((m, i) => {
-      const last = out[out.length - 1];
-      if (last && last.stage === m.progression_stage) last.span += 1;
-      else out.push({ stage: m.progression_stage, startIdx: i, span: 1 });
-    });
-    return out;
-  }, [spineModules]);
+  // Real stage groups derived from display_order decade buckets.
+  // If everything collapses to one bucket the band carries no signal — hide it.
+  const stageGroups = useMemo(() => deriveStageBuckets(spineModules), [spineModules]);
+  const showStageBand = stageGroups.length > 1;
 
-  // Geometry
-  const COL_W = dense ? 130 : 176;
+  // Geometry — horizontal two-line titles, no rotation.
+  const COL_W = dense ? 150 : 210;
   const ROW_H = dense ? 56 : 72;
-  const PADDING_X = dense ? 100 : 140; // room for left learner labels
+  const PADDING_X = dense ? 100 : 140;
   const STAGE_BAND_Y = 8;
-  const STAGE_BAND_H = 18;
-  const TITLES_Y = STAGE_BAND_Y + STAGE_BAND_H + 14; // baseline for module titles
-  const PADDING_TOP = TITLES_Y + 22;
+  const STAGE_BAND_H = showStageBand ? 18 : 0;
+  const TITLES_Y = STAGE_BAND_Y + STAGE_BAND_H + (showStageBand ? 18 : 6); // first title baseline
+  const TITLE_LINE_H = 13;
+  const PADDING_TOP = TITLES_Y + TITLE_LINE_H + 22;
   const NODE_W = 14;
   const totalWidth = PADDING_X + spineModules.length * COL_W + 24;
   const headerOffset = compare === "baseline" ? ROW_H : 0;
   const totalHeight = PADDING_TOP + headerOffset + visibleRows.length * ROW_H + 16;
+
+  // Wrap a title onto two lines, breaking on the nearest space past `softMax`.
+  // Line 2 is truncated with an ellipsis if needed.
+  const wrapTitle = (title: string, softMax = 22, hardMax = 26): [string, string?] => {
+    if (title.length <= softMax) return [title];
+    const breakAt = title.indexOf(" ", softMax - 6);
+    const cut = breakAt > 0 && breakAt < softMax + 8 ? breakAt : softMax;
+    const line1 = title.slice(0, cut).trim();
+    let line2 = title.slice(cut).trim();
+    if (line2.length > hardMax) line2 = line2.slice(0, hardMax - 1) + "…";
+    return [line1, line2];
+  };
 
   const passesFilter = (seg: Segment) => {
     if (filter === "all") return true;

@@ -399,24 +399,27 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
       <button onClick={onBack} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4">
-        <ArrowLeft className="h-3 w-3" />Back to Cohorts
+        <ArrowLeft className="h-3 w-3" />Back to cohorts
       </button>
 
-      <h1 className="font-display text-2xl font-bold text-foreground mb-1">Create Cohort</h1>
-      <p className="text-sm text-muted-foreground mb-6">Set up a new learning cohort in {steps.length} steps</p>
+      <div className="flex items-center gap-2 mb-1">
+        <Plus className="h-4 w-4 text-primary" />
+        <h1 className="font-display text-lg font-bold text-foreground">Create cohort</h1>
+      </div>
+      <p className="text-sm text-muted-foreground mb-5">Step {step} of {steps.length} — {steps[step - 1]}</p>
 
       {/* Stepper */}
-      <div className="flex items-center gap-1 mb-8">
+      <div className="flex items-center gap-1 mb-5">
         {steps.map((s, i) => (
           <div key={s} className="flex items-center gap-1 flex-1">
             <button onClick={() => i + 1 < step ? setStep(i + 1) : undefined}
-              className={cn("flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors w-full",
-                i + 1 === step ? "bg-primary text-primary-foreground" :
-                i + 1 < step ? "bg-primary/10 text-primary cursor-pointer" :
-                "bg-muted text-muted-foreground"
+              className={cn("flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[0.7rem] font-medium transition-colors w-full border",
+                i + 1 === step ? "bg-primary text-primary-foreground border-primary" :
+                i + 1 < step ? "bg-primary/5 text-primary border-primary/20 cursor-pointer" :
+                "bg-background text-muted-foreground border-border"
               )}>
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-background/20 text-[0.65rem] font-bold shrink-0">
-                {i + 1 < step ? <Check className="h-3 w-3" /> : i + 1}
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-background/20 text-[0.6rem] font-bold shrink-0">
+                {i + 1 < step ? <Check className="h-2.5 w-2.5" /> : i + 1}
               </span>
               <span className="hidden sm:inline">{s}</span>
             </button>
@@ -424,7 +427,7 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
         ))}
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="rounded-xl border border-border bg-background p-4 mb-5">
         {/* Step 1: Basics */}
         {step === 1 && (
           <div className="space-y-4 max-w-lg">

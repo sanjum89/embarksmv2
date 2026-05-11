@@ -58,7 +58,7 @@ export function SendCheckInDialog({ open, onOpenChange }: Props) {
           name: employeesById[o.employeeId]?.name || o.employeeId,
           title: employeesById[o.employeeId]?.title || "Learner",
           status: o.status,
-          module: activeCell?.module_title ?? "your current module",
+          module: activeCell?.module_code ?? "your current module",
         };
       }),
     [overlays, employeesById]

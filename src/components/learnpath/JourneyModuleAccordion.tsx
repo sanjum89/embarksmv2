@@ -16,6 +16,7 @@ import type { JourneyModule, JourneyTrack } from "@/hooks/useLearnerJourney";
 import { formatAdaptationLabel, sanitizeReason, adaptationExplanation, type ModuleAdaptation } from "@/lib/embarkAdaptation";
 import type { UnifiedStep } from "./LearnPathContent";
 import type { StepType } from "@/types/learning";
+import { useDiagnosticReopens } from "@/store/useDiagnosticReopens";
 
 interface Props {
   track: JourneyTrack;
@@ -23,11 +24,14 @@ interface Props {
   activeChapterCode: string | null;
 }
 
-function statusToStepStatus(s: JourneyModule["chapters"][number]["status"]): string {
-  // Map our journey statuses onto the strings EmbarkChapterRow understands
+function statusToStepStatus(s: string): string {
+  // Map our journey statuses onto the strings EmbarkChapterRow understands.
+  // We allow "skipped" / "available" too, even though the canonical type doesn't.
   if (s === "completed") return "completed";
   if (s === "in_progress") return "in_progress";
   if (s === "locked") return "locked";
+  if (s === "skipped") return "skipped";
+  if (s === "available") return "available";
   return "available";
 }
 

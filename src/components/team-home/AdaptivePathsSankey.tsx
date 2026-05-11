@@ -281,7 +281,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
               <text x={PADDING_X} y={PADDING_TOP + 14} className="fill-muted-foreground text-[10px]">
                 Baseline path
               </text>
-              {modules.slice(0, -1).map((_, i) => {
+              {spineModules.slice(0, -1).map((_, i) => {
                 const x1 = PADDING_X + i * COL_W + COL_W / 2 + NODE_W / 2;
                 const x2 = PADDING_X + (i + 1) * COL_W + COL_W / 2 - NODE_W / 2;
                 const y = PADDING_TOP + 24;

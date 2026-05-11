@@ -82,7 +82,7 @@ export default function ProgramContextPage() {
   const selectedCohort = cohorts.find((c) => c.id === selectedCohortId) ?? null;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-3xl mx-auto">
       <BackButton />
       <AnimatePresence mode="wait">
         {view === "list" && (

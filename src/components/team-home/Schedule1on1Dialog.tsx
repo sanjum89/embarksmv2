@@ -51,9 +51,9 @@ export function Schedule1on1Dialog({ open, onOpenChange, defaultLearnerId }: Pro
   const availability = useMemo(() => (pickedId ? getAvailability(pickedId) : []), [pickedId]);
 
   const reset = () => {
-    setStep("learner");
+    setStep(defaultLearnerId ? "time" : "learner");
     setSearch("");
-    setPickedId(null);
+    setPickedId(defaultLearnerId ?? null);
     setPickedSlot(null);
     setOnlyFree(true);
     setDuration(30);

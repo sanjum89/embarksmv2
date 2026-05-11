@@ -32,7 +32,7 @@ export function Schedule1on1Dialog({ open, onOpenChange }: Props) {
         id: o.employeeId,
         name: employeesById[o.employeeId]?.name || o.employeeId,
         title: employeesById[o.employeeId]?.title || "Learner",
-        risk: o.cells.some((c) => c.status === "behind") ? "behind" : "on track",
+        risk: o.status === "needs_check_in" || o.status === "at_risk" ? "behind" : "on track",
       })),
     [overlays, employeesById]
   );

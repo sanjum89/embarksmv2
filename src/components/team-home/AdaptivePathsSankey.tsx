@@ -319,48 +319,51 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
       {/* Diagram */}
       <div className="overflow-x-auto p-4">
         <svg width={totalWidth} height={totalHeight} className="block">
-          {/* Stage bands */}
-          {stageGroups.map((g, i) => {
-            const x = PADDING_X + g.startIdx * COL_W + 4;
-            const w = g.span * COL_W - 8;
-            return (
-              <g key={`stage-${i}`}>
-                <rect
-                  x={x}
-                  y={STAGE_BAND_Y}
-                  width={w}
-                  height={STAGE_BAND_H}
-                  rx={9}
-                  className="fill-secondary"
-                />
-                <text
-                  x={x + w / 2}
-                  y={STAGE_BAND_Y + 12}
-                  textAnchor="middle"
-                  className="fill-muted-foreground text-[10px] font-medium uppercase tracking-wide"
-                >
-                  {prettyStage(g.stage)} · {g.span} {g.span === 1 ? "module" : "modules"}
-                </text>
-              </g>
-            );
-          })}
+          {/* Stage bands — only when there's >1 bucket */}
+          {showStageBand &&
+            stageGroups.map((g, i) => {
+              const x = PADDING_X + g.startIdx * COL_W + 4;
+              const w = g.span * COL_W - 8;
+              return (
+                <g key={`stage-${i}`}>
+                  <rect x={x} y={STAGE_BAND_Y} width={w} height={STAGE_BAND_H} rx={9} className="fill-secondary" />
+                  <text
+                    x={x + w / 2}
+                    y={STAGE_BAND_Y + 12}
+                    textAnchor="middle"
+                    className="fill-muted-foreground text-[10px] font-medium uppercase tracking-wide"
+                  >
+                    {g.label} · {g.span} {g.span === 1 ? "module" : "modules"}
+                  </text>
+                </g>
+              );
+            })}
 
-          {/* Module titles (angled) + index chip + spine node */}
+          {/* Module titles (horizontal, two-line wrap) + index chip + spine node */}
           {spineModules.map((m, ci) => {
             const x = PADDING_X + ci * COL_W + COL_W / 2;
-            const title = m.module_title.length > 18 ? m.module_title.slice(0, 17) + "…" : m.module_title;
+            const [line1, line2] = wrapTitle(m.module_title);
             return (
               <g key={m.module_code}>
                 <text
                   x={x}
                   y={TITLES_Y}
-                  textAnchor="end"
-                  transform={`rotate(-22 ${x} ${TITLES_Y})`}
+                  textAnchor="middle"
                   className="fill-foreground text-[11px] font-medium"
                 >
-                  {title}
+                  {line1}
                   <title>{m.module_title}</title>
                 </text>
+                {line2 && (
+                  <text
+                    x={x}
+                    y={TITLES_Y + TITLE_LINE_H}
+                    textAnchor="middle"
+                    className="fill-foreground text-[11px] font-medium"
+                  >
+                    {line2}
+                  </text>
+                )}
                 <text
                   x={x}
                   y={PADDING_TOP - 12}
@@ -369,14 +372,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
                 >
                   M{ci + 1}
                 </text>
-                <rect
-                  x={x - NODE_W / 2}
-                  y={PADDING_TOP - 4}
-                  width={NODE_W}
-                  height={4}
-                  rx={2}
-                  className="fill-border"
-                />
+                <rect x={x - NODE_W / 2} y={PADDING_TOP - 4} width={NODE_W} height={4} rx={2} className="fill-border" />
               </g>
             );
           })}

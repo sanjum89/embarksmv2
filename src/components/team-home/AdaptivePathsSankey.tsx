@@ -2,8 +2,34 @@ import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { GitBranch, Sparkles, X } from "lucide-react";
+import {
+  GitBranch,
+  Sparkles,
+  X,
+  Plus,
+  Check,
+  FastForward,
+  Zap,
+  Flame,
+  ArrowLeftRight,
+  ChevronDown,
+  ChevronRight,
+  Search,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 import type { LearnerOverlay, AiPathChange } from "@/data/managerDemoOverlay";
 import { AdaptivePathDrawer } from "./AdaptivePathDrawer";
 
@@ -29,12 +55,14 @@ interface Props {
 type CompareMode = "stack" | "side" | "baseline";
 type Filter = "all" | "skipped" | "microlearning" | "reordered";
 
-const PALETTE = [
-  "hsl(var(--primary))",
-  "hsl(var(--accent))",
-  "hsl(var(--warning))",
-  "hsl(var(--success))",
-];
+type Kind =
+  | "completed"
+  | "skipped"
+  | "microlearning"
+  | "emphasis"
+  | "reordered"
+  | "in_progress"
+  | "not_started";
 
 interface Segment {
   status: "completed" | "in_progress" | "not_started" | "locked";
@@ -43,26 +71,358 @@ interface Segment {
   module: ModuleSpine;
 }
 
+const PALETTE = [
+  "hsl(var(--primary))",
+  "hsl(var(--accent))",
+  "hsl(var(--warning))",
+  "hsl(var(--success))",
+];
+
+// Adaptation kind → visual treatment. Color carries meaning, icon backs it up.
+const KIND_META: Record<Kind, { label: string; tone: string; icon: typeof Check; tokenBg: string; tokenText: string }> = {
+  completed:     { label: "Completed",     tone: "hsl(var(--success))",          icon: Check,          tokenBg: "bg-emerald-500/15",  tokenText: "text-emerald-700 dark:text-emerald-300" },
+  skipped:       { label: "Skipped",       tone: "hsl(var(--warning))",          icon: FastForward,    tokenBg: "bg-amber-500/15",    tokenText: "text-amber-700 dark:text-amber-300" },
+  microlearning: { label: "Microlearning", tone: "hsl(var(--accent))",           icon: Zap,            tokenBg: "bg-sky-500/15",      tokenText: "text-sky-700 dark:text-sky-300" },
+  emphasis:      { label: "Emphasis",      tone: "hsl(var(--primary))",          icon: Flame,          tokenBg: "bg-primary/15",      tokenText: "text-primary" },
+  reordered:     { label: "Reordered",     tone: "hsl(var(--muted-foreground))", icon: ArrowLeftRight, tokenBg: "bg-muted",           tokenText: "text-muted-foreground" },
+  in_progress:   { label: "In progress",   tone: "hsl(var(--primary))",          icon: ChevronRight,   tokenBg: "bg-primary/10",      tokenText: "text-primary" },
+  not_started:   { label: "Not yet reached", tone: "hsl(var(--muted-foreground))", icon: ChevronRight, tokenBg: "bg-muted/50",        tokenText: "text-muted-foreground/70" },
+};
+
+function kindFor(seg: Segment): Kind {
+  if (seg.pathChange?.kind === "skipped") return "skipped";
+  if (seg.pathChange?.kind === "microlearning") return "microlearning";
+  if (seg.pathChange?.kind === "emphasis") return "emphasis";
+  if (seg.pathChange?.kind === "reordered") return "reordered";
+  if (seg.status === "completed") return "completed";
+  if (seg.status === "in_progress") return "in_progress";
+  return "not_started";
+}
+
 function adaptationCount(o: LearnerOverlay) {
   return o.pathChanges.length;
 }
 
+// ───────────────────── Learner picker ─────────────────────
+function LearnerPicker({
+  learners,
+  selected,
+  onToggle,
+  onClear,
+  onSelectMostAdapted,
+  max,
+}: {
+  learners: LearnerInput[];
+  selected: string[];
+  onToggle: (id: string) => void;
+  onClear: () => void;
+  onSelectMostAdapted: () => void;
+  max: number;
+}) {
+  const [q, setQ] = useState("");
+  const [sort, setSort] = useState<"adapted" | "az">("adapted");
+  const filtered = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    let list = learners.filter((l) => !needle || l.name.toLowerCase().includes(needle));
+    if (sort === "adapted") {
+      list = [...list].sort((a, b) => adaptationCount(b.overlay) - adaptationCount(a.overlay));
+    } else {
+      list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+    }
+    return list;
+  }, [learners, q, sort]);
+
+  const atCap = selected.length >= max;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm" className="h-7 gap-1 px-2 text-[11px]">
+          <Plus className="h-3 w-3" />
+          Add learner
+          <Badge variant="secondary" className="ml-1 h-4 px-1.5 text-[10px]">
+            {learners.length}
+          </Badge>
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72 p-0" align="start">
+        <div className="flex items-center gap-2 border-b border-border p-2">
+          <Search className="h-3.5 w-3.5 text-muted-foreground" />
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search learners…"
+            className="h-7 border-0 px-0 text-xs shadow-none focus-visible:ring-0"
+          />
+        </div>
+        <div className="flex items-center justify-between gap-1 border-b border-border bg-secondary/20 px-2 py-1.5 text-[10px]">
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setSort("adapted")}
+              className={cn(
+                "rounded px-1.5 py-0.5",
+                sort === "adapted" ? "bg-background text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Most adapted
+            </button>
+            <button
+              type="button"
+              onClick={() => setSort("az")}
+              className={cn(
+                "rounded px-1.5 py-0.5",
+                sort === "az" ? "bg-background text-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              A–Z
+            </button>
+          </div>
+          <span className="text-muted-foreground">
+            {selected.length}/{max}
+          </span>
+        </div>
+        <ScrollArea className="max-h-64">
+          <div className="p-1">
+            {filtered.map((l) => {
+              const checked = selected.includes(l.employeeId);
+              const disabled = !checked && atCap;
+              return (
+                <button
+                  key={l.employeeId}
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => onToggle(l.employeeId)}
+                  className={cn(
+                    "flex w-full items-center justify-between gap-2 rounded px-2 py-1.5 text-left text-xs",
+                    checked ? "bg-primary/10 text-foreground" : "hover:bg-secondary/40",
+                    disabled && "opacity-40"
+                  )}
+                >
+                  <span className="flex items-center gap-2 truncate">
+                    <span
+                      className={cn(
+                        "flex h-3.5 w-3.5 items-center justify-center rounded-sm border",
+                        checked ? "border-primary bg-primary text-primary-foreground" : "border-border"
+                      )}
+                    >
+                      {checked && <Check className="h-2.5 w-2.5" />}
+                    </span>
+                    <span className="truncate">{l.name}</span>
+                  </span>
+                  <Badge variant="outline" className="h-4 px-1 text-[9px]">
+                    {adaptationCount(l.overlay)} adapt.
+                  </Badge>
+                </button>
+              );
+            })}
+            {filtered.length === 0 && (
+              <p className="p-3 text-center text-xs text-muted-foreground">No learners match.</p>
+            )}
+          </div>
+        </ScrollArea>
+        <div className="flex items-center justify-between border-t border-border bg-secondary/20 p-2">
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={onClear}>
+            Clear
+          </Button>
+          <Button variant="ghost" size="sm" className="h-6 px-2 text-[10px]" onClick={onSelectMostAdapted}>
+            Top {Math.min(max, learners.length)} most adapted
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ───────────────────── Stage roll-up cell ─────────────────────
+function StageRollupCell({
+  segments,
+  color,
+  onSegmentClick,
+  learnerName,
+  filter,
+}: {
+  segments: Segment[];
+  color: string;
+  onSegmentClick: (seg: Segment) => void;
+  learnerName: string;
+  filter: Filter;
+}) {
+  const counts = useMemo(() => {
+    const c: Record<Kind, number> = {
+      completed: 0, skipped: 0, microlearning: 0, emphasis: 0,
+      reordered: 0, in_progress: 0, not_started: 0,
+    };
+    for (const s of segments) c[kindFor(s)]++;
+    return c;
+  }, [segments]);
+
+  const total = segments.length || 1;
+  const order: Kind[] = ["completed", "in_progress", "skipped", "microlearning", "emphasis", "reordered", "not_started"];
+
+  // Tooltip body listing adaptations
+  const tipLines = order
+    .filter((k) => counts[k] > 0)
+    .map((k) => `${KIND_META[k].label}: ${counts[k]}`);
+
+  // Adaptation icons strip (only non-zero, non-baseline kinds)
+  const badges: Kind[] = (["skipped", "microlearning", "emphasis", "reordered"] as Kind[]).filter((k) => counts[k] > 0);
+
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="group flex flex-col gap-1.5">
+            {/* learner-color rail with stacked stage segments */}
+            <div className="flex h-2 w-full overflow-hidden rounded-full bg-muted/40 ring-1 ring-border">
+              {order.map((k) => {
+                if (counts[k] === 0) return null;
+                const w = (counts[k] / total) * 100;
+                const muted = filter !== "all" && filter !== (k as string);
+                const seg = segments.find((s) => kindFor(s) === k);
+                return (
+                  <button
+                    key={k}
+                    type="button"
+                    onClick={() => seg && seg.pathChange && onSegmentClick(seg)}
+                    aria-label={`${KIND_META[k].label}: ${counts[k]}`}
+                    className={cn(
+                      "h-full transition-opacity",
+                      seg?.pathChange ? "cursor-pointer hover:opacity-90" : "cursor-default",
+                      muted && "opacity-25"
+                    )}
+                    style={{
+                      width: `${w}%`,
+                      background:
+                        k === "completed" || k === "in_progress"
+                          ? color
+                          : KIND_META[k].tone,
+                      opacity: k === "in_progress" ? 0.6 : k === "not_started" ? 0.18 : 1,
+                    }}
+                  />
+                );
+              })}
+            </div>
+            {/* numeric summary */}
+            <div className="flex flex-wrap items-center gap-1 text-[10px] text-muted-foreground">
+              <span className="font-medium text-foreground">{counts.completed}</span>
+              <span>/{segments.length} done</span>
+              {badges.map((k) => {
+                const Icon = KIND_META[k].icon;
+                return (
+                  <span
+                    key={k}
+                    className={cn(
+                      "ml-0.5 inline-flex items-center gap-0.5 rounded px-1 py-px",
+                      KIND_META[k].tokenBg,
+                      KIND_META[k].tokenText
+                    )}
+                  >
+                    <Icon className="h-2.5 w-2.5" />
+                    {counts[k]}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-[260px] text-xs">
+          <div className="font-medium">{learnerName}</div>
+          <div className="mt-1 space-y-0.5">
+            {tipLines.map((l) => (
+              <div key={l}>{l}</div>
+            ))}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+// ───────────────────── Per-module cell (expanded view) ─────────────────────
+function ModuleCell({
+  segment,
+  color,
+  onClick,
+  filter,
+  learnerName,
+}: {
+  segment: Segment;
+  color: string;
+  onClick: () => void;
+  filter: Filter;
+  learnerName: string;
+}) {
+  const k = kindFor(segment);
+  const meta = KIND_META[k];
+  const Icon = meta.icon;
+  const interactive = !!segment.pathChange;
+  const muted =
+    filter !== "all" &&
+    !(filter === "skipped" && k === "skipped") &&
+    !(filter === "microlearning" && k === "microlearning") &&
+    !(filter === "reordered" && k === "reordered");
+
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            disabled={!interactive}
+            onClick={onClick}
+            className={cn(
+              "flex h-9 w-full items-center justify-center gap-1 rounded border text-[10px] font-medium transition-all",
+              meta.tokenBg,
+              meta.tokenText,
+              "border-transparent",
+              interactive && "hover:scale-[1.03] hover:shadow-sm cursor-pointer",
+              !interactive && "cursor-default",
+              muted && "opacity-25"
+            )}
+            style={{
+              borderColor:
+                k === "completed" || k === "in_progress" ? `${color}` : undefined,
+              borderWidth: k === "completed" || k === "in_progress" ? 1 : undefined,
+            }}
+          >
+            <Icon className="h-3 w-3" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-[260px] text-xs">
+          <div className="font-medium">{learnerName}</div>
+          <div className="mt-0.5 text-muted-foreground">{segment.module.module_title}</div>
+          <div className="mt-1">
+            <span className="font-medium">{meta.label}</span>
+            {segment.pathChange?.reason && (
+              <div className="mt-0.5 text-muted-foreground">{segment.pathChange.reason}</div>
+            )}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+// ───────────────────── Main component ─────────────────────
 export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = false }: Props) {
   const MAX_SELECTED = dense ? 4 : 6;
-  // Default selection: top 3 most-adapted learners
-  const defaults = useMemo(() => {
-    return [...learners]
-      .sort((a, b) => adaptationCount(b.overlay) - adaptationCount(a.overlay))
-      .slice(0, 3)
-      .map((l) => l.employeeId);
-  }, [learners]);
+
+  const defaults = useMemo(
+    () =>
+      [...learners]
+        .sort((a, b) => adaptationCount(b.overlay) - adaptationCount(a.overlay))
+        .slice(0, 3)
+        .map((l) => l.employeeId),
+    [learners]
+  );
 
   const [selected, setSelected] = useState<string[]>(defaults);
   const [compare, setCompare] = useState<CompareMode>("stack");
   const [filter, setFilter] = useState<Filter>("all");
-  const [hoverLearner, setHoverLearner] = useState<string | null>(null);
   const [drawerChange, setDrawerChange] = useState<{ change: AiPathChange; learnerName: string } | null>(null);
   const [decisions, setDecisions] = useState<Record<string, "approved" | "reverted">>({});
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const toggleLearner = (id: string) => {
     setSelected((prev) => {
@@ -72,87 +432,63 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
     });
   };
 
-  // Cap the spine to overlay length so we don't render trailing empty columns
-  const overlayLen = Math.max(
-    0,
-    ...selected
-      .map((id) => learners.find((l) => l.employeeId === id)?.overlay.cells.length ?? 0)
-  );
-  const spineLen = overlayLen > 0 ? Math.min(modules.length, overlayLen) : modules.length;
-  const spineModules = useMemo(() => modules.slice(0, spineLen), [modules, spineLen]);
-  const truncated = modules.length > spineLen;
+  // Stage groups (preserve order of first occurrence)
+  const stageGroups = useMemo(() => {
+    const groups: { stage: string; modules: ModuleSpine[]; startIndex: number }[] = [];
+    const map = new Map<string, { stage: string; modules: ModuleSpine[]; startIndex: number }>();
+    modules.forEach((m, idx) => {
+      const stage = m.progression_stage || "core";
+      let g = map.get(stage);
+      if (!g) {
+        g = { stage, modules: [], startIndex: idx };
+        map.set(stage, g);
+        groups.push(g);
+      }
+      g.modules.push(m);
+    });
+    return groups;
+  }, [modules]);
 
-  // Build per-learner segments aligned to spine by INDEX (matches RosterHeatmap)
+  // Build per-learner segments aligned to module index
   const rows = useMemo(() => {
     return selected
       .map((id) => learners.find((l) => l.employeeId === id))
       .filter((x): x is LearnerInput => !!x)
       .map((l) => {
-        // overlay pathChanges keyed to overlay's own cell index
-        const overlayCellIndexByCode = new Map(
-          l.overlay.cells.map((c, idx) => [c.module_code, idx])
-        );
-        const changeByIndex = new Map<number, AiPathChange>();
-        for (const pc of l.overlay.pathChanges) {
-          const idx = overlayCellIndexByCode.get(pc.module_code);
-          if (idx != null) changeByIndex.set(idx, pc);
-        }
-        const segments: Segment[] = spineModules.map((m, i) => {
-          const cell = l.overlay.cells[i];
+        const overlayIdx = new Map(l.overlay.cells.map((c, idx) => [c.module_code, idx]));
+        const changeByCode = new Map<string, AiPathChange>(l.overlay.pathChanges.map((p) => [p.module_code, p]));
+        const segments: Segment[] = modules.map((m, i) => {
+          const cellIdx = overlayIdx.get(m.module_code) ?? i;
+          const cell = l.overlay.cells[cellIdx];
           return {
             status: cell?.status ?? "not_started",
             adaptation: cell?.adaptation,
-            pathChange: changeByIndex.get(i),
+            pathChange: changeByCode.get(m.module_code),
             module: m,
           };
         });
         return { learner: l, segments };
       });
-  }, [selected, learners, spineModules]);
-
-  const baselineRow = useMemo(() => ({
-    segments: spineModules.map<Segment>((m) => ({ status: "completed", adaptation: null, module: m })),
-  }), [spineModules]);
+  }, [selected, learners, modules]);
 
   const visibleRows = compare === "side" ? rows.slice(0, 2) : compare === "baseline" ? rows.slice(0, 1) : rows;
-
-  // Geometry
-  const COL_W = dense ? 120 : 160;
-  const ROW_H = dense ? 56 : 72;
-  const PADDING_X = dense ? 16 : 24;
-  const PADDING_TOP = dense ? 36 : 44;
-  const NODE_W = 14;
-  const totalWidth = PADDING_X * 2 + spineModules.length * COL_W;
-  const headerOffset = compare === "baseline" ? ROW_H : 0;
-  const totalHeight = PADDING_TOP + headerOffset + visibleRows.length * ROW_H + 16;
-
-  const segmentStyle = (seg: Segment, color: string) => {
-    if (seg.pathChange?.kind === "skipped") return { stroke: color, strokeDasharray: "4 3", opacity: 0.7, strokeWidth: 3 };
-    if (seg.pathChange?.kind === "microlearning") return { stroke: color, opacity: 1, strokeWidth: 4 };
-    if (seg.pathChange?.kind === "emphasis") return { stroke: color, opacity: 1, strokeWidth: 6 };
-    if (seg.pathChange?.kind === "reordered") return { stroke: color, opacity: 1, strokeWidth: 4, strokeDasharray: "8 2 2 2" };
-    if (seg.status === "completed") return { stroke: color, opacity: 1, strokeWidth: 4 };
-    if (seg.status === "in_progress") return { stroke: color, opacity: 0.85, strokeWidth: 4 };
-    return { stroke: color, opacity: 0.18, strokeWidth: 3 };
-  };
-
-  const passesFilter = (seg: Segment) => {
-    if (filter === "all") return true;
-    if (!seg.pathChange) return false;
-    if (filter === "skipped") return seg.pathChange.kind === "skipped";
-    if (filter === "microlearning") return seg.pathChange.kind === "microlearning";
-    if (filter === "reordered") return seg.pathChange.kind === "reordered";
-    return true;
-  };
-
   const colorForLearner = (idx: number) => PALETTE[idx % PALETTE.length];
+  const decide = (id: string, kind: "approved" | "reverted") => setDecisions((p) => ({ ...p, [id]: kind }));
 
-  const decide = (id: string, kind: "approved" | "reverted") => {
-    setDecisions((prev) => ({ ...prev, [id]: kind }));
+  const allExpanded = stageGroups.every((g) => expanded[g.stage]);
+  const toggleAll = () => {
+    if (allExpanded) setExpanded({});
+    else setExpanded(Object.fromEntries(stageGroups.map((g) => [g.stage, true])));
   };
+
+  // Grid template: name col + one fr per stage; expanded stages get a sub-grid inside
+  const gridTemplate = `minmax(140px, 180px) ${stageGroups
+    .map((g) => (expanded[g.stage] ? `minmax(${g.modules.length * 56}px, ${g.modules.length}fr)` : "minmax(140px, 1fr)"))
+    .join(" ")}`;
 
   return (
     <Card className="overflow-hidden">
+      {/* Header */}
       <div className="flex items-center justify-between border-b border-border p-4">
         <div className="min-w-0 flex items-center gap-2">
           <GitBranch className="h-4 w-4 text-primary" />
@@ -167,38 +503,48 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-3 border-b border-border bg-secondary/20 px-4 py-3">
-        {/* Learner chips */}
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Learners</span>
-          {learners.map((l) => {
-            const idx = selected.indexOf(l.employeeId);
-            const active = idx !== -1;
-            const color = active ? colorForLearner(idx) : undefined;
+      <div className="flex flex-wrap items-center gap-2 border-b border-border bg-secondary/20 px-4 py-3">
+        {/* Selected learner chips */}
+        <div className="flex flex-wrap items-center gap-1">
+          <span className="mr-1 text-[10px] uppercase tracking-wide text-muted-foreground">Learners</span>
+          {selected.length === 0 && (
+            <span className="text-[11px] text-muted-foreground/70">None selected</span>
+          )}
+          {selected.map((id, idx) => {
+            const l = learners.find((x) => x.employeeId === id);
+            if (!l) return null;
             return (
-              <button
-                key={l.employeeId}
-                type="button"
-                onClick={() => toggleLearner(l.employeeId)}
-                className={cn(
-                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors",
-                  active ? "border-foreground/20 bg-background text-foreground" : "border-border bg-background/50 text-muted-foreground hover:border-foreground/40"
-                )}
+              <span
+                key={id}
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-background px-2 py-0.5 text-[11px]"
               >
-                <span className="h-2 w-2 rounded-full" style={{ background: color ?? "hsl(var(--muted-foreground) / 0.4)" }} />
+                <span className="h-2 w-2 rounded-full" style={{ background: colorForLearner(idx) }} />
                 {l.name}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => toggleLearner(id)}
+                  className="ml-0.5 rounded-full p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label={`Remove ${l.name}`}
+                >
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </span>
             );
           })}
-          <span className="ml-1 text-[10px] text-muted-foreground">{selected.length}/{MAX_SELECTED}</span>
-          {truncated && (
-            <span className="ml-2 text-[10px] text-muted-foreground/80">
-              Showing first {spineLen} of {modules.length} modules
-            </span>
-          )}
+          <LearnerPicker
+            learners={learners}
+            selected={selected}
+            onToggle={toggleLearner}
+            onClear={() => setSelected([])}
+            onSelectMostAdapted={() => setSelected(defaults.slice(0, MAX_SELECTED))}
+            max={MAX_SELECTED}
+          />
         </div>
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" className="h-7 px-2 text-[11px]" onClick={toggleAll}>
+            {allExpanded ? "Collapse all" : "Expand all"}
+          </Button>
           {/* Compare */}
           <div className="flex items-center gap-0.5 rounded-md border border-border bg-background p-0.5">
             {([
@@ -243,178 +589,149 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
         </div>
       </div>
 
-      {/* Diagram */}
+      {/* Grid */}
       <div className="overflow-x-auto p-4">
-        <svg width={totalWidth} height={totalHeight} className="block">
-          {/* Spine column headers + nodes */}
-          {spineModules.map((m, ci) => {
-            const x = PADDING_X + ci * COL_W + COL_W / 2;
-            return (
-              <g key={m.module_code}>
-                <text
-                  x={x}
-                  y={14}
-                  textAnchor="middle"
-                  className="fill-muted-foreground text-[10px]"
+        <div className="min-w-[640px]">
+          {/* Stage header row */}
+          <div className="grid items-end gap-2 pb-2" style={{ gridTemplateColumns: gridTemplate }}>
+            <div />
+            {stageGroups.map((g) => {
+              const isOpen = !!expanded[g.stage];
+              return (
+                <button
+                  key={g.stage}
+                  type="button"
+                  onClick={() => setExpanded((p) => ({ ...p, [g.stage]: !p[g.stage] }))}
+                  className="group flex flex-col items-start gap-1 rounded-md border border-transparent px-2 py-1 text-left hover:border-border hover:bg-secondary/30"
                 >
-                  {m.module_title.length > 18 ? m.module_title.slice(0, 16) + "…" : m.module_title}
-                </text>
-                <text
-                  x={x}
-                  y={26}
-                  textAnchor="middle"
-                  className="fill-muted-foreground/60 text-[9px] uppercase tracking-wide"
-                >
-                  {m.progression_stage}
-                </text>
-                {/* Spine node */}
-                <rect
-                  x={x - NODE_W / 2}
-                  y={PADDING_TOP - 4}
-                  width={NODE_W}
-                  height={4}
-                  rx={2}
-                  className="fill-border"
-                />
-              </g>
-            );
-          })}
+                  <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    {isOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                    {g.stage}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground/70">
+                    {g.modules.length} {g.modules.length === 1 ? "module" : "modules"}
+                  </span>
+                  {isOpen && (
+                    <div
+                      className="mt-1 grid w-full gap-1 text-[9px] text-muted-foreground"
+                      style={{ gridTemplateColumns: `repeat(${g.modules.length}, minmax(0, 1fr))` }}
+                    >
+                      {g.modules.map((m) => (
+                        <div key={m.module_code} className="truncate" title={m.module_title}>
+                          {m.module_title}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
-          {/* Baseline ribbon when in baseline mode */}
+          {/* Baseline ribbon */}
           {compare === "baseline" && (
-            <g opacity={0.5}>
-              <text x={PADDING_X} y={PADDING_TOP + 14} className="fill-muted-foreground text-[10px]">
-                Baseline path
-              </text>
-              {spineModules.slice(0, -1).map((_, i) => {
-                const x1 = PADDING_X + i * COL_W + COL_W / 2 + NODE_W / 2;
-                const x2 = PADDING_X + (i + 1) * COL_W + COL_W / 2 - NODE_W / 2;
-                const y = PADDING_TOP + 24;
-                return (
-                  <line
-                    key={i}
-                    x1={x1}
-                    x2={x2}
-                    y1={y}
-                    y2={y}
-                    stroke="hsl(var(--muted-foreground))"
-                    strokeWidth={3}
-                    strokeDasharray="2 4"
-                  />
-                );
-              })}
-            </g>
+            <div
+              className="grid items-center gap-2 border-b border-dashed border-border py-2"
+              style={{ gridTemplateColumns: gridTemplate }}
+            >
+              <div className="text-[10px] text-muted-foreground">Baseline path</div>
+              {stageGroups.map((g) => (
+                <div key={g.stage} className="h-1.5 rounded-full bg-muted/60" />
+              ))}
+            </div>
           )}
 
-          {/* Per-learner ribbons */}
-          {visibleRows.map((row, ri) => {
-            const color = colorForLearner(rows.indexOf(row));
-            const yBase = PADDING_TOP + headerOffset + ri * ROW_H + ROW_H / 2;
-            const isHovered = hoverLearner === row.learner.employeeId;
-            const dim = hoverLearner && !isHovered;
+          {/* Learner rows */}
+          {visibleRows.map((row) => {
+            const idx = rows.indexOf(row);
+            const color = colorForLearner(idx);
             return (
-              <g
+              <div
                 key={row.learner.employeeId}
-                opacity={dim ? 0.15 : 1}
-                onMouseEnter={() => setHoverLearner(row.learner.employeeId)}
-                onMouseLeave={() => setHoverLearner(null)}
+                className="grid items-center gap-2 border-b border-border/50 py-3 last:border-b-0"
+                style={{ gridTemplateColumns: gridTemplate }}
               >
                 {/* Learner label */}
-                <text x={PADDING_X} y={yBase - ROW_H / 2 + 12} className="fill-foreground text-[11px] font-medium">
-                  {row.learner.name}
-                </text>
-                {/* Segments */}
-                {row.segments.slice(0, -1).map((seg, i) => {
-                  const next = row.segments[i + 1];
-                  const x1 = PADDING_X + i * COL_W + COL_W / 2 + NODE_W / 2;
-                  const x2 = PADDING_X + (i + 1) * COL_W + COL_W / 2 - NODE_W / 2;
-                  const style = segmentStyle(seg, color);
-                  const muted = !passesFilter(seg) && filter !== "all";
+                <div className="flex items-center gap-2 pr-2">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
+                  <button
+                    type="button"
+                    onClick={() => onOpenLearner?.(row.learner.employeeId)}
+                    className="truncate text-xs font-medium text-foreground hover:underline"
+                  >
+                    {row.learner.name}
+                  </button>
+                </div>
+
+                {stageGroups.map((g) => {
+                  const segs = row.segments.slice(g.startIndex, g.startIndex + g.modules.length);
+                  const isOpen = !!expanded[g.stage];
+
+                  if (!isOpen) {
+                    return (
+                      <StageRollupCell
+                        key={g.stage}
+                        segments={segs}
+                        color={color}
+                        learnerName={row.learner.name}
+                        filter={filter}
+                        onSegmentClick={(seg) => {
+                          if (seg.pathChange) setDrawerChange({ change: seg.pathChange, learnerName: row.learner.name });
+                        }}
+                      />
+                    );
+                  }
+
                   return (
-                    <line
-                      key={i}
-                      x1={x1}
-                      x2={x2}
-                      y1={yBase}
-                      y2={yBase}
-                      stroke={style.stroke}
-                      strokeWidth={style.strokeWidth}
-                      strokeDasharray={style.strokeDasharray}
-                      strokeLinecap="round"
-                      opacity={muted ? 0.1 : style.opacity}
-                    />
-                  );
-                  void next;
-                })}
-                {/* Nodes per cell */}
-                {row.segments.map((seg, i) => {
-                  const x = PADDING_X + i * COL_W + COL_W / 2;
-                  const isMicro = seg.pathChange?.kind === "microlearning";
-                  const isSkip = seg.pathChange?.kind === "skipped";
-                  const decision = seg.pathChange ? decisions[seg.pathChange.id] : undefined;
-                  const r = isMicro ? 6 : isSkip ? 3 : 5;
-                  const fill =
-                    decision === "reverted"
-                      ? "hsl(var(--muted))"
-                      : seg.status === "completed"
-                      ? color
-                      : seg.status === "in_progress"
-                      ? color
-                      : "hsl(var(--background))";
-                  const stroke = color;
-                  const interactive = !!seg.pathChange;
-                  return (
-                    <g
-                      key={`n-${i}`}
-                      transform={`translate(${x}, ${yBase})`}
-                      style={{ cursor: interactive ? "pointer" : "default" }}
-                      onClick={() => {
-                        if (seg.pathChange) {
-                          setDrawerChange({ change: seg.pathChange, learnerName: row.learner.name });
-                        }
-                      }}
+                    <div
+                      key={g.stage}
+                      className="grid gap-1"
+                      style={{ gridTemplateColumns: `repeat(${g.modules.length}, minmax(0, 1fr))` }}
                     >
-                      <circle r={r + 4} fill="transparent" />
-                      <circle r={r} fill={fill} stroke={stroke} strokeWidth={1.5} />
-                      {seg.pathChange && (
-                        <title>
-                          {row.learner.name} · {seg.module.module_title}
-                          {"\n"}
-                          {seg.pathChange.kind} — {seg.pathChange.reason}
-                        </title>
-                      )}
-                    </g>
+                      {segs.map((seg) => (
+                        <ModuleCell
+                          key={seg.module.module_code}
+                          segment={seg}
+                          color={color}
+                          learnerName={row.learner.name}
+                          filter={filter}
+                          onClick={() => {
+                            if (seg.pathChange) setDrawerChange({ change: seg.pathChange, learnerName: row.learner.name });
+                          }}
+                        />
+                      ))}
+                    </div>
                   );
                 })}
-              </g>
+              </div>
             );
           })}
-        </svg>
+
+          {visibleRows.length === 0 && (
+            <p className="py-6 text-center text-xs text-muted-foreground">
+              Select learners above to chart their adaptive paths.
+            </p>
+          )}
+        </div>
       </div>
 
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-3 border-t border-border bg-secondary/10 px-4 py-2 text-[10px] text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5">
-          <svg width="20" height="6"><line x1="0" x2="20" y1="3" y2="3" stroke="currentColor" strokeWidth="3" /></svg>
-          Completed
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <svg width="20" height="6"><line x1="0" x2="20" y1="3" y2="3" stroke="currentColor" strokeWidth="3" strokeDasharray="3 3" /></svg>
-          Skipped
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <svg width="20" height="8"><line x1="0" x2="20" y1="4" y2="4" stroke="currentColor" strokeWidth="4" /><circle cx="10" cy="4" r="3" fill="currentColor" /></svg>
-          Microlearning
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <svg width="20" height="8"><line x1="0" x2="20" y1="4" y2="4" stroke="currentColor" strokeWidth="6" /></svg>
-          Emphasis
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <svg width="20" height="6"><line x1="0" x2="20" y1="3" y2="3" stroke="currentColor" strokeWidth="3" opacity={0.18} /></svg>
-          Not yet reached
-        </span>
-        <span className="ml-auto text-muted-foreground/70">Click any AI-changed step for details</span>
+        {(["completed", "skipped", "microlearning", "emphasis", "reordered", "not_started"] as Kind[]).map((k) => {
+          const m = KIND_META[k];
+          const Icon = m.icon;
+          return (
+            <span key={k} className="inline-flex items-center gap-1">
+              <span
+                className={cn("inline-flex h-3.5 w-3.5 items-center justify-center rounded-sm", m.tokenBg, m.tokenText)}
+              >
+                <Icon className="h-2.5 w-2.5" />
+              </span>
+              {m.label}
+            </span>
+          );
+        })}
+        <span className="ml-auto text-muted-foreground/70">Click a stage header to expand · click an AI-changed step for details</span>
       </div>
 
       {drawerChange && (
@@ -432,8 +749,6 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
           } : undefined}
         />
       )}
-      {/* unused icon-import suppression */}
-      <span className="hidden"><X /></span>
     </Card>
   );
 }

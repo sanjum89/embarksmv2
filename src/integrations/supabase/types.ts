@@ -281,9 +281,11 @@ export type Database = {
           chapter_summary: string | null
           chapter_title: string
           complexity: number
+          content_sections: Json
           content_type: Database["public"]["Enums"]["chapter_content_type"]
           created_at: string
           delivery_mode: Database["public"]["Enums"]["delivery_mode"]
+          diagnostic_questions: Json
           difficulty_level: Database["public"]["Enums"]["difficulty_level"]
           display_order: number
           estimated_time_minutes: number
@@ -305,9 +307,11 @@ export type Database = {
           chapter_summary?: string | null
           chapter_title: string
           complexity?: number
+          content_sections?: Json
           content_type?: Database["public"]["Enums"]["chapter_content_type"]
           created_at?: string
           delivery_mode?: Database["public"]["Enums"]["delivery_mode"]
+          diagnostic_questions?: Json
           difficulty_level?: Database["public"]["Enums"]["difficulty_level"]
           display_order?: number
           estimated_time_minutes?: number
@@ -329,9 +333,11 @@ export type Database = {
           chapter_summary?: string | null
           chapter_title?: string
           complexity?: number
+          content_sections?: Json
           content_type?: Database["public"]["Enums"]["chapter_content_type"]
           created_at?: string
           delivery_mode?: Database["public"]["Enums"]["delivery_mode"]
+          diagnostic_questions?: Json
           difficulty_level?: Database["public"]["Enums"]["difficulty_level"]
           display_order?: number
           estimated_time_minutes?: number
@@ -1383,6 +1389,7 @@ export type Database = {
           module_code: string
           persona_code: string
           reason: string | null
+          section_overrides: Json
           updated_at: string
           visible_to_learner: boolean
         }
@@ -1395,6 +1402,7 @@ export type Database = {
           module_code: string
           persona_code: string
           reason?: string | null
+          section_overrides?: Json
           updated_at?: string
           visible_to_learner?: boolean
         }
@@ -1407,6 +1415,7 @@ export type Database = {
           module_code?: string
           persona_code?: string
           reason?: string | null
+          section_overrides?: Json
           updated_at?: string
           visible_to_learner?: boolean
         }

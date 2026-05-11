@@ -153,6 +153,11 @@ export function LearnerDrawer({ open, onOpenChange, learner, overlay, modules, i
                             evidence: change.evidence,
                             confidence: change.confidence,
                             risk: change.risk,
+                            kind: change.kind,
+                            decision_rule: change.decision_rule,
+                            signals: change.signals,
+                            outcome: change.outcome,
+                            safeguards: change.safeguards,
                             deepResearchPrompt: `Tell me more about why ${learner.name}'s ${change.module_title} was ${change.kind}.`,
                           }}
                         >

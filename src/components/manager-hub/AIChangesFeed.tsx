@@ -78,7 +78,12 @@ export function AIChangesFeed({ learners, onOpenLearner }: Props) {
                     evidence: c.evidence,
                     confidence: c.confidence,
                     risk: c.risk,
-                    deepResearchPrompt: `Why did AI ${c.kind.replace(/_/g, " ")} ${c.module_title} for ${c.learnerName}?`,
+                    kind: c.kind,
+                    decision_rule: c.decision_rule,
+                    signals: c.signals,
+                    outcome: c.outcome,
+                    safeguards: c.safeguards,
+                    deepResearchPrompt: `Why did AI ${c.kind.replace(/_/g, " ")} ${c.module_title} for ${c.learnerName}? Rule: ${c.decision_rule ?? ""}. Signals: ${(c.signals ?? []).map((s) => `${s.label}=${s.value}`).join("; ")}.`,
                   }}
                 >
                   <Button size="sm" variant="ghost" className="h-8 px-2 text-xs">

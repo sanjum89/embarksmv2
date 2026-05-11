@@ -189,6 +189,11 @@ export default function ActionCentre() {
                         evidence: c.evidence,
                         confidence: c.confidence,
                         risk: c.risk,
+                        kind: c.kind,
+                        decision_rule: c.decision_rule,
+                        signals: c.signals,
+                        outcome: c.outcome,
+                        safeguards: c.safeguards,
                       }}
                     >
                       <Button size="sm" variant="ghost" className="h-7 px-2 text-xs">

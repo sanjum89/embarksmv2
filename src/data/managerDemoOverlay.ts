@@ -16,6 +16,18 @@ export interface ModuleCellOverlay {
   last_activity?: string; // human-friendly relative
 }
 
+export interface AiSignal {
+  label: string;
+  value: string;
+  weight?: "primary" | "supporting";
+}
+
+export interface AiOutcome {
+  time_saved_minutes?: number;
+  replaced_with?: string;
+  still_required?: string[];
+}
+
 export interface AiPathChange {
   id: string;
   employeeId: string;
@@ -28,6 +40,14 @@ export interface AiPathChange {
   risk: "low" | "medium" | "high";
   needs_approval: boolean;
   created_at: string; // ISO-ish or human
+  /** Policy/threshold the AI applied to reach this decision. */
+  decision_rule?: string;
+  /** Structured signals (preferred over flat evidence chips). */
+  signals?: AiSignal[];
+  /** What changes for the learner as a result. */
+  outcome?: AiOutcome;
+  /** Guardrails reassuring the manager the change is monitored/reversible. */
+  safeguards?: string[];
 }
 
 export interface ActionItem {
@@ -551,3 +571,112 @@ export function getAllDemoOverlays(): LearnerOverlay[] {
 export function isDemoEmployee(employeeId: string): boolean {
   return employeeId in OVERLAY;
 }
+
+/** Parse first integer percentage out of a string ("Diagnostic 92%" -> 92). */
+function pickPct(s: string): number | undefined {
+  const m = s.match(/(\d{1,3})\s*%/);
+  return m ? Number(m[1]) : undefined;
+}
+
+/** Parse "Prior role: X Yy" → { role: X, years: Y }. */
+function pickPrior(evidence: string[]): { role?: string; years?: number } {
+  const e = evidence.find((x) => /prior role/i.test(x));
+  if (!e) return {};
+  const role = e.replace(/.*prior role:\s*/i, "").replace(/\s+\d+y$/, "").trim();
+  const ym = e.match(/(\d+)\s*y\b/);
+  return { role: role || undefined, years: ym ? Number(ym[1]) : undefined };
+}
+
+/**
+ * Augments any path change missing `decision_rule` / `signals` / `outcome` /
+ * `safeguards` with sensible defaults derived from `kind` + `evidence`.
+ * Keeps explicit author intent intact.
+ */
+function enrichPathChange(c: AiPathChange): AiPathChange {
+  const diag = c.evidence.map(pickPct).find((n) => n !== undefined);
+  const prior = pickPrior(c.evidence);
+  const attempts = c.evidence.filter((e) => /attempt\s*\d+/i.test(e));
+  const weak = c.evidence.find((e) => /^weak tag/i.test(e));
+
+  const signals: AiSignal[] = [];
+  if (diag !== undefined) {
+    const band = diag >= 90 ? "top decile" : diag >= 85 ? "above skip threshold" : diag >= 70 ? "competent" : diag >= 60 ? "developing" : "below threshold";
+    signals.push({ label: "Diagnostic score", value: `${diag}% (${band})`, weight: "primary" });
+  }
+  if (prior.role) {
+    signals.push({
+      label: "Prior experience",
+      value: prior.years ? `${prior.role} · ${prior.years}y` : prior.role,
+      weight: "primary",
+    });
+  }
+  if (attempts.length) {
+    signals.push({ label: "Attempts on this module", value: attempts.join(" → "), weight: "primary" });
+  }
+  if (weak) {
+    signals.push({ label: "Weak area", value: weak.replace(/^weak tag:\s*/i, ""), weight: "supporting" });
+  }
+  // Fall back to remaining unparsed evidence as supporting signals.
+  if (signals.length === 0) {
+    c.evidence.forEach((e) => signals.push({ label: "Signal", value: e, weight: "supporting" }));
+  }
+
+  let decision_rule = "";
+  let outcome: AiOutcome = {};
+  let safeguards: string[] = ["Manager can revert in one click", "Re-tested at the readiness gate"];
+
+  switch (c.kind) {
+    case "skipped":
+      decision_rule = "Skip a foundation module when diagnostic ≥ 85% and prior FS/IM experience is evident.";
+      outcome = {
+        time_saved_minutes: 90,
+        replaced_with: "Auto-credit + spot-check questions in the next module",
+        still_required: ["End-of-track readiness gate", "Reflection on transferred experience"],
+      };
+      break;
+    case "diagnostic_only":
+      decision_rule = "Convert to diagnostic-only when prior experience is present and diagnostic ≥ 80%.";
+      outcome = {
+        time_saved_minutes: 60,
+        replaced_with: "Single diagnostic + evidence upload",
+        still_required: ["Pass diagnostic ≥ 75%", "Submit one piece of workplace evidence"],
+      };
+      break;
+    case "microlearning":
+      decision_rule = "Inject targeted microlearning after two failed attempts on the same skill cluster.";
+      outcome = {
+        time_saved_minutes: 0,
+        replaced_with: "12-min focused microlearning on the weak sub-skill",
+        still_required: ["Re-attempt module assessment", "1:1 with manager before readiness gate"],
+      };
+      safeguards = ["Manager approval required", "Auto-pauses path until completed"];
+      break;
+    case "emphasis":
+      decision_rule = "Add emphasis (extra examples, glossary) when diagnostic < 60% or background is outside FS.";
+      outcome = {
+        replaced_with: "Standard module + extended worked examples and terminology primer",
+        still_required: ["All standard assessments", "Optional check-in with manager"],
+      };
+      safeguards = ["Pace tracked weekly", "Manager nudged if behind ≥ 3 days"];
+      break;
+    case "reordered":
+      decision_rule = "Reorder when a downstream module's prerequisite skills are already evidenced.";
+      outcome = { replaced_with: "Earlier access to advanced material" };
+      break;
+  }
+
+  return {
+    ...c,
+    decision_rule: c.decision_rule ?? decision_rule,
+    signals: c.signals ?? signals,
+    outcome: c.outcome ?? outcome,
+    safeguards: c.safeguards ?? safeguards,
+  };
+}
+
+// Apply enrichment to every overlay's pathChanges so callers get rich rationale for free.
+for (const id of Object.keys(OVERLAY)) {
+  const ov = OVERLAY[id];
+  ov.pathChanges = ov.pathChanges.map(enrichPathChange);
+}
+

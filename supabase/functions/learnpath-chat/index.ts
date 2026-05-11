@@ -93,6 +93,7 @@ ${context.profileSummary}`
 - Active module: ${context?.activeModuleTitle || context?.activeModuleId || "none"}
 - Learning mode: ${context?.learningMode || "combined"}
 
+${cohortBlock}
 ## Assigned Modules
 ${moduleList || "No modules assigned yet."}
 

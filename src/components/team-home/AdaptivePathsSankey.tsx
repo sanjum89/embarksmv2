@@ -242,7 +242,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
       <div className="overflow-x-auto p-4">
         <svg width={totalWidth} height={totalHeight} className="block">
           {/* Spine column headers + nodes */}
-          {modules.map((m, ci) => {
+          {spineModules.map((m, ci) => {
             const x = PADDING_X + ci * COL_W + COL_W / 2;
             return (
               <g key={m.module_code}>

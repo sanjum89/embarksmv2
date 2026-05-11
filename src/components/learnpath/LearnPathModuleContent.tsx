@@ -689,6 +689,20 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
       {learningMode === "listening" && renderListening()}
       {learningMode === "hands-on" && renderHandsOn()}
       {learningMode === "combined" && renderCombined()}
+      {hasInlineQuiz && (
+        <div className="space-y-4">
+          {inlineQuizzes.map((quiz, i) => (
+            <InlineQuiz
+              key={i}
+              title={quiz.title}
+              questions={quiz.questions}
+              onPass={() => {
+                if (!completed && !previewMode) handleMarkComplete();
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

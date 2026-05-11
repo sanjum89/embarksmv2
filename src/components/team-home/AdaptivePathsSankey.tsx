@@ -47,7 +47,8 @@ function adaptationCount(o: LearnerOverlay) {
   return o.pathChanges.length;
 }
 
-export function AdaptivePathsSankey({ learners, modules, onOpenLearner }: Props) {
+export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = false }: Props) {
+  const MAX_SELECTED = dense ? 4 : 6;
   // Default selection: top 3 most-adapted learners
   const defaults = useMemo(() => {
     return [...learners]

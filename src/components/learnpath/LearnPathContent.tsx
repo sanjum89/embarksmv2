@@ -4,6 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
+import { useLearnerJourney } from "@/hooks/useLearnerJourney";
 import { EmbarkJourneyView } from "./EmbarkJourneyView";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";
 import { EmbarkAssessment } from "./LearnPathAssessment";
@@ -37,11 +38,16 @@ export function EmbarkContent() {
   const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted, canGoBack, goBack } = useEmbark();
   const { skillTargets } = useSkillTargets();
   const { user } = useUser();
-  const { normalizedAccount } = useAccount();
+  const { activeAccountId, normalizedAccount } = useAccount();
   const navigate = useNavigate();
   const { substitute } = useContentSubstitution();
   const autoResumedRef = useRef(false);
   const [moduleCompletedView, setModuleCompletedView] = useState(false);
+
+  const employeeId =
+    normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
+  const { journey } = useLearnerJourney(activeAccountId, employeeId);
+  const hasJourney = !!journey && journey.tracks.some((t) => t.totalChapters > 0);
 
   const catalog = buildCatalog(normalizedAccount?.learningModules);
 
@@ -82,9 +88,9 @@ export function EmbarkContent() {
 
   const hasSteps = allSteps.length > 0;
 
-  // Auto-resume: open first incomplete step on mount
+  // Auto-resume: open first incomplete step on mount (legacy accounts only)
   useEffect(() => {
-    if (autoResumedRef.current || !hasSteps || contentView !== "welcome") return;
+    if (autoResumedRef.current || !hasSteps || contentView !== "welcome" || hasJourney) return;
     autoResumedRef.current = true;
     const resume = allSteps.find((s) => s.status === "in_progress") ?? allSteps.find((s) => s.status === "available");
     if (resume) {
@@ -94,7 +100,7 @@ export function EmbarkContent() {
         openModule(resume.moduleId, resume.skillTargetId);
       }
     }
-  }, [hasSteps, contentView]);
+  }, [hasSteps, contentView, hasJourney]);
 
   // Reset completion-view flag when active module changes (so mode selector returns)
   useEffect(() => {
@@ -204,7 +210,14 @@ export function EmbarkContent() {
     );
   }
 
-  // Empty state — no skill targets assigned
+  // Cohort journey learners (e.g., Rathbones) — show journey as default view
+  if (hasJourney) {
+    return (
+      <EmbarkJourneyView legacySteps={allSteps} activeChapterId={activeModuleId} />
+    );
+  }
+
+  // Empty state — no skill targets assigned and no cohort journey
   if (!hasSteps) {
     return (
       <div className="h-full overflow-y-auto">

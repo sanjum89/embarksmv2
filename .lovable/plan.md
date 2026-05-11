@@ -1,105 +1,49 @@
-# Embark Journey UI: Cohort → Tracks → Modules → Chapters
+## Problem
 
-## Goal
-Replace the flat module accordion (current `EmbarkJourneyAccordion`, opened via the chapter header's "All Modules" button) with a new 4-level view powered by the live catalog tables. Existing chapter playback, mode selector and module content rendering stay as-is — only the journey overview screen changes.
+Clara is enrolled in the "Investment Management Readiness" cohort (with 5 tracks, 29 modules in Lovable Cloud), but the Embark page shows the **"No Learning Journey Yet"** empty state.
 
-## Data source (live catalog)
-A new hook `useLearnerJourney(employeeId)` fetches and assembles, in one effect:
+Root cause: `EmbarkContent` (`src/components/learnpath/LearnPathContent.tsx`) decides what to render based on `allSteps`, which is derived from the **legacy `skillTargets` pipeline**. Clara has no legacy skill targets assigned, so `hasSteps = false` and the legacy empty state wins — the new `EmbarkJourneyView` (cohort-driven) is only reached when `contentView === "modules"`, which the user never triggers because auto-resume can't find a step.
 
-- `cohort_enrollments` for the employee → active `cohort` row (title, due_date, start_date)
-- `learning_tracks` for the cohort's account, ordered by `display_order`
-- `catalog_modules` filtered by the cohort's `role_cohort_code` (and `is_core_required` first, stretch last), grouped by `learning_track_code`
-- `catalog_chapters` for those module codes, ordered by `display_order`
-- `learner_progress` rows for that employee + cohort, keyed by `(module_code, chapter_code)`
-- `chapter_lock_events` (open ones) → mark chapters as locked
+The new `useLearnerJourney` data is never consulted at the top level.
 
-All keyed by `module_code` / `chapter_code` (text) — not UUIDs — to match the catalog. Returns a typed tree:
+## Fix
 
-```text
-Journey
-└─ cohort { title, dueDate, overallPct, completedModules, totalModules }
-   └─ tracks[] { code, name, pct, modulesDone/Total }
-      └─ modules[] { code, title, status, pct, chapters }
-         └─ chapters[] { code, title, contentType, minutes, status, locked }
-```
+Make the cohort journey the **primary source of truth** for "what to render on Embark when nothing else is open", so a learner enrolled in a cohort always sees the new view, regardless of legacy skill-target state.
 
-Status derivation per chapter: `learner_progress.status` (`not_started|in_progress|completed`), overridden to `locked` if an open `chapter_lock_events` row exists. Module status = rollup of its chapters. Track pct = completed chapters / total chapters in that track. Cohort pct = same across all tracks.
+### 1. Lift cohort-journey awareness into `EmbarkContent`
 
-## Layout (Track tabs + module list)
+In `src/components/learnpath/LearnPathContent.tsx`:
 
-Replaces the body of `contentView === "modules"` in `LearnPathContent.tsx`.
+- Call `useLearnerJourney(activeAccountId, employeeId)` at the top, alongside the existing legacy data.
+- Compute `hasJourney = !!journey && journey.tracks.some(t => t.totalChapters > 0)`.
+- Treat `hasJourney || hasSteps` as "learner has something to do".
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ 📘 Your Embark Journey                            ← Back    │
-├─────────────────────────────────────────────────────────────┤
-│ Investment Management Readiness — Jan 2026                  │
-│ 3 of 29 modules · Due 15 Jul 2026                  12%      │
-│ ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░         │
-│                                                             │
-│ Tracks  ▏Business 40% ▏Tech 0% ▏Behav 60% ▏Cert 0% ▏Other 0%│  ← 5-segment strip, each segment width = track's module share, fill = pct
-├─────────────────────────────────────────────────────────────┤
-│ ┌──────────┬──────────┬──────────┬──────────┬──────────┐    │
-│ │ Business │ Technical│ Behaviour│ Cert &   │ Other    │    │  ← Track tabs (vertical sidebar on ≥640px,
-│ │ Knowl.   │ Knowl.   │ al Skills│ Standards│ Enablers │    │     horizontal scrollable chips on narrow)
-│ └──────────┴──────────┴──────────┴──────────┴──────────┘    │
-│                                                             │
-│ ▸ Selected track: Business Knowledge — 2 of 5 modules · 40% │
-│                                                             │
-│ ╭─ 01  Introduction to Rathbones        UP NEXT ─╮          │  ← Module accordion (re-uses the
-│ │      0 of 3 chapters · Due 15 Apr 2026          │          │     existing visual style from
-│ │      ───────                                    │          │     LearnPathJourneyAccordion)
-│ │      ◯ 01  Our Heritage & Values   📄 15 min   │          │
-│ │      🔒 02  How We Invest          📄 15 min   │          │
-│ │      🔒 03  Your First 90 Days     📄 10 min   │          │
-│ ╰─────────────────────────────────────────────────╯          │
-│ ╭─ 02  Investment Management Foundations  LOCKED ▿─╮         │
-│ ╰──────────────────────────────────────────────────╯         │
-└─────────────────────────────────────────────────────────────┘
-```
+### 2. Default Embark view = cohort journey when present
 
-### Specifics
+Reorder the render branches so that, when `contentView === "welcome"` (the initial state) **and** `hasJourney` is true, we render `<EmbarkJourneyView legacySteps={allSteps} activeChapterId={activeModuleId} />` directly instead of the welcome card or the empty state.
 
-- **Top header card** keeps the rounded `border bg-card` style. Shows cohort title, "X of Y modules · Due …", big % on the right, full-width 1.5px progress bar.
-- **Per-track strip** sits inside the same card: a single horizontal bar split into 5 proportional segments (proportional to each track's chapter count), each filled left-to-right by its own pct, hover/click selects that track. Segment colour uses `bg-accent` when active, `bg-muted` otherwise. Tooltip shows `<Track name> — n/m chapters`.
-- **Track tabs** under the card. Shadcn `Tabs` component, value = track code. Each tab label: track name + small badge with pct (e.g. `40%`). On <640px wraps to a horizontally scrollable row.
-- **Module list** for the selected track: the existing `EmbarkJourneyAccordion` markup (number badge, title, status pill, due date, mini progress bar, expanded chapters with `EmbarkChapterRow`) is extracted into a new `JourneyModuleAccordion` and reused unchanged. Locked-module empty state ("Complete X to unlock") is preserved, with prerequisite resolved via `catalog_modules.prerequisite_module_codes`.
-- **Filter chips** (All / In progress / Completed / Locked) remain, but scoped to the selected track.
-- **Auto-select** the track containing the active chapter on open; otherwise the first track with `in_progress`; otherwise track 0.
+Render priority becomes:
 
-## Files
+1. `assessment` view (unchanged)
+2. `module` view (unchanged)
+3. `contentView === "modules"` → `EmbarkJourneyView` (unchanged)
+4. **NEW:** `contentView === "welcome"` && `hasJourney` → `EmbarkJourneyView`
+5. Empty state ("No Learning Journey Yet") only when **both** `!hasJourney` and `!hasSteps`
+6. Legacy welcome card only when `hasSteps && !hasJourney` (legacy-only accounts like Cornerstone)
 
-New:
-- `src/hooks/useLearnerJourney.ts` — fetch + assemble the cohort tree (one Supabase round-trip per table, memoized by `(accountId, employeeId)`). Returns `{ journey, isLoading, error }`.
-- `src/components/learnpath/JourneyHeaderCard.tsx` — cohort headline + per-track segmented strip.
-- `src/components/learnpath/JourneyTrackTabs.tsx` — Shadcn Tabs wrapper with pct badges and active-track derivation.
-- `src/components/learnpath/JourneyModuleAccordion.tsx` — module list for the active track (extracted from current `EmbarkJourneyAccordion`, takes a `modules` array directly instead of flat steps).
-- `src/components/learnpath/EmbarkJourneyView.tsx` — composes the three above + Back button + filter chips.
+### 3. Disable legacy auto-resume when journey is in charge
 
-Edited:
-- `src/components/learnpath/LearnPathContent.tsx` — `contentView === "modules"` branch swapped to render `<EmbarkJourneyView />`. Empty-state and welcome paths unchanged. The auto-resume logic that opens the next module is rewired to use the journey tree (chapter codes) instead of `allSteps`.
-- `src/components/learnpath/LearnPathModuleContent.tsx` and `LearnPathChat.tsx` — `showModuleGrid()` calls keep working (the context method is unchanged, just renders a new view).
+The current auto-resume effect immediately calls `openModule` on the first legacy in-progress/available step. For Clara that array is empty so it's a no-op, but we must make sure it stays a no-op for cohort learners and doesn't fight the journey UI: gate it on `!hasJourney` so it only runs for legacy accounts.
 
-Deleted (after the new view is wired and verified):
-- `src/components/learnpath/LearnPathJourneyAccordion.tsx` (logic absorbed into `JourneyModuleAccordion`).
+### 4. No changes to
 
-Untouched: `LearnPathContext`, `LearnPathChapterRow`, `LearnPathModeSelector`, the chapter-playback flow, assessments, role plays, content substitution, branding.
-
-## Open / chapter-click behavior
-
-Clicking a chapter row still calls `openModule(moduleId, skillTargetId)`. To keep that working with the new catalog data, `JourneyModuleAccordion` passes `module_code` as `moduleId` and `cohort_id` (or a synthesized stable id) as `skillTargetId` — `LearnPathContext` only uses these as opaque keys for "active" tracking and history, so no context changes are required. `resolveModule` already accepts a string id and falls back via `learnPathModuleResolver`, which will be extended in a follow-up if catalog modules don't resolve to legacy `learningModules`. For this UI-only pass we treat the chapter rows as preview-only when no resolver match exists (same "Chapter unavailable" card already exists).
-
-## Out of scope
-
-- No changes to chapter rendering, mode selector, assessments, role plays, dashboard, or sidebar.
-- No edits to `LearnPathContext` shape, `SkillTargetsContext`, or any account normalization.
-- No data migration. The legacy `skillTargets`/`learningModules` continue to power the actual chapter content; the new view only changes how the journey overview is structured and progressed.
-- Cornerstone/Pinnacle: when the active account has no `cohort_enrollments` row, the view falls back to the existing `EmbarkJourneyAccordion` (kept around behind a feature check) so other demo accounts are unaffected.
+- `useLearnerJourney`, `JourneyHeaderCard`, `JourneyTrackTabs`, `JourneyModuleAccordion`, `EmbarkJourneyView` — already correct.
+- Legacy `skillTargets`/`learningModules` pipeline — still used for chapter content rendering and for non-cohort accounts (Cornerstone, Pinnacle).
+- Database, RLS, edge functions, sidebar, dashboard.
 
 ## Verification
 
-1. Log in as Clara (`rb-l6`) → click "All Modules" in the chapter header → see Investment Management Readiness — Jan 2026 cohort header with 12% bar and 5-segment track strip.
-2. Click each track tab → module list updates; pct badge on tab matches strip segment.
-3. Expand "Introduction to Rathbones" → 3 chapter rows render with correct lock/preview states; clicking the first chapter still opens it inline.
-4. Switch to a Cornerstone learner → falls back to the legacy accordion (no regression).
-5. Resize to <640px → tabs become a horizontal scroll row; strip stays full-width; accordion unchanged.
+- Log in as Clara → Embark page → see `JourneyHeaderCard` ("Investment Management Readiness", 0%), 5-segment track strip, `JourneyTrackTabs`, and the first track's modules with chapters. No "No Learning Journey Yet" screen.
+- Click a chapter → still opens via existing `openModule` path (chapter-click behavior in `JourneyModuleAccordion` is unchanged).
+- Log in as a Cornerstone learner with legacy skill targets → still sees legacy auto-resume + legacy welcome/modules behavior.
+- Log in as a learner with neither cohort nor skill targets → still sees the "No Learning Journey Yet" empty state with skill-gap recommendations.

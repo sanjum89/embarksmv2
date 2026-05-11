@@ -21,6 +21,7 @@ import { TeamRoster } from "@/components/team-home/TeamRoster";
 import type { RosterEntry } from "@/components/team-home/RosterRow";
 import { ActionQueue, type ActionQueueItem } from "@/components/team-home/ActionQueue";
 import { MyCohortsCard, type CohortItem } from "@/components/team-home/MyCohortsCard";
+import { AdaptivePathsSankey } from "@/components/team-home/AdaptivePathsSankey";
 
 function progressFromOverlay(o: LearnerOverlay) {
   const total = o.cells.length || 1;

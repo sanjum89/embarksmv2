@@ -50,7 +50,7 @@ export function EmbarkContent() {
 
   const employeeId =
     normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
-  const { journey, isLoading: journeyLoading } = useLearnerJourney(activeAccountId, employeeId);
+  const { journey, isLoading: journeyLoading, refresh: refreshJourney } = useLearnerJourney(activeAccountId, employeeId);
   const hasJourney = !!journey && journey.tracks.some((t) => t.totalChapters > 0);
   const diagState = useDiagnosticReopens();
 

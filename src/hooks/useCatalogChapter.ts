@@ -95,8 +95,65 @@ export function useCatalogChapter(
 /**
  * Compose a structured markdown transcript from the DB chapter row.
  * Prefers the long-form lesson body when present; otherwise stitches the structured fields.
+ *
+ * `lens` controls how the body is shaped for the learner:
+ *   - "full"        → long-form body (or full structured stitch)
+ *   - "condensed"   → first ~250 words + key headings only
+ *   - "diagnostic"  → tiny intro + a 3-question MCQ rich block sourced from the body
+ *   - "evidence"    → ONLY the practical_activity prompt as a submission task
  */
-export function composeChapterTranscript(ch: CatalogChapterContent): string {
+export type ChapterLens = "full" | "condensed" | "diagnostic" | "evidence";
+
+export function composeChapterTranscript(
+  ch: CatalogChapterContent,
+  lens: ChapterLens = "full"
+): string {
+  const fullBody = composeFull(ch);
+
+  if (lens === "evidence") {
+    return [
+      `# ${ch.chapterTitle} — Evidence task`,
+      `> Skip straight to the practice. Submit a short piece of work that shows you can apply this — no reading required.`,
+      ch.practicalActivity
+        ? `## What to submit\n${ch.practicalActivity}`
+        : `## What to submit\nWrite a short note (200-300 words) describing how you would apply this chapter's ideas to a real Rathbones client situation.`,
+    ].join("\n\n");
+  }
+
+  if (lens === "diagnostic") {
+    const intro = ch.learningObjective ?? ch.chapterSummary ?? "";
+    return [
+      `# ${ch.chapterTitle} — Quick diagnostic`,
+      `> Three questions to confirm you've got this. Pass and the module's done — no need to read it through.`,
+      intro ? `## What this covers\n${intro}` : "",
+      `:::RICH_BLOCK{"type":"diagnostic_quiz","data":{"chapterCode":"${ch.chapterCode}","chapterTitle":"${escapeJson(ch.chapterTitle)}","passThreshold":2}}:::`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+  }
+
+  if (lens === "condensed") {
+    // First ~250 words + a key-points list distilled from the outline bullets
+    const words = fullBody.split(/\s+/);
+    const intro = words.slice(0, 250).join(" ");
+    const bulletLines =
+      (ch.realisticContentOutline?.match(/^\s*\*\s+\*\*([^*]+)\*\*/gm) ?? [])
+        .map((s) => s.replace(/^\s*\*\s+\*\*([^*]+)\*\*.*$/, "- $1"))
+        .slice(0, 5);
+    return [
+      `# ${ch.chapterTitle}`,
+      `> Condensed view — we've trimmed sections your profile already evidences. Here are the parts most likely to be new.`,
+      intro,
+      bulletLines.length ? `## Key points to remember\n${bulletLines.join("\n")}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+  }
+
+  return fullBody;
+}
+
+function composeFull(ch: CatalogChapterContent): string {
   if (ch.longFormContent && ch.longFormContent.trim().length > 200) {
     return ch.longFormContent.trim();
   }
@@ -107,4 +164,8 @@ export function composeChapterTranscript(ch: CatalogChapterContent): string {
   if (ch.practicalActivity) parts.push(`## Try it yourself\n${ch.practicalActivity}`);
   if (ch.reflectionPrompt) parts.push(`## Reflect\n${ch.reflectionPrompt}`);
   return parts.join("\n\n");
+}
+
+function escapeJson(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }

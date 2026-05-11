@@ -46,6 +46,9 @@ export default function NewMy360() {
     ? `${Math.floor(data.employee.hris.tenureMonths / 12)}y ${data.employee.hris.tenureMonths % 12}m`
     : "—";
 
+  const hasCohortData = !!data.cohort || data.modules.length > 0;
+  const tabs = hasCohortData ? allTabs : (["Profile"] as const);
+
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">

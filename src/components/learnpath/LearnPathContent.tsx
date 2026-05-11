@@ -5,6 +5,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { useLearnerJourney } from "@/hooks/useLearnerJourney";
+import { useCatalogChapter, composeChapterTranscript } from "@/hooks/useCatalogChapter";
 import { EmbarkJourneyView } from "./EmbarkJourneyView";
 import { EmbarkLoadingState } from "./EmbarkLoadingState";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";

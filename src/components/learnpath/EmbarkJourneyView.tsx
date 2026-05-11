@@ -113,12 +113,7 @@ function JourneyBody({
 
   return (
     <div className="space-y-4">
-      <JourneyHeaderCard
-        cohort={cohort}
-        tracks={tracks}
-        activeTrackCode={activeTrack}
-        onSelectTrack={setActiveTrack}
-      />
+      <JourneyHeaderCard cohort={cohort} />
 
       {tracks.length > 0 && (
         <JourneyTrackTabs
@@ -129,37 +124,35 @@ function JourneyBody({
       )}
 
       {selected && (
-        <div className="flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{selected.name}</span>
-            <span className="mx-1.5">·</span>
-            {selected.completedModules} of {selected.totalModules} modules
-            <span className="mx-1.5">·</span>
-            {selected.pct}%
-          </p>
-          <div className="flex flex-wrap gap-1.5">
-            {filterChips.map((c) => (
-              <Button
-                key={c.key}
-                variant={filter === c.key ? "default" : "outline"}
-                size="sm"
-                className="h-7 px-3 text-xs rounded-full"
-                onClick={() => setFilter(c.key)}
-              >
-                {c.label}
-              </Button>
-            ))}
-          </div>
+        <div className="flex items-center justify-end gap-2 flex-wrap">
+          <span className="text-[0.7rem] uppercase tracking-wide text-muted-foreground mr-1">
+            Show
+          </span>
+          {filterChips.map((c) => (
+            <Button
+              key={c.key}
+              variant={filter === c.key ? "default" : "ghost"}
+              size="sm"
+              className="h-7 px-3 text-xs rounded-full"
+              onClick={() => setFilter(c.key)}
+            >
+              {c.label}
+            </Button>
+          ))}
         </div>
       )}
 
-      {filteredTrack && (
+      {filteredTrack && filteredTrack.modules.length === 0 ? (
+        <p className="text-xs text-muted-foreground py-6 text-center">
+          No modules in this view.
+        </p>
+      ) : filteredTrack ? (
         <JourneyModuleAccordion
           track={filteredTrack}
           cohortId={cohort.id}
           activeChapterCode={activeChapterId}
         />
-      )}
+      ) : null}
     </div>
   );
 }

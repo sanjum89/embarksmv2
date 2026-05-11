@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Check, X, Undo2, Sparkles, HandHelping, MessageSquareReply } from "lucide-react";
+import { Check, X, Undo2, Sparkles, MessageSquareReply } from "lucide-react";
 import { toast } from "sonner";
 import BackButton from "@/components/layout/BackButton";
 import { useUser } from "@/contexts/UserContext";

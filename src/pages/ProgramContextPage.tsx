@@ -21,6 +21,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import BackButton from "@/components/layout/BackButton";
+import { TeamAvatar } from "@/components/team-home/Avatar";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 
 type View = "list" | "create" | "detail";
 

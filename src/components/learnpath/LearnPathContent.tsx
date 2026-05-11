@@ -9,7 +9,7 @@ import { EmbarkModuleContent } from "./LearnPathModuleContent";
 import { EmbarkAssessment } from "./LearnPathAssessment";
 import { EmbarkModeSelector } from "./LearnPathModeSelector";
 import { ExplainSelectionPopover } from "./ExplainSelectionPopover";
-import { BookOpen, GraduationCap, Sparkles, AlertTriangle, ArrowRight, ArrowLeft } from "lucide-react";
+import { GraduationCap, Sparkles, AlertTriangle, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { getRecommendationsForUser } from "@/lib/skillRecommendations";

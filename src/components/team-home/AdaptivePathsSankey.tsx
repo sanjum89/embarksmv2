@@ -111,8 +111,8 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
   }, [selected, learners, spineModules]);
 
   const baselineRow = useMemo(() => ({
-    segments: modules.map<Segment>((m) => ({ status: "completed", adaptation: null, module: m })),
-  }), [modules]);
+    segments: spineModules.map<Segment>((m) => ({ status: "completed", adaptation: null, module: m })),
+  }), [spineModules]);
 
   const visibleRows = compare === "side" ? rows.slice(0, 2) : compare === "baseline" ? rows.slice(0, 1) : rows;
 

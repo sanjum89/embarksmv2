@@ -43,22 +43,22 @@ function useLearnerMap() {
   }, [newHires]);
 }
 
-/* ─── Status Colors ─── */
+/* ─── Status Colors (semantic tokens) ─── */
 function statusColor(s: Cohort["status"]) {
   switch (s) {
-    case "active": return "bg-emerald-500/15 text-emerald-700 border-emerald-200";
-    case "completed": return "bg-primary/10 text-primary border-primary/20";
+    case "active": return "bg-primary/10 text-primary border-primary/20";
+    case "completed": return "bg-success/10 text-success border-success/20";
     case "draft": return "bg-muted text-muted-foreground border-border";
   }
 }
 
 function tagBadge(tag: CohortLearnerProgress["tags"][0]) {
   switch (tag) {
-    case "rising_star": return { label: "Rising Star", cls: "bg-amber-500/15 text-amber-700 border-amber-200" };
-    case "at_risk": return { label: "At Risk", cls: "bg-destructive/15 text-destructive border-destructive/20" };
-    case "needs_attention": return { label: "Needs Attention", cls: "bg-orange-500/15 text-orange-700 border-orange-200" };
-    case "completed": return { label: "Completed", cls: "bg-emerald-500/15 text-emerald-700 border-emerald-200" };
-    case "ahead_of_pace": return { label: "Ahead of Pace", cls: "bg-sky-500/15 text-sky-700 border-sky-200" };
+    case "rising_star": return { label: "Rising star", cls: "bg-warning/10 text-warning border-warning/20" };
+    case "at_risk": return { label: "At risk", cls: "bg-destructive/10 text-destructive border-destructive/20" };
+    case "needs_attention": return { label: "Needs attention", cls: "bg-warning/10 text-warning border-warning/20" };
+    case "completed": return { label: "Completed", cls: "bg-success/10 text-success border-success/20" };
+    case "ahead_of_pace": return { label: "Ahead of pace", cls: "bg-primary/10 text-primary border-primary/20" };
   }
 }
 

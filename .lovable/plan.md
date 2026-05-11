@@ -1,88 +1,58 @@
-## Goal
+Three small, targeted fixes to the new My 360.
 
-Replace the current dense, card-heavy My 360 with an **editorial profile-led page** for Clara that reads like a magazine spread about her — generous spacing, real hierarchy, branded accents, and color used meaningfully. Detail is buried one click deep; an "Ask Embark" affordance sits next to every meaningful block.
+## 1. Cohort Journey — organize for scale
 
-No data model changes — only frontend in `src/components/my360-v2/*` and `src/pages/NewMy360.tsx`.
+Currently `CohortJourneyTab` renders all ~15+ modules as a flat 3-column grid plus a long "Why your journey looks different" list. At Rathbones scale this becomes endless scrolling.
 
-## Visual direction
+Restructure into a denser, grouped, progressive view:
 
-- **Editorial hero** — large name, role, manager, tenure pill; soft full-bleed gradient using the Rathbones primary; a portrait initial monogram; the persona narrative as a pull-quote with serifed display feel (via existing display weight, no font import).
-- **Branded accents** — bucket colors keyed to semantic tokens (emerald / primary / rose / violet) used as 2px left rails and tinted backgrounds, not as flat fills. Cards use `bg-card`, soft shadow, larger radius (rounded-xl), generous padding (p-6).
-- **Section rhythm** — alternating tight stat strips and breathing cards. Real H2s with subtle eyebrow labels ("THE NUMBERS", "WHERE SHE STANDS", "WHAT'S NEXT").
-- **Tabs become a compact pill switcher** under the hero, not a heavy underlined bar.
+- **Top summary stays** (cohort title, dates, % complete, Continue CTA) — unchanged.
+- **Replace flat module grid with a grouped, collapsible stage view**:
+  - Group modules by `progression_stage` (Foundation, Core, Advanced, etc.). Render each stage as a collapsible section (using existing `Accordion` from `components/ui/accordion`) with a header showing stage name, module count, and stage progress (e.g. "Core · 4 / 6 · 67%").
+  - Default open: only the stage containing the user's current `in_progress` module; others collapsed.
+  - Inside each stage use a tighter list row (icon + title + adaptation chip on the right) instead of large cards. Drop the redundant `ASSOCIATE_INVESTMENT_MANAGER_18M` eyebrow on every card — show it once at the top of the page.
+- **"Why your journey looks different" → compacted**:
+  - Group adaptations by `adaptation_type` (Microlearning, Diagnostic only, Skip after validation, Emphasis, Full module). Show each group as a single row with a count badge ("Microlearning · 5 modules") that expands to the list on click.
+  - Limit to a fixed visible block (~max-height with internal scroll) so it doesn't dominate the page.
+- Add a small filter chip row above the stages: All / In progress / Adapted / Locked — purely client-side filter on the existing data.
 
-## Page layout (tab 1 — "Profile")
+No data layer changes — `useMy360Data` already returns everything needed.
 
-```text
-┌───────────────────────────────────────────────────────┐
-│  HERO   monogram │ Clara Wren                          │
-│         IM Associate · Mid-career · 4y 2m at Rathbones │
-│         "Strong analyst growing into client-facing..." │
-│         [Perf: Strong] [Engagement 8.2] [Ask Embark ›] │
-└───────────────────────────────────────────────────────┘
+## 2. "Conduct" track label
 
-┌─ THE NUMBERS ─────────────────────────────────────────┐
-│  4y2m tenure │ 67 caps │ 12 gaps │ 5 stretch │ Strong │
-└───────────────────────────────────────────────────────┘
+The catalog `track_code` is `certification_professional_standards`. The current label `"Conduct"` in `CompetencyRadarHero.tsx` is our shorthand, not Rathbones terminology. Rathbones consistently say **"Certification & Professional Standards"** (their FCA SMCR / required-certification framing).
 
-┌─ WHERE SHE STANDS  (radar)        ┐  ┌─ Snapshot ────┐
-│  Big radar, only 5 track averages │  │ Prior: Schroders│
-│  Click a track → drawer w/ 16 sub │  │ CFA L2 in prog │
-│  [Ask Embark about this profile]  │  │ Hybrid · London│
-└───────────────────────────────────┘  └────────────────┘
+Change the `TRACK_LABEL` map in both `CompetencyRadarHero.tsx` and `CompetencyRadarPanel.tsx`:
 
-┌─ STRENGTHS & GAPS (compact strip, 4 columns) ─────────┐
-│  Top 3 per bucket, "View all 67 →" opens drawer       │
-│  Each row: label · L3→L4 · arrow to module · Ask AI · │
-└───────────────────────────────────────────────────────┘
-
-┌─ COHORT JOURNEY (preview strip, link to tab) ─────────┐
-│  IM Foundations · 60% · 3 modules adapted · Continue →│
-└───────────────────────────────────────────────────────┘
+```
+certification_professional_standards: "Certification"
 ```
 
-Tab 2 (Cohort Journey) and tab 3 (Growth Path) keep their logic but get the same visual treatment: bigger headings, more whitespace, eyebrow labels, branded rail accents, Ask Embark buttons co-located with each meaningful block.
+Use the short form `"Certification"` for the radar axis (space constrained) and the side card title, and the full `"Certification & Professional Standards"` as a subtitle / tooltip / drawer description so the meaning is unambiguous. This matches Rathbones' "Required Certification" expectation while staying truthful to the underlying competencies (which include Conduct Rules, SMCR, ethics — all part of the same certification track).
 
-## Progressive disclosure
+## 3. Ask Embark buttons don't work
 
-- **Track tile on radar** → existing `Sheet` drawer, restyled with hierarchy.
-- **"View all 67 capabilities"** → new full-height drawer with the 4-bucket view (reuses `CapabilityBuckets` logic).
-- **Capability row hover** → reveals "Open module" + "Ask Embark" icons.
-- **Certifications chip** → drawer listing all + targets.
+Root cause: `AskEmbarkButton` calls `useAgentOne().handleSend(prompt, context)` but **never opens the floating Embark panel**. `AgentOneContext` exposes `setIsOpen` separately — without it, the message is sent into a closed panel and the user sees nothing happen.
 
-## Ask Embark pattern
+Fix in `src/components/my360-v2/AskEmbarkButton.tsx`:
 
-Add a single `<AskEmbarkButton prompt context />` component that calls `useAgentOne().handleSend(prompt, context)`. Placed beside: hero, radar, each bucket header, top gap card, stretch card, talking points. Each instance ships a tailored preset prompt (e.g. "Why is my Counterparty risk gap risk-critical, and what's the fastest path to close it before the readiness gate?").
+- Pull `setIsOpen` from `useAgentOne()` alongside `handleSend`.
+- In the click handler, call `setIsOpen(true)` first, then `handleSend(prompt, context)`.
+- Also persist the breadcrumb context as "My 360 · {section}" by passing a more descriptive `context` from each call site (Profile hero, Radar, Capability strip, Cohort preview) so the chat clearly shows where the question came from.
 
-## Files
+No changes to `AgentOneContext` itself — its public API already supports this.
 
-**New**
-- `src/components/my360-v2/AskEmbarkButton.tsx` — shared pill button
-- `src/components/my360-v2/ProfileHero.tsx` — replaces `IdentityHeader`
-- `src/components/my360-v2/StatStrip.tsx` — at-a-glance numbers row
-- `src/components/my360-v2/CompetencyRadarHero.tsx` — radar collapsed to 5 track means, drill via drawer
-- `src/components/my360-v2/CapabilityStrip.tsx` — compact 4-col strengths/at/gaps/stretch with "view all" drawer
-- `src/components/my360-v2/AllCapabilitiesDrawer.tsx` — re-uses existing `CapabilityBuckets`
-- `src/components/my360-v2/CohortPreviewCard.tsx` — small cohort summary linking to the cohort tab
+## Files touched
 
-**Modified**
-- `src/pages/NewMy360.tsx` — new layout, pill tab switcher, "Profile" replaces "Role & Strengths"
-- `src/components/my360-v2/CohortJourneyTab.tsx` — heading/spacing/rail pass, Ask Embark buttons, no logic changes
-- `src/components/my360-v2/GrowthPathTab.tsx` — heading/spacing/rail pass, Ask Embark buttons, no logic changes
-- `src/components/my360-v2/HrisSnapshotCard.tsx` — used as a side card in tab 1, lighter density
-
-**Untouched**
-- `src/hooks/useMy360Data.ts`, `src/lib/my360v2/bucketing.ts`, legacy My 360, all DB tables, all routing besides the page internals
+- `src/components/my360-v2/CohortJourneyTab.tsx` — restructure rendering (stages, grouped adaptations, filter chips). Pure presentation.
+- `src/components/my360-v2/CompetencyRadarHero.tsx` — track label rename + subtitle.
+- `src/components/my360-v2/CompetencyRadarPanel.tsx` — track label rename (legacy panel, kept consistent).
+- `src/components/my360-v2/AskEmbarkButton.tsx` — open panel on click.
+- Optional: tighten `context` strings in `ProfileHero.tsx`, `CompetencyRadarHero.tsx`, `CapabilityStrip.tsx`, `CohortPreviewCard.tsx` where `<AskEmbarkButton>` is used.
 
 ## Out of scope
 
-- Theo / other personas (Clara only; eligibility fallback keeps legacy redirect)
-- New tables, migrations, edge functions
-- Visual changes to legacy My 360 or Pinnacle white-label
-- Replacing the Embark floating panel mechanism
-
-## Notes
-
-- All colors via semantic tokens (`bg-primary/10`, `text-emerald-600 dark:text-emerald-400`, etc.) — no hardcoded hex.
-- Honor the Rathbones palette (deep navy primary, peach accent) already in CSS.
-- Honor `py-[18px]` header rule (we're below the app header, so this is local layout only).
+- No DB / migration / edge function changes.
+- No changes to `useMy360Data` or `bucketing`.
+- No changes to the floating Embark panel itself.
+- Other personas (Clara only, as before).

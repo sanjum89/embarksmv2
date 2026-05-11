@@ -12,8 +12,12 @@ interface Props {
 }
 
 export function AskEmbarkButton({ prompt, context = "My 360", label = "Ask Embark", variant = "pill", className }: Props) {
-  const { handleSend } = useAgentOne();
-  const onClick = () => handleSend(prompt, context);
+  const { handleSend, setIsOpen } = useAgentOne();
+  const onClick = () => {
+    setIsOpen(true);
+    // Defer send slightly so the panel mounts/scrolls cleanly
+    setTimeout(() => handleSend(prompt, context), 50);
+  };
 
   if (variant === "icon") {
     return (

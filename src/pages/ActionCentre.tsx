@@ -181,7 +181,7 @@ export default function ActionCentre() {
       <LearnerDrawer
         open={!!openId}
         onOpenChange={(o) => !o && setOpenId(null)}
-        learner={selected ? { employeeId: selected.employeeId, name: selected.employeeId } : null}
+        learner={selected ? { employeeId: selected.employeeId, name: nameOf(selected.employeeId), title: titleOf(selected.employeeId) } : null}
         overlay={selected}
         modules={COHORT_MODULES_FALLBACK.map((m) => ({ module_code: m.module_code, module_title: m.module_title, progression_stage: m.progression_stage }))}
       />

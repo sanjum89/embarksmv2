@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { GitBranch, Sparkles, X } from "lucide-react";
+import { GitBranch, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LearnerOverlay, AiPathChange } from "@/data/managerDemoOverlay";
 import { AdaptivePathDrawer } from "./AdaptivePathDrawer";
@@ -29,12 +28,32 @@ interface Props {
 type CompareMode = "stack" | "side" | "baseline";
 type Filter = "all" | "skipped" | "microlearning" | "reordered";
 
-const PALETTE = [
+const LEARNER_PALETTE = [
   "hsl(var(--primary))",
   "hsl(var(--accent))",
-  "hsl(var(--warning))",
   "hsl(var(--success))",
+  "hsl(var(--warning))",
 ];
+
+// State encoding — color + shape carries the meaning, not the learner.
+type StateKind =
+  | "completed"
+  | "in_progress"
+  | "not_reached"
+  | "skipped"
+  | "microlearning"
+  | "emphasis"
+  | "reordered";
+
+const STATE_STYLE: Record<StateKind, { stroke: string; width: number; dash?: string; opacity: number; label: string }> = {
+  completed:     { stroke: "hsl(var(--success))",          width: 4, opacity: 1,    label: "Completed" },
+  in_progress:   { stroke: "hsl(var(--primary))",          width: 4, opacity: 0.9,  label: "In progress" },
+  not_reached:   { stroke: "hsl(var(--muted-foreground))", width: 2, dash: "2 4", opacity: 0.35, label: "Not yet reached" },
+  skipped:       { stroke: "hsl(var(--muted-foreground))", width: 3, dash: "5 4", opacity: 0.7, label: "Skipped by AI" },
+  microlearning: { stroke: "hsl(var(--accent))",           width: 4, opacity: 1,    label: "Microlearning added" },
+  emphasis:      { stroke: "hsl(var(--primary))",          width: 7, opacity: 1,    label: "Emphasis (deeper coverage)" },
+  reordered:     { stroke: "hsl(var(--primary))",          width: 4, dash: "9 2 2 2", opacity: 1, label: "Reordered" },
+};
 
 interface Segment {
   status: "completed" | "in_progress" | "not_started" | "locked";
@@ -43,13 +62,74 @@ interface Segment {
   module: ModuleSpine;
 }
 
+function segmentState(seg: Segment): StateKind {
+  if (seg.pathChange) {
+    if (seg.pathChange.kind === "skipped") return "skipped";
+    if (seg.pathChange.kind === "microlearning") return "microlearning";
+    if (seg.pathChange.kind === "emphasis") return "emphasis";
+    if (seg.pathChange.kind === "reordered") return "reordered";
+  }
+  if (seg.status === "completed") return "completed";
+  if (seg.status === "in_progress") return "in_progress";
+  return "not_reached";
+}
+
 function adaptationCount(o: LearnerOverlay) {
   return o.pathChanges.length;
 }
 
+function prettyStage(s: string) {
+  return s
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function NodeGlyph({ state, color }: { state: StateKind; color: string }) {
+  // color = learner accent on left chip; nodes themselves use state color
+  const stateColor = STATE_STYLE[state].stroke;
+  switch (state) {
+    case "completed":
+      return <circle r={5} fill={stateColor} />;
+    case "in_progress":
+      return <circle r={5} fill="hsl(var(--background))" stroke={stateColor} strokeWidth={2} />;
+    case "not_reached":
+      return <circle r={3.5} fill="hsl(var(--background))" stroke="hsl(var(--muted-foreground))" strokeWidth={1} opacity={0.5} />;
+    case "skipped":
+      return (
+        <g>
+          <circle r={5} fill="hsl(var(--background))" stroke={stateColor} strokeWidth={1.5} />
+          <line x1={-3.5} y1={3.5} x2={3.5} y2={-3.5} stroke={stateColor} strokeWidth={1.5} />
+        </g>
+      );
+    case "microlearning":
+      return (
+        <g>
+          <rect x={-5} y={-5} width={10} height={10} transform="rotate(45)" fill={stateColor} />
+          <text x={0} y={2.5} textAnchor="middle" fontSize={8} fontWeight={700} fill="hsl(var(--accent-foreground))">+</text>
+        </g>
+      );
+    case "emphasis":
+      return (
+        <g>
+          <circle r={7} fill="none" stroke={stateColor} strokeWidth={2} />
+          <circle r={3} fill={stateColor} />
+        </g>
+      );
+    case "reordered":
+      return (
+        <g>
+          <circle r={5} fill="hsl(var(--background))" stroke={stateColor} strokeWidth={1.5} />
+          <path d="M -2.5 -1 A 2.5 2.5 0 1 1 -2.5 1 L -3.5 0 M -2.5 1 L -1.5 0" fill="none" stroke={stateColor} strokeWidth={1.2} />
+        </g>
+      );
+  }
+  // fallback to satisfy ts
+  return <circle r={4} fill={color} />;
+}
+
 export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = false }: Props) {
   const MAX_SELECTED = dense ? 4 : 6;
-  // Default selection: top 3 most-adapted learners
   const defaults = useMemo(() => {
     return [...learners]
       .sort((a, b) => adaptationCount(b.overlay) - adaptationCount(a.overlay))
@@ -72,23 +152,19 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
     });
   };
 
-  // Cap the spine to overlay length so we don't render trailing empty columns
   const overlayLen = Math.max(
     0,
-    ...selected
-      .map((id) => learners.find((l) => l.employeeId === id)?.overlay.cells.length ?? 0)
+    ...selected.map((id) => learners.find((l) => l.employeeId === id)?.overlay.cells.length ?? 0)
   );
   const spineLen = overlayLen > 0 ? Math.min(modules.length, overlayLen) : modules.length;
   const spineModules = useMemo(() => modules.slice(0, spineLen), [modules, spineLen]);
   const truncated = modules.length > spineLen;
 
-  // Build per-learner segments aligned to spine by INDEX (matches RosterHeatmap)
   const rows = useMemo(() => {
     return selected
       .map((id) => learners.find((l) => l.employeeId === id))
       .filter((x): x is LearnerInput => !!x)
       .map((l) => {
-        // overlay pathChanges keyed to overlay's own cell index
         const overlayCellIndexByCode = new Map(
           l.overlay.cells.map((c, idx) => [c.module_code, idx])
         );
@@ -110,31 +186,31 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
       });
   }, [selected, learners, spineModules]);
 
-  const baselineRow = useMemo(() => ({
-    segments: spineModules.map<Segment>((m) => ({ status: "completed", adaptation: null, module: m })),
-  }), [spineModules]);
-
   const visibleRows = compare === "side" ? rows.slice(0, 2) : compare === "baseline" ? rows.slice(0, 1) : rows;
 
+  // Stage groups (contiguous run of columns sharing the same progression_stage)
+  const stageGroups = useMemo(() => {
+    const out: { stage: string; startIdx: number; span: number }[] = [];
+    spineModules.forEach((m, i) => {
+      const last = out[out.length - 1];
+      if (last && last.stage === m.progression_stage) last.span += 1;
+      else out.push({ stage: m.progression_stage, startIdx: i, span: 1 });
+    });
+    return out;
+  }, [spineModules]);
+
   // Geometry
-  const COL_W = dense ? 120 : 160;
+  const COL_W = dense ? 130 : 176;
   const ROW_H = dense ? 56 : 72;
-  const PADDING_X = dense ? 16 : 24;
-  const PADDING_TOP = dense ? 36 : 44;
+  const PADDING_X = dense ? 100 : 140; // room for left learner labels
+  const STAGE_BAND_Y = 8;
+  const STAGE_BAND_H = 18;
+  const TITLES_Y = STAGE_BAND_Y + STAGE_BAND_H + 14; // baseline for module titles
+  const PADDING_TOP = TITLES_Y + 22;
   const NODE_W = 14;
-  const totalWidth = PADDING_X * 2 + spineModules.length * COL_W;
+  const totalWidth = PADDING_X + spineModules.length * COL_W + 24;
   const headerOffset = compare === "baseline" ? ROW_H : 0;
   const totalHeight = PADDING_TOP + headerOffset + visibleRows.length * ROW_H + 16;
-
-  const segmentStyle = (seg: Segment, color: string) => {
-    if (seg.pathChange?.kind === "skipped") return { stroke: color, strokeDasharray: "4 3", opacity: 0.7, strokeWidth: 3 };
-    if (seg.pathChange?.kind === "microlearning") return { stroke: color, opacity: 1, strokeWidth: 4 };
-    if (seg.pathChange?.kind === "emphasis") return { stroke: color, opacity: 1, strokeWidth: 6 };
-    if (seg.pathChange?.kind === "reordered") return { stroke: color, opacity: 1, strokeWidth: 4, strokeDasharray: "8 2 2 2" };
-    if (seg.status === "completed") return { stroke: color, opacity: 1, strokeWidth: 4 };
-    if (seg.status === "in_progress") return { stroke: color, opacity: 0.85, strokeWidth: 4 };
-    return { stroke: color, opacity: 0.18, strokeWidth: 3 };
-  };
 
   const passesFilter = (seg: Segment) => {
     if (filter === "all") return true;
@@ -145,7 +221,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
     return true;
   };
 
-  const colorForLearner = (idx: number) => PALETTE[idx % PALETTE.length];
+  const colorForLearner = (idx: number) => LEARNER_PALETTE[idx % LEARNER_PALETTE.length];
 
   const decide = (id: string, kind: "approved" | "reverted") => {
     setDecisions((prev) => ({ ...prev, [id]: kind }));
@@ -168,7 +244,6 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3 border-b border-border bg-secondary/20 px-4 py-3">
-        {/* Learner chips */}
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="text-[10px] uppercase tracking-wide text-muted-foreground mr-1">Learners</span>
           {learners.map((l) => {
@@ -199,7 +274,6 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
         </div>
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
-          {/* Compare */}
           <div className="flex items-center gap-0.5 rounded-md border border-border bg-background p-0.5">
             {([
               { id: "stack", label: "Stack" },
@@ -219,7 +293,6 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
               </button>
             ))}
           </div>
-          {/* Filter */}
           <div className="flex items-center gap-0.5 rounded-md border border-border bg-background p-0.5">
             {([
               { id: "all", label: "All" },
@@ -246,28 +319,56 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
       {/* Diagram */}
       <div className="overflow-x-auto p-4">
         <svg width={totalWidth} height={totalHeight} className="block">
-          {/* Spine column headers + nodes */}
+          {/* Stage bands */}
+          {stageGroups.map((g, i) => {
+            const x = PADDING_X + g.startIdx * COL_W + 4;
+            const w = g.span * COL_W - 8;
+            return (
+              <g key={`stage-${i}`}>
+                <rect
+                  x={x}
+                  y={STAGE_BAND_Y}
+                  width={w}
+                  height={STAGE_BAND_H}
+                  rx={9}
+                  className="fill-secondary"
+                />
+                <text
+                  x={x + w / 2}
+                  y={STAGE_BAND_Y + 12}
+                  textAnchor="middle"
+                  className="fill-muted-foreground text-[10px] font-medium uppercase tracking-wide"
+                >
+                  {prettyStage(g.stage)} · {g.span} {g.span === 1 ? "module" : "modules"}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Module titles (angled) + index chip + spine node */}
           {spineModules.map((m, ci) => {
             const x = PADDING_X + ci * COL_W + COL_W / 2;
+            const title = m.module_title.length > 18 ? m.module_title.slice(0, 17) + "…" : m.module_title;
             return (
               <g key={m.module_code}>
                 <text
                   x={x}
-                  y={14}
-                  textAnchor="middle"
-                  className="fill-muted-foreground text-[10px]"
+                  y={TITLES_Y}
+                  textAnchor="end"
+                  transform={`rotate(-22 ${x} ${TITLES_Y})`}
+                  className="fill-foreground text-[11px] font-medium"
                 >
-                  {m.module_title.length > 18 ? m.module_title.slice(0, 16) + "…" : m.module_title}
+                  {title}
+                  <title>{m.module_title}</title>
                 </text>
                 <text
                   x={x}
-                  y={26}
+                  y={PADDING_TOP - 12}
                   textAnchor="middle"
-                  className="fill-muted-foreground/60 text-[9px] uppercase tracking-wide"
+                  className="fill-muted-foreground text-[9px] uppercase tracking-wider"
                 >
-                  {m.progression_stage}
+                  M{ci + 1}
                 </text>
-                {/* Spine node */}
                 <rect
                   x={x - NODE_W / 2}
                   y={PADDING_TOP - 4}
@@ -280,10 +381,10 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
             );
           })}
 
-          {/* Baseline ribbon when in baseline mode */}
+          {/* Baseline ribbon */}
           {compare === "baseline" && (
             <g opacity={0.5}>
-              <text x={PADDING_X} y={PADDING_TOP + 14} className="fill-muted-foreground text-[10px]">
+              <text x={8} y={PADDING_TOP + 14} className="fill-muted-foreground text-[10px]">
                 Baseline path
               </text>
               {spineModules.slice(0, -1).map((_, i) => {
@@ -308,27 +409,48 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
 
           {/* Per-learner ribbons */}
           {visibleRows.map((row, ri) => {
-            const color = colorForLearner(rows.indexOf(row));
+            const learnerIdx = rows.indexOf(row);
+            const learnerColor = colorForLearner(learnerIdx);
             const yBase = PADDING_TOP + headerOffset + ri * ROW_H + ROW_H / 2;
             const isHovered = hoverLearner === row.learner.employeeId;
             const dim = hoverLearner && !isHovered;
             return (
               <g
                 key={row.learner.employeeId}
-                opacity={dim ? 0.15 : 1}
+                opacity={dim ? 0.2 : 1}
                 onMouseEnter={() => setHoverLearner(row.learner.employeeId)}
                 onMouseLeave={() => setHoverLearner(null)}
               >
-                {/* Learner label */}
-                <text x={PADDING_X} y={yBase - ROW_H / 2 + 12} className="fill-foreground text-[11px] font-medium">
-                  {row.learner.name}
-                </text>
+                {/* Learner left label */}
+                <g transform={`translate(8 ${yBase})`}>
+                  <circle r={4} cx={4} cy={0} fill={learnerColor} />
+                  <text x={14} y={4} className="fill-foreground text-[12px] font-medium">
+                    {row.learner.name}
+                  </text>
+                </g>
+                {/* Faint baseline rail */}
+                <line
+                  x1={PADDING_X + COL_W / 2}
+                  x2={PADDING_X + (spineModules.length - 1) * COL_W + COL_W / 2}
+                  y1={yBase}
+                  y2={yBase}
+                  stroke="hsl(var(--border))"
+                  strokeWidth={1}
+                  opacity={0.6}
+                />
                 {/* Segments */}
                 {row.segments.slice(0, -1).map((seg, i) => {
                   const next = row.segments[i + 1];
                   const x1 = PADDING_X + i * COL_W + COL_W / 2 + NODE_W / 2;
                   const x2 = PADDING_X + (i + 1) * COL_W + COL_W / 2 - NODE_W / 2;
-                  const style = segmentStyle(seg, color);
+                  // Use the "downstream" state for the segment to next node, but
+                  // if either side is an AI change show that. Simpler: use seg's own state.
+                  const state = segmentState(seg);
+                  const nextState = segmentState(next);
+                  // If current is reached but next is not yet, treat segment as not_reached
+                  const useState: StateKind =
+                    state === "not_reached" ? "not_reached" : nextState === "not_reached" && state !== "skipped" && state !== "microlearning" && state !== "emphasis" && state !== "reordered" ? "not_reached" : state;
+                  const style = STATE_STYLE[useState];
                   const muted = !passesFilter(seg) && filter !== "all";
                   return (
                     <line
@@ -338,49 +460,45 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
                       y1={yBase}
                       y2={yBase}
                       stroke={style.stroke}
-                      strokeWidth={style.strokeWidth}
-                      strokeDasharray={style.strokeDasharray}
+                      strokeWidth={style.width}
+                      strokeDasharray={style.dash}
                       strokeLinecap="round"
                       opacity={muted ? 0.1 : style.opacity}
                     />
                   );
-                  void next;
                 })}
                 {/* Nodes per cell */}
                 {row.segments.map((seg, i) => {
                   const x = PADDING_X + i * COL_W + COL_W / 2;
-                  const isMicro = seg.pathChange?.kind === "microlearning";
-                  const isSkip = seg.pathChange?.kind === "skipped";
+                  const state = segmentState(seg);
                   const decision = seg.pathChange ? decisions[seg.pathChange.id] : undefined;
-                  const r = isMicro ? 6 : isSkip ? 3 : 5;
-                  const fill =
-                    decision === "reverted"
-                      ? "hsl(var(--muted))"
-                      : seg.status === "completed"
-                      ? color
-                      : seg.status === "in_progress"
-                      ? color
-                      : "hsl(var(--background))";
-                  const stroke = color;
                   const interactive = !!seg.pathChange;
                   return (
                     <g
                       key={`n-${i}`}
                       transform={`translate(${x}, ${yBase})`}
                       style={{ cursor: interactive ? "pointer" : "default" }}
+                      opacity={decision === "reverted" ? 0.4 : 1}
                       onClick={() => {
                         if (seg.pathChange) {
                           setDrawerChange({ change: seg.pathChange, learnerName: row.learner.name });
                         }
                       }}
                     >
-                      <circle r={r + 4} fill="transparent" />
-                      <circle r={r} fill={fill} stroke={stroke} strokeWidth={1.5} />
+                      <circle r={10} fill="transparent" />
+                      <NodeGlyph state={state} color={learnerColor} />
                       {seg.pathChange && (
                         <title>
                           {row.learner.name} · {seg.module.module_title}
                           {"\n"}
-                          {seg.pathChange.kind} — {seg.pathChange.reason}
+                          {STATE_STYLE[state].label} — {seg.pathChange.reason}
+                        </title>
+                      )}
+                      {!seg.pathChange && (
+                        <title>
+                          {row.learner.name} · {seg.module.module_title}
+                          {"\n"}
+                          {STATE_STYLE[state].label}
                         </title>
                       )}
                     </g>
@@ -393,28 +511,21 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap items-center gap-3 border-t border-border bg-secondary/10 px-4 py-2 text-[10px] text-muted-foreground">
-        <span className="inline-flex items-center gap-1.5">
-          <svg width="20" height="6"><line x1="0" x2="20" y1="3" y2="3" stroke="currentColor" strokeWidth="3" /></svg>
-          Completed
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <svg width="20" height="6"><line x1="0" x2="20" y1="3" y2="3" stroke="currentColor" strokeWidth="3" strokeDasharray="3 3" /></svg>
-          Skipped
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <svg width="20" height="8"><line x1="0" x2="20" y1="4" y2="4" stroke="currentColor" strokeWidth="4" /><circle cx="10" cy="4" r="3" fill="currentColor" /></svg>
-          Microlearning
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <svg width="20" height="8"><line x1="0" x2="20" y1="4" y2="4" stroke="currentColor" strokeWidth="6" /></svg>
-          Emphasis
-        </span>
-        <span className="inline-flex items-center gap-1.5">
-          <svg width="20" height="6"><line x1="0" x2="20" y1="3" y2="3" stroke="currentColor" strokeWidth="3" opacity={0.18} /></svg>
-          Not yet reached
-        </span>
-        <span className="ml-auto text-muted-foreground/70">Click any AI-changed step for details</span>
+      <div className="space-y-2 border-t border-border bg-secondary/10 px-4 py-3 text-[11px] text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          <span className="text-[10px] uppercase tracking-wide font-semibold text-foreground/70">On plan</span>
+          <LegendItem state="completed" />
+          <LegendItem state="in_progress" />
+          <LegendItem state="not_reached" />
+        </div>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          <span className="text-[10px] uppercase tracking-wide font-semibold text-foreground/70">AI changes</span>
+          <LegendItem state="skipped" />
+          <LegendItem state="microlearning" />
+          <LegendItem state="emphasis" />
+          <LegendItem state="reordered" />
+          <span className="ml-auto text-muted-foreground/70">Click any AI-changed step for details</span>
+        </div>
       </div>
 
       {drawerChange && (
@@ -432,8 +543,21 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
           } : undefined}
         />
       )}
-      {/* unused icon-import suppression */}
-      <span className="hidden"><X /></span>
     </Card>
+  );
+}
+
+function LegendItem({ state }: { state: StateKind }) {
+  const s = STATE_STYLE[state];
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <svg width="34" height="14" className="overflow-visible">
+        <line x1="0" x2="22" y1="7" y2="7" stroke={s.stroke} strokeWidth={s.width} strokeDasharray={s.dash} strokeLinecap="round" opacity={s.opacity} />
+        <g transform="translate(28 7)">
+          <NodeGlyph state={state} color={s.stroke} />
+        </g>
+      </svg>
+      <span>{s.label}</span>
+    </span>
   );
 }

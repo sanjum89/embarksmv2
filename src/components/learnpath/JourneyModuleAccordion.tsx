@@ -282,23 +282,31 @@ function AdaptationBadge({ adaptation }: { adaptation: ModuleAdaptation }) {
         </button>
       </PopoverTrigger>
       <PopoverContent
-        className="w-72 text-xs space-y-2"
+        className="w-80 text-xs space-y-2"
         side="top"
         align="start"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="font-semibold text-sm text-foreground">{label}</div>
-        {reason && <p className="text-muted-foreground leading-relaxed">{reason}</p>}
+        <p className="text-muted-foreground leading-relaxed">
+          {adaptationExplanation(adaptation.adaptationType)}
+        </p>
+        {reason && reason.length > 0 && (
+          <p className="text-muted-foreground leading-relaxed border-t border-border pt-2">
+            <span className="font-medium text-foreground">Why for you: </span>
+            {reason}
+          </p>
+        )}
         {adaptation.competencyName && (
           <div className="pt-1 border-t border-border space-y-0.5">
             <div className="font-medium text-foreground">{adaptation.competencyName}</div>
             {(adaptation.currentLevel != null || adaptation.requiredLevel != null) && (
               <div className="text-muted-foreground">
-                Current level {adaptation.currentLevel ?? "—"} · Target level {adaptation.requiredLevel ?? "—"}
+                Your current level {adaptation.currentLevel ?? "—"} · Target for this role {adaptation.requiredLevel ?? "—"}
               </div>
             )}
             {adaptation.validationNeeded && (
-              <div className="text-amber-600 dark:text-amber-400">Validation needed</div>
+              <div className="text-amber-600 dark:text-amber-400">Validation needed before this counts</div>
             )}
           </div>
         )}

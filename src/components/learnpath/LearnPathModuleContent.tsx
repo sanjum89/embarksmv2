@@ -19,6 +19,7 @@ import { getPodcastTranscript, getStaticPodcastUrl } from "@/data/podcastTranscr
 import { getHandsOnScenarios } from "@/data/handsOnScenarios";
 import { mockRolePlayBank, moduleRolePlayMap } from "@/data/mock";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { InlineQuiz, extractInlineQuizzes } from "./InlineQuiz";
 
 interface Props {
   module: LearningModule;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckCircle2, XCircle, HelpCircle, RotateCcw, Sparkles } from "lucide-react";
+import { CheckCircle2, XCircle, HelpCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -8,6 +8,18 @@ export interface InlineQuizQuestion {
   options: string[];
   correctIndex: number;
   explanation?: string;
+  /** When the quiz is module-scoped (Quick Diagnostic), each question
+   * carries the chapter it was sourced from so we know which chapter to
+   * reopen on a wrong answer. */
+  chapterCode?: string;
+}
+
+export interface InlineQuizSubmitResult {
+  total: number;
+  correctCount: number;
+  allCorrect: boolean;
+  /** Chapter codes for questions answered incorrectly. Deduplicated. */
+  wrongChapterCodes: string[];
 }
 
 interface Props {
@@ -15,12 +27,16 @@ interface Props {
   questions: InlineQuizQuestion[];
   /** Fires once when the learner has answered every question correctly (passed). */
   onPass?: () => void;
+  /** Fires once on submit, regardless of pass/fail. Used by Quick Diagnostic
+   * to mark the diagnostic complete and reopen wrong chapters. */
+  onSubmit?: (result: InlineQuizSubmitResult) => void;
 }
 
-export function InlineQuiz({ title, questions, onPass }: Props) {
+export function InlineQuiz({ title, questions, onPass, onSubmit }: Props) {
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [submitted, setSubmitted] = useState(false);
   const [hasFiredPass, setHasFiredPass] = useState(false);
+  const [hasFiredSubmit, setHasFiredSubmit] = useState(false);
 
   const total = questions.length;
   const answeredCount = Object.keys(answers).length;
@@ -40,11 +56,22 @@ export function InlineQuiz({ title, questions, onPass }: Props) {
       setHasFiredPass(true);
       onPass?.();
     }
-  };
-
-  const handleRetry = () => {
-    setAnswers({});
-    setSubmitted(false);
+    if (!hasFiredSubmit) {
+      setHasFiredSubmit(true);
+      const wrongChapterCodes = Array.from(
+        new Set(
+          questions
+            .map((q, i) => (answers[i] !== q.correctIndex ? q.chapterCode : undefined))
+            .filter((c): c is string => !!c),
+        ),
+      );
+      onSubmit?.({
+        total,
+        correctCount,
+        allCorrect: correctCount === total,
+        wrongChapterCodes,
+      });
+    }
   };
 
   return (

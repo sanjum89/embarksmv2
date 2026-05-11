@@ -35,6 +35,9 @@ export default function ActionCentre() {
   const titleOf = (id: string) => employeesById[id]?.title || "Learner";
   const { approvals, recordDecision, clearDecision } = useManagerActions();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [handAction, setHandAction] = useState<ActionItem | null>(null);
+  const [scheduleId, setScheduleId] = useState<string | null>(null);
+  const [checkInId, setCheckInId] = useState<string | null>(null);
   const selected = overlays.find((o) => o.employeeId === openId) ?? null;
 
   const allActions = useMemo(

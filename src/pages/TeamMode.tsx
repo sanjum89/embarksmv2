@@ -35,7 +35,7 @@ export default function TeamMode() {
     <div className="flex-1 overflow-y-auto p-6">
       <BackButton />
       <div className="mb-6 mt-2">
-        <h1 className="font-display text-2xl font-bold text-foreground">Team Mode</h1>
+        <h1 className="font-display text-2xl font-bold text-foreground">Team Home</h1>
         <p className="mt-1 text-sm text-muted-foreground">Your team at a glance — risks, rising stars, and what to do next.</p>
       </div>
 

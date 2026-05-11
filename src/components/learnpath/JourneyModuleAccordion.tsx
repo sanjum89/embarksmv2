@@ -114,6 +114,7 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                         STRETCH
                       </Badge>
                     )}
+                    {m.adaptation && <AdaptationBadge adaptation={m.adaptation} />}
                   </div>
                   <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                     <span>
@@ -201,5 +202,59 @@ function StatusPill({ status }: { status: JourneyModule["status"] }) {
     <Badge variant="outline" className="h-5 px-1.5 text-[0.65rem]">
       UP NEXT
     </Badge>
+  );
+}
+
+function AdaptationBadge({ adaptation }: { adaptation: ModuleAdaptation }) {
+  const label = formatAdaptationLabel(adaptation.adaptationType);
+  const tone: Record<ModuleAdaptation["adaptationType"], string> = {
+    full_module: "bg-muted text-muted-foreground border-border",
+    microlearning: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20",
+    diagnostic_only: "bg-violet-500/10 text-violet-700 dark:text-violet-300 border-violet-500/20",
+    evidence_required: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20",
+    skip_after_validation: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/20",
+  };
+  // Don't show full_module — it's the default and adds noise
+  if (adaptation.adaptationType === "full_module") return null;
+  const reason = sanitizeReason(adaptation.reason || "");
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          onClick={(e) => e.stopPropagation()}
+          className={cn(
+            "h-5 px-1.5 text-[0.65rem] rounded-md border inline-flex items-center gap-1 hover:opacity-80 transition-opacity",
+            tone[adaptation.adaptationType]
+          )}
+          aria-label={`${label} — why?`}
+        >
+          {label}
+          <Info className="h-2.5 w-2.5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-72 text-xs space-y-2"
+        side="top"
+        align="start"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="font-semibold text-sm text-foreground">{label}</div>
+        {reason && <p className="text-muted-foreground leading-relaxed">{reason}</p>}
+        {adaptation.competencyName && (
+          <div className="pt-1 border-t border-border space-y-0.5">
+            <div className="font-medium text-foreground">{adaptation.competencyName}</div>
+            {(adaptation.currentLevel != null || adaptation.requiredLevel != null) && (
+              <div className="text-muted-foreground">
+                Current level {adaptation.currentLevel ?? "—"} · Target level {adaptation.requiredLevel ?? "—"}
+              </div>
+            )}
+            {adaptation.validationNeeded && (
+              <div className="text-amber-600 dark:text-amber-400">Validation needed</div>
+            )}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
   );
 }

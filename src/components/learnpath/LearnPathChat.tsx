@@ -22,6 +22,7 @@ import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
 import { useLearnerJourney } from "@/hooks/useLearnerJourney";
+import { formatAdaptationLabel, sanitizeReason } from "@/lib/embarkAdaptation";
 import { SuggestionPillsRow, computeSuggestionPills, type SuggestionPill } from "./SuggestionPills";
 import { useEmbarkEngagement } from "@/hooks/useEmbarkEngagement";
 import { subscribeEngagementEvents } from "@/lib/embarkEngagementEvents";
@@ -130,12 +131,13 @@ export function EmbarkChat() {
         const upNextChapter =
           m.chapters.find((c) => c.status === "in_progress") ??
           m.chapters.find((c) => c.status === "not_started");
+        const a = m.adaptation;
         return {
           moduleId: m.code,
           moduleCode: m.code,
           title: substitute(m.title),
           trackName: track.name,
-          status: m.status, // up_next | in_progress | completed | locked
+          status: m.status,
           completedChapters: m.completedChapters,
           totalChapters: m.totalChapters,
           isCoreRequired: m.isCoreRequired,
@@ -145,6 +147,12 @@ export function EmbarkChat() {
           progress: m.pct,
           upNextChapterCode: upNextChapter?.code ?? null,
           upNextChapterTitle: upNextChapter ? substitute(upNextChapter.title) : null,
+          adaptationType: a?.adaptationType ?? null,
+          adaptationLabel: a ? formatAdaptationLabel(a.adaptationType) : null,
+          adaptationReason: a ? sanitizeReason(a.reason) : null,
+          adaptationCompetency: a?.competencyName ?? null,
+          adaptationCurrentLevel: a?.currentLevel ?? null,
+          adaptationRequiredLevel: a?.requiredLevel ?? null,
         };
       })
     );

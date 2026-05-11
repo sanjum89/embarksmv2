@@ -369,5 +369,6 @@ export function useLearnerJourney(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  return useMemo(() => state, [state]);
+  const refresh = useMemo(() => () => setRefreshTick((n) => n + 1), []);
+  return useMemo(() => ({ ...state, refresh }), [state, refresh]);
 }

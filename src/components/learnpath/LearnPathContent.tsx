@@ -47,7 +47,7 @@ export function EmbarkContent() {
 
   const employeeId =
     normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
-  const { journey } = useLearnerJourney(activeAccountId, employeeId);
+  const { journey, isLoading: journeyLoading } = useLearnerJourney(activeAccountId, employeeId);
   const hasJourney = !!journey && journey.tracks.some((t) => t.totalChapters > 0);
 
   const catalog = buildCatalog(normalizedAccount?.learningModules);

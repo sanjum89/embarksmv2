@@ -173,9 +173,15 @@ export function EmbarkContent() {
       const transcript = composeChapterTranscript(cohortChapterRow, lens);
       const minutes =
         lens === "diagnostic" ? 5 : lens === "evidence" ? 15 : cohortChapterRow.estimatedTimeMinutes || 25;
+      const displayTitle =
+        lens === "diagnostic"
+          ? "Quick diagnostic — 3 questions"
+          : lens === "evidence"
+            ? "Submit evidence — short written task"
+            : cohortChapterRow.chapterTitle;
       mod = {
         id: cohortChapterRow.chapterCode,
-        title: cohortChapterRow.chapterTitle,
+        title: displayTitle,
         contentType: "document",
         contentUrl: "",
         transcript,

@@ -6,6 +6,7 @@ import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { useLearnerJourney } from "@/hooks/useLearnerJourney";
 import { EmbarkJourneyView } from "./EmbarkJourneyView";
+import { EmbarkLoadingState } from "./EmbarkLoadingState";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";
 import { EmbarkAssessment } from "./LearnPathAssessment";
 import { EmbarkModeSelector } from "./LearnPathModeSelector";
@@ -46,7 +47,7 @@ export function EmbarkContent() {
 
   const employeeId =
     normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
-  const { journey } = useLearnerJourney(activeAccountId, employeeId);
+  const { journey, isLoading: journeyLoading } = useLearnerJourney(activeAccountId, employeeId);
   const hasJourney = !!journey && journey.tracks.some((t) => t.totalChapters > 0);
 
   const catalog = buildCatalog(normalizedAccount?.learningModules);
@@ -219,6 +220,9 @@ export function EmbarkContent() {
 
   // Empty state — no skill targets assigned and no cohort journey
   if (!hasSteps) {
+    if (journeyLoading) {
+      return <EmbarkLoadingState />;
+    }
     return (
       <div className="h-full overflow-y-auto">
         <div className="max-w-lg mx-auto px-6 py-10 space-y-6">

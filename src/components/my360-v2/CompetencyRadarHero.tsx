@@ -22,6 +22,10 @@ const TRACK_LABEL: Record<string, string> = {
   other_enablers: "Enablers",
 };
 
+const TRACK_FULL: Record<string, string> = {
+  certification_professional_standards: "Certification & Professional Standards (SMCR · Conduct Rules · CISI)",
+};
+
 export function CompetencyRadarHero({ catalog, current, required, proficiency, requirements }: Props) {
   const colors = useChartColors();
   const [drawerTrack, setDrawerTrack] = useState<string | null>(null);
@@ -106,12 +110,15 @@ export function CompetencyRadarHero({ catalog, current, required, proficiency, r
               <button
                 key={t.track}
                 onClick={() => setDrawerTrack(t.track)}
+                title={TRACK_FULL[t.track] ?? t.label}
                 className="group w-full text-left flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/40 hover:bg-muted/40 transition-colors"
               >
                 <span className={`h-10 w-0.5 rounded-full ${railTone}`} aria-hidden />
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium">{t.label}</div>
-                  <div className="text-xs text-muted-foreground">You {t.Current} · Target {t.Required}</div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {TRACK_FULL[t.track] ? TRACK_FULL[t.track] : `You ${t.Current} · Target ${t.Required}`}
+                  </div>
                 </div>
                 <div className={`text-sm font-semibold tabular-nums ${tone}`}>{gap >= 0 ? "+" : ""}{gap}</div>
               </button>

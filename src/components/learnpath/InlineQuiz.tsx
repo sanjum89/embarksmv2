@@ -227,6 +227,7 @@ export function extractInlineQuizzes(transcript: string): {
               options: q.options,
               correctIndex: typeof q.correctIndex === "number" ? q.correctIndex : 0,
               explanation: q.explanation,
+              chapterCode: typeof q.chapterCode === "string" ? q.chapterCode : undefined,
             })),
         });
       }

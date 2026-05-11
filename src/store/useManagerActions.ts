@@ -1,8 +1,8 @@
 /**
- * Optimistic action store for manager surfaces.
+ * Optimistic action store for manager surfaces (no external deps).
  * In-memory only — actions reset on reload. Persistence is a follow-up.
  */
-import { create } from "zustand";
+import { useSyncExternalStore } from "react";
 
 export interface ManagerNote {
   id: string;
@@ -13,7 +13,7 @@ export interface ManagerNote {
 }
 
 export interface ApprovalRecord {
-  id: string; // mirrors the ActionItem / AiPathChange id
+  id: string;
   decision: "approved" | "rejected" | "reverted";
   decided_at: string;
   decided_by: string;
@@ -27,43 +27,55 @@ export interface AssignedItem {
   created_at: string;
 }
 
-interface ManagerActionsState {
+interface State {
   notes: ManagerNote[];
   approvals: Record<string, ApprovalRecord>;
   assigned: AssignedItem[];
-  addNote: (n: Omit<ManagerNote, "id" | "created_at">) => void;
-  removeNote: (id: string) => void;
-  recordDecision: (id: string, decision: ApprovalRecord["decision"], by: string) => void;
-  clearDecision: (id: string) => void;
-  assign: (a: Omit<AssignedItem, "id" | "created_at">) => void;
-  reset: () => void;
 }
 
 const nowIso = () => new Date().toISOString();
 const newId = () => `m-${Math.random().toString(36).slice(2, 9)}`;
 
-export const useManagerActions = create<ManagerActionsState>((set) => ({
-  notes: [],
-  approvals: {},
-  assigned: [],
-  addNote: (n) =>
-    set((s) => ({
-      notes: [{ ...n, id: newId(), created_at: nowIso() }, ...s.notes],
-    })),
-  removeNote: (id) => set((s) => ({ notes: s.notes.filter((n) => n.id !== id) })),
-  recordDecision: (id, decision, by) =>
-    set((s) => ({
-      approvals: { ...s.approvals, [id]: { id, decision, decided_at: nowIso(), decided_by: by } },
-    })),
-  clearDecision: (id) =>
-    set((s) => {
-      const next = { ...s.approvals };
-      delete next[id];
-      return { approvals: next };
-    }),
-  assign: (a) =>
-    set((s) => ({
-      assigned: [{ ...a, id: newId(), created_at: nowIso() }, ...s.assigned],
-    })),
-  reset: () => set({ notes: [], approvals: {}, assigned: [] }),
-}));
+let state: State = { notes: [], approvals: {}, assigned: [] };
+const listeners = new Set<() => void>();
+
+function setState(next: State) {
+  state = next;
+  listeners.forEach((l) => l());
+}
+
+const subscribe = (l: () => void) => {
+  listeners.add(l);
+  return () => listeners.delete(l);
+};
+
+export const managerActions = {
+  addNote(n: Omit<ManagerNote, "id" | "created_at">) {
+    setState({ ...state, notes: [{ ...n, id: newId(), created_at: nowIso() }, ...state.notes] });
+  },
+  removeNote(id: string) {
+    setState({ ...state, notes: state.notes.filter((n) => n.id !== id) });
+  },
+  recordDecision(id: string, decision: ApprovalRecord["decision"], by: string) {
+    setState({
+      ...state,
+      approvals: { ...state.approvals, [id]: { id, decision, decided_at: nowIso(), decided_by: by } },
+    });
+  },
+  clearDecision(id: string) {
+    const next = { ...state.approvals };
+    delete next[id];
+    setState({ ...state, approvals: next });
+  },
+  assign(a: Omit<AssignedItem, "id" | "created_at">) {
+    setState({ ...state, assigned: [{ ...a, id: newId(), created_at: nowIso() }, ...state.assigned] });
+  },
+  reset() {
+    setState({ notes: [], approvals: {}, assigned: [] });
+  },
+};
+
+export function useManagerActions() {
+  const snapshot = useSyncExternalStore(subscribe, () => state, () => state);
+  return { ...snapshot, ...managerActions };
+}

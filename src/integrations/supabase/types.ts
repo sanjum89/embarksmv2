@@ -738,6 +738,54 @@ export type Database = {
           },
         ]
       }
+      competency_catalog: {
+        Row: {
+          account_id: string
+          competency_id: string
+          competency_name: string
+          created_at: string
+          display_order: number
+          evidence_needed: string | null
+          id: string
+          metadata: Json
+          risk_critical: boolean
+          short_description: string | null
+          supporting_skills: string[]
+          track_code: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          competency_id: string
+          competency_name: string
+          created_at?: string
+          display_order?: number
+          evidence_needed?: string | null
+          id?: string
+          metadata?: Json
+          risk_critical?: boolean
+          short_description?: string | null
+          supporting_skills?: string[]
+          track_code: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          competency_id?: string
+          competency_name?: string
+          created_at?: string
+          display_order?: number
+          evidence_needed?: string | null
+          id?: string
+          metadata?: Json
+          risk_critical?: boolean
+          short_description?: string | null
+          supporting_skills?: string[]
+          track_code?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       domains: {
         Row: {
           account_id: string
@@ -1116,6 +1164,51 @@ export type Database = {
           },
         ]
       }
+      module_competency_tags: {
+        Row: {
+          account_id: string
+          can_be_diagnostic_only: boolean
+          can_be_microlearning: boolean
+          can_be_skipped_after_validation: boolean
+          created_at: string
+          default_delivery: string
+          id: string
+          module_code: string
+          primary_competency_id: string
+          risk_critical: boolean
+          secondary_competency_ids: string[]
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          can_be_diagnostic_only?: boolean
+          can_be_microlearning?: boolean
+          can_be_skipped_after_validation?: boolean
+          created_at?: string
+          default_delivery?: string
+          id?: string
+          module_code: string
+          primary_competency_id: string
+          risk_critical?: boolean
+          secondary_competency_ids?: string[]
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          can_be_diagnostic_only?: boolean
+          can_be_microlearning?: boolean
+          can_be_skipped_after_validation?: boolean
+          created_at?: string
+          default_delivery?: string
+          id?: string
+          module_code?: string
+          primary_competency_id?: string
+          risk_critical?: boolean
+          secondary_competency_ids?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       nudge_cards: {
         Row: {
           account_id: string
@@ -1189,6 +1282,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      persona_competency_profiles: {
+        Row: {
+          account_id: string
+          competency_id: string
+          confidence: string
+          created_at: string
+          current_level: number
+          id: string
+          persona_code: string
+          short_rationale: string | null
+          updated_at: string
+          validation_needed: boolean
+        }
+        Insert: {
+          account_id: string
+          competency_id: string
+          confidence?: string
+          created_at?: string
+          current_level: number
+          id?: string
+          persona_code: string
+          short_rationale?: string | null
+          updated_at?: string
+          validation_needed?: boolean
+        }
+        Update: {
+          account_id?: string
+          competency_id?: string
+          confidence?: string
+          created_at?: string
+          current_level?: number
+          id?: string
+          persona_code?: string
+          short_rationale?: string | null
+          updated_at?: string
+          validation_needed?: boolean
+        }
+        Relationships: []
+      }
+      persona_module_adaptations: {
+        Row: {
+          account_id: string
+          adaptation_type: string
+          created_at: string
+          id: string
+          manager_note: string | null
+          module_code: string
+          persona_code: string
+          reason: string | null
+          updated_at: string
+          visible_to_learner: boolean
+        }
+        Insert: {
+          account_id: string
+          adaptation_type: string
+          created_at?: string
+          id?: string
+          manager_note?: string | null
+          module_code: string
+          persona_code: string
+          reason?: string | null
+          updated_at?: string
+          visible_to_learner?: boolean
+        }
+        Update: {
+          account_id?: string
+          adaptation_type?: string
+          created_at?: string
+          id?: string
+          manager_note?: string | null
+          module_code?: string
+          persona_code?: string
+          reason?: string | null
+          updated_at?: string
+          visible_to_learner?: boolean
+        }
+        Relationships: []
       }
       promotion_signals: {
         Row: {
@@ -1456,6 +1627,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      role_competency_requirements: {
+        Row: {
+          account_id: string
+          competency_id: string
+          created_at: string
+          id: string
+          required_level: number
+          role_cohort_code: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          competency_id: string
+          created_at?: string
+          id?: string
+          required_level: number
+          role_cohort_code: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          competency_id?: string
+          created_at?: string
+          id?: string
+          required_level?: number
+          role_cohort_code?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       role_progressions: {
         Row: {

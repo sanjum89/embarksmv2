@@ -1,55 +1,113 @@
-# Fix: cohort-chapter completion has no "Next Chapter" CTA and doesn't persist
+# Redesign: Team Home — a rich, editorial command centre
 
-## Root causes
+## What's wrong with the current page
 
-1. **Next-chapter lookup is skill-target-only.** In `src/components/learnpath/LearnPathContent.tsx`, the cohort-chapter render branch (≈line 272–335) computes `nextStep` from `allSteps`, which is built from `sortedTargets` (skill targets). For cohort learners (Rathbones), the active chapter isn't in `allSteps`, so `currentIdx === -1`, `nextStep` is undefined, `nextModuleId/Title` are not passed to `EmbarkModuleContent`, and the CompletionScreen renders only "Back to All Chapters".
+- **No team roster.** The single biggest gap: the manager can't actually see their 9 direct reports. Just a "Talent Signals" sliver showing 2–3 people.
+- **Raw IDs everywhere.** Cards display `rb-l1`, `rb-l2` instead of "Sophie Linden", "Maya Holloway" — names are available via `normalizedAccount.employeesById[id]`.
+- **Flat 3-column layout.** Three equally-weighted cards (Talent Signals / Recommended actions / Cohorts) compete for attention. No hierarchy.
+- **Generic KPI strip.** Plain numbers, no trend, no colour coding, no link to deeper view.
+- **Quick-action buttons** stranded at the bottom feel like an afterthought.
+- **Cramped + low-density.** Lots of whitespace doing nothing; nothing to actually do.
 
-2. **Mark-as-complete never writes `learner_progress`.** `handleMarkComplete` in `LearnPathModuleContent.tsx` only mutates skill targets. Cohort chapters have no `skillTargetId/stepId`, so nothing is persisted. The journey reads from `learner_progress` and stays "not_started" forever.
+## The redesigned page (single scrollable column, structured like an editorial dashboard)
 
-3. **Completion stats are blank.** `completionStats` derives Progress/Streak from the skill-target step list, so cohort chapters always show "—".
+```text
+┌──────────────────────────────────────────────────────────────────┐
+│  HERO HEADER                                                     │
+│  Team Home · Julian Ashcombe · Investment Management Director    │
+│  "9 associates · 2 rising · 2 need attention · 4 actions queued" │
+│  [ Schedule 1:1 ]  [ Send check-in ]  [ Action Centre → ]        │
+├──────────────────────────────────────────────────────────────────┤
+│  PULSE STRIP — 4 stat tiles with sparkline + delta + tone        │
+│  Active learners · Avg progress · Rising stars · Needs attention │
+├──────────────────────────────────────────────────────────────────┤
+│  TWO-COLUMN BODY  (8 / 4 grid on lg)                             │
+│  ┌──────────────────────────────────┐ ┌──────────────────────┐   │
+│  │ TEAM ROSTER (the new centerpiece)│ │ ACTION QUEUE         │   │
+│  │ Sortable table-cards, 1 per      │ │ Top 5 high-severity  │   │
+│  │ direct report:                   │ │ items, learner name, │   │
+│  │  ┌── Avatar + name + title  ────┐│ │ severity dot, why,   │   │
+│  │  │ Status pill   Progress ▓▓░░  ││ │ → opens drawer       │   │
+│  │  │ Last activity · CPD 14/35    ││ │                      │   │
+│  │  │ Headline story (1 line)      ││ │ ─────                │   │
+│  │  │ [Open profile] [Message]     ││ │ MY COHORTS           │   │
+│  │  └──────────────────────────────┘│ │ Cohort cards w/      │   │
+│  │  Filter: All / Rising / Risk /   │ │ pct, due date,       │   │
+│  │          On track / Check-in     │ │ learner count        │   │
+│  │  Sort: Status · Progress · Name  │ │                      │   │
+│  └──────────────────────────────────┘ └──────────────────────┘   │
+├──────────────────────────────────────────────────────────────────┤
+│  TEAM PROGRESS HEATMAP  (full-width)                             │
+│  Reuses RosterHeatmap — 9 learners × 8 modules                   │
+└──────────────────────────────────────────────────────────────────┘
+```
 
-## Plan
+## Section-by-section spec
 
-### A. Cohort-aware "next chapter" resolver
-Add a small helper that, given the journey + the current cohort chapter code, returns:
-- next chapter in the same module (in `displayOrder`), else
-- first chapter of the next module in the same track, else
-- first chapter of the next track,
-skipping locked chapters.
+### 1. Hero header (replaces the small `<h1>` block)
+- Two-line layout: small eyebrow ("Team Home"), large display title with the manager's name pulled from `useUser()`/account, subtitle that reads as one sentence sourced from KPIs ("9 associates · 2 rising stars · 2 need attention · 4 actions queued").
+- Quick-action buttons (Schedule 1:1, Send check-in, Action Centre) move up here — primary on the right, ghost styled, never wrapping awkwardly because they live in a `flex-wrap gap-2` row that breaks under the title on narrow widths.
 
-Use it in `LearnPathContent.tsx` for the chapter render branch when `cohortChapterCode` is set, overriding the `nextModuleId / nextModuleTitle / nextStepType="module" / nextSkillTargetId=undefined` props passed to `EmbarkModuleContent`.
+### 2. Pulse strip (replaces the KPI strip)
+- 4 tiles in a `grid-cols-2 md:grid-cols-4` grid. Each tile: tiny uppercase label, big number, a one-line micro-stat in muted text ("avg 47%", "+3 this week"), and a coloured left border or small icon chip — emerald / amber / rose / primary using semantic tokens, no raw colours.
+- Tiles are `Card`s with `p-5`, fixed min-height, `truncate` on micro-stat text to guarantee no overflow.
 
-`handleModuleComplete` will also call `notifyModuleCompleted` with the cohort-derived next chapter so the AI nudge / Action Centre flows stay correct.
+### 3. Team Roster (the new headline section)
+- One row per direct report (all 9 from `accountDefaults.demoAccount` whose `reportsTo === currentManagerEmployeeId`, falling back to all `LearnerOverlay` entries for the demo).
+- Card row layout (NOT a dense table — closer to a Linear-style list):
+  - **Left:** circular avatar (initials over a tinted background derived from name hash for consistent colour), name (`text-sm font-semibold`), title (`text-xs text-muted-foreground`).
+  - **Middle:** `LearnerStatusBadge`, then a 1-line headline (`truncate` with hover tooltip for full).
+  - **Right:** progress block — slim 4px bar showing `cells.filter(completed).length / cells.length`, percent number, and a secondary metric (CPD `hours_logged/hours_required` as a small chip with `at_risk`/`on_track` tone).
+  - **Far right:** kebab/inline actions — "Open" (opens existing `LearnerDrawer`) and "Message" (toast for now).
+- Sort + filter bar above the list:
+  - Filters as toggle pills: `All · Rising · At risk · Needs check-in · On track` (counts in subscript).
+  - Sort dropdown: Status, Progress, Last activity, Name.
+- Empty / search state for cleanliness.
+- Each row click opens the existing `<LearnerDrawer>` with the matching overlay (logic already in current page — preserve and extend).
 
-### B. Persist cohort chapter completion
-Extend `handleMarkComplete` (or add a `useChapterProgress` mutation hook) to upsert into `learner_progress` when the active item is a cohort chapter:
-- key: `(account_id, employee_id, cohort_id, module_code, chapter_code)`
-- set `status='completed'`, `completed_at=now()`, `started_at=coalesce(started_at, now())`
+### 4. Action Queue (right rail, top)
+- Same data source as today's "Recommended actions" but redesigned:
+  - Severity rendered as a **left coloured rail** on the card (4px) instead of a Badge — high = rose, medium = amber, low = muted.
+  - Show learner **name** (not ID), action title, and a one-line "why" excerpt.
+  - Max 5 items, with an "Open Action Centre →" link at the bottom.
+- Empty state: muted icon + "Nothing pressing right now."
 
-Trigger a journey refresh (re-fetch `useLearnerJourney`) so the heatmap, "0 of 3 chapters" counters, and module completion percentage update immediately.
+### 5. My Cohorts (right rail, bottom)
+- Each cohort as a card: title, role-cohort code as a small chip, due date if any, a 6-week mini progress bar, learner-count pill.
+- Falls back to the demo Investment Management Readiness cohort like today.
 
-To enable this, the chapter render branch needs to pass the active cohort context (account_id, employee_id, cohort_id, module_code, chapter_code) into `EmbarkModuleContent` as a single optional `cohortContext` prop. Currently the journey loads `cohort.id` and `module.code` already via `useLearnerJourney` and the chapter lookup loop in `LearnPathContent.tsx`.
+### 6. Team Progress Heatmap (full width, bottom)
+- Drop in the existing `<RosterHeatmap>` component (it already supports filters and learner click → drawer). Wire learners + modules from the same overlay/cohort data.
+- Wrapped in a `Card` with a header strip ("Module progress · Investment Management Readiness · Jan 2026") and a "Open cohort →" link.
 
-### C. Cohort-aware completion stats
-In `LearnPathModuleContent.tsx`, when `cohortContext` is present:
-- Progress text: `"<completedChaptersInModule>/<totalChaptersInModule>"` from the journey module
-- Streak: count consecutive completed chapters ending at current (within the journey track)
-- Assessment: keep "—" (assessments are a separate flow) but no longer always blank
-- Time Spent: keep current behaviour (session timer)
+## Visual language (the "million-dollar" feel)
 
-### D. Sweep — verify every module behaves the same
-After the fix, cycle through all 5 cohort modules in Business Knowledge for Clara and Theo and confirm:
-- Marking complete on any chapter shows "Continue to Next Chapter" with the correct title
-- After completion, the chapter heatmap dot turns green and module % advances
-- Last chapter in last module of last track correctly shows "Back to All Chapters" (no Continue)
+- **One typeface system:** display font (existing `font-display`) only for hero title and pulse-strip numbers. Everything else: default UI sans. No mid-weight bolds randomly sprinkled.
+- **Spacing rhythm:** consistent 24px / 16px / 12px / 8px scale. Page padding `p-8` on `lg`, `p-6` on `md`, `p-4` on mobile. Section vertical gap `space-y-8` (lg) / `space-y-6`.
+- **Card treatment:** subtle `border border-border bg-card`, `rounded-xl`, `shadow-sm`; never stacked with thick borders. Hover on roster rows: `hover:bg-muted/40` only — no transforms.
+- **Status colours:** strictly semantic — `emerald` (rising/on_track), `sky` (in_progress), `amber` (needs_check_in/at_risk_soft), `rose` (at_risk/overdue). Always token-based, dark-mode safe.
+- **Avatars:** initials in a circle, background colour = HSL derived from a hash of the name (stable). Foreground = `text-foreground` over light bg / `text-background` over dark.
+- **No emoji glyphs in the new chrome** (heatmap can keep its own check/dot system internally).
+- **Truncation everywhere:** `truncate` on every name/headline cell with `min-w-0` parent to guarantee no horizontal spillover.
+- **Responsive:** below `lg` the right rail (Action Queue + Cohorts) drops under the roster as full-width sections in the same order. Pulse strip becomes 2×2.
 
-I'll spot-check this in the preview after the changes land — no separate test file needed.
+## Files
 
-## Files touched
+- **Rewrite:** `src/pages/TeamMode.tsx` — composes the new sections.
+- **New:** `src/components/team-home/TeamHero.tsx` — title + summary line + quick actions.
+- **New:** `src/components/team-home/PulseStrip.tsx` — 4 KPI tiles.
+- **New:** `src/components/team-home/TeamRoster.tsx` — sortable, filterable list of `LearnerOverlay`s with avatar + progress + drawer trigger.
+- **New:** `src/components/team-home/RosterRow.tsx` — extracted single-row card.
+- **New:** `src/components/team-home/ActionQueue.tsx` — redesigned recommended-actions list.
+- **New:** `src/components/team-home/MyCohortsCard.tsx` — cohort cards.
+- **New:** `src/components/team-home/Avatar.tsx` — initials avatar with hashed colour (or use existing `Avatar` from shadcn if present — check first and reuse).
+- **Reuse as-is:** `LearnerStatusBadge`, `LearnerDrawer`, `RosterHeatmap`, `useAccountCohorts`, `getAllDemoOverlays`, `COHORT_MODULES_FALLBACK`, `useAccount`/`useUser` for name lookup.
+- No DB schema changes. No new routes. No data shape changes.
 
-- `src/lib/cohortNextChapter.ts` (new) — pure helper `findNextCohortChapter(journey, chapterCode)`
-- `src/components/learnpath/LearnPathContent.tsx` — use the helper in the cohort branch; pass `cohortContext` into `EmbarkModuleContent`
-- `src/components/learnpath/LearnPathModuleContent.tsx` — accept `cohortContext`; persist completion when present; cohort-aware progress/streak
-- `src/hooks/useLearnerJourney.ts` — expose a `refresh()` (already returns state — small addition) so completion can refetch
+## QA plan after build
 
-No DB schema changes. No design changes — only fixes broken interactions.
+1. Render at `lg` (1280) — verify two-column layout sits inside viewport, no horizontal scroll, no roster row overflow.
+2. Render at `md` (768) — right rail collapses, roster rows stack neatly.
+3. Render at `sm` (375) — pulse strip becomes 2×2, hero buttons wrap under title, roster rows stay tappable.
+4. Open every drawer trigger to confirm `LearnerDrawer` still works end-to-end.
+5. Confirm names (not IDs) appear in roster, action queue, talent rows.

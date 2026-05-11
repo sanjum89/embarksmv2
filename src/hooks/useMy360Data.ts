@@ -196,19 +196,24 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
 
       const cohortId = (enroll as any)?.cohort_id as string | undefined;
 
-      const [cohortRes, reqRes, ccRes, pcpRes, rcrRes] = await Promise.all([
-        cohortId
-          ? supabase
-              .from("cohorts")
-              .select("id,cohort_code,cohort_title,role_cohort_code,start_date,due_date,common_assessment_date")
-              .eq("id", cohortId)
-              .maybeSingle()
-          : Promise.resolve({ data: null } as any),
+      const cohortRes = cohortId
+        ? await supabase
+            .from("cohorts")
+            .select("id,cohort_code,cohort_title,role_cohort_code,start_date,due_date,common_assessment_date")
+            .eq("id", cohortId)
+            .maybeSingle()
+        : ({ data: null } as any);
+
+      const cohort = (cohortRes as any).data as CohortInfo | null;
+      const roleCohortCode =
+        cohort?.role_cohort_code ?? personaRoleProgression ?? personaDefaultRole ?? "assoc_im";
+
+      const [reqRes, ccRes, pcpRes, rcrRes] = await Promise.all([
         supabase
           .from("role_capability_requirements")
           .select("capability_code,required_level,criticality,source_module_codes")
           .eq("account_id", accountId)
-          .eq("role_cohort_code", "assoc_im"),
+          .eq("role_cohort_code", roleCohortCode),
         supabase
           .from("competency_catalog")
           .select("competency_id,track_code,competency_name,display_order,supporting_skills")
@@ -225,11 +230,8 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
           .from("role_competency_requirements")
           .select("competency_id,required_level")
           .eq("account_id", accountId)
-          .eq("role_cohort_code", "assoc_im"),
+          .eq("role_cohort_code", roleCohortCode),
       ]);
-
-      const cohort = (cohortRes as any).data as CohortInfo | null;
-      const roleCohortCode = cohort?.role_cohort_code ?? "assoc_im";
 
       const [modulesRes, adaptRes, progressRes] = await Promise.all([
         supabase

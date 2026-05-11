@@ -94,13 +94,15 @@ export default function NewMy360() {
 
           <CapabilityStrip buckets={buckets} />
 
-          <CohortPreviewCard
-            cohort={data.cohort}
-            modules={data.modules}
-            adaptations={data.adaptations}
-            progress={data.progress}
-            onJumpToTab={() => setTab("Cohort Journey")}
-          />
+          {hasCohortData && (
+            <CohortPreviewCard
+              cohort={data.cohort}
+              modules={data.modules}
+              adaptations={data.adaptations}
+              progress={data.progress}
+              onJumpToTab={() => setTab("Cohort Journey")}
+            />
+          )}
         </>
       )}
 

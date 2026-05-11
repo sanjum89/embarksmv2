@@ -1,49 +1,46 @@
-# Plan: Raised-hand response flow + real Microsoft Teams logo
+# Plan: Adaptive Paths in cohort hub + cohort picker restyle
 
-Two scoped UI-only changes. No DB, no routes, no business logic.
+## 1. Move Adaptive Paths into the cohort hub
 
-## 1. Action Centre — raised-hand response flow
+**Remove from Team Home** (`src/pages/TeamMode.tsx`):
+- Drop the `AdaptivePathsSankey` section and its import. Team Home keeps roster, action queue, cohorts card, and module heatmap only.
 
-**Problem:** Sophie Linden's raised hand currently shows generic Approve / Reject / Open CTAs, which don't fit the semantics of "asking for help".
+**Add to cohort hub** (`src/pages/ManagerCohortHub.tsx`):
+- Add a new tab `Adaptive Paths` to the existing `Roster / AI Changes / CPD` tab strip, sitting between AI Changes and CPD.
+- Tab content renders `AdaptivePathsSankey` using the cohort's `learners` and `modules` from `useManagerCohortData`, wired to `openLearner` for drawer.
+- Pending-adaptation count badge already lives on AI Changes; no duplicate badge here.
 
-**Changes** (`src/pages/ActionCentre.tsx` + new `RaisedHandDrawer.tsx`):
+**Use more screen real estate inside the hub**:
+- The hub page is currently full-width (no `max-w` wrapper). Sankey will inherit that, giving it ~600px more horizontal room than on Team Home.
+- Inside `AdaptivePathsSankey`:
+  - Add an optional `dense?: boolean` prop (default false). When false (cohort hub usage), increase the SVG row height, column width, and toolbar spacing so ribbons read clearly across the full width.
+  - Lift the learner picker to allow up to 6 selected learners (was 4) when `dense=false`.
+  - Toolbar wraps onto one row at >=lg, two rows below.
+- Team Home no longer renders this component, so existing call sites are unaffected.
 
-- For rows where `a.group === "raised_hand"`, replace the Approve / Reject / Open buttons with:
-  - `Reply` (primary) — opens the new RaisedHandDrawer
-  - `Open` (ghost) — keeps existing learner drawer behaviour
-- Add a `learner_message` field to raised-hand action items in `managerDemoOverlay.ts` (Sophie's seeded message: the bid/ask question, plus a short "I tried the glossary but I'm still confused — could we walk through it?" snippet) so the drawer has something realistic to display.
+## 2. Restyle the cohort picker (`/manager/cohorts`)
 
-**RaisedHandDrawer (new, `src/components/manager-hub/RaisedHandDrawer.tsx`)**, mirrors LearnerDrawer styling:
-- Header: learner avatar/name/title, module title, "Raised 3h ago" timestamp, severity pill.
-- "Their message" panel: quoted block showing `learner_message`.
-- "Your reply" textarea with 3 quick-reply chips that pre-fill the textarea ("I'll record a quick Loom", "Let's cover this in our 1:1", "Here's a primer link").
-- Action row (after reply is sent or alongside):
-  - **Schedule 1:1** → opens existing `Schedule1on1Dialog` pre-selected to this learner
-  - **Send a check-in** → opens existing `SendCheckInDialog` pre-selected to this learner
-  - **Share a resource** (ghost, demo toast for now)
-  - **Mark resolved** (ghost, uses existing `recordDecision(id, "resolved", user.name)` — extend the decision union with `"resolved"`)
-- Footer: timeline of prior interactions (pulled from overlay `timeline` filtered to this learner — read-only).
+`src/pages/ManagerCohortPicker.tsx` still uses the older "card grid with raw bg-card tiles" look. Bring it in line with the Team Home / Program Context language used elsewhere:
 
-The 1:1 / check-in dialogs already accept an open/close pattern; extend their props with optional `defaultLearnerId` to skip step 1 when launched from the drawer.
+- Page wrapper: `max-w-[1400px] mx-auto`, consistent `p-4 sm:p-6 lg:p-8`.
+- Header block: same pattern as `TeamHero` lite — `font-display text-2xl font-bold` title, muted subtitle, and a small pulse-style stat strip showing `Cohorts`, `Active learners`, `Needs attention` derived from overlays where available (fallback zeros).
+- Cohort tiles:
+  - Use `rounded-xl border border-border bg-background` (not `bg-card`) to match panel language.
+  - Two-line layout: title + role code chip on top, footer row with `Layers` icon + learner count + progress pill + chevron.
+  - Hover: `hover:border-primary/40 hover:bg-muted/30`, subtle transition.
+  - Grid: `sm:grid-cols-2 xl:grid-cols-3`, `gap-4`.
+- Empty/loading states use the same muted-foreground typography as cohort hub.
 
-**Out of scope:** persisting replies, real Teams send, manager threading.
+No route or data-shape changes; visual + structural only.
 
-## 2. Real Microsoft Teams logo (replace pill)
+## Files to touch
 
-**Changes** (`src/components/team-home/TeamsBadge.tsx`):
+- `src/pages/TeamMode.tsx` — remove Sankey section + import.
+- `src/pages/ManagerCohortHub.tsx` — add `Adaptive Paths` tab and render Sankey.
+- `src/components/team-home/AdaptivePathsSankey.tsx` — add `dense` prop, larger default sizing, allow up to 6 learners when not dense.
+- `src/pages/ManagerCohortPicker.tsx` — restyle to match panel design language.
 
-- Replace the dot + "Teams" text pill with the official Microsoft Teams glyph (small inline SVG — the four-tile "T" mark in its native purple `#4B53BD`) sized `h-4 w-4`.
-- Two render modes via prop:
-  - `variant="icon"` (default for inline use in slot rows / channel pickers / availability headers) — logo only, with `title="Microsoft Teams integration"` for accessibility.
-  - `variant="chip"` (used where a label is currently shown, e.g. "Microsoft Teams" header in dialog step 1) — logo + "Microsoft Teams" wordmark in a subtle bordered chip, no purple fill background, so it reads as an integration mark not a status pill.
-- Keep the component name `TeamsBadge` and existing import paths so callers don't change; just update the call sites that currently pass `label="Microsoft Teams"` to use `variant="chip"`.
+## Out of scope
 
-SVG will be inlined in the component (no asset file needed) — 4-square Teams glyph in HSL-equivalent of `#4B53BD`, with white inner "T".
-
-**Files touched:**
-- `src/pages/ActionCentre.tsx` (CTA swap for raised_hand rows)
-- `src/components/manager-hub/RaisedHandDrawer.tsx` (new)
-- `src/data/managerDemoOverlay.ts` (add `learner_message` to raised-hand action; add `"resolved"` to decision union if needed)
-- `src/store/useManagerActions.ts` (extend decision type only)
-- `src/components/team-home/TeamsBadge.tsx` (real logo + variants)
-- `src/components/team-home/Schedule1on1Dialog.tsx`, `SendCheckInDialog.tsx` (accept optional `defaultLearnerId`; swap `<TeamsBadge label="Microsoft Teams" />` → `<TeamsBadge variant="chip" />`)
+- No changes to `AdaptivePathDrawer`, overlay data, or routing.
+- No new business logic; presentation only.

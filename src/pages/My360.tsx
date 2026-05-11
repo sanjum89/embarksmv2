@@ -205,7 +205,10 @@ export default function My360() {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-display text-xl font-bold text-foreground">My 360</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-display text-xl font-bold text-foreground">My 360</h3>
+                  <span className="text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">Legacy</span>
+                </div>
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   Your profile and how to progress
                 </p>

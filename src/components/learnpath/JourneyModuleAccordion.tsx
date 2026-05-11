@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { EmbarkChapterRow } from "./LearnPathChapterRow";
 import type { JourneyModule, JourneyTrack } from "@/hooks/useLearnerJourney";
-import { formatAdaptationLabel, sanitizeReason, type ModuleAdaptation } from "@/lib/embarkAdaptation";
+import { formatAdaptationLabel, sanitizeReason, adaptationExplanation, type ModuleAdaptation } from "@/lib/embarkAdaptation";
 import type { UnifiedStep } from "./LearnPathContent";
 import type { StepType } from "@/types/learning";
 

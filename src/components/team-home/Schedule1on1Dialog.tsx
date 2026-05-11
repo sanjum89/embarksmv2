@@ -17,11 +17,12 @@ import { getAvailability, type Slot } from "@/data/teamsAvailability";
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  defaultLearnerId?: string | null;
 }
 
 type Step = "learner" | "time" | "confirm";
 
-export function Schedule1on1Dialog({ open, onOpenChange }: Props) {
+export function Schedule1on1Dialog({ open, onOpenChange, defaultLearnerId }: Props) {
   const { normalizedAccount } = useAccount();
   const employeesById = normalizedAccount?.employeesById ?? {};
   const overlays = useMemo(() => getAllDemoOverlays(), []);
@@ -37,9 +38,9 @@ export function Schedule1on1Dialog({ open, onOpenChange }: Props) {
     [overlays, employeesById]
   );
 
-  const [step, setStep] = useState<Step>("learner");
+  const [step, setStep] = useState<Step>(defaultLearnerId ? "time" : "learner");
   const [search, setSearch] = useState("");
-  const [pickedId, setPickedId] = useState<string | null>(null);
+  const [pickedId, setPickedId] = useState<string | null>(defaultLearnerId ?? null);
   const [pickedSlot, setPickedSlot] = useState<{ dayIdx: number; time: string } | null>(null);
   const [onlyFree, setOnlyFree] = useState(true);
   const [duration, setDuration] = useState(30);
@@ -50,9 +51,9 @@ export function Schedule1on1Dialog({ open, onOpenChange }: Props) {
   const availability = useMemo(() => (pickedId ? getAvailability(pickedId) : []), [pickedId]);
 
   const reset = () => {
-    setStep("learner");
+    setStep(defaultLearnerId ? "time" : "learner");
     setSearch("");
-    setPickedId(null);
+    setPickedId(defaultLearnerId ?? null);
     setPickedSlot(null);
     setOnlyFree(true);
     setDuration(30);
@@ -91,7 +92,7 @@ export function Schedule1on1Dialog({ open, onOpenChange }: Props) {
       <DialogContent className="max-w-2xl gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
           <div className="flex items-center gap-2">
-            {step !== "learner" && (
+            {step !== "learner" && !(step === "time" && defaultLearnerId) && (
               <Button variant="ghost" size="sm" className="-ml-2 h-7 px-2" onClick={() => setStep(step === "confirm" ? "time" : "learner")}>
                 <ChevronLeft className="mr-1 h-3.5 w-3.5" /> Back
               </Button>

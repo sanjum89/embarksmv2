@@ -3,15 +3,18 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Check, X, Undo2, Sparkles } from "lucide-react";
+import { Check, X, Undo2, Sparkles, MessageSquareReply } from "lucide-react";
 import { toast } from "sonner";
 import BackButton from "@/components/layout/BackButton";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
-import { getAllDemoOverlays, COHORT_MODULES_FALLBACK } from "@/data/managerDemoOverlay";
+import { getAllDemoOverlays, COHORT_MODULES_FALLBACK, type ActionItem } from "@/data/managerDemoOverlay";
 import { useManagerActions } from "@/store/useManagerActions";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";
+import { RaisedHandDrawer } from "@/components/manager-hub/RaisedHandDrawer";
 import { AIExplainPopover } from "@/components/manager-hub/AIExplainPopover";
+import { Schedule1on1Dialog } from "@/components/team-home/Schedule1on1Dialog";
+import { SendCheckInDialog } from "@/components/team-home/SendCheckInDialog";
 
 const GROUP_LABEL: Record<string, string> = {
   raised_hand: "Raised hands",
@@ -32,6 +35,9 @@ export default function ActionCentre() {
   const titleOf = (id: string) => employeesById[id]?.title || "Learner";
   const { approvals, recordDecision, clearDecision } = useManagerActions();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [handAction, setHandAction] = useState<ActionItem | null>(null);
+  const [scheduleId, setScheduleId] = useState<string | null>(null);
+  const [checkInId, setCheckInId] = useState<string | null>(null);
   const selected = overlays.find((o) => o.employeeId === openId) ?? null;
 
   const allActions = useMemo(
@@ -105,23 +111,47 @@ export default function ActionCentre() {
                           <p className="text-xs text-muted-foreground">{a.detail}</p>
                         </div>
                         <div className="flex items-center gap-1">
-                          {!decision ? (
+                          {a.group === "raised_hand" ? (
                             <>
-                              <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { recordDecision(a.id, "approved", user.name); toast.success("Approved"); }}>
-                                <Check className="mr-1 h-3 w-3" /> Approve
+                              <Button
+                                size="sm"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => setHandAction(a)}
+                                disabled={decision === "resolved"}
+                              >
+                                <MessageSquareReply className="mr-1 h-3 w-3" />
+                                {decision === "resolved" ? "Resolved" : "Reply"}
                               </Button>
-                              <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { recordDecision(a.id, "rejected", user.name); toast.success("Rejected"); }}>
-                                <X className="mr-1 h-3 w-3" /> Reject
+                              {decision === "resolved" && (
+                                <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => { clearDecision(a.id); toast.success("Reopened"); }}>
+                                  Reopen
+                                </Button>
+                              )}
+                              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setOpenId(a.employeeId)}>
+                                Open
                               </Button>
                             </>
                           ) : (
-                            <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => { clearDecision(a.id); toast.success("Cleared"); }}>
-                              Undo
-                            </Button>
+                            <>
+                              {!decision ? (
+                                <>
+                                  <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { recordDecision(a.id, "approved", user.name); toast.success("Approved"); }}>
+                                    <Check className="mr-1 h-3 w-3" /> Approve
+                                  </Button>
+                                  <Button size="sm" variant="outline" className="h-7 px-2 text-xs" onClick={() => { recordDecision(a.id, "rejected", user.name); toast.success("Rejected"); }}>
+                                    <X className="mr-1 h-3 w-3" /> Reject
+                                  </Button>
+                                </>
+                              ) : (
+                                <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => { clearDecision(a.id); toast.success("Cleared"); }}>
+                                  Undo
+                                </Button>
+                              )}
+                              <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setOpenId(a.employeeId)}>
+                                Open
+                              </Button>
+                            </>
                           )}
-                          <Button size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => setOpenId(a.employeeId)}>
-                            Open
-                          </Button>
                         </div>
                       </div>
                     </Card>
@@ -184,6 +214,26 @@ export default function ActionCentre() {
         learner={selected ? { employeeId: selected.employeeId, name: nameOf(selected.employeeId), title: titleOf(selected.employeeId) } : null}
         overlay={selected}
         modules={COHORT_MODULES_FALLBACK.map((m) => ({ module_code: m.module_code, module_title: m.module_title, progression_stage: m.progression_stage }))}
+      />
+
+      <RaisedHandDrawer
+        open={!!handAction}
+        onOpenChange={(o) => !o && setHandAction(null)}
+        action={handAction}
+        learner={handAction ? { employeeId: handAction.employeeId, name: nameOf(handAction.employeeId), title: titleOf(handAction.employeeId) } : null}
+        onScheduleOneOnOne={(id) => setScheduleId(id)}
+        onSendCheckIn={(id) => setCheckInId(id)}
+      />
+
+      <Schedule1on1Dialog
+        open={!!scheduleId}
+        onOpenChange={(o) => !o && setScheduleId(null)}
+        defaultLearnerId={scheduleId}
+      />
+      <SendCheckInDialog
+        open={!!checkInId}
+        onOpenChange={(o) => !o && setCheckInId(null)}
+        defaultLearnerId={checkInId}
       />
     </div>
   );

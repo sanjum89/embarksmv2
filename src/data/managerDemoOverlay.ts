@@ -45,6 +45,10 @@ export interface ActionItem {
   detail: string;
   severity: "low" | "medium" | "high";
   age: string; // e.g. "2h ago"
+  /** For raised_hand actions: the learner's verbatim message to the manager. */
+  learner_message?: string;
+  /** Optional module context (title) the action relates to. */
+  module_title?: string;
 }
 
 export interface CpdRow {
@@ -144,6 +148,9 @@ function buildOverlay(): Record<string, LearnerOverlay> {
         detail: "Stuck on the difference between bid/ask spread and dealer markup.",
         severity: "medium",
         age: "3h ago",
+        module_title: "Markets & Asset Classes",
+        learner_message:
+          "Hi Julian — I'm stuck on the bid/ask vs dealer markup section. I tried the glossary and re-watched the short, but I can't quite see the difference when a dealer is also the market maker. Could we walk through a worked example? Happy to do it async or in our 1:1 — whichever works.",
       },
     ],
     cpd: { employeeId: "rb-l1", hours_logged: 4, hours_required: 35, status: "at_risk", evidence_count: 1 },

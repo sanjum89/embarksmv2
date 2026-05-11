@@ -16,6 +16,7 @@ import { getAllDemoOverlays } from "@/data/managerDemoOverlay";
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  defaultLearnerId?: string | null;
 }
 
 type Step = "recipients" | "template" | "send";
@@ -44,7 +45,7 @@ const TEMPLATES = [
   },
 ];
 
-export function SendCheckInDialog({ open, onOpenChange }: Props) {
+export function SendCheckInDialog({ open, onOpenChange, defaultLearnerId }: Props) {
   const { normalizedAccount } = useAccount();
   const employeesById = normalizedAccount?.employeesById ?? {};
   const overlays = useMemo(() => getAllDemoOverlays(), []);
@@ -64,18 +65,19 @@ export function SendCheckInDialog({ open, onOpenChange }: Props) {
     [overlays, employeesById]
   );
 
-  const [step, setStep] = useState<Step>("recipients");
+  const initialPicked = () => new Set<string>(defaultLearnerId ? [defaultLearnerId] : []);
+  const [step, setStep] = useState<Step>(defaultLearnerId ? "template" : "recipients");
   const [search, setSearch] = useState("");
-  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [picked, setPicked] = useState<Set<string>>(initialPicked());
   const [templateId, setTemplateId] = useState(TEMPLATES[0].id);
   const [subject, setSubject] = useState(TEMPLATES[0].subject);
   const [body, setBody] = useState(TEMPLATES[0].body);
   const [channel, setChannel] = useState<"teams" | "inapp">("teams");
 
   const reset = () => {
-    setStep("recipients");
+    setStep(defaultLearnerId ? "template" : "recipients");
     setSearch("");
-    setPicked(new Set());
+    setPicked(initialPicked());
     setTemplateId(TEMPLATES[0].id);
     setSubject(TEMPLATES[0].subject);
     setBody(TEMPLATES[0].body);
@@ -134,7 +136,7 @@ export function SendCheckInDialog({ open, onOpenChange }: Props) {
       <DialogContent className="max-w-2xl gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
           <div className="flex items-center gap-2">
-            {step !== "recipients" && (
+            {step !== "recipients" && !(step === "template" && defaultLearnerId) && (
               <Button variant="ghost" size="sm" className="-ml-2 h-7 px-2" onClick={() => setStep(step === "send" ? "template" : "recipients")}>
                 <ChevronLeft className="mr-1 h-3.5 w-3.5" /> Back
               </Button>

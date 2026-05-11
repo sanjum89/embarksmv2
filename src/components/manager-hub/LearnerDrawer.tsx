@@ -18,7 +18,7 @@ import { useUser } from "@/contexts/UserContext";
 import { LearnerStatusBadge } from "./LearnerStatusBadge";
 import { AIExplainPopover } from "./AIExplainPopover";
 import { useManagerActions } from "@/store/useManagerActions";
-import type { LearnerOverlay } from "@/data/managerDemoOverlay";
+import { COHORT_MODULES_FALLBACK, type LearnerOverlay } from "@/data/managerDemoOverlay";
 import type { CohortModuleCol } from "@/hooks/useManagerCohortData";
 import { cn } from "@/lib/utils";
 

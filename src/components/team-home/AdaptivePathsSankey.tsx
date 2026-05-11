@@ -174,7 +174,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
               </button>
             );
           })}
-          <span className="ml-1 text-[10px] text-muted-foreground">{selected.length}/4</span>
+          <span className="ml-1 text-[10px] text-muted-foreground">{selected.length}/{MAX_SELECTED}</span>
         </div>
 
         <div className="ml-auto flex flex-wrap items-center gap-2">

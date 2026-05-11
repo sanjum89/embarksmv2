@@ -308,7 +308,7 @@ export function EmbarkContent() {
     // auto-advances into the first reopened chapter (or the next module).
     let diagNext: { id: string; title: string } | null = null;
     if (diagModuleCode) {
-      const recorded = diagnosticReopens.get(diagModuleCode);
+      const recorded = diagState[diagModuleCode];
       if (recorded) {
         diagNext = computeDiagnosticNext(Array.from(recorded.reopened));
       }

@@ -210,7 +210,14 @@ export function EmbarkContent() {
     );
   }
 
-  // Empty state — no skill targets assigned
+  // Cohort journey learners (e.g., Rathbones) — show journey as default view
+  if (hasJourney) {
+    return (
+      <EmbarkJourneyView legacySteps={allSteps} activeChapterId={activeModuleId} />
+    );
+  }
+
+  // Empty state — no skill targets assigned and no cohort journey
   if (!hasSteps) {
     return (
       <div className="h-full overflow-y-auto">

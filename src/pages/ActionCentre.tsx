@@ -3,15 +3,18 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Check, X, Undo2, Sparkles } from "lucide-react";
+import { Check, X, Undo2, Sparkles, HandHelping, MessageSquareReply } from "lucide-react";
 import { toast } from "sonner";
 import BackButton from "@/components/layout/BackButton";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
-import { getAllDemoOverlays, COHORT_MODULES_FALLBACK } from "@/data/managerDemoOverlay";
+import { getAllDemoOverlays, COHORT_MODULES_FALLBACK, type ActionItem } from "@/data/managerDemoOverlay";
 import { useManagerActions } from "@/store/useManagerActions";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";
+import { RaisedHandDrawer } from "@/components/manager-hub/RaisedHandDrawer";
 import { AIExplainPopover } from "@/components/manager-hub/AIExplainPopover";
+import { Schedule1on1Dialog } from "@/components/team-home/Schedule1on1Dialog";
+import { SendCheckInDialog } from "@/components/team-home/SendCheckInDialog";
 
 const GROUP_LABEL: Record<string, string> = {
   raised_hand: "Raised hands",

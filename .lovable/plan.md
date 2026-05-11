@@ -1,46 +1,26 @@
-# Plan: Adaptive Paths in cohort hub + cohort picker restyle
+# Fix: Adaptive Paths data must match Roster
 
-## 1. Move Adaptive Paths into the cohort hub
+## Root cause
 
-**Remove from Team Home** (`src/pages/TeamMode.tsx`):
-- Drop the `AdaptivePathsSankey` section and its import. Team Home keeps roster, action queue, cohorts card, and module heatmap only.
+Both views receive the same `learners` and live `modules` (29 catalog rows like `bk1.*`, `tk1.*`).
+- `RosterHeatmap` reads overlay cells **by index** — `o.cells[i]`. Overlays only have 8 cells, so the first 8 catalog columns get statuses/adaptations and the rest render as "not started". This is what the user sees and treats as truth.
+- `AdaptivePathsSankey` reads overlay cells **by `module_code`** (`cellMap.get(m.module_code)`). Overlay codes are `mod.assoc_im.*` and never appear in the live catalog, so nothing matches → ribbons show all-grey with no AI adaptations and no nodes for path changes.
 
-**Add to cohort hub** (`src/pages/ManagerCohortHub.tsx`):
-- Add a new tab `Adaptive Paths` to the existing `Roster / AI Changes / CPD` tab strip, sitting between AI Changes and CPD.
-- Tab content renders `AdaptivePathsSankey` using the cohort's `learners` and `modules` from `useManagerCohortData`, wired to `openLearner` for drawer.
-- Pending-adaptation count badge already lives on AI Changes; no duplicate badge here.
+## Fix
 
-**Use more screen real estate inside the hub**:
-- The hub page is currently full-width (no `max-w` wrapper). Sankey will inherit that, giving it ~600px more horizontal room than on Team Home.
-- Inside `AdaptivePathsSankey`:
-  - Add an optional `dense?: boolean` prop (default false). When false (cohort hub usage), increase the SVG row height, column width, and toolbar spacing so ribbons read clearly across the full width.
-  - Lift the learner picker to allow up to 6 selected learners (was 4) when `dense=false`.
-  - Toolbar wraps onto one row at >=lg, two rows below.
-- Team Home no longer renders this component, so existing call sites are unaffected.
+Align the Sankey's lookup with the heatmap so the same data drives both:
 
-## 2. Restyle the cohort picker (`/manager/cohorts`)
+1. **`src/components/team-home/AdaptivePathsSankey.tsx`** — change segment construction:
+   - Drop the `module_code` map for overlay cells.
+   - Iterate the spine `modules` by index and read `overlay.cells[i]` directly (same as `RosterHeatmap`).
+   - For `pathChanges`, also resolve by index: build a `Map<positionInOverlay, AiPathChange>` from the overlay's own `cells` order (overlay `pathChanges[].module_code` matches overlay `cells[].module_code`), then attach to the same index `i`.
+   - Tooltip and drawer continue to show the overlay's original `module_title` (from the `pathChange` itself) so labels remain correct.
 
-`src/pages/ManagerCohortPicker.tsx` still uses the older "card grid with raw bg-card tiles" look. Bring it in line with the Team Home / Program Context language used elsewhere:
+2. **Module column count**: cap the rendered spine to `min(modules.length, overlay.cells.length)` so the diagram doesn't carry 21 trailing empty columns. Use the live `module_title` for labels (matches the heatmap headers). Add a small `"showing first N of M modules"` hint in the toolbar when truncation happens.
 
-- Page wrapper: `max-w-[1400px] mx-auto`, consistent `p-4 sm:p-6 lg:p-8`.
-- Header block: same pattern as `TeamHero` lite — `font-display text-2xl font-bold` title, muted subtitle, and a small pulse-style stat strip showing `Cohorts`, `Active learners`, `Needs attention` derived from overlays where available (fallback zeros).
-- Cohort tiles:
-  - Use `rounded-xl border border-border bg-background` (not `bg-card`) to match panel language.
-  - Two-line layout: title + role code chip on top, footer row with `Layers` icon + learner count + progress pill + chevron.
-  - Hover: `hover:border-primary/40 hover:bg-muted/30`, subtle transition.
-  - Grid: `sm:grid-cols-2 xl:grid-cols-3`, `gap-4`.
-- Empty/loading states use the same muted-foreground typography as cohort hub.
-
-No route or data-shape changes; visual + structural only.
-
-## Files to touch
-
-- `src/pages/TeamMode.tsx` — remove Sankey section + import.
-- `src/pages/ManagerCohortHub.tsx` — add `Adaptive Paths` tab and render Sankey.
-- `src/components/team-home/AdaptivePathsSankey.tsx` — add `dense` prop, larger default sizing, allow up to 6 learners when not dense.
-- `src/pages/ManagerCohortPicker.tsx` — restyle to match panel design language.
+No data-layer or schema changes; `useManagerCohortData`, overlays, and the heatmap are untouched. Roster behavior stays exactly as-is.
 
 ## Out of scope
 
-- No changes to `AdaptivePathDrawer`, overlay data, or routing.
-- No new business logic; presentation only.
+- Reconciling overlay `module_code`s with the real catalog (would need overlay rewrite).
+- Changing `RosterHeatmap` lookup semantics.

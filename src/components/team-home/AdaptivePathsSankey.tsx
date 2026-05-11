@@ -72,31 +72,47 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
     });
   };
 
-  // Build per-learner segments aligned to spine
+  // Cap the spine to overlay length so we don't render trailing empty columns
+  const overlayLen = Math.max(
+    0,
+    ...selected
+      .map((id) => learners.find((l) => l.employeeId === id)?.overlay.cells.length ?? 0)
+  );
+  const spineLen = overlayLen > 0 ? Math.min(modules.length, overlayLen) : modules.length;
+  const spineModules = useMemo(() => modules.slice(0, spineLen), [modules, spineLen]);
+  const truncated = modules.length > spineLen;
+
+  // Build per-learner segments aligned to spine by INDEX (matches RosterHeatmap)
   const rows = useMemo(() => {
     return selected
       .map((id) => learners.find((l) => l.employeeId === id))
       .filter((x): x is LearnerInput => !!x)
       .map((l) => {
-        const changeMap = new Map(l.overlay.pathChanges.map((p) => [p.module_code, p]));
-        const cellMap = new Map(l.overlay.cells.map((c) => [c.module_code, c]));
-        const segments: Segment[] = modules.map((m) => {
-          const cell = cellMap.get(m.module_code);
-          const change = changeMap.get(m.module_code);
+        // overlay pathChanges keyed to overlay's own cell index
+        const overlayCellIndexByCode = new Map(
+          l.overlay.cells.map((c, idx) => [c.module_code, idx])
+        );
+        const changeByIndex = new Map<number, AiPathChange>();
+        for (const pc of l.overlay.pathChanges) {
+          const idx = overlayCellIndexByCode.get(pc.module_code);
+          if (idx != null) changeByIndex.set(idx, pc);
+        }
+        const segments: Segment[] = spineModules.map((m, i) => {
+          const cell = l.overlay.cells[i];
           return {
             status: cell?.status ?? "not_started",
             adaptation: cell?.adaptation,
-            pathChange: change,
+            pathChange: changeByIndex.get(i),
             module: m,
           };
         });
         return { learner: l, segments };
       });
-  }, [selected, learners, modules]);
+  }, [selected, learners, spineModules]);
 
   const baselineRow = useMemo(() => ({
-    segments: modules.map<Segment>((m) => ({ status: "completed", adaptation: null, module: m })),
-  }), [modules]);
+    segments: spineModules.map<Segment>((m) => ({ status: "completed", adaptation: null, module: m })),
+  }), [spineModules]);
 
   const visibleRows = compare === "side" ? rows.slice(0, 2) : compare === "baseline" ? rows.slice(0, 1) : rows;
 
@@ -106,7 +122,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
   const PADDING_X = dense ? 16 : 24;
   const PADDING_TOP = dense ? 36 : 44;
   const NODE_W = 14;
-  const totalWidth = PADDING_X * 2 + modules.length * COL_W;
+  const totalWidth = PADDING_X * 2 + spineModules.length * COL_W;
   const headerOffset = compare === "baseline" ? ROW_H : 0;
   const totalHeight = PADDING_TOP + headerOffset + visibleRows.length * ROW_H + 16;
 
@@ -175,6 +191,11 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
             );
           })}
           <span className="ml-1 text-[10px] text-muted-foreground">{selected.length}/{MAX_SELECTED}</span>
+          {truncated && (
+            <span className="ml-2 text-[10px] text-muted-foreground/80">
+              Showing first {spineLen} of {modules.length} modules
+            </span>
+          )}
         </div>
 
         <div className="ml-auto flex flex-wrap items-center gap-2">
@@ -226,7 +247,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
       <div className="overflow-x-auto p-4">
         <svg width={totalWidth} height={totalHeight} className="block">
           {/* Spine column headers + nodes */}
-          {modules.map((m, ci) => {
+          {spineModules.map((m, ci) => {
             const x = PADDING_X + ci * COL_W + COL_W / 2;
             return (
               <g key={m.module_code}>
@@ -265,7 +286,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
               <text x={PADDING_X} y={PADDING_TOP + 14} className="fill-muted-foreground text-[10px]">
                 Baseline path
               </text>
-              {modules.slice(0, -1).map((_, i) => {
+              {spineModules.slice(0, -1).map((_, i) => {
                 const x1 = PADDING_X + i * COL_W + COL_W / 2 + NODE_W / 2;
                 const x2 = PADDING_X + (i + 1) * COL_W + COL_W / 2 - NODE_W / 2;
                 const y = PADDING_TOP + 24;

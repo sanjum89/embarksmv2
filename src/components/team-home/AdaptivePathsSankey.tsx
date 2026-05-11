@@ -122,7 +122,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
   const PADDING_X = dense ? 16 : 24;
   const PADDING_TOP = dense ? 36 : 44;
   const NODE_W = 14;
-  const totalWidth = PADDING_X * 2 + modules.length * COL_W;
+  const totalWidth = PADDING_X * 2 + spineModules.length * COL_W;
   const headerOffset = compare === "baseline" ? ROW_H : 0;
   const totalHeight = PADDING_TOP + headerOffset + visibleRows.length * ROW_H + 16;
 

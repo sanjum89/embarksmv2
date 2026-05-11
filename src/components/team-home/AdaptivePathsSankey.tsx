@@ -191,6 +191,11 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
             );
           })}
           <span className="ml-1 text-[10px] text-muted-foreground">{selected.length}/{MAX_SELECTED}</span>
+          {truncated && (
+            <span className="ml-2 text-[10px] text-muted-foreground/80">
+              Showing first {spineLen} of {modules.length} modules
+            </span>
+          )}
         </div>
 
         <div className="ml-auto flex flex-wrap items-center gap-2">

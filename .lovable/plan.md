@@ -1,62 +1,95 @@
-# Embark Journey header — declutter & deduplicate
+# Cohorts page — editorial redesign
 
-## What's wrong now (top-to-bottom in the screenshot)
+Scope: just the **list view** in `src/pages/ProgramContextPage.tsx` (`CohortList`). Create wizard and detail view stay as-is.
 
-1. **Two stacked bars do the same job.** The cohort progress bar AND the "TRACKS" segmented strip both encode track progress — the segmented strip is unlabelled, hard to read, and its data is already in the track pills below it.
-2. **"Tracks" label + segmented strip = visual noise.** Users navigate by clicking pills (their own preferred behaviour), so the strip adds nothing.
-3. **"Business Knowledge" appears twice in a row.** Once as the active track pill, immediately again on the meta line ("Business Knowledge · 0 of 5 modules · 0%"). The % is also already on the active pill.
-4. **Three separate horizontal rows** under the header (track pills row, meta-text row, filter-chips row) make the area feel crowded.
+## Why the current design feels weak
 
-## The redesign — one tidy header, one tidy toolbar
+1. **No top-of-page signal.** Title + subtitle + button is bare. Nothing tells the manager what's happening across the program.
+2. **Cards are crowded but low-info.** Title, status badge, description, progress bar, meta row, alert chips, and avatars all stacked with no hierarchy.
+3. **Plurals/typos.** "1 targets" reads broken.
+4. **Two-column slab grid** wastes vertical scan rhythm — every card looks identical.
+5. **Avatars all use the same dark primary** — no individuality.
+6. **Filter pills only.** No search, no sort, no count.
+7. **Status semantics are invisible.** A draft cohort and a 100% completed cohort look like the same card.
+
+## New design
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│ Your cohort                                            0%   │
-│ Investment Management Readiness — Jan 2026                  │
-│ 0 / 29 modules · 0 / 56 chapters · Due 9 Jul 2027           │
-│ ▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭▭ (single thin bar) │
-└─────────────────────────────────────────────────────────────┘
-
-[ Business Knowledge · 0/5 ] [ Technical · 0/8 ] [ Behavioural · 0/9 ] [ Certification · 0/7 ]   ← scrollable pills
-        ↑ active pill has slim progress fill inside
-
-                                          All · In progress · Completed · Locked   ← compact filter row
+┌─ Back ────────────────────────────────────────────────────────────────┐
+│ Cohorts                                              [ + New Cohort ] │
+│ 4 cohorts · 9 active learners · 45% avg progress · 2 need attention   │
+├───────────────────────────────────────────────────────────────────────┤
+│ [Search cohorts…]            All · Active · Draft · Completed   ⇅Sort │
+├───────────────────────────────────────────────────────────────────────┤
+│ ▍ Apple L1 Support — March 2026          active           ⌃ 54%   ›  │
+│ ▍ Onboarding cohort for new Apple L1 …                               │
+│ ▍ ▰▰▰▰▰▰▱▱▱▱▱▱  • 4 learners • 1 target • Mar 1, 2026 • ★1 ⚠1     │
+│ ▍ ◉ ◉ ◉ ◉                                                            │
+└───────────────────────────────────────────────────────────────────────┘
 ```
 
-### 1. JourneyHeaderCard — strip the second bar
-- **Delete** the entire "TRACKS" segmented strip block (lines 67–116 of `JourneyHeaderCard.tsx`).
-- Keep cohort label, title, meta line, the single overall progress bar, and the right-aligned %.
-- Slightly tighten internal spacing (`space-y-3` → `space-y-2.5`) since the card is now shorter.
+### 1. Hero header (replaces the bare title row)
 
-### 2. JourneyTrackTabs — pills carry all the per-track signal
-Pills already exist; upgrade them so they're the single source of per-track info:
-- **Inside each pill**, render a slim 2px progress fill across the bottom of the pill background (so the pill itself is a tiny progress bar). Active pill uses accent fill; inactive uses `foreground/30`.
-- Replace the standalone `% Badge` with a more useful chip: `0/5` (completed/total chapters) — clearer than just a percent that's already shown visually.
-- On the active pill, reverse colours stay as today; the inner progress fill uses `bg-accent-foreground/30` so it's visible on the dark pill.
-- Keep horizontal scroll for overflow.
+- Left: `Cohorts` title (font-display, 2xl) + subtitle.
+- Below subtitle: a **single stat line** computed from the data: total cohorts · active learners (sum of `assignedLearnerIds` across `active` cohorts) · average progress (mean of avg progress across non-draft cohorts) · learners flagged `at_risk`/`needs_attention`. Muted text, dot separators.
+- Right: keep `+ New Cohort` button.
 
-### 3. Toolbar under pills — one row, no duplication
-Replace the current "Business Knowledge · 0 of 5 modules · 0%" + filter-chips two-row block with a single right-aligned filter row:
-- **Drop** the redundant track name and percent (already in the active pill).
-- **Drop** the modules count from prose; the active pill already shows `0/5`.
-- Keep the four filter chips (`All`, `In progress`, `Completed`, `Locked`) but render them as smaller ghost pills with a left-side faint label "Show:" so the row reads cleanly.
-- If a filter narrows results to zero, show a tiny muted "No modules in this view" line below.
+### 2. Toolbar (single row)
 
-### 4. Spacing
-- Page-level vertical rhythm: `space-y-4` between header card → pills → toolbar → accordion. Reduce pills bottom margin (currently `pb-2` inside ScrollArea) so the toolbar sits closer.
+- Left: search input (filters on cohort name + description, case-insensitive). Width `~280px`, with leading `Search` icon.
+- Middle: existing status filter pills (All / Active / Draft / Completed) — keep colors, slightly smaller.
+- Right: small **Sort** select (`Recent`, `Progress`, `Name`, `Start date`) as a borderless trigger with a chevron.
+- Toolbar gets `border-b border-border/60 pb-3 mb-4` for separation.
 
-## Files to touch
+### 3. Card redesign — single column, full-width, editorial rows
 
-- `src/components/learnpath/JourneyHeaderCard.tsx` — remove "Tracks" segmented strip section; keep the rest.
-- `src/components/learnpath/JourneyTrackTabs.tsx` — add inner progress fill, swap `%` badge for `completed/total` chips.
-- `src/components/learnpath/EmbarkJourneyView.tsx` — collapse the meta-line + filter-chips block into a single compact filter row; remove the duplicated track-name/modules/% prose.
+Switch from `grid-cols-1 md:grid-cols-2` to a single-column `space-y-3` list. Cards become wider, easier to scan, and accommodate richer detail without crowding.
 
-No data changes, no route changes, no prop additions beyond what's already on `JourneyTrack` (`pct`, `completedChapters`, `totalChapters`).
+Per card structure:
+
+```
+[status rail | icon] Title                          status pill   54%  ›
+                     1-line description (line-clamp-1)
+                     ━━━━━━━━━━━━━━━━━━━━━━━━━ thin progress
+                     4 learners · 1 target · Due Mar 1  ·  ★ 1 rising · ⚠ 1 at risk
+                     ◉ ◉ ◉ ◉  +0
+```
+
+Spec:
+- **Left status rail**: a 3px tall vertical bar at `inset-y-0 left-0` colored by status — emerald (active), primary (completed), muted-foreground/40 (draft). Replaces the chip-only status signal so cards differ at a glance.
+- **Icon tile** (40px) keeps `Layers` but background tints with status (emerald-tinted for active, primary-tinted for completed, muted for draft).
+- **Title**: font-display, base, semibold; `truncate`.
+- **Status pill**: small uppercase 10px pill, color-matched to the rail.
+- **Big % on the right** (text-2xl tabular-nums) — the most important glanceable signal — replaces the inline "Overall Progress" prose.
+- **Description**: muted, `line-clamp-1` (was 2) — the title and stats already do the heavy lifting.
+- **Progress bar**: `h-1`, full width, no label above (% is up top).
+- **Meta row**: keep icons but **fix plurals**: `learner / learners`, `target / targets`. Format date with `toLocaleDateString(undefined, { month: 'short', day: 'numeric' })` → `Mar 1, 2026`. Drop the meta row entirely for **draft** cohorts that have no learners (just show "No learners assigned yet").
+- **Star/at-risk chips**: move into the meta row inline (after the date) with the same icons, but render labels `1 rising`, `2 at risk` for clarity instead of bare numbers.
+- **Avatars**: hashed background color per learner name (same hash util pattern used in `team-home/Avatar.tsx`) instead of all primary; size 6 (24px); show first 6, then `+N` chip.
+- **Hover**: `hover:bg-muted/30 hover:border-primary/40 hover:shadow-sm`. ChevronRight slides 2px right.
+- **Card padding**: `p-5`. **Whole card is a button** as before.
+
+### 4. Empty / filtered-empty states
+
+- No cohorts at all: large icon, "No cohorts yet", "Create your first cohort to start tracking learner cohorts together", primary `+ New Cohort` button.
+- Filter/search returns nothing: small inline `No cohorts match your filters` with a `Clear filters` link button (resets search + filter to All).
+
+### 5. Loading/animation
+
+Keep existing framer-motion stagger but change to subtle `y: 6, opacity: 0` → `y: 0, opacity: 1` with `delay: i * 0.04`.
+
+## Files
+
+- **Edit only**: `src/pages/ProgramContextPage.tsx` — rewrite the `CohortList` function (lines ~101–209) and add a small local `hashColor(name)` helper (or import the existing one from `@/components/team-home/Avatar`). Add `useState` for `search` and `sort`. Reuse imports already present (`Search`, `Calendar`, `Star`, `AlertTriangle`, etc.); no new dependencies.
+
+No data-shape, route, or business-logic changes. Create wizard, detail view, and downstream consumers untouched.
 
 ## QA after build
 
-1. Header card now has exactly one progress bar; no "TRACKS" label.
-2. Active pill visually communicates progress (fill) + chapter ratio (`0/5`); name is not repeated below.
-3. Filter row sits in one tidy line; switching filters doesn't reflow vertically.
-4. Horizontal pill scroll still works at narrow widths; nothing wraps awkwardly.
-5. Verify in both Rathbones and Pinnacle Capital (white-label) — substituted titles still render.
+- Render at desktop (1280) and tablet (834) — single column reads cleanly at both; nothing overflows.
+- Check all four current cohorts: active, completed, draft (no learners), draft (with learners).
+- Verify "1 target" / "2 targets" / "0 targets" pluralization.
+- Search: typing `apple` filters to the two Apple cohorts; clearing restores all.
+- Sort: switching to `Progress` puts 100% (Jan 2026) on top, 0% (draft) on bottom.
+- Filter pills still work and combine with search.
+- Status rail color is visible at the very left edge of each card; not clipped by the rounded corner.

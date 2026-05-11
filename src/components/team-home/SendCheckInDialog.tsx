@@ -65,9 +65,10 @@ export function SendCheckInDialog({ open, onOpenChange, defaultLearnerId }: Prop
     [overlays, employeesById]
   );
 
-  const [step, setStep] = useState<Step>("recipients");
+  const initialPicked = () => new Set<string>(defaultLearnerId ? [defaultLearnerId] : []);
+  const [step, setStep] = useState<Step>(defaultLearnerId ? "template" : "recipients");
   const [search, setSearch] = useState("");
-  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [picked, setPicked] = useState<Set<string>>(initialPicked());
   const [templateId, setTemplateId] = useState(TEMPLATES[0].id);
   const [subject, setSubject] = useState(TEMPLATES[0].subject);
   const [body, setBody] = useState(TEMPLATES[0].body);

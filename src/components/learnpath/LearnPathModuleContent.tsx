@@ -61,7 +61,12 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   const { normalizedAccount } = useAccount();
   const isMicroRefresher = learningFormat === "micro_refresher";
   const isMicro = learningFormat === "micro" || isMicroRefresher;
-  const transcript = substitute(module.transcript ?? "No content available for this module.");
+  const rawTranscript = substitute(module.transcript ?? "No content available for this module.");
+  const { cleanText: transcript, quizzes: inlineQuizzes } = useMemo(
+    () => extractInlineQuizzes(rawTranscript),
+    [rawTranscript]
+  );
+  const hasInlineQuiz = inlineQuizzes.length > 0;
   const [microExpanded, setMicroExpanded] = useState(false);
   const [completed, setCompleted] = useState(initialCompleted);
   const [showSummary, setShowSummary] = useState(false);

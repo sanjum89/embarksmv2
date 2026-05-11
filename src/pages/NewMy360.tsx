@@ -12,8 +12,8 @@ import { CohortJourneyTab } from "@/components/my360-v2/CohortJourneyTab";
 import { GrowthPathTab } from "@/components/my360-v2/GrowthPathTab";
 import { Loader2 } from "lucide-react";
 
-const tabs = ["Profile", "Cohort Journey", "Growth Path"] as const;
-type Tab = (typeof tabs)[number];
+const allTabs = ["Profile", "Cohort Journey", "Growth Path"] as const;
+type Tab = (typeof allTabs)[number];
 
 export default function NewMy360() {
   const data = useMy360Data();

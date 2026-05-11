@@ -17,11 +17,12 @@ import { getAvailability, type Slot } from "@/data/teamsAvailability";
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  defaultLearnerId?: string | null;
 }
 
 type Step = "learner" | "time" | "confirm";
 
-export function Schedule1on1Dialog({ open, onOpenChange }: Props) {
+export function Schedule1on1Dialog({ open, onOpenChange, defaultLearnerId }: Props) {
   const { normalizedAccount } = useAccount();
   const employeesById = normalizedAccount?.employeesById ?? {};
   const overlays = useMemo(() => getAllDemoOverlays(), []);

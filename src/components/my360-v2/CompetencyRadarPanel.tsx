@@ -84,22 +84,22 @@ export function CompetencyRadarPanel({ catalog, current, required, proficiency, 
           {mode === "radar" ? (
             <RadarChart data={data} outerRadius="78%">
               <PolarGrid stroke={colors.grid} />
-              <PolarAngleAxis dataKey="label" tick={{ fontSize: 10, fill: colors.axis }} />
-              <PolarRadiusAxis domain={[0, 5]} tick={{ fontSize: 10, fill: colors.axis }} />
-              <Radar name="Required" dataKey="Required" stroke={colors.muted} fill={colors.muted} fillOpacity={0.15} />
-              <Radar name="Current" dataKey="Current" stroke={colors.primary} fill={colors.primary} fillOpacity={0.35} />
-              <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 12 }} />
+              <PolarAngleAxis dataKey="label" tick={{ fontSize: 10, fill: colors.tickFill }} />
+              <PolarRadiusAxis domain={[0, 5]} tick={{ fontSize: 10, fill: colors.tickFill }} />
+              <Radar name="Required" dataKey="Required" stroke={colors.radarTargetStroke} fill={colors.radarTargetFill} fillOpacity={0.4} />
+              <Radar name="Current" dataKey="Current" stroke={colors.radarCurrentStroke} fill={colors.radarCurrentFill} fillOpacity={0.45} />
+              <Tooltip contentStyle={{ background: colors.tooltipBg, border: `1px solid ${colors.tooltipBorder}`, borderRadius: 6, fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
             </RadarChart>
           ) : (
             <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
               <CartesianGrid stroke={colors.grid} horizontal={false} />
-              <XAxis type="number" domain={[0, 5]} tick={{ fontSize: 10, fill: colors.axis }} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: colors.axis }} width={140} />
-              <Tooltip contentStyle={{ background: "hsl(var(--popover))", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 12 }} />
+              <XAxis type="number" domain={[0, 5]} tick={{ fontSize: 10, fill: colors.tickFill }} />
+              <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: colors.tickFill }} width={140} />
+              <Tooltip contentStyle={{ background: colors.tooltipBg, border: `1px solid ${colors.tooltipBorder}`, borderRadius: 6, fontSize: 12 }} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="Required" fill={colors.muted} radius={[0, 2, 2, 0]} />
-              <Bar dataKey="Current" fill={colors.primary} radius={[0, 2, 2, 0]} />
+              <Bar dataKey="Required" fill={colors.radarTargetStroke} radius={[0, 2, 2, 0]} />
+              <Bar dataKey="Current" fill={colors.radarCurrentStroke} radius={[0, 2, 2, 0]} />
             </BarChart>
           )}
         </ResponsiveContainer>

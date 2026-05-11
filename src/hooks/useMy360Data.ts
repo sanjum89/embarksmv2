@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import type { CapabilityRow, RoleRequirementRow } from "@/lib/my360v2/bucketing";
+export type { CapabilityRow, RoleRequirementRow } from "@/lib/my360v2/bucketing";
 
 export interface HrisData {
   hireDate?: string;

@@ -23,6 +23,7 @@ interface Props {
   learners: LearnerInput[];
   modules: ModuleSpine[];
   onOpenLearner?: (id: string) => void;
+  dense?: boolean;
 }
 
 type CompareMode = "stack" | "side" | "baseline";

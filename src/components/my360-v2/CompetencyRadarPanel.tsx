@@ -19,7 +19,7 @@ const TRACK_LABEL: Record<string, string> = {
   business_knowledge: "Business",
   technical_knowledge: "Technical",
   behavioural_skills: "Behavioural",
-  certification_professional_standards: "Cert / Conduct",
+  certification_professional_standards: "Certification",
   other_enablers: "Enablers",
 };
 

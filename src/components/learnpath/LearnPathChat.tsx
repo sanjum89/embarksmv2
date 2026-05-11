@@ -124,9 +124,66 @@ export function EmbarkChat() {
         })
     );
 
+    // ---- Cohort journey (new model). Flatten into module entries so the AI sees them. ----
+    const cohortModules = (journey?.tracks ?? []).flatMap((track) =>
+      track.modules.map((m) => {
+        const upNextChapter =
+          m.chapters.find((c) => c.status === "in_progress") ??
+          m.chapters.find((c) => c.status === "not_started");
+        return {
+          moduleId: m.code,
+          moduleCode: m.code,
+          title: substitute(m.title),
+          trackName: track.name,
+          status: m.status, // up_next | in_progress | completed | locked
+          completedChapters: m.completedChapters,
+          totalChapters: m.totalChapters,
+          isCoreRequired: m.isCoreRequired,
+          isStretch: m.isStretch,
+          skillTargetId: journey?.cohort.id ?? "",
+          skillTargetTitle: substitute(journey?.cohort.title ?? ""),
+          progress: m.pct,
+          upNextChapterCode: upNextChapter?.code ?? null,
+          upNextChapterTitle: upNextChapter ? substitute(upNextChapter.title) : null,
+        };
+      })
+    );
+
+    // Find resume target from cohort journey first, then fall back to legacy skill targets.
+    const cohortResumeModule =
+      cohortModules.find((m) => m.status === "in_progress") ??
+      cohortModules.find((m) => m.status === "up_next");
+
     const resumeModule =
+      (cohortResumeModule
+        ? {
+            moduleId: cohortResumeModule.upNextChapterCode ?? cohortResumeModule.moduleCode,
+            title: cohortResumeModule.upNextChapterTitle ?? cohortResumeModule.title,
+            skillTargetId: cohortResumeModule.skillTargetId,
+          }
+        : null) ??
       moduleSteps.find((module) => module.status === "in_progress") ??
       moduleSteps.find((module) => module.status === "available");
+
+    const cohortJourney = journey
+      ? {
+          cohortId: journey.cohort.id,
+          cohortTitle: substitute(journey.cohort.title),
+          dueDate: journey.cohort.dueDate ?? null,
+          overallPct: journey.cohort.overallPct,
+          completedModules: journey.cohort.completedModules,
+          totalModules: journey.cohort.totalModules,
+          completedChapters: journey.cohort.completedChapters,
+          totalChapters: journey.cohort.totalChapters,
+          activeTrackName:
+            (journey.tracks.find((t) => t.modules.some((m) => m.status === "in_progress"))?.name) ??
+            (journey.tracks[0]?.name ?? null),
+          resumeModuleCode: cohortResumeModule?.moduleCode ?? null,
+          resumeModuleTitle: cohortResumeModule ? substitute(cohortResumeModule.title) : null,
+          resumeChapterCode: cohortResumeModule?.upNextChapterCode ?? null,
+          resumeChapterTitle: cohortResumeModule?.upNextChapterTitle ?? null,
+        }
+      : null;
 
     const currentModuleId =
       embark.contentView === "assessment"

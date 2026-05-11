@@ -26,13 +26,17 @@ const GROUP_LABEL: Record<string, string> = {
 export default function ActionCentre() {
   const overlays = getAllDemoOverlays();
   const { user } = useUser();
+  const { normalizedAccount } = useAccount();
+  const employeesById = normalizedAccount?.employeesById ?? {};
+  const nameOf = (id: string) => employeesById[id]?.name || id;
+  const titleOf = (id: string) => employeesById[id]?.title || "Learner";
   const { approvals, recordDecision, clearDecision } = useManagerActions();
   const [openId, setOpenId] = useState<string | null>(null);
   const selected = overlays.find((o) => o.employeeId === openId) ?? null;
 
   const allActions = useMemo(
-    () => overlays.flatMap((o) => o.actions.map((a) => ({ ...a, learnerName: o.employeeId }))),
-    [overlays]
+    () => overlays.flatMap((o) => o.actions.map((a) => ({ ...a, learnerName: nameOf(o.employeeId) }))),
+    [overlays, employeesById]
   );
 
   const grouped = useMemo(() => {
@@ -45,8 +49,8 @@ export default function ActionCentre() {
   }, [allActions]);
 
   const allChanges = useMemo(
-    () => overlays.flatMap((o) => o.pathChanges.map((c) => ({ ...c, learnerName: o.employeeId }))),
-    [overlays]
+    () => overlays.flatMap((o) => o.pathChanges.map((c) => ({ ...c, learnerName: nameOf(o.employeeId) }))),
+    [overlays, employeesById]
   );
 
   return (

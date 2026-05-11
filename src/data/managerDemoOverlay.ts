@@ -16,6 +16,18 @@ export interface ModuleCellOverlay {
   last_activity?: string; // human-friendly relative
 }
 
+export interface AiSignal {
+  label: string;
+  value: string;
+  weight?: "primary" | "supporting";
+}
+
+export interface AiOutcome {
+  time_saved_minutes?: number;
+  replaced_with?: string;
+  still_required?: string[];
+}
+
 export interface AiPathChange {
   id: string;
   employeeId: string;
@@ -28,6 +40,14 @@ export interface AiPathChange {
   risk: "low" | "medium" | "high";
   needs_approval: boolean;
   created_at: string; // ISO-ish or human
+  /** Policy/threshold the AI applied to reach this decision. */
+  decision_rule?: string;
+  /** Structured signals (preferred over flat evidence chips). */
+  signals?: AiSignal[];
+  /** What changes for the learner as a result. */
+  outcome?: AiOutcome;
+  /** Guardrails reassuring the manager the change is monitored/reversible. */
+  safeguards?: string[];
 }
 
 export interface ActionItem {

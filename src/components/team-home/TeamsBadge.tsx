@@ -54,7 +54,7 @@ export function TeamsBadge({ variant, label, className, size = 14 }: Props) {
         className
       )}
     >
-      <TeamsLogo className="block" />
+      <TeamsLogo className="block" size={size} />
       <span>{label ?? "Microsoft Teams"}</span>
     </span>
   );

@@ -299,12 +299,8 @@ function AdaptationBadge({ adaptation }: { adaptation: ModuleAdaptation }) {
         )}
         {adaptation.competencyName && (
           <div className="pt-1 border-t border-border space-y-0.5">
-            <div
-              className="flex items-center gap-1 text-[0.65rem] uppercase tracking-wide text-muted-foreground"
-              title="A competency is a capability area from your role framework, tracked on a 1–5 proficiency scale. Skills (shown on My 360) are more granular tags that feed into competency levels."
-            >
+            <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
               Competency this builds
-              <Info className="h-3 w-3" aria-hidden />
             </div>
             <div className="font-medium text-foreground">{adaptation.competencyName}</div>
             {(adaptation.currentLevel != null || adaptation.requiredLevel != null) && (

@@ -46,9 +46,11 @@ export function RosterRow({
 
       {/* Status + headline */}
       <div className="hidden min-w-0 flex-1 sm:block">
-        <div className="flex items-center gap-2">
-          <LearnerStatusBadge status={entry.overlay.status} />
-          <span className="truncate text-xs text-muted-foreground">{entry.lastActivity}</span>
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="shrink-0">
+            <LearnerStatusBadge status={entry.overlay.status} />
+          </div>
+          <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{entry.lastActivity}</span>
         </div>
         <p className="mt-1.5 truncate text-xs text-foreground/70">{entry.overlay.headline}</p>
       </div>

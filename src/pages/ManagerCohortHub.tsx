@@ -9,6 +9,7 @@ import { RosterHeatmap } from "@/components/manager-hub/RosterHeatmap";
 import { AIChangesFeed } from "@/components/manager-hub/AIChangesFeed";
 import { CpdPanel } from "@/components/manager-hub/CpdPanel";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";
+import { AdaptivePathsSankey } from "@/components/team-home/AdaptivePathsSankey";
 
 export default function ManagerCohortHub() {
   const { cohortId } = useParams<{ cohortId: string }>();

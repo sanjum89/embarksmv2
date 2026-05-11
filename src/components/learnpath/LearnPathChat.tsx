@@ -21,6 +21,7 @@ import {
 import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
+import { useLearnerJourney } from "@/hooks/useLearnerJourney";
 import { SuggestionPillsRow, computeSuggestionPills, type SuggestionPill } from "./SuggestionPills";
 import { useEmbarkEngagement } from "@/hooks/useEmbarkEngagement";
 import { subscribeEngagementEvents } from "@/lib/embarkEngagementEvents";
@@ -78,10 +79,15 @@ function parseActions(text: string): { cleanText: string; actions: any[] } {
 
 export function EmbarkChat() {
   const { user } = useUser();
-  const { normalizedAccount } = useAccount();
+  const { normalizedAccount, activeAccountId } = useAccount();
   const { skillTargets } = useSkillTargets();
   const embark = useEmbark();
   const { substitute } = useContentSubstitution();
+
+  // Cohort journey (new model). Falls back to {} when learner has no enrollment.
+  const linkedEmployeeId =
+    normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
+  const { journey } = useLearnerJourney(activeAccountId, linkedEmployeeId);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");

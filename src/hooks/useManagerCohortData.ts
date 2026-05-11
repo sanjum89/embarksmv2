@@ -28,6 +28,7 @@ export interface CohortLearner {
 export interface CohortModuleCol {
   module_code: string;
   module_title: string;
+  display_order?: number | null;
   progression_stage?: string | null;
 }
 
@@ -88,6 +89,7 @@ export function useManagerCohortData(cohortId: string | null): ManagerCohortData
         ? allMods.map((m) => ({
             module_code: m.module_code,
             module_title: m.module_title,
+            display_order: m.display_order,
             progression_stage: m.progression_stage,
           }))
         : COHORT_MODULES_FALLBACK;
@@ -110,7 +112,7 @@ export function useManagerCohortData(cohortId: string | null): ManagerCohortData
         employeeId: id,
         name: employees[id]?.name ?? id,
         title: employees[id]?.title,
-        overlay: getDemoOverlay(id),
+        overlay: getDemoOverlayFor(id, liveModules),
       }));
 
       // Order: rising stars first, then at-risk, then on track

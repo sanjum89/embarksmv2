@@ -37,6 +37,9 @@ import EmbarkAIv2 from "./pages/LearnPathV2";
 import UnifiedChat from "./pages/UnifiedChat";
 import NotFound from "./pages/NotFound";
 import PeopleGraphIntelligence from "./pages/PeopleGraphIntelligence";
+import TeamMode from "./pages/TeamMode";
+import ManagerCohortHub from "./pages/ManagerCohortHub";
+import ActionCentre from "./pages/ActionCentre";
 import { SupportiveToastBridge } from "@/components/SupportiveToastBridge";
 
 
@@ -83,6 +86,9 @@ const App = () => (
               <Route path="/embark" element={<EmbarkAI />} />
               <Route path="/embark-v2" element={<EmbarkAIv2 />} />
               <Route path="/manager/people-graph" element={<PeopleGraphIntelligence />} />
+              <Route path="/team" element={<TeamMode />} />
+              <Route path="/manager/cohort/:cohortId" element={<ManagerCohortHub />} />
+              <Route path="/action-centre" element={<ActionCentre />} />
               <Route path="/admin" element={<AdminView />} />
             </Route>
             <Route path="*" element={<NotFound />} />

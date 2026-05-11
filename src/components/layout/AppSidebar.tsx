@@ -69,8 +69,9 @@ const meNavItems: NavItem[] = [
 
 const teamNavItems: NavItem[] = [
   { label: "Admin", path: "/admin", icon: Shield },
-  { label: "Team Dashboard", path: "/team-dashboard", icon: LayoutDashboard },
-  { label: "Team Insights", path: "/team-insights", icon: BarChart3 },
+  { label: "Team Mode", path: "/team", icon: LayoutDashboard },
+  { label: "Team Dashboard", path: "/team-dashboard", icon: LayoutDashboard, dev: true },
+  { label: "Team Insights", path: "/team-insights", icon: BarChart3, dev: true },
   { label: "People Graph", path: "/manager/people-graph", icon: GitGraph },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
   {
@@ -83,7 +84,7 @@ const teamNavItems: NavItem[] = [
       { label: "Cohorts", path: "/manager/cohorts", icon: Layers },
     ],
   },
-  { label: "Action Centre", path: "/my-inbox", icon: Inbox },
+  { label: "Action Centre", path: "/action-centre", icon: Inbox },
   { label: "My 360", path: "/my-360", icon: CircleUser },
   { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
 ];

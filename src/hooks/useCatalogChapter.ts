@@ -16,6 +16,9 @@ export interface DiagnosticQuestion {
   correctIndex: number;
   explanation?: string;
   tags?: string[];
+  /** Source chapter — used by the module-level Quick Diagnostic to know
+   * which chapter to "reopen" if the learner answers wrong. */
+  chapterCode?: string;
 }
 
 export interface CatalogChapterContent {

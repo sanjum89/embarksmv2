@@ -7,6 +7,7 @@ import { Check, X, Undo2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import BackButton from "@/components/layout/BackButton";
 import { useUser } from "@/contexts/UserContext";
+import { useAccount } from "@/contexts/AccountContext";
 import { getAllDemoOverlays, COHORT_MODULES_FALLBACK } from "@/data/managerDemoOverlay";
 import { useManagerActions } from "@/store/useManagerActions";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";

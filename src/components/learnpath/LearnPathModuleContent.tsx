@@ -19,7 +19,7 @@ import { getPodcastTranscript, getStaticPodcastUrl } from "@/data/podcastTranscr
 import { getHandsOnScenarios } from "@/data/handsOnScenarios";
 import { mockRolePlayBank, moduleRolePlayMap } from "@/data/mock";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { InlineQuiz, extractInlineQuizzes } from "./InlineQuiz";
+import { InlineQuiz, extractInlineQuizzes, type InlineQuizSubmitResult } from "./InlineQuiz";
 
 interface Props {
   module: LearningModule;
@@ -40,6 +40,10 @@ interface Props {
   initialCompleted?: boolean;
   /** Notify parent when completion state changes (so parent can hide mode selector etc.) */
   onCompletedChange?: (completed: boolean) => void;
+  /** Fires when a Quick Diagnostic inline quiz is submitted (right OR wrong).
+   * Receives the submission result so the parent can mark the diagnostic
+   * complete and reopen wrong chapters. */
+  onDiagnosticSubmit?: (result: InlineQuizSubmitResult) => void;
 }
 
 const modeBanners: Record<string, { icon: React.ElementType; label: string; desc: string; className: string }> = {
@@ -50,7 +54,7 @@ const modeBanners: Record<string, { icon: React.ElementType; label: string; desc
   combined: { icon: Layers, label: "Combined Mode", desc: "A curated blend of reading, visuals, and practice.", className: "bg-primary/10 text-primary border-primary/20" },
 };
 
-export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader, nextModuleId, nextModuleTitle, nextSkillTargetId, nextStepType, initialCompleted = false, onCompletedChange }: Props) {
+export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader, nextModuleId, nextModuleTitle, nextSkillTargetId, nextStepType, initialCompleted = false, onCompletedChange, onDiagnosticSubmit }: Props) {
   const learnPathCtx = useEmbark();
   const learningMode = learningModeOverride ?? learnPathCtx.learningMode;
   const openAssessment = learnPathCtx.openAssessment;
@@ -696,8 +700,10 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
               key={i}
               title={quiz.title}
               questions={quiz.questions}
-              onPass={() => {
-                if (!completed && !previewMode) handleMarkComplete();
+              onSubmit={(result) => {
+                if (previewMode) return;
+                onDiagnosticSubmit?.(result);
+                if (!completed) handleMarkComplete();
               }}
             />
           ))}

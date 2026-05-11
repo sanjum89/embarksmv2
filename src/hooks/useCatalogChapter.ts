@@ -16,6 +16,9 @@ export interface DiagnosticQuestion {
   correctIndex: number;
   explanation?: string;
   tags?: string[];
+  /** Source chapter — used by the module-level Quick Diagnostic to know
+   * which chapter to "reopen" if the learner answers wrong. */
+  chapterCode?: string;
 }
 
 export interface CatalogChapterContent {
@@ -219,4 +222,62 @@ function fallbackQuestions(ch: CatalogChapterContent): DiagnosticQuestion[] {
       explanation: "This chapter's stated learning objective.",
     },
   ];
+}
+
+/**
+ * Build the Quick Diagnostic transcript for a WHOLE module from all of its
+ * chapters. Picks one diagnostic question per chapter (round-robin, capped
+ * at MAX_QUESTIONS) and tags each question with its source `chapterCode`
+ * so the UI can reopen the chapters the learner answers wrong.
+ */
+export function composeDiagnosticTranscriptFromChapters(
+  chapters: CatalogChapterContent[],
+  moduleTitle: string,
+): string {
+  const MAX_QUESTIONS = 3;
+  const tagged: DiagnosticQuestion[] = [];
+
+  // Round-robin pull: 1st question of each chapter, then 2nd, ...
+  let round = 0;
+  while (tagged.length < MAX_QUESTIONS) {
+    let pickedThisRound = 0;
+    for (const ch of chapters) {
+      if (tagged.length >= MAX_QUESTIONS) break;
+      const pool = ch.diagnosticQuestions.length > 0
+        ? ch.diagnosticQuestions
+        : fallbackQuestions(ch);
+      const q = pool[round];
+      if (q) {
+        tagged.push({ ...q, chapterCode: ch.chapterCode });
+        pickedThisRound++;
+      }
+    }
+    if (pickedThisRound === 0) break;
+    round++;
+  }
+
+  if (tagged.length === 0 && chapters.length > 0) {
+    // Last-ditch — should not happen because fallbackQuestions always returns 1
+    tagged.push({ ...fallbackQuestions(chapters[0])[0], chapterCode: chapters[0].chapterCode });
+  }
+
+  const block = {
+    type: "inline_quiz",
+    data: {
+      title: `${moduleTitle} — quick check`,
+      questions: tagged.map((q) => ({
+        question: q.question,
+        options: q.options,
+        correctIndex: q.correctIndex,
+        explanation: q.explanation,
+        chapterCode: q.chapterCode,
+      })),
+    },
+  };
+
+  return [
+    `# ${moduleTitle} — Quick diagnostic`,
+    `> Three questions across this module's chapters. Submit when you're ready — anything you miss, we'll reopen so you can read just those parts.`,
+    `:::RICH_BLOCK${JSON.stringify(block)}:::`,
+  ].join("\n\n");
 }

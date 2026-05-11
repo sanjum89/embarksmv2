@@ -5,7 +5,9 @@ import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { useLearnerJourney } from "@/hooks/useLearnerJourney";
-import { useCatalogChapter, composeChapterTranscript } from "@/hooks/useCatalogChapter";
+import { useCatalogChapter, composeChapterTranscript, composeDiagnosticTranscriptFromChapters } from "@/hooks/useCatalogChapter";
+import { useCatalogChaptersForModule } from "@/hooks/useCatalogChaptersForModule";
+import { diagnosticReopens, useDiagnosticReopens } from "@/store/useDiagnosticReopens";
 import { EmbarkJourneyView } from "./EmbarkJourneyView";
 import { EmbarkLoadingState } from "./EmbarkLoadingState";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";
@@ -50,6 +52,7 @@ export function EmbarkContent() {
     normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
   const { journey, isLoading: journeyLoading } = useLearnerJourney(activeAccountId, employeeId);
   const hasJourney = !!journey && journey.tracks.some((t) => t.totalChapters > 0);
+  const diagState = useDiagnosticReopens();
 
   const catalog = buildCatalog(normalizedAccount?.learningModules);
 
@@ -132,16 +135,22 @@ export function EmbarkContent() {
     );
   }
 
+  // Detect synthetic Quick Diagnostic activeModuleId of the form `__diag::<moduleCode>`.
+  const diagModuleCode = useMemo(() => {
+    if (!activeModuleId || !activeModuleId.startsWith("__diag::")) return null;
+    return activeModuleId.slice("__diag::".length);
+  }, [activeModuleId]);
+
   // Determine if activeModuleId is a cohort chapter code, and look up its adaptation lens.
   const cohortChapterCode = useMemo(() => {
-    if (!activeModuleId || !journey) return null;
+    if (!activeModuleId || !journey || diagModuleCode) return null;
     for (const t of journey.tracks) {
       for (const m of t.modules) {
         if (m.chapters.some((c) => c.code === activeModuleId)) return activeModuleId;
       }
     }
     return null;
-  }, [activeModuleId, journey]);
+  }, [activeModuleId, journey, diagModuleCode]);
 
   const cohortAdaptationType = useMemo(() => {
     if (!cohortChapterCode || !journey) return null;
@@ -157,6 +166,19 @@ export function EmbarkContent() {
 
   const { chapter: cohortChapterRow } = useCatalogChapter(activeAccountId, cohortChapterCode);
 
+  // Quick Diagnostic — fetch ALL chapters of the active module so questions
+  // span the chapters being skipped, not just the first one.
+  const { chapters: diagChapters } = useCatalogChaptersForModule(activeAccountId, diagModuleCode);
+  const diagModuleMeta = useMemo(() => {
+    if (!diagModuleCode || !journey) return null;
+    for (const t of journey.tracks) {
+      for (const m of t.modules) {
+        if (m.code === diagModuleCode) return { title: m.title, module: m, track: t };
+      }
+    }
+    return null;
+  }, [diagModuleCode, journey]);
+
   if (contentView === "module" && activeModuleId) {
     let mod = resolveModule(activeModuleId, skillTargets, normalizedAccount?.learningModules);
 
@@ -165,20 +187,16 @@ export function EmbarkContent() {
       const lens =
         cohortAdaptationType === "microlearning"
           ? "condensed"
-          : cohortAdaptationType === "diagnostic_only"
-            ? "diagnostic"
-            : cohortAdaptationType === "evidence_required"
-              ? "evidence"
-              : "full";
+          : cohortAdaptationType === "evidence_required"
+            ? "evidence"
+            : "full";
       const transcript = composeChapterTranscript(cohortChapterRow, lens);
       const minutes =
-        lens === "diagnostic" ? 5 : lens === "evidence" ? 15 : cohortChapterRow.estimatedTimeMinutes || 25;
+        lens === "evidence" ? 15 : cohortChapterRow.estimatedTimeMinutes || 25;
       const displayTitle =
-        lens === "diagnostic"
-          ? "Quick diagnostic — 3 questions"
-          : lens === "evidence"
-            ? "Submit evidence — short written task"
-            : cohortChapterRow.chapterTitle;
+        lens === "evidence"
+          ? "Submit evidence — short written task"
+          : cohortChapterRow.chapterTitle;
       mod = {
         id: cohortChapterRow.chapterCode,
         title: displayTitle,
@@ -186,6 +204,20 @@ export function EmbarkContent() {
         contentUrl: "",
         transcript,
         duration: `${minutes} min`,
+      };
+    } else if (diagModuleCode && diagChapters.length > 0 && diagModuleMeta) {
+      // Synthetic Quick Diagnostic — module-level, all chapters
+      const transcript = composeDiagnosticTranscriptFromChapters(
+        diagChapters,
+        diagModuleMeta.title,
+      );
+      mod = {
+        id: activeModuleId,
+        title: "Quick diagnostic — 3 questions",
+        contentType: "document",
+        contentUrl: "",
+        transcript,
+        duration: "5 min",
       };
     } else if (!mod && journey) {
       // Last-ditch synthesis if a journey chapter exists but DB row hasn't loaded yet
@@ -242,6 +274,25 @@ export function EmbarkContent() {
     const currentIdx = allSteps.findIndex((ms) => ms.moduleId === activeModuleId);
     const nextStep = allSteps.slice(currentIdx + 1).find((s) => s.status !== "completed" && s.status !== "skipped");
 
+    // For Quick Diagnostic submissions: pre-compute the chapter to advance to.
+    // Priority: first wrong-answer chapter (reopened) → first non-skipped chapter
+    // in the next cohort module → legacy nextStep.
+    const computeDiagnosticNext = (wrongChapterCodes: string[]) => {
+      if (!diagModuleCode || !diagModuleMeta) return null;
+      if (wrongChapterCodes.length > 0) {
+        const orderedWrong = diagModuleMeta.module.chapters
+          .filter((c) => wrongChapterCodes.includes(c.code))
+          .map((c) => ({ id: c.code, title: c.title }));
+        if (orderedWrong[0]) return orderedWrong[0];
+      }
+      // No wrong chapters → next module in the track
+      const trackModules = diagModuleMeta.track.modules;
+      const idx = trackModules.findIndex((m) => m.code === diagModuleCode);
+      const next = trackModules.slice(idx + 1).find((m) => m.chapters.length > 0);
+      const ch = next?.chapters[0];
+      return ch ? { id: ch.code, title: ch.title } : null;
+    };
+
     const handleModuleComplete = () => {
       notifyModuleCompleted({
         moduleId: activeModuleId,
@@ -252,6 +303,16 @@ export function EmbarkContent() {
         skillTargetId: nextStep?.skillTargetId ?? stepInfo?.skillTargetId,
       });
     };
+
+    // Override "next" prop on the diagnostic screen so the CompletionScreen
+    // auto-advances into the first reopened chapter (or the next module).
+    let diagNext: { id: string; title: string } | null = null;
+    if (diagModuleCode) {
+      const recorded = diagState[diagModuleCode];
+      if (recorded) {
+        diagNext = computeDiagnosticNext(Array.from(recorded.reopened));
+      }
+    }
 
     return (
       <div className="h-full flex flex-col">
@@ -268,12 +329,21 @@ export function EmbarkContent() {
             skillTargetId={stepInfo?.skillTargetId}
             stepId={stepInfo?.stepId}
             onComplete={handleModuleComplete}
-            nextModuleId={nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId}
-            nextModuleTitle={nextStep?.title}
+            nextModuleId={diagNext?.id ?? (nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId)}
+            nextModuleTitle={diagNext?.title ?? nextStep?.title}
             nextSkillTargetId={nextStep?.skillTargetId}
-            nextStepType={nextStep?.type}
+            nextStepType={diagNext ? "module" : nextStep?.type}
             initialCompleted={stepInfo?.status === "completed"}
             onCompletedChange={setModuleCompletedView}
+            onDiagnosticSubmit={(result) => {
+              if (!diagModuleCode) return;
+              diagnosticReopens.recordSubmission(
+                diagModuleCode,
+                result.wrongChapterCodes,
+                result.total,
+                result.correctCount,
+              );
+            }}
           />
         </div>
       </div>

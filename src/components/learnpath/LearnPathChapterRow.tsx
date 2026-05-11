@@ -20,11 +20,38 @@ import { useContentSubstitution } from "@/lib/contentSubstitution";
 import type { UnifiedStep } from "./LearnPathContent";
 
 interface ChapterRowProps {
-  step: UnifiedStep;
+  step: UnifiedStep & { lensState?: string };
   index: number;
   isActive: boolean;
   isLast: boolean;
 }
+
+const lensPill: Record<string, { label: string; className: string }> = {
+  skipped_by_diagnostic: {
+    label: "SKIPPED",
+    className: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+  },
+  reopened_after_wrong: {
+    label: "REOPENED",
+    className: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30",
+  },
+  covered_by_evidence: {
+    label: "COVERED BY EVIDENCE",
+    className: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
+  },
+  trimmed_by_micro: {
+    label: "CONDENSED",
+    className: "bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30",
+  },
+  synthetic_diagnostic: {
+    label: "QUICK DIAGNOSTIC",
+    className: "bg-violet-500/15 text-violet-700 dark:text-violet-300 border-violet-500/30",
+  },
+  synthetic_evidence: {
+    label: "EVIDENCE TASK",
+    className: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30",
+  },
+};
 
 const typeLabel: Record<string, string> = {
   module: "Chapter",
@@ -47,9 +74,19 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
   const isCompleted = step.status === "completed";
   const isSkipped = step.status === "skipped";
   const isInProgress = step.status === "in_progress" || isActive;
+  const lens = step.lensState;
+  const isReadOnlySkipped =
+    lens === "skipped_by_diagnostic" || lens === "covered_by_evidence" || lens === "trimmed_by_micro";
 
   const handleOpen = () => {
     if (isLocked) return;
+    // Skipped chapters open in preview mode (read-only) so progress isn't tracked
+    if (isReadOnlySkipped) {
+      if (step.type === "assessment") openAssessmentPreview(step.stepId);
+      else if (step.type === "role_play") navigate(`/role-play/${step.referenceId ?? step.stepId}?preview=1`);
+      else openModulePreview(step.moduleId, step.skillTargetId);
+      return;
+    }
     if (step.type === "assessment") openAssessment(step.stepId);
     else if (step.type === "role_play") navigate(`/role-play/${step.referenceId ?? step.stepId}`);
     else openModule(step.moduleId, step.skillTargetId);
@@ -148,6 +185,14 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
                 {isInProgress && (
                   <Badge className="h-5 px-1.5 text-[0.65rem] bg-accent text-accent-foreground hover:bg-accent">
                     YOU ARE HERE
+                  </Badge>
+                )}
+                {lens && lensPill[lens] && (
+                  <Badge
+                    variant="outline"
+                    className={cn("h-5 px-1.5 text-[0.65rem] border", lensPill[lens].className)}
+                  >
+                    {lensPill[lens].label}
                   </Badge>
                 )}
               </div>

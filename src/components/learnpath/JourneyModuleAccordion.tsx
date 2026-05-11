@@ -16,6 +16,7 @@ import type { JourneyModule, JourneyTrack } from "@/hooks/useLearnerJourney";
 import { formatAdaptationLabel, sanitizeReason, adaptationExplanation, type ModuleAdaptation } from "@/lib/embarkAdaptation";
 import type { UnifiedStep } from "./LearnPathContent";
 import type { StepType } from "@/types/learning";
+import { useDiagnosticReopens } from "@/store/useDiagnosticReopens";
 
 interface Props {
   track: JourneyTrack;
@@ -23,16 +24,20 @@ interface Props {
   activeChapterCode: string | null;
 }
 
-function statusToStepStatus(s: JourneyModule["chapters"][number]["status"]): string {
-  // Map our journey statuses onto the strings EmbarkChapterRow understands
+function statusToStepStatus(s: string): string {
+  // Map our journey statuses onto the strings EmbarkChapterRow understands.
+  // We allow "skipped" / "available" too, even though the canonical type doesn't.
   if (s === "completed") return "completed";
   if (s === "in_progress") return "in_progress";
   if (s === "locked") return "locked";
+  if (s === "skipped") return "skipped";
+  if (s === "available") return "available";
   return "available";
 }
 
 export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: Props) {
   const { substitute } = useContentSubstitution();
+  const diagState = useDiagnosticReopens();
 
   // Default-expand the module containing the active chapter, otherwise the first
   // in-progress / up-next module.
@@ -143,9 +148,10 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                 <div className="space-y-1 pt-1">
                   {(() => {
                     const lensType = m.adaptation?.adaptationType ?? "full_module";
-                    const displayChapters = buildLensChapters(m.chapters, lensType);
+                    const recorded = diagState[m.code];
+                    const displayChapters = buildLensChapters(m.code, m.chapters, lensType, recorded);
                     return displayChapters.map((c, sIdx) => {
-                      const step: UnifiedStep = {
+                      const step: UnifiedStep & { lensState?: string } = {
                         stepId: c.code,
                         moduleId: c.code,
                         type: "module" as StepType,
@@ -153,11 +159,12 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                         description: "",
                         duration: c.minutes ? `${c.minutes} min` : undefined,
                         contentType: c.contentType,
-                        status: statusToStepStatus(c.status),
+                        status: statusToStepStatus(c.status as any),
                         skillTargetId: cohortId,
                         skillTargetTitle: m.title,
                         progress: m.pct,
                         referenceId: c.code,
+                        lensState: (c as any).lensState,
                       };
                       return (
                         <EmbarkChapterRow
@@ -209,40 +216,74 @@ function StatusPill({ status }: { status: JourneyModule["status"] }) {
   );
 }
 
+type DiagSnap = { submitted: boolean; reopened: Set<string>; total: number; correct: number };
+type LensChapter = JourneyModule["chapters"][number] & { lensState?: string };
+
 /**
  * Reshape the chapter list based on the persona's delivery lens.
- * - diagnostic_only → one synthetic 5-min entry that opens a 3-question MCQ on the first chapter's content
- * - evidence_required → one synthetic 15-min entry that opens the practical activity on the first chapter
- * - microlearning → same chapters, durations × 0.4
+ * - diagnostic_only → synthetic Quick Diagnostic at top + every real chapter
+ *   shown beneath (read-only "Skipped" state). Once the diagnostic has been
+ *   submitted, chapters whose questions were answered wrong become
+ *   `reopened_after_wrong` (clickable, in-progress).
+ * - evidence_required → synthetic Submit-evidence row at top + chapters as
+ *   "Covered by evidence" (read-only).
+ * - microlearning → same chapters, durations × 0.4 (kept clickable).
  * - full_module / skip_after_validation → unchanged
  */
 function buildLensChapters(
+  moduleCode: string,
   chapters: JourneyModule["chapters"],
-  lens: ModuleAdaptation["adaptationType"]
-): JourneyModule["chapters"] {
-  if (chapters.length === 0) return chapters;
-  const first = chapters[0];
+  lens: ModuleAdaptation["adaptationType"],
+  diag?: DiagSnap,
+): LensChapter[] {
+  if (chapters.length === 0) return chapters as LensChapter[];
 
   if (lens === "diagnostic_only") {
-    return [
-      {
-        ...first,
-        title: "Quick diagnostic — 3 questions",
-        minutes: 5,
-        contentType: "diagnostic",
-      },
-    ];
+    const submitted = !!diag?.submitted;
+    const reopened = diag?.reopened ?? new Set<string>();
+    const synthetic: LensChapter = {
+      code: `__diag::${moduleCode}`,
+      title: submitted
+        ? `Quick diagnostic — ${diag!.correct}/${diag!.total} correct`
+        : "Quick diagnostic — 3 questions",
+      contentType: "diagnostic",
+      minutes: 5,
+      status: submitted ? ("completed" as any) : ("in_progress" as any),
+      displayOrder: -1,
+      lensState: "synthetic_diagnostic",
+    };
+    const real: LensChapter[] = chapters.map((c) => {
+      if (!submitted) {
+        return { ...c, status: "skipped" as any, lensState: "skipped_by_diagnostic" };
+      }
+      if (reopened.has(c.code)) {
+        // Don't override a chapter that's already been completed
+        const status = c.status === "completed" ? "completed" : ("in_progress" as any);
+        return { ...c, status, lensState: "reopened_after_wrong" };
+      }
+      return { ...c, status: "skipped" as any, lensState: "skipped_by_diagnostic" };
+    });
+    return [synthetic, ...real];
   }
+
   if (lens === "evidence_required") {
-    return [
-      {
-        ...first,
-        title: "Submit evidence — short written task",
-        minutes: 15,
-        contentType: "evidence",
-      },
-    ];
+    const first = chapters[0];
+    const synthetic: LensChapter = {
+      ...first,
+      code: `__evi::${moduleCode}`,
+      title: "Submit evidence — short written task",
+      minutes: 15,
+      contentType: "evidence",
+      lensState: "synthetic_evidence",
+    };
+    const real: LensChapter[] = chapters.map((c) => ({
+      ...c,
+      status: "skipped" as any,
+      lensState: "covered_by_evidence",
+    }));
+    return [synthetic, ...real];
   }
+
   if (lens === "microlearning") {
     return chapters.map((c) => ({
       ...c,
@@ -250,7 +291,7 @@ function buildLensChapters(
       minutes: Math.max(5, Math.round((c.minutes || 25) * 0.4)),
     }));
   }
-  return chapters;
+  return chapters as LensChapter[];
 }
 
 function AdaptationBadge({ adaptation }: { adaptation: ModuleAdaptation }) {

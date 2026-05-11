@@ -12,8 +12,8 @@ import { CohortJourneyTab } from "@/components/my360-v2/CohortJourneyTab";
 import { GrowthPathTab } from "@/components/my360-v2/GrowthPathTab";
 import { Loader2 } from "lucide-react";
 
-const tabs = ["Profile", "Cohort Journey", "Growth Path"] as const;
-type Tab = (typeof tabs)[number];
+const allTabs = ["Profile", "Cohort Journey", "Growth Path"] as const;
+type Tab = (typeof allTabs)[number];
 
 export default function NewMy360() {
   const data = useMy360Data();
@@ -45,6 +45,9 @@ export default function NewMy360() {
   const tenureLabel = data.employee?.hris?.tenureMonths
     ? `${Math.floor(data.employee.hris.tenureMonths / 12)}y ${data.employee.hris.tenureMonths % 12}m`
     : "—";
+
+  const hasCohortData = !!data.cohort || data.modules.length > 0;
+  const tabs = hasCohortData ? allTabs : (["Profile"] as const);
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -91,13 +94,15 @@ export default function NewMy360() {
 
           <CapabilityStrip buckets={buckets} />
 
-          <CohortPreviewCard
-            cohort={data.cohort}
-            modules={data.modules}
-            adaptations={data.adaptations}
-            progress={data.progress}
-            onJumpToTab={() => setTab("Cohort Journey")}
-          />
+          {hasCohortData && (
+            <CohortPreviewCard
+              cohort={data.cohort}
+              modules={data.modules}
+              adaptations={data.adaptations}
+              progress={data.progress}
+              onJumpToTab={() => setTab("Cohort Journey")}
+            />
+          )}
         </>
       )}
 

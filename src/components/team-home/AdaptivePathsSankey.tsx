@@ -72,27 +72,43 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
     });
   };
 
-  // Build per-learner segments aligned to spine
+  // Cap the spine to overlay length so we don't render trailing empty columns
+  const overlayLen = Math.max(
+    0,
+    ...selected
+      .map((id) => learners.find((l) => l.employeeId === id)?.overlay.cells.length ?? 0)
+  );
+  const spineLen = overlayLen > 0 ? Math.min(modules.length, overlayLen) : modules.length;
+  const spineModules = useMemo(() => modules.slice(0, spineLen), [modules, spineLen]);
+  const truncated = modules.length > spineLen;
+
+  // Build per-learner segments aligned to spine by INDEX (matches RosterHeatmap)
   const rows = useMemo(() => {
     return selected
       .map((id) => learners.find((l) => l.employeeId === id))
       .filter((x): x is LearnerInput => !!x)
       .map((l) => {
-        const changeMap = new Map(l.overlay.pathChanges.map((p) => [p.module_code, p]));
-        const cellMap = new Map(l.overlay.cells.map((c) => [c.module_code, c]));
-        const segments: Segment[] = modules.map((m) => {
-          const cell = cellMap.get(m.module_code);
-          const change = changeMap.get(m.module_code);
+        // overlay pathChanges keyed to overlay's own cell index
+        const overlayCellIndexByCode = new Map(
+          l.overlay.cells.map((c, idx) => [c.module_code, idx])
+        );
+        const changeByIndex = new Map<number, AiPathChange>();
+        for (const pc of l.overlay.pathChanges) {
+          const idx = overlayCellIndexByCode.get(pc.module_code);
+          if (idx != null) changeByIndex.set(idx, pc);
+        }
+        const segments: Segment[] = spineModules.map((m, i) => {
+          const cell = l.overlay.cells[i];
           return {
             status: cell?.status ?? "not_started",
             adaptation: cell?.adaptation,
-            pathChange: change,
+            pathChange: changeByIndex.get(i),
             module: m,
           };
         });
         return { learner: l, segments };
       });
-  }, [selected, learners, modules]);
+  }, [selected, learners, spineModules]);
 
   const baselineRow = useMemo(() => ({
     segments: modules.map<Segment>((m) => ({ status: "completed", adaptation: null, module: m })),

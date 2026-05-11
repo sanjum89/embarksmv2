@@ -19,6 +19,7 @@ import { getPodcastTranscript, getStaticPodcastUrl } from "@/data/podcastTranscr
 import { getHandsOnScenarios } from "@/data/handsOnScenarios";
 import { mockRolePlayBank, moduleRolePlayMap } from "@/data/mock";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { InlineQuiz, extractInlineQuizzes } from "./InlineQuiz";
 
 interface Props {
   module: LearningModule;
@@ -60,7 +61,12 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   const { normalizedAccount } = useAccount();
   const isMicroRefresher = learningFormat === "micro_refresher";
   const isMicro = learningFormat === "micro" || isMicroRefresher;
-  const transcript = substitute(module.transcript ?? "No content available for this module.");
+  const rawTranscript = substitute(module.transcript ?? "No content available for this module.");
+  const { cleanText: transcript, quizzes: inlineQuizzes } = useMemo(
+    () => extractInlineQuizzes(rawTranscript),
+    [rawTranscript]
+  );
+  const hasInlineQuiz = inlineQuizzes.length > 0;
   const [microExpanded, setMicroExpanded] = useState(false);
   const [completed, setCompleted] = useState(initialCompleted);
   const [showSummary, setShowSummary] = useState(false);
@@ -683,6 +689,20 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
       {learningMode === "listening" && renderListening()}
       {learningMode === "hands-on" && renderHandsOn()}
       {learningMode === "combined" && renderCombined()}
+      {hasInlineQuiz && (
+        <div className="space-y-4">
+          {inlineQuizzes.map((quiz, i) => (
+            <InlineQuiz
+              key={i}
+              title={quiz.title}
+              questions={quiz.questions}
+              onPass={() => {
+                if (!completed && !previewMode) handleMarkComplete();
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

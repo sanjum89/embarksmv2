@@ -1,9 +1,9 @@
 import { cn } from "@/lib/utils";
 
 /** Official Microsoft Teams glyph (4-tile mark + inner T), inline SVG. */
-function TeamsLogo({ className }: { className?: string }) {
+function TeamsLogo({ className, size = 14 }: { className?: string; size?: number }) {
   return (
-    <svg viewBox="0 0 32 32" aria-hidden="true" className={className}>
+    <svg viewBox="0 0 32 32" width={size} height={size} aria-hidden="true" className={className}>
       {/* small circle (people indicator) */}
       <circle cx="22.5" cy="9.5" r="3.5" fill="#7B83EB" />
       <path

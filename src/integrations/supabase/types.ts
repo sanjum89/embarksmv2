@@ -825,6 +825,54 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_capability_proficiency: {
+        Row: {
+          account_id: string
+          capability_code: string
+          confidence: string
+          created_at: string
+          current_level: number
+          employee_id: string
+          id: string
+          last_updated_at: string
+          metadata: Json
+          short_rationale: string | null
+          source: string
+          updated_at: string
+          validation_needed: boolean
+        }
+        Insert: {
+          account_id: string
+          capability_code: string
+          confidence?: string
+          created_at?: string
+          current_level: number
+          employee_id: string
+          id?: string
+          last_updated_at?: string
+          metadata?: Json
+          short_rationale?: string | null
+          source?: string
+          updated_at?: string
+          validation_needed?: boolean
+        }
+        Update: {
+          account_id?: string
+          capability_code?: string
+          confidence?: string
+          created_at?: string
+          current_level?: number
+          employee_id?: string
+          id?: string
+          last_updated_at?: string
+          metadata?: Json
+          short_rationale?: string | null
+          source?: string
+          updated_at?: string
+          validation_needed?: boolean
+        }
+        Relationships: []
+      }
       employee_persona_assignments: {
         Row: {
           account_id: string
@@ -1630,6 +1678,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      role_capability_requirements: {
+        Row: {
+          account_id: string
+          capability_code: string
+          created_at: string
+          criticality: string
+          id: string
+          notes: string | null
+          required_level: number
+          role_cohort_code: string
+          source_module_codes: string[]
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          capability_code: string
+          created_at?: string
+          criticality?: string
+          id?: string
+          notes?: string | null
+          required_level: number
+          role_cohort_code: string
+          source_module_codes?: string[]
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          capability_code?: string
+          created_at?: string
+          criticality?: string
+          id?: string
+          notes?: string | null
+          required_level?: number
+          role_cohort_code?: string
+          source_module_codes?: string[]
+          updated_at?: string
+        }
+        Relationships: []
       }
       role_competency_requirements: {
         Row: {

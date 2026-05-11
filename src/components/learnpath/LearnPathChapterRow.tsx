@@ -187,6 +187,14 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
                     YOU ARE HERE
                   </Badge>
                 )}
+                {lens && lensPill[lens] && (
+                  <Badge
+                    variant="outline"
+                    className={cn("h-5 px-1.5 text-[0.65rem] border", lensPill[lens].className)}
+                  >
+                    {lensPill[lens].label}
+                  </Badge>
+                )}
               </div>
 
               <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground flex-wrap">

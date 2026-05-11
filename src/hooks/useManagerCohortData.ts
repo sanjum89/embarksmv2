@@ -5,7 +5,7 @@ import {
   COHORT_MODULES_FALLBACK,
   RATHBONES_COHORT_ID,
   RATHBONES_PERSONA_IDS,
-  getDemoOverlay,
+  getDemoOverlayFor,
   type LearnerOverlay,
 } from "@/data/managerDemoOverlay";
 

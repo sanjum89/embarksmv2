@@ -1,6 +1,23 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+export interface ChapterSection {
+  section_code: string;
+  heading: string;
+  body_md: string;
+  depth_level: "foundation" | "core" | "applied";
+  tags: string[];
+  time_minutes: number;
+}
+
+export interface DiagnosticQuestion {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation?: string;
+  tags?: string[];
+}
+
 export interface CatalogChapterContent {
   chapterCode: string;
   moduleCode: string;
@@ -13,6 +30,8 @@ export interface CatalogChapterContent {
   practicalActivity: string | null;
   reflectionPrompt: string | null;
   longFormContent: string | null;
+  contentSections: ChapterSection[];
+  diagnosticQuestions: DiagnosticQuestion[];
 }
 
 interface State {
@@ -44,7 +63,7 @@ export function useCatalogChapter(
         const { data, error } = await supabase
           .from("catalog_chapters")
           .select(
-            "chapter_code, module_code, chapter_title, content_type, estimated_time_minutes, learning_objective, chapter_summary, realistic_content_outline, practical_activity, reflection_prompt, chapter_long_form_content"
+            "chapter_code, module_code, chapter_title, content_type, estimated_time_minutes, learning_objective, chapter_summary, realistic_content_outline, practical_activity, reflection_prompt, chapter_long_form_content, content_sections, diagnostic_questions"
           )
           .eq("account_id", accountId)
           .eq("chapter_code", chapterCode)
@@ -68,6 +87,12 @@ export function useCatalogChapter(
               practicalActivity: data.practical_activity ?? null,
               reflectionPrompt: data.reflection_prompt ?? null,
               longFormContent: (data as any).chapter_long_form_content ?? null,
+              contentSections: Array.isArray((data as any).content_sections)
+                ? ((data as any).content_sections as ChapterSection[])
+                : [],
+              diagnosticQuestions: Array.isArray((data as any).diagnostic_questions)
+                ? ((data as any).diagnostic_questions as DiagnosticQuestion[])
+                : [],
             },
             isLoading: false,
             error: null,
@@ -93,13 +118,10 @@ export function useCatalogChapter(
 }
 
 /**
- * Compose a structured markdown transcript from the DB chapter row.
- * Prefers the long-form lesson body when present; otherwise stitches the structured fields.
- *
- * `lens` controls how the body is shaped for the learner:
- *   - "full"        → long-form body (or full structured stitch)
- *   - "condensed"   → first ~250 words + key headings only
- *   - "diagnostic"  → tiny intro + a 3-question MCQ rich block sourced from the body
+ * Compose a structured markdown transcript for a chapter, shaped by `lens`:
+ *   - "full"        → all sections (from `content_sections`) joined; falls back to long_form / outline
+ *   - "condensed"   → only `applied` sections (microlearning) + key takeaways
+ *   - "diagnostic"  → tiny intro + a real `inline_quiz` rich block built from `diagnostic_questions`
  *   - "evidence"    → ONLY the practical_activity prompt as a submission task
  */
 export type ChapterLens = "full" | "condensed" | "diagnostic" | "evidence";
@@ -108,55 +130,72 @@ export function composeChapterTranscript(
   ch: CatalogChapterContent,
   lens: ChapterLens = "full"
 ): string {
-  const fullBody = composeFull(ch);
-
   if (lens === "evidence") {
     return [
       `# ${ch.chapterTitle} — Evidence task`,
       `> Skip straight to the practice. Submit a short piece of work that shows you can apply this — no reading required.`,
+      ch.learningObjective ? `**What this covers:** ${ch.learningObjective}` : "",
       ch.practicalActivity
         ? `## What to submit\n${ch.practicalActivity}`
         : `## What to submit\nWrite a short note (200-300 words) describing how you would apply this chapter's ideas to a real Rathbones client situation.`,
-    ].join("\n\n");
+    ]
+      .filter(Boolean)
+      .join("\n\n");
   }
 
   if (lens === "diagnostic") {
     const intro = ch.learningObjective ?? ch.chapterSummary ?? "";
+    const questions =
+      ch.diagnosticQuestions.length > 0
+        ? ch.diagnosticQuestions
+        : fallbackQuestions(ch);
+    const block = {
+      type: "inline_quiz",
+      data: {
+        title: `${ch.chapterTitle} — quick check`,
+        questions: questions.map((q) => ({
+          question: q.question,
+          options: q.options,
+          correctIndex: q.correctIndex,
+          explanation: q.explanation,
+        })),
+      },
+    };
     return [
       `# ${ch.chapterTitle} — Quick diagnostic`,
       `> Three questions to confirm you've got this. Pass and the module's done — no need to read it through.`,
       intro ? `## What this covers\n${intro}` : "",
-      `:::RICH_BLOCK{"type":"diagnostic_quiz","data":{"chapterCode":"${ch.chapterCode}","chapterTitle":"${escapeJson(ch.chapterTitle)}","passThreshold":2}}:::`,
+      `:::RICH_BLOCK${JSON.stringify(block)}:::`,
     ]
       .filter(Boolean)
       .join("\n\n");
   }
 
   if (lens === "condensed") {
-    // First ~250 words + a key-points list distilled from the outline bullets
-    const words = fullBody.split(/\s+/);
-    const intro = words.slice(0, 250).join(" ");
-    const bulletLines =
-      (ch.realisticContentOutline?.match(/^\s*\*\s+\*\*([^*]+)\*\*/gm) ?? [])
-        .map((s) => s.replace(/^\s*\*\s+\*\*([^*]+)\*\*.*$/, "- $1"))
-        .slice(0, 5);
+    const applied = ch.contentSections.filter((s) => s.depth_level === "applied");
+    const sections = applied.length > 0 ? applied : ch.contentSections.slice(-2);
+    const body = sections
+      .map((s) => `## ${s.heading}\n${s.body_md}`)
+      .join("\n\n");
     return [
       `# ${ch.chapterTitle}`,
-      `> Condensed view — we've trimmed sections your profile already evidences. Here are the parts most likely to be new.`,
-      intro,
-      bulletLines.length ? `## Key points to remember\n${bulletLines.join("\n")}` : "",
+      `> Microlearning view — we've kept the parts most likely to be new for you and trimmed the basics your background already covers.`,
+      body || (ch.longFormContent?.slice(0, 1500) ?? ""),
+      ch.practicalActivity ? `## Try it yourself\n${ch.practicalActivity}` : "",
     ]
       .filter(Boolean)
       .join("\n\n");
   }
 
-  return fullBody;
-}
-
-function composeFull(ch: CatalogChapterContent): string {
+  // full
+  if (ch.contentSections.length > 0) {
+    const body = ch.contentSections.map((s) => `## ${s.heading}\n${s.body_md}`).join("\n\n");
+    return [`# ${ch.chapterTitle}`, body].join("\n\n");
+  }
   if (ch.longFormContent && ch.longFormContent.trim().length > 200) {
     return ch.longFormContent.trim();
   }
+  // Last-ditch stitch from legacy fields
   const parts: string[] = [`# ${ch.chapterTitle}`];
   if (ch.learningObjective) parts.push(`## Learning objective\n${ch.learningObjective}`);
   if (ch.chapterSummary) parts.push(`## Overview\n${ch.chapterSummary}`);
@@ -166,6 +205,18 @@ function composeFull(ch: CatalogChapterContent): string {
   return parts.join("\n\n");
 }
 
-function escapeJson(s: string): string {
-  return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+function fallbackQuestions(ch: CatalogChapterContent): DiagnosticQuestion[] {
+  return [
+    {
+      question: `Which best summarises the focus of "${ch.chapterTitle}"?`,
+      options: [
+        ch.learningObjective ?? ch.chapterSummary ?? "Core concept of this chapter",
+        "An unrelated topic from another module",
+        "A general overview of UK politics",
+        "None of the above",
+      ],
+      correctIndex: 0,
+      explanation: "This chapter's stated learning objective.",
+    },
+  ];
 }

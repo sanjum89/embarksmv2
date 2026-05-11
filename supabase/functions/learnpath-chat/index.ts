@@ -15,11 +15,28 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
     const moduleList = (context?.modules || [])
-      .map(
-        (module: any) =>
-          `- ${module.title} (ID: ${module.moduleId}, status: ${module.status}, skill target: ${module.skillTargetTitle})`
-      )
+      .map((module: any) => {
+        // Cohort module rows carry trackName + moduleCode + chapter counts.
+        if (module.moduleCode || module.trackName) {
+          const upNext = module.upNextChapterTitle
+            ? `, up-next chapter: "${module.upNextChapterTitle}" (chapterCode: ${module.upNextChapterCode})`
+            : "";
+          return `- [${module.trackName ?? "Track"}] ${module.title} (moduleCode: ${module.moduleCode}, ${module.completedChapters ?? 0}/${module.totalChapters ?? 0} chapters, status: ${module.status}${upNext})`;
+        }
+        return `- ${module.title} (ID: ${module.moduleId}, status: ${module.status}, skill target: ${module.skillTargetTitle})`;
+      })
       .join("\n");
+
+    const cj = context?.cohortJourney;
+    const cohortBlock = cj
+      ? `## Your Cohort Journey (CANONICAL — use this when present)
+- Cohort: ${cj.cohortTitle} (cohortId: ${cj.cohortId})
+- Overall progress: ${cj.overallPct}% — ${cj.completedChapters}/${cj.totalChapters} chapters across ${cj.completedModules}/${cj.totalModules} modules
+- Due date: ${cj.dueDate ?? "not set"}
+- Active track: ${cj.activeTrackName ?? "—"}
+- Resume target: ${cj.resumeChapterTitle ? `chapter "${cj.resumeChapterTitle}" (chapterCode: ${cj.resumeChapterCode}) inside module "${cj.resumeModuleTitle}" (moduleCode: ${cj.resumeModuleCode})` : "no clear resume point — ask the learner what they'd like to start"}
+`
+      : "";
 
     const currentContent = context?.currentContent;
     const currentContentBlock = currentContent

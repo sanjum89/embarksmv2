@@ -45,7 +45,7 @@ const TEMPLATES = [
   },
 ];
 
-export function SendCheckInDialog({ open, onOpenChange }: Props) {
+export function SendCheckInDialog({ open, onOpenChange, defaultLearnerId }: Props) {
   const { normalizedAccount } = useAccount();
   const employeesById = normalizedAccount?.employeesById ?? {};
   const overlays = useMemo(() => getAllDemoOverlays(), []);

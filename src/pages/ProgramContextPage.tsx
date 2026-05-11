@@ -516,8 +516,8 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
               <p className="text-xs font-medium text-foreground mb-2">Automated Rules</p>
               <div className="space-y-2 text-[0.7rem] text-muted-foreground">
                 <div className="flex items-center gap-2"><AlertTriangle className="h-3 w-3 text-destructive" />Flag learner as "At Risk" after 7 days of inactivity</div>
-                <div className="flex items-center gap-2"><Star className="h-3 w-3 text-amber-500" />Tag learner as "Rising Star" when progress &gt;80% and ahead of pace</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-emerald-500" />Mark cohort complete when all learners pass all assessments</div>
+                <div className="flex items-center gap-2"><Star className="h-3 w-3 text-warning" />Tag learner as "Rising Star" when progress &gt;80% and ahead of pace</div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-success" />Mark cohort complete when all learners pass all assessments</div>
               </div>
             </div>
           </div>
@@ -650,9 +650,9 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
               <p className="text-sm font-semibold text-foreground mb-4">Progress Distribution</p>
               <div className="space-y-2">
                 {[
-                  { label: "Completed (100%)", count: cohort.learnerProgress.filter(l => l.overallProgress === 100).length, color: "bg-emerald-500" },
+                  { label: "Completed (100%)", count: cohort.learnerProgress.filter(l => l.overallProgress === 100).length, color: "bg-success" },
                   { label: "On Track (50-99%)", count: cohort.learnerProgress.filter(l => l.overallProgress >= 50 && l.overallProgress < 100).length, color: "bg-primary" },
-                  { label: "Getting Started (1-49%)", count: cohort.learnerProgress.filter(l => l.overallProgress > 0 && l.overallProgress < 50).length, color: "bg-amber-500" },
+                  { label: "Getting Started (1-49%)", count: cohort.learnerProgress.filter(l => l.overallProgress > 0 && l.overallProgress < 50).length, color: "bg-warning" },
                   { label: "Not Started (0%)", count: cohort.learnerProgress.filter(l => l.overallProgress === 0).length, color: "bg-muted-foreground" },
                 ].map(({ label, count, color }) => (
                   <div key={label} className="flex items-center gap-3">
@@ -789,8 +789,8 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
               <p className="text-xs font-medium text-foreground mb-2">Automated Rules</p>
               <div className="space-y-2 text-[0.7rem] text-muted-foreground">
                 <div className="flex items-center gap-2"><AlertTriangle className="h-3 w-3 text-destructive" />Flag as "At Risk" after 7 days inactive</div>
-                <div className="flex items-center gap-2"><Star className="h-3 w-3 text-amber-500" />Tag "Rising Star" at &gt;80% ahead of pace</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-emerald-500" />Complete when all learners pass</div>
+                <div className="flex items-center gap-2"><Star className="h-3 w-3 text-warning" />Tag "Rising Star" at &gt;80% ahead of pace</div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-success" />Complete when all learners pass</div>
               </div>
             </div>
           </div>

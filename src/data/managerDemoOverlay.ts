@@ -45,6 +45,10 @@ export interface ActionItem {
   detail: string;
   severity: "low" | "medium" | "high";
   age: string; // e.g. "2h ago"
+  /** For raised_hand actions: the learner's verbatim message to the manager. */
+  learner_message?: string;
+  /** Optional module context (title) the action relates to. */
+  module_title?: string;
 }
 
 export interface CpdRow {

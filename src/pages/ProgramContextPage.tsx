@@ -597,39 +597,36 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
       <button onClick={onBack} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4">
-        <ArrowLeft className="h-3 w-3" />Back to Cohorts
+        <ArrowLeft className="h-3 w-3" />Back to cohorts
       </button>
 
-      {/* Header */}
-      <div className="flex items-start gap-4 mb-6">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 shrink-0">
-          <Layers className="h-6 w-6 text-primary" />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl font-bold text-foreground">{cohort.name}</h1>
-            <Badge variant="outline" className={cn("text-xs", statusColor(cohort.status))}>{cohort.status}</Badge>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">{cohort.description}</p>
-          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{cohort.startDate} → {cohort.endDate}</span>
-            <Badge variant="secondary" className="text-[0.65rem]">{cohort.category}</Badge>
-          </div>
-        </div>
+      {/* Compact header (Program Context style) */}
+      <div className="flex items-center gap-2 mb-1">
+        <Layers className="h-4 w-4 text-primary" />
+        <h1 className="font-display text-lg font-bold text-foreground">{cohort.name}</h1>
+        <Badge variant="outline" className={cn("text-[0.6rem] capitalize ml-1", statusColor(cohort.status))}>{cohort.status}</Badge>
+      </div>
+      <p className="text-sm text-muted-foreground mb-1">{cohort.description}</p>
+      <div className="flex items-center gap-3 mb-5 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" />{cohort.startDate} → {cohort.endDate}</span>
+        <Badge variant="secondary" className="text-[0.6rem]">{cohort.category}</Badge>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      {/* Stat strip — single bordered card */}
+      <div className="rounded-xl border border-border bg-background p-3 mb-5 grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
           { label: "Learners", value: cohort.assignedLearnerIds.length, icon: Users },
-          { label: "Avg Progress", value: `${avgProgress}%`, icon: TrendingUp },
-          { label: "Avg Score", value: `${avgScore}%`, icon: BarChart3 },
-          { label: "Rising Stars", value: risingStar, icon: Star },
-          { label: "At Risk", value: atRisk, icon: AlertTriangle },
+          { label: "Avg progress", value: `${avgProgress}%`, icon: TrendingUp },
+          { label: "Avg score", value: `${avgScore}%`, icon: BarChart3 },
+          { label: "Rising stars", value: risingStar, icon: Star },
+          { label: "At risk", value: atRisk, icon: AlertTriangle },
         ].map(({ label, value, icon: Icon }) => (
-          <div key={label} className="rounded-xl border border-border bg-card p-4">
-            <div className="flex items-center gap-2 mb-1"><Icon className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-[0.65rem] text-muted-foreground">{label}</span></div>
-            <p className="text-lg font-bold text-foreground">{value}</p>
+          <div key={label} className="flex flex-col">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <Icon className="h-3 w-3 text-muted-foreground" />
+              <span className="text-[0.6rem] uppercase tracking-wide text-muted-foreground">{label}</span>
+            </div>
+            <p className="text-base font-bold text-foreground tabular-nums">{value}</p>
           </div>
         ))}
       </div>
@@ -639,7 +636,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
         <TabsList className="mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="learners">Learners</TabsTrigger>
-          <TabsTrigger value="targets">Skill Targets</TabsTrigger>
+          <TabsTrigger value="targets">Skill targets</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 

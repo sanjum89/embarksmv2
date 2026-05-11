@@ -38,9 +38,9 @@ export function Schedule1on1Dialog({ open, onOpenChange, defaultLearnerId }: Pro
     [overlays, employeesById]
   );
 
-  const [step, setStep] = useState<Step>("learner");
+  const [step, setStep] = useState<Step>(defaultLearnerId ? "time" : "learner");
   const [search, setSearch] = useState("");
-  const [pickedId, setPickedId] = useState<string | null>(null);
+  const [pickedId, setPickedId] = useState<string | null>(defaultLearnerId ?? null);
   const [pickedSlot, setPickedSlot] = useState<{ dayIdx: number; time: string } | null>(null);
   const [onlyFree, setOnlyFree] = useState(true);
   const [duration, setDuration] = useState(30);

@@ -67,7 +67,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
   const toggleLearner = (id: string) => {
     setSelected((prev) => {
       if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= 4) return prev;
+      if (prev.length >= MAX_SELECTED) return prev;
       return [...prev, id];
     });
   };

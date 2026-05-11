@@ -1,60 +1,39 @@
-## Goal
+# Julian's My 360 — same shape as Clara/Theo
 
-Slim Team-mode sidebar to only the surfaces a manager actually uses today. Old admin/management screens are preserved (not deleted) by moving them under the **Dev** group as `(legacy)` so they remain reachable for reference and demos.
+Goal: make `/my-360` work for Julian Wexford (rb-mgr) with the same Profile tab UI Clara and Theo see, showing him as a strong senior IM Director with 1–2 development areas.
 
-## Final Team-mode sidebar (flat, 5 items)
+## What's missing today
 
-```
-Team Home          /team                        ← renamed from "Team Mode"
-Cohorts            /manager/cohorts             ← repurposed, see below
-People Graph       /manager/people-graph
-Action Centre      /action-centre
-New Chat           /chat
-```
+The `useMy360Data` hook returns `eligible: false` for Julian (no `employee_capability_proficiency` rows), so `/my-360` redirects him to the legacy view. He also has no persona assignment, no persona competency profile, and no role requirements for `im_director`.
 
-My 360 is removed from Team mode (lives in Me mode only).
+## Plan
 
-## Dev group additions (legacy, still reachable)
+### 1. Pick a persona for Julian
+Reuse the existing `senior_leader` persona (already in `employee_personas`). Assign it to `rb-mgr` via `employee_persona_assignments`.
 
-```
-Admin (legacy)              /admin
-Skill Targets (legacy)      /manager/skill-targets
-Role Play Bank (legacy)     /manager/role-play
-Program Context (legacy)    /manager/programs    ← new path for old ProgramContextPage
-Team Insights (legacy)      /team-insights
-Team Dashboard (legacy)     /team-dashboard
-Manager View (legacy)       /manager
-```
+### 2. Seed competency data (Profile tab)
 
-Existing routes are kept in `App.tsx`; we only add `/manager/programs` for the old ProgramContextPage so `/manager/cohorts` can be reused for the new Cohort Hub list.
+Insert into `persona_competency_profiles` for `senior_leader` — one row per competency in the existing 16-item Rathbones catalog. Mature levels overall (4–5) with two visible gaps:
 
-## Cohorts entry — repurpose `/manager/cohorts`
+- **Gap 1**: `oe.systems_data_ai` — Rathbones IT Systems, Data & AI-enabled Tools → current 3
+- **Gap 2**: `cps.regulatory_consumer_duty` → current 3
+- Everything else: 4 or 5 with `confidence='high'`
 
-Replace `ProgramContextPage` at `/manager/cohorts` with a new lightweight **`ManagerCohortPicker`** page:
+Insert into `role_competency_requirements` for `role_cohort_code='im_director'` — required levels of 4–5 across the catalog (the two gaps requiring 5 so they show as development areas).
 
-- Calls `useAccountCohorts()` and renders one card per cohort linking to `/manager/cohort/:id` (the new Manager Cohort Hub with Roster heatmap + AI Changes + CPD).
-- If the live list returns empty, falls back to a single card for the demo cohort `RATHBONES_COHORT_ID` so the manager can always reach the hub.
-- Header: "Cohorts you manage — pick one to open the hub."
+Insert into `employee_capability_proficiency` for `rb-mgr` — mirror the persona levels using the existing capability codes (so `eligible=true` and the Capability Strip + radar render). Pull capability codes from `role_capability_requirements` and seed at director-appropriate levels with two gaps that map to the same two competency tracks.
 
-Old `ProgramContextPage` stays mounted at `/manager/programs` under the Dev group.
+### 3. Fix one hardcoded role cohort in the hook
 
-## TeamMode page resilience
+`src/hooks/useMy360Data.ts` currently hardcodes `role_cohort_code='assoc_im'` when fetching `role_capability_requirements` and `role_competency_requirements`. Change it to derive from: cohort.role_cohort_code → persona's `default_role_progression_code` → fallback `assoc_im`. Julian has no cohort, so it'll use `senior_leader.default_role_progression_code = 'sr_im_director'` — we'll seed his role_competency_requirements under `im_director` and update the persona's default to `im_director` (or seed under `sr_im_director` — we'll use `im_director` to match his title and update the persona row).
 
-In `src/pages/TeamMode.tsx`, when `cohorts.length === 0`, render a fallback card linking to `/manager/cohort/${RATHBONES_COHORT_ID}` so the demo cohort hub is always one click away.
+### 4. Hide the two empty tabs for Julian
+Profile-tab-only scope. In `NewMy360.tsx`, when `data.modules.length === 0` and `data.cohort` is undefined, render only the Profile tab (drop "Cohort Journey" and "Growth Path" from the pill switcher). This keeps the page clean for Julian without breaking Clara/Theo.
 
-## Admin gating
+## Files touched
 
-Keep "Admin (legacy)" visible only when `baseRole === "admin"` (so Julian — Investment Director — does not see it as a top-level item; he can still access via Dev if dev mode is on).
+- `src/hooks/useMy360Data.ts` — derive role_cohort_code instead of hardcoding `assoc_im`
+- `src/pages/NewMy360.tsx` — conditionally hide cohort/growth tabs when no cohort data
+- New SQL inserts (via insert tool) for: `employee_persona_assignments`, `persona_competency_profiles`, `role_competency_requirements`, `employee_capability_proficiency`, and a small update to `employee_personas.default_role_progression_code` for `senior_leader`
 
-## Files to touch
-
-- `src/components/layout/AppSidebar.tsx` — replace `teamNavItems`; move legacy entries into the Dev group with `(legacy)` labels.
-- `src/pages/ManagerCohortPicker.tsx` *(new)* — cohort list with demo fallback.
-- `src/App.tsx` — point `/manager/cohorts` → `ManagerCohortPicker`; add `/manager/programs` → `ProgramContextPage`.
-- `src/pages/TeamMode.tsx` — empty-state fallback cohort card; rename heading to "Team Home".
-
-## Out of scope
-
-- My 360 changes for Julian (skipped per your call).
-- Any data/DB changes.
-- Internals of Manager Cohort Hub, Action Centre, Learner Drawer, AI Explain popover, `useManagerActions`.
+No schema changes. No new components — reuses ProfileHero, StatStrip, CompetencyRadarHero, CapabilityStrip exactly as-is.

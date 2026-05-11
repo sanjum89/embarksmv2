@@ -92,7 +92,7 @@ export function Schedule1on1Dialog({ open, onOpenChange, defaultLearnerId }: Pro
       <DialogContent className="max-w-2xl gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
           <div className="flex items-center gap-2">
-            {step !== "learner" && (
+            {step !== "learner" && !(step === "time" && defaultLearnerId) && (
               <Button variant="ghost" size="sm" className="-ml-2 h-7 px-2" onClick={() => setStep(step === "confirm" ? "time" : "learner")}>
                 <ChevronLeft className="mr-1 h-3.5 w-3.5" /> Back
               </Button>

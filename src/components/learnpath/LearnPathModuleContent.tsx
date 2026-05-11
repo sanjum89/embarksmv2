@@ -20,6 +20,17 @@ import { getHandsOnScenarios } from "@/data/handsOnScenarios";
 import { mockRolePlayBank, moduleRolePlayMap } from "@/data/mock";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { InlineQuiz, extractInlineQuizzes, type InlineQuizSubmitResult } from "./InlineQuiz";
+import { supabase } from "@/integrations/supabase/client";
+
+export interface CohortChapterContext {
+  accountId: string;
+  employeeId: string;
+  cohortId: string;
+  moduleCode: string;
+  chapterCode: string;
+  moduleCompletedChapters: number;
+  moduleTotalChapters: number;
+}
 
 interface Props {
   module: LearningModule;
@@ -40,6 +51,10 @@ interface Props {
   initialCompleted?: boolean;
   /** Notify parent when completion state changes (so parent can hide mode selector etc.) */
   onCompletedChange?: (completed: boolean) => void;
+  /** Cohort chapter context — when present, mark-complete persists to learner_progress */
+  cohortContext?: CohortChapterContext;
+  /** Called after a cohort chapter is successfully persisted, so parent can refresh the journey */
+  onChapterPersisted?: () => void;
   /** Fires when a Quick Diagnostic inline quiz is submitted (right OR wrong).
    * Receives the submission result so the parent can mark the diagnostic
    * complete and reopen wrong chapters. */
@@ -54,7 +69,7 @@ const modeBanners: Record<string, { icon: React.ElementType; label: string; desc
   combined: { icon: Layers, label: "Combined Mode", desc: "A curated blend of reading, visuals, and practice.", className: "bg-primary/10 text-primary border-primary/20" },
 };
 
-export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader, nextModuleId, nextModuleTitle, nextSkillTargetId, nextStepType, initialCompleted = false, onCompletedChange, onDiagnosticSubmit }: Props) {
+export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader, nextModuleId, nextModuleTitle, nextSkillTargetId, nextStepType, initialCompleted = false, onCompletedChange, cohortContext, onChapterPersisted, onDiagnosticSubmit }: Props) {
   const learnPathCtx = useEmbark();
   const learningMode = learningModeOverride ?? learnPathCtx.learningMode;
   const openAssessment = learnPathCtx.openAssessment;

@@ -275,6 +275,21 @@ export function EmbarkContent() {
     const currentIdx = allSteps.findIndex((ms) => ms.moduleId === activeModuleId);
     const nextStep = allSteps.slice(currentIdx + 1).find((s) => s.status !== "completed" && s.status !== "skipped");
 
+    // Cohort-aware next chapter (overrides skill-target nextStep when active item is a cohort chapter)
+    const cohortLocation = cohortChapterCode ? findCohortChapterLocation(journey, cohortChapterCode) : null;
+    const cohortNext = cohortChapterCode ? findNextCohortChapter(journey, cohortChapterCode) : null;
+    const cohortContext = cohortLocation && journey
+      ? {
+          accountId: activeAccountId!,
+          employeeId,
+          cohortId: journey.cohort.id,
+          moduleCode: cohortLocation.module.code,
+          chapterCode: cohortLocation.chapter.code,
+          moduleCompletedChapters: cohortLocation.module.completedChapters,
+          moduleTotalChapters: cohortLocation.module.totalChapters,
+        }
+      : null;
+
     // For Quick Diagnostic submissions: pre-compute the chapter to advance to.
     // Priority: first wrong-answer chapter (reopened) → first non-skipped chapter
     // in the next cohort module → legacy nextStep.
@@ -298,9 +313,9 @@ export function EmbarkContent() {
       notifyModuleCompleted({
         moduleId: activeModuleId,
         moduleTitle: stepInfo?.title ?? mod.title ?? activeModuleId,
-        nextModuleId: nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId,
-        nextModuleTitle: nextStep?.title,
-        nextStepType: nextStep?.type,
+        nextModuleId: cohortNext?.chapterCode ?? (nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId),
+        nextModuleTitle: cohortNext?.chapterTitle ?? nextStep?.title,
+        nextStepType: cohortNext ? "module" : nextStep?.type,
         skillTargetId: nextStep?.skillTargetId ?? stepInfo?.skillTargetId,
       });
     };
@@ -314,6 +329,12 @@ export function EmbarkContent() {
         diagNext = computeDiagnosticNext(Array.from(recorded.reopened));
       }
     }
+
+    // Resolve final "next" priorities: diagnostic > cohort-journey > skill-target nextStep
+    const resolvedNextId = diagNext?.id ?? cohortNext?.chapterCode ?? (nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId);
+    const resolvedNextTitle = diagNext?.title ?? cohortNext?.chapterTitle ?? nextStep?.title;
+    const resolvedNextType: StepType | undefined = diagNext ? "module" : cohortNext ? "module" : nextStep?.type;
+    const resolvedNextSkillTargetId = cohortNext ? undefined : nextStep?.skillTargetId;
 
     return (
       <div className="h-full flex flex-col">
@@ -330,12 +351,14 @@ export function EmbarkContent() {
             skillTargetId={stepInfo?.skillTargetId}
             stepId={stepInfo?.stepId}
             onComplete={handleModuleComplete}
-            nextModuleId={diagNext?.id ?? (nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId)}
-            nextModuleTitle={diagNext?.title ?? nextStep?.title}
-            nextSkillTargetId={nextStep?.skillTargetId}
-            nextStepType={diagNext ? "module" : nextStep?.type}
-            initialCompleted={stepInfo?.status === "completed"}
+            nextModuleId={resolvedNextId}
+            nextModuleTitle={resolvedNextTitle}
+            nextSkillTargetId={resolvedNextSkillTargetId}
+            nextStepType={resolvedNextType}
+            initialCompleted={stepInfo?.status === "completed" || cohortLocation?.chapter.status === "completed"}
             onCompletedChange={setModuleCompletedView}
+            cohortContext={cohortContext ?? undefined}
+            onChapterPersisted={refreshJourney}
             onDiagnosticSubmit={(result) => {
               if (!diagModuleCode) return;
               diagnosticReopens.recordSubmission(

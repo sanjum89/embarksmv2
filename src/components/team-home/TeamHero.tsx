@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CalendarPlus, Inbox, MessageSquarePlus } from "lucide-react";
-import { toast } from "sonner";
+import { Schedule1on1Dialog } from "./Schedule1on1Dialog";
+import { SendCheckInDialog } from "./SendCheckInDialog";
 
 interface Props {
   managerName: string;
@@ -10,6 +12,9 @@ interface Props {
 }
 
 export function TeamHero({ managerName, managerTitle, summary }: Props) {
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [checkInOpen, setCheckInOpen] = useState(false);
+
   return (
     <section className="mb-8">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -26,10 +31,10 @@ export function TeamHero({ managerName, managerTitle, summary }: Props) {
           <p className="mt-3 max-w-2xl text-sm text-foreground/80">{summary}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" onClick={() => toast.success("1:1 scheduled in Teams (demo)")}>
+          <Button size="sm" variant="outline" onClick={() => setScheduleOpen(true)}>
             <CalendarPlus className="mr-1.5 h-3.5 w-3.5" /> Schedule 1:1
           </Button>
-          <Button size="sm" variant="outline" onClick={() => toast.success("Cohort check-in posted (demo)")}>
+          <Button size="sm" variant="outline" onClick={() => setCheckInOpen(true)}>
             <MessageSquarePlus className="mr-1.5 h-3.5 w-3.5" /> Send check-in
           </Button>
           <Button size="sm" asChild>
@@ -39,6 +44,9 @@ export function TeamHero({ managerName, managerTitle, summary }: Props) {
           </Button>
         </div>
       </div>
+
+      <Schedule1on1Dialog open={scheduleOpen} onOpenChange={setScheduleOpen} />
+      <SendCheckInDialog open={checkInOpen} onOpenChange={setCheckInOpen} />
     </section>
   );
 }

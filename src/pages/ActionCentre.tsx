@@ -7,6 +7,7 @@ import { Check, X, Undo2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import BackButton from "@/components/layout/BackButton";
 import { useUser } from "@/contexts/UserContext";
+import { useAccount } from "@/contexts/AccountContext";
 import { getAllDemoOverlays, COHORT_MODULES_FALLBACK } from "@/data/managerDemoOverlay";
 import { useManagerActions } from "@/store/useManagerActions";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";
@@ -25,13 +26,17 @@ const GROUP_LABEL: Record<string, string> = {
 export default function ActionCentre() {
   const overlays = getAllDemoOverlays();
   const { user } = useUser();
+  const { normalizedAccount } = useAccount();
+  const employeesById = normalizedAccount?.employeesById ?? {};
+  const nameOf = (id: string) => employeesById[id]?.name || id;
+  const titleOf = (id: string) => employeesById[id]?.title || "Learner";
   const { approvals, recordDecision, clearDecision } = useManagerActions();
   const [openId, setOpenId] = useState<string | null>(null);
   const selected = overlays.find((o) => o.employeeId === openId) ?? null;
 
   const allActions = useMemo(
-    () => overlays.flatMap((o) => o.actions.map((a) => ({ ...a, learnerName: o.employeeId }))),
-    [overlays]
+    () => overlays.flatMap((o) => o.actions.map((a) => ({ ...a, learnerName: nameOf(o.employeeId) }))),
+    [overlays, employeesById]
   );
 
   const grouped = useMemo(() => {
@@ -44,8 +49,8 @@ export default function ActionCentre() {
   }, [allActions]);
 
   const allChanges = useMemo(
-    () => overlays.flatMap((o) => o.pathChanges.map((c) => ({ ...c, learnerName: o.employeeId }))),
-    [overlays]
+    () => overlays.flatMap((o) => o.pathChanges.map((c) => ({ ...c, learnerName: nameOf(o.employeeId) }))),
+    [overlays, employeesById]
   );
 
   return (
@@ -176,7 +181,7 @@ export default function ActionCentre() {
       <LearnerDrawer
         open={!!openId}
         onOpenChange={(o) => !o && setOpenId(null)}
-        learner={selected ? { employeeId: selected.employeeId, name: selected.employeeId } : null}
+        learner={selected ? { employeeId: selected.employeeId, name: nameOf(selected.employeeId), title: titleOf(selected.employeeId) } : null}
         overlay={selected}
         modules={COHORT_MODULES_FALLBACK.map((m) => ({ module_code: m.module_code, module_title: m.module_title, progression_stage: m.progression_stage }))}
       />

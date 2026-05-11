@@ -135,6 +135,48 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   const wordCount = transcript.split(/\s+/).length;
   const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
+  const persistCohortChapterCompletion = useCallback(async () => {
+    if (!cohortContext) return;
+    try {
+      const { accountId, employeeId, cohortId, moduleCode, chapterCode } = cohortContext;
+      // Check for an existing row
+      const { data: existing } = await supabase
+        .from("learner_progress")
+        .select("id, started_at")
+        .eq("account_id", accountId)
+        .eq("employee_id", employeeId)
+        .eq("cohort_id", cohortId)
+        .eq("module_code", moduleCode)
+        .eq("chapter_code", chapterCode)
+        .maybeSingle();
+      const now = new Date().toISOString();
+      if (existing?.id) {
+        await supabase
+          .from("learner_progress")
+          .update({
+            status: "completed",
+            completed_at: now,
+            started_at: existing.started_at ?? now,
+          })
+          .eq("id", existing.id);
+      } else {
+        await supabase.from("learner_progress").insert({
+          account_id: accountId,
+          employee_id: employeeId,
+          cohort_id: cohortId,
+          module_code: moduleCode,
+          chapter_code: chapterCode,
+          status: "completed",
+          started_at: now,
+          completed_at: now,
+        });
+      }
+      onChapterPersisted?.();
+    } catch (err) {
+      console.error("[EmbarkModuleContent] Failed to persist cohort chapter completion", err);
+    }
+  }, [cohortContext, onChapterPersisted]);
+
   const handleMarkComplete = () => {
     setCompleted(true);
     setShowSummary(true);
@@ -157,8 +199,10 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
         return { ...target, steps: finalSteps, progress };
       });
     }
+    void persistCohortChapterCompletion();
     onComplete?.();
   };
+
 
   const renderModuleHeader = () => (
     <div className="rounded-xl border border-border bg-card p-4 flex items-start gap-4">

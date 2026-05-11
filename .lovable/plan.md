@@ -1,39 +1,55 @@
-# Julian's My 360 — same shape as Clara/Theo
+# Fix: cohort-chapter completion has no "Next Chapter" CTA and doesn't persist
 
-Goal: make `/my-360` work for Julian Wexford (rb-mgr) with the same Profile tab UI Clara and Theo see, showing him as a strong senior IM Director with 1–2 development areas.
+## Root causes
 
-## What's missing today
+1. **Next-chapter lookup is skill-target-only.** In `src/components/learnpath/LearnPathContent.tsx`, the cohort-chapter render branch (≈line 272–335) computes `nextStep` from `allSteps`, which is built from `sortedTargets` (skill targets). For cohort learners (Rathbones), the active chapter isn't in `allSteps`, so `currentIdx === -1`, `nextStep` is undefined, `nextModuleId/Title` are not passed to `EmbarkModuleContent`, and the CompletionScreen renders only "Back to All Chapters".
 
-The `useMy360Data` hook returns `eligible: false` for Julian (no `employee_capability_proficiency` rows), so `/my-360` redirects him to the legacy view. He also has no persona assignment, no persona competency profile, and no role requirements for `im_director`.
+2. **Mark-as-complete never writes `learner_progress`.** `handleMarkComplete` in `LearnPathModuleContent.tsx` only mutates skill targets. Cohort chapters have no `skillTargetId/stepId`, so nothing is persisted. The journey reads from `learner_progress` and stays "not_started" forever.
+
+3. **Completion stats are blank.** `completionStats` derives Progress/Streak from the skill-target step list, so cohort chapters always show "—".
 
 ## Plan
 
-### 1. Pick a persona for Julian
-Reuse the existing `senior_leader` persona (already in `employee_personas`). Assign it to `rb-mgr` via `employee_persona_assignments`.
+### A. Cohort-aware "next chapter" resolver
+Add a small helper that, given the journey + the current cohort chapter code, returns:
+- next chapter in the same module (in `displayOrder`), else
+- first chapter of the next module in the same track, else
+- first chapter of the next track,
+skipping locked chapters.
 
-### 2. Seed competency data (Profile tab)
+Use it in `LearnPathContent.tsx` for the chapter render branch when `cohortChapterCode` is set, overriding the `nextModuleId / nextModuleTitle / nextStepType="module" / nextSkillTargetId=undefined` props passed to `EmbarkModuleContent`.
 
-Insert into `persona_competency_profiles` for `senior_leader` — one row per competency in the existing 16-item Rathbones catalog. Mature levels overall (4–5) with two visible gaps:
+`handleModuleComplete` will also call `notifyModuleCompleted` with the cohort-derived next chapter so the AI nudge / Action Centre flows stay correct.
 
-- **Gap 1**: `oe.systems_data_ai` — Rathbones IT Systems, Data & AI-enabled Tools → current 3
-- **Gap 2**: `cps.regulatory_consumer_duty` → current 3
-- Everything else: 4 or 5 with `confidence='high'`
+### B. Persist cohort chapter completion
+Extend `handleMarkComplete` (or add a `useChapterProgress` mutation hook) to upsert into `learner_progress` when the active item is a cohort chapter:
+- key: `(account_id, employee_id, cohort_id, module_code, chapter_code)`
+- set `status='completed'`, `completed_at=now()`, `started_at=coalesce(started_at, now())`
 
-Insert into `role_competency_requirements` for `role_cohort_code='im_director'` — required levels of 4–5 across the catalog (the two gaps requiring 5 so they show as development areas).
+Trigger a journey refresh (re-fetch `useLearnerJourney`) so the heatmap, "0 of 3 chapters" counters, and module completion percentage update immediately.
 
-Insert into `employee_capability_proficiency` for `rb-mgr` — mirror the persona levels using the existing capability codes (so `eligible=true` and the Capability Strip + radar render). Pull capability codes from `role_capability_requirements` and seed at director-appropriate levels with two gaps that map to the same two competency tracks.
+To enable this, the chapter render branch needs to pass the active cohort context (account_id, employee_id, cohort_id, module_code, chapter_code) into `EmbarkModuleContent` as a single optional `cohortContext` prop. Currently the journey loads `cohort.id` and `module.code` already via `useLearnerJourney` and the chapter lookup loop in `LearnPathContent.tsx`.
 
-### 3. Fix one hardcoded role cohort in the hook
+### C. Cohort-aware completion stats
+In `LearnPathModuleContent.tsx`, when `cohortContext` is present:
+- Progress text: `"<completedChaptersInModule>/<totalChaptersInModule>"` from the journey module
+- Streak: count consecutive completed chapters ending at current (within the journey track)
+- Assessment: keep "—" (assessments are a separate flow) but no longer always blank
+- Time Spent: keep current behaviour (session timer)
 
-`src/hooks/useMy360Data.ts` currently hardcodes `role_cohort_code='assoc_im'` when fetching `role_capability_requirements` and `role_competency_requirements`. Change it to derive from: cohort.role_cohort_code → persona's `default_role_progression_code` → fallback `assoc_im`. Julian has no cohort, so it'll use `senior_leader.default_role_progression_code = 'sr_im_director'` — we'll seed his role_competency_requirements under `im_director` and update the persona's default to `im_director` (or seed under `sr_im_director` — we'll use `im_director` to match his title and update the persona row).
+### D. Sweep — verify every module behaves the same
+After the fix, cycle through all 5 cohort modules in Business Knowledge for Clara and Theo and confirm:
+- Marking complete on any chapter shows "Continue to Next Chapter" with the correct title
+- After completion, the chapter heatmap dot turns green and module % advances
+- Last chapter in last module of last track correctly shows "Back to All Chapters" (no Continue)
 
-### 4. Hide the two empty tabs for Julian
-Profile-tab-only scope. In `NewMy360.tsx`, when `data.modules.length === 0` and `data.cohort` is undefined, render only the Profile tab (drop "Cohort Journey" and "Growth Path" from the pill switcher). This keeps the page clean for Julian without breaking Clara/Theo.
+I'll spot-check this in the preview after the changes land — no separate test file needed.
 
 ## Files touched
 
-- `src/hooks/useMy360Data.ts` — derive role_cohort_code instead of hardcoding `assoc_im`
-- `src/pages/NewMy360.tsx` — conditionally hide cohort/growth tabs when no cohort data
-- New SQL inserts (via insert tool) for: `employee_persona_assignments`, `persona_competency_profiles`, `role_competency_requirements`, `employee_capability_proficiency`, and a small update to `employee_personas.default_role_progression_code` for `senior_leader`
+- `src/lib/cohortNextChapter.ts` (new) — pure helper `findNextCohortChapter(journey, chapterCode)`
+- `src/components/learnpath/LearnPathContent.tsx` — use the helper in the cohort branch; pass `cohortContext` into `EmbarkModuleContent`
+- `src/components/learnpath/LearnPathModuleContent.tsx` — accept `cohortContext`; persist completion when present; cohort-aware progress/streak
+- `src/hooks/useLearnerJourney.ts` — expose a `refresh()` (already returns state — small addition) so completion can refetch
 
-No schema changes. No new components — reuses ProfileHero, StatStrip, CompetencyRadarHero, CapabilityStrip exactly as-is.
+No DB schema changes. No design changes — only fixes broken interactions.

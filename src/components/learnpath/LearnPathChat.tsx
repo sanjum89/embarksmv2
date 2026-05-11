@@ -537,12 +537,18 @@ export function EmbarkChat() {
 
     setHasGreeted(true);
     const context = buildContext();
+    const cj = (context as any).cohortJourney;
+    const cohortIntro = cj
+      ? `They are enrolled in the cohort "${cj.cohortTitle}" (currently ${cj.overallPct}% complete, ${cj.completedChapters}/${cj.totalChapters} chapters across ${cj.totalModules} modules). ${cj.resumeChapterCode ? `The next chapter to resume is "${cj.resumeChapterTitle}" inside module "${cj.resumeModuleTitle}" (chapterCode: ${cj.resumeChapterCode}, moduleCode: ${cj.resumeModuleCode}, cohortId: ${cj.cohortId}). Welcome them by name and offer to open it now using an open_module action with that chapterCode as moduleId and the cohortId as skillTargetId — only if no module is already open.` : "Welcome them and suggest exploring their tracks."}`
+      : null;
     const greetMessage: ChatMessage = {
       id: "greet-system",
       role: "user",
-      content: context.hasModules
-        ? `[SYSTEM] The learner just opened LearnPath. They have ${context.modules.length} module(s) assigned. ${context.resumeModuleId ? `Suggest resuming with "${context.resumeModuleTitle}" (moduleId: ${context.resumeModuleId}, skillTargetId: ${context.resumeSkillTargetId}) and use an open_module action only if no module is already open.` : "Welcome them and suggest browsing modules."}`
-        : "[SYSTEM] The learner just opened LearnPath but has no modules or skill targets assigned. Welcome them warmly, explain that they don't have a learning path yet, and suggest they explore their dashboard to add skill targets.",
+      content: cohortIntro
+        ? `[SYSTEM] The learner just opened Embark AI. ${cohortIntro}`
+        : context.hasModules
+          ? `[SYSTEM] The learner just opened Embark AI. They have ${context.modules.length} module(s) assigned. ${context.resumeModuleId ? `Suggest resuming with "${context.resumeModuleTitle}" (moduleId: ${context.resumeModuleId}, skillTargetId: ${context.resumeSkillTargetId}) and use an open_module action only if no module is already open.` : "Welcome them and suggest browsing modules."}`
+          : "[SYSTEM] The learner just opened Embark AI but has no cohort enrollment and no skill targets assigned. Welcome them warmly, explain that they don't have a learning path yet, and suggest they speak with their manager to get enrolled.",
     };
     const assistantId = createMessageId("assistant");
     const assistantPlaceholder: ChatMessage = {

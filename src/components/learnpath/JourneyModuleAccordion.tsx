@@ -114,6 +114,7 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                         STRETCH
                       </Badge>
                     )}
+                    {m.adaptation && <AdaptationBadge adaptation={m.adaptation} />}
                   </div>
                   <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
                     <span>

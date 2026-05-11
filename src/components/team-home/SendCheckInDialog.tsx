@@ -16,6 +16,7 @@ import { getAllDemoOverlays } from "@/data/managerDemoOverlay";
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  defaultLearnerId?: string | null;
 }
 
 type Step = "recipients" | "template" | "send";

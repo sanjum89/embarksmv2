@@ -64,6 +64,7 @@ const meNavItems: NavItem[] = [
   },
   { label: "Action Centre", path: "/my-inbox", icon: Inbox },
   { label: "My 360", path: "/my-360", icon: CircleUser },
+  { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
 ];
 
 const teamNavItems: NavItem[] = [
@@ -84,6 +85,7 @@ const teamNavItems: NavItem[] = [
   },
   { label: "Action Centre", path: "/my-inbox", icon: Inbox },
   { label: "My 360", path: "/my-360", icon: CircleUser },
+  { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
 ];
 
 export function AppSidebar() {

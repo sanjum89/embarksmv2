@@ -43,22 +43,22 @@ function useLearnerMap() {
   }, [newHires]);
 }
 
-/* ─── Status Colors ─── */
+/* ─── Status Colors (semantic tokens) ─── */
 function statusColor(s: Cohort["status"]) {
   switch (s) {
-    case "active": return "bg-emerald-500/15 text-emerald-700 border-emerald-200";
-    case "completed": return "bg-primary/10 text-primary border-primary/20";
+    case "active": return "bg-primary/10 text-primary border-primary/20";
+    case "completed": return "bg-success/10 text-success border-success/20";
     case "draft": return "bg-muted text-muted-foreground border-border";
   }
 }
 
 function tagBadge(tag: CohortLearnerProgress["tags"][0]) {
   switch (tag) {
-    case "rising_star": return { label: "Rising Star", cls: "bg-amber-500/15 text-amber-700 border-amber-200" };
-    case "at_risk": return { label: "At Risk", cls: "bg-destructive/15 text-destructive border-destructive/20" };
-    case "needs_attention": return { label: "Needs Attention", cls: "bg-orange-500/15 text-orange-700 border-orange-200" };
-    case "completed": return { label: "Completed", cls: "bg-emerald-500/15 text-emerald-700 border-emerald-200" };
-    case "ahead_of_pace": return { label: "Ahead of Pace", cls: "bg-sky-500/15 text-sky-700 border-sky-200" };
+    case "rising_star": return { label: "Rising star", cls: "bg-warning/10 text-warning border-warning/20" };
+    case "at_risk": return { label: "At risk", cls: "bg-destructive/10 text-destructive border-destructive/20" };
+    case "needs_attention": return { label: "Needs attention", cls: "bg-warning/10 text-warning border-warning/20" };
+    case "completed": return { label: "Completed", cls: "bg-success/10 text-success border-success/20" };
+    case "ahead_of_pace": return { label: "Ahead of pace", cls: "bg-primary/10 text-primary border-primary/20" };
   }
 }
 
@@ -82,7 +82,7 @@ export default function ProgramContextPage() {
   const selectedCohort = cohorts.find((c) => c.id === selectedCohortId) ?? null;
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-3xl mx-auto">
       <BackButton />
       <AnimatePresence mode="wait">
         {view === "list" && (
@@ -161,77 +161,57 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
 
   const plural = (n: number, s: string) => `${n} ${s}${n === 1 ? "" : "s"}`;
 
-  const statusRail: Record<Cohort["status"], string> = {
-    active: "bg-emerald-500",
-    completed: "bg-primary",
-    draft: "bg-muted-foreground/40",
-  };
-  const statusIconBg: Record<Cohort["status"], string> = {
-    active: "bg-emerald-500/10 text-emerald-700",
-    completed: "bg-primary/10 text-primary",
-    draft: "bg-muted text-muted-foreground",
-  };
-
   const clearFilters = () => { setSearch(""); setFilter("all"); };
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-      {/* Hero header */}
-      <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
-        <div className="min-w-0">
-          <h1 className="font-display text-2xl font-bold text-foreground">Cohorts</h1>
-          <p className="text-sm text-muted-foreground mt-1">Create, manage, and track learning cohorts</p>
-          <p className="text-xs text-muted-foreground mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span><span className="font-semibold text-foreground tabular-nums">{stats.total}</span> {stats.total === 1 ? "cohort" : "cohorts"}</span>
-            <span className="text-muted-foreground/50">·</span>
-            <span><span className="font-semibold text-foreground tabular-nums">{stats.activeLearners}</span> active learner{stats.activeLearners === 1 ? "" : "s"}</span>
-            <span className="text-muted-foreground/50">·</span>
-            <span><span className="font-semibold text-foreground tabular-nums">{stats.avg}%</span> avg progress</span>
-            {stats.attention > 0 && (
-              <>
-                <span className="text-muted-foreground/50">·</span>
-                <span className="text-destructive inline-flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" />
-                  {stats.attention} need{stats.attention === 1 ? "s" : ""} attention
-                </span>
-              </>
-            )}
-          </p>
+      {/* Compact header (Program Context style) */}
+      <div className="flex items-start justify-between gap-3 mb-1">
+        <div className="flex items-center gap-2">
+          <Layers className="h-4 w-4 text-primary" />
+          <h1 className="font-display text-lg font-bold text-foreground">Cohorts</h1>
         </div>
-        <Button onClick={onCreate} className="gap-2 shrink-0"><Plus className="h-4 w-4" />New Cohort</Button>
+        <Button size="sm" onClick={onCreate} className="gap-1.5 h-8">
+          <Plus className="h-3.5 w-3.5" /> New cohort
+        </Button>
       </div>
+      <p className="text-sm text-muted-foreground mb-5">
+        {stats.total} {stats.total === 1 ? "cohort" : "cohorts"} · {stats.activeLearners} active learner{stats.activeLearners === 1 ? "" : "s"} · {stats.avg}% avg progress
+        {stats.attention > 0 && (
+          <span className="text-destructive"> · {stats.attention} need{stats.attention === 1 ? "s" : ""} attention</span>
+        )}
+      </p>
 
       {/* Toolbar */}
-      <div className="flex items-center gap-3 flex-wrap pb-3 mb-4 border-b border-border/60">
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search cohorts…"
-            className="pl-9 h-9"
-          />
-        </div>
-        <div className="flex gap-1.5">
-          {(["all", "active", "draft", "completed"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors capitalize",
-                filter === f
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card text-muted-foreground border-border hover:border-primary/30"
-              )}
-            >
-              {f === "all" ? "All" : f}
-            </button>
-          ))}
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <span className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Sort</span>
+      <div className="rounded-xl border border-border bg-background p-3 mb-5">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="relative flex-1 min-w-[180px]">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search cohorts…"
+              className="pl-8 h-8 text-xs"
+            />
+          </div>
+          <div className="flex gap-1">
+            {(["all", "active", "draft", "completed"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={cn(
+                  "px-2.5 py-1 rounded-full text-[0.65rem] font-medium border transition-colors capitalize",
+                  filter === f
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border hover:border-primary/30"
+                )}
+              >
+                {f === "all" ? "All" : f}
+              </button>
+            ))}
+          </div>
           <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
-            <SelectTrigger className="h-8 w-[140px] text-xs border-border/60">
+            <SelectTrigger className="h-8 w-[120px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -244,7 +224,7 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
         </div>
       </div>
 
-      {/* Cohort list */}
+      {/* Cohort cards — panel style */}
       <div className="space-y-3">
         {filtered.map(({ c: cohort, avgProgress, risingStar, atRisk }, i) => {
           const isDraftEmpty = cohort.status === "draft" && cohort.assignedLearnerIds.length === 0;
@@ -255,39 +235,25 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
               onClick={() => onSelect(cohort.id)}
-              className="relative w-full text-left rounded-xl border border-border bg-card p-5 pl-6 hover:bg-muted/30 hover:border-primary/40 hover:shadow-sm transition-all group overflow-hidden"
+              className="w-full text-left rounded-xl border border-border bg-background p-4 hover:bg-secondary/40 hover:border-primary/40 transition-colors group"
             >
-              {/* Status rail */}
-              <span aria-hidden className={cn("absolute inset-y-0 left-0 w-[3px]", statusRail[cohort.status])} />
-
-              <div className="flex items-start gap-4">
-                <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg shrink-0", statusIconBg[cohort.status])}>
-                  <Layers className="h-5 w-5" />
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+                  <Layers className="h-4 w-4" />
                 </div>
-
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-display text-base font-semibold text-foreground truncate">{cohort.name}</p>
-                        <Badge variant="outline" className={cn("text-[0.6rem] uppercase tracking-wide", statusColor(cohort.status))}>
-                          {cohort.status}
-                        </Badge>
-                      </div>
-                      {cohort.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{cohort.description}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-2xl font-semibold text-foreground tabular-nums leading-none">{avgProgress}%</span>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-                    </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-display text-sm font-semibold text-foreground truncate">{cohort.name}</p>
+                    <Badge variant="outline" className={cn("text-[0.6rem] capitalize", statusColor(cohort.status))}>
+                      {cohort.status}
+                    </Badge>
                   </div>
-
-                  <Progress value={avgProgress} className="h-1 mt-3" />
+                  {cohort.description && (
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1">{cohort.description}</p>
+                  )}
 
                   {/* Meta row */}
-                  <div className="flex items-center gap-x-3 gap-y-1 mt-3 flex-wrap text-[0.7rem] text-muted-foreground">
+                  <div className="flex items-center gap-x-2 gap-y-1 mt-2 flex-wrap text-[0.65rem] text-muted-foreground">
                     {isDraftEmpty ? (
                       <span className="italic">No learners assigned yet</span>
                     ) : (
@@ -311,50 +277,44 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
                           </>
                         )}
                         {risingStar > 0 && (
-                          <>
-                            <span className="text-muted-foreground/40">·</span>
-                            <span className="inline-flex items-center gap-1 text-amber-600">
-                              <Star className="h-3 w-3" />
-                              {risingStar} rising
-                            </span>
-                          </>
+                          <Badge variant="outline" className={cn("text-[0.6rem] gap-1", tagBadge("rising_star").cls)}>
+                            <Star className="h-2.5 w-2.5" /> {risingStar}
+                          </Badge>
                         )}
                         {atRisk > 0 && (
-                          <>
-                            <span className="text-muted-foreground/40">·</span>
-                            <span className="inline-flex items-center gap-1 text-destructive">
-                              <AlertTriangle className="h-3 w-3" />
-                              {atRisk} at risk
-                            </span>
-                          </>
+                          <Badge variant="outline" className={cn("text-[0.6rem] gap-1", tagBadge("at_risk").cls)}>
+                            <AlertTriangle className="h-2.5 w-2.5" /> {atRisk}
+                          </Badge>
                         )}
                       </>
                     )}
                   </div>
 
-                  {/* Avatars */}
-                  {cohort.assignedLearnerIds.length > 0 && (
-                    <div className="flex -space-x-1.5 mt-3">
-                      {cohort.assignedLearnerIds.slice(0, 6).map((lid) => {
-                        const hire = learnerMap.get(lid);
-                        const name = hire?.user?.name ?? lid;
-                        return (
-                          <TeamAvatar
-                            key={lid}
-                            name={name}
-                            size={24}
-                            className="ring-2 ring-card"
-                          />
-                        );
-                      })}
-                      {cohort.assignedLearnerIds.length > 6 && (
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[0.6rem] font-medium text-muted-foreground ring-2 ring-card">
-                          +{cohort.assignedLearnerIds.length - 6}
-                        </span>
-                      )}
+                  {/* Progress + avatars */}
+                  <div className="flex items-center gap-3 mt-3">
+                    <div className="flex-1">
+                      <Progress value={avgProgress} className="h-1" />
                     </div>
-                  )}
+                    <span className="text-xs font-medium text-foreground tabular-nums">{avgProgress}%</span>
+                    {cohort.assignedLearnerIds.length > 0 && (
+                      <div className="flex -space-x-1.5">
+                        {cohort.assignedLearnerIds.slice(0, 4).map((lid) => {
+                          const hire = learnerMap.get(lid);
+                          const name = hire?.user?.name ?? lid;
+                          return (
+                            <TeamAvatar key={lid} name={name} size={20} className="ring-2 ring-background" />
+                          );
+                        })}
+                        {cohort.assignedLearnerIds.length > 4 && (
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[0.55rem] font-medium text-muted-foreground ring-2 ring-background">
+                            +{cohort.assignedLearnerIds.length - 4}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
               </div>
             </motion.button>
           );
@@ -363,17 +323,17 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
 
       {/* Empty states */}
       {filtered.length === 0 && cohorts.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-center rounded-xl border border-dashed border-border bg-card/40">
-          <Layers className="h-10 w-10 text-muted-foreground mb-3" />
+        <div className="flex flex-col items-center justify-center py-16 text-center rounded-xl border border-dashed border-border bg-background">
+          <Layers className="h-8 w-8 text-muted-foreground mb-3" />
           <p className="text-sm font-semibold text-foreground">No cohorts yet</p>
           <p className="text-xs text-muted-foreground mt-1 max-w-sm">
             Create your first cohort to start tracking groups of learners together.
           </p>
-          <Button onClick={onCreate} className="gap-2 mt-4"><Plus className="h-4 w-4" />New Cohort</Button>
+          <Button size="sm" onClick={onCreate} className="gap-1.5 mt-4"><Plus className="h-3.5 w-3.5" />New cohort</Button>
         </div>
       )}
       {filtered.length === 0 && cohorts.length > 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center text-xs text-muted-foreground">
+        <div className="flex flex-col items-center justify-center py-10 text-center text-xs text-muted-foreground">
           <p>No cohorts match your filters.</p>
           <button onClick={clearFilters} className="mt-2 text-primary hover:underline">Clear filters</button>
         </div>
@@ -439,24 +399,27 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
       <button onClick={onBack} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4">
-        <ArrowLeft className="h-3 w-3" />Back to Cohorts
+        <ArrowLeft className="h-3 w-3" />Back to cohorts
       </button>
 
-      <h1 className="font-display text-2xl font-bold text-foreground mb-1">Create Cohort</h1>
-      <p className="text-sm text-muted-foreground mb-6">Set up a new learning cohort in {steps.length} steps</p>
+      <div className="flex items-center gap-2 mb-1">
+        <Plus className="h-4 w-4 text-primary" />
+        <h1 className="font-display text-lg font-bold text-foreground">Create cohort</h1>
+      </div>
+      <p className="text-sm text-muted-foreground mb-5">Step {step} of {steps.length} — {steps[step - 1]}</p>
 
       {/* Stepper */}
-      <div className="flex items-center gap-1 mb-8">
+      <div className="flex items-center gap-1 mb-5">
         {steps.map((s, i) => (
           <div key={s} className="flex items-center gap-1 flex-1">
             <button onClick={() => i + 1 < step ? setStep(i + 1) : undefined}
-              className={cn("flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors w-full",
-                i + 1 === step ? "bg-primary text-primary-foreground" :
-                i + 1 < step ? "bg-primary/10 text-primary cursor-pointer" :
-                "bg-muted text-muted-foreground"
+              className={cn("flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[0.7rem] font-medium transition-colors w-full border",
+                i + 1 === step ? "bg-primary text-primary-foreground border-primary" :
+                i + 1 < step ? "bg-primary/5 text-primary border-primary/20 cursor-pointer" :
+                "bg-background text-muted-foreground border-border"
               )}>
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-background/20 text-[0.65rem] font-bold shrink-0">
-                {i + 1 < step ? <Check className="h-3 w-3" /> : i + 1}
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-background/20 text-[0.6rem] font-bold shrink-0">
+                {i + 1 < step ? <Check className="h-2.5 w-2.5" /> : i + 1}
               </span>
               <span className="hidden sm:inline">{s}</span>
             </button>
@@ -464,7 +427,7 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
         ))}
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="rounded-xl border border-border bg-background p-4 mb-5">
         {/* Step 1: Basics */}
         {step === 1 && (
           <div className="space-y-4 max-w-lg">
@@ -553,8 +516,8 @@ function CreateCohort({ onBack, onSubmit }: { onBack: () => void; onSubmit: (c: 
               <p className="text-xs font-medium text-foreground mb-2">Automated Rules</p>
               <div className="space-y-2 text-[0.7rem] text-muted-foreground">
                 <div className="flex items-center gap-2"><AlertTriangle className="h-3 w-3 text-destructive" />Flag learner as "At Risk" after 7 days of inactivity</div>
-                <div className="flex items-center gap-2"><Star className="h-3 w-3 text-amber-500" />Tag learner as "Rising Star" when progress &gt;80% and ahead of pace</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-emerald-500" />Mark cohort complete when all learners pass all assessments</div>
+                <div className="flex items-center gap-2"><Star className="h-3 w-3 text-warning" />Tag learner as "Rising Star" when progress &gt;80% and ahead of pace</div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-success" />Mark cohort complete when all learners pass all assessments</div>
               </div>
             </div>
           </div>
@@ -634,39 +597,36 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
       <button onClick={onBack} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mb-4">
-        <ArrowLeft className="h-3 w-3" />Back to Cohorts
+        <ArrowLeft className="h-3 w-3" />Back to cohorts
       </button>
 
-      {/* Header */}
-      <div className="flex items-start gap-4 mb-6">
-        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 shrink-0">
-          <Layers className="h-6 w-6 text-primary" />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl font-bold text-foreground">{cohort.name}</h1>
-            <Badge variant="outline" className={cn("text-xs", statusColor(cohort.status))}>{cohort.status}</Badge>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">{cohort.description}</p>
-          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{cohort.startDate} → {cohort.endDate}</span>
-            <Badge variant="secondary" className="text-[0.65rem]">{cohort.category}</Badge>
-          </div>
-        </div>
+      {/* Compact header (Program Context style) */}
+      <div className="flex items-center gap-2 mb-1">
+        <Layers className="h-4 w-4 text-primary" />
+        <h1 className="font-display text-lg font-bold text-foreground">{cohort.name}</h1>
+        <Badge variant="outline" className={cn("text-[0.6rem] capitalize ml-1", statusColor(cohort.status))}>{cohort.status}</Badge>
+      </div>
+      <p className="text-sm text-muted-foreground mb-1">{cohort.description}</p>
+      <div className="flex items-center gap-3 mb-5 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1"><Calendar className="h-3 w-3" />{cohort.startDate} → {cohort.endDate}</span>
+        <Badge variant="secondary" className="text-[0.6rem]">{cohort.category}</Badge>
       </div>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+      {/* Stat strip — single bordered card */}
+      <div className="rounded-xl border border-border bg-background p-3 mb-5 grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
           { label: "Learners", value: cohort.assignedLearnerIds.length, icon: Users },
-          { label: "Avg Progress", value: `${avgProgress}%`, icon: TrendingUp },
-          { label: "Avg Score", value: `${avgScore}%`, icon: BarChart3 },
-          { label: "Rising Stars", value: risingStar, icon: Star },
-          { label: "At Risk", value: atRisk, icon: AlertTriangle },
+          { label: "Avg progress", value: `${avgProgress}%`, icon: TrendingUp },
+          { label: "Avg score", value: `${avgScore}%`, icon: BarChart3 },
+          { label: "Rising stars", value: risingStar, icon: Star },
+          { label: "At risk", value: atRisk, icon: AlertTriangle },
         ].map(({ label, value, icon: Icon }) => (
-          <div key={label} className="rounded-xl border border-border bg-card p-4">
-            <div className="flex items-center gap-2 mb-1"><Icon className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-[0.65rem] text-muted-foreground">{label}</span></div>
-            <p className="text-lg font-bold text-foreground">{value}</p>
+          <div key={label} className="flex flex-col">
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <Icon className="h-3 w-3 text-muted-foreground" />
+              <span className="text-[0.6rem] uppercase tracking-wide text-muted-foreground">{label}</span>
+            </div>
+            <p className="text-base font-bold text-foreground tabular-nums">{value}</p>
           </div>
         ))}
       </div>
@@ -676,20 +636,20 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
         <TabsList className="mb-4">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="learners">Learners</TabsTrigger>
-          <TabsTrigger value="targets">Skill Targets</TabsTrigger>
+          <TabsTrigger value="targets">Skill targets</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
         {/* Overview Tab */}
         <TabsContent value="overview">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-border bg-card p-5">
+            <div className="rounded-xl border border-border bg-background p-5">
               <p className="text-sm font-semibold text-foreground mb-4">Progress Distribution</p>
               <div className="space-y-2">
                 {[
-                  { label: "Completed (100%)", count: cohort.learnerProgress.filter(l => l.overallProgress === 100).length, color: "bg-emerald-500" },
+                  { label: "Completed (100%)", count: cohort.learnerProgress.filter(l => l.overallProgress === 100).length, color: "bg-success" },
                   { label: "On Track (50-99%)", count: cohort.learnerProgress.filter(l => l.overallProgress >= 50 && l.overallProgress < 100).length, color: "bg-primary" },
-                  { label: "Getting Started (1-49%)", count: cohort.learnerProgress.filter(l => l.overallProgress > 0 && l.overallProgress < 50).length, color: "bg-amber-500" },
+                  { label: "Getting Started (1-49%)", count: cohort.learnerProgress.filter(l => l.overallProgress > 0 && l.overallProgress < 50).length, color: "bg-warning" },
                   { label: "Not Started (0%)", count: cohort.learnerProgress.filter(l => l.overallProgress === 0).length, color: "bg-muted-foreground" },
                 ].map(({ label, count, color }) => (
                   <div key={label} className="flex items-center gap-3">
@@ -700,7 +660,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
                 ))}
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-5">
+            <div className="rounded-xl border border-border bg-background p-5">
               <p className="text-sm font-semibold text-foreground mb-4">Cohort Timeline</p>
               <div className="space-y-3 text-xs">
                 <div className="flex justify-between"><span className="text-muted-foreground">Start Date</span><span className="font-medium text-foreground">{cohort.startDate}</span></div>
@@ -720,7 +680,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
               const name = hire?.user?.name ?? lp.learnerId;
               const initials = name.split(" ").map(n => n[0]).join("");
               return (
-                <div key={lp.learnerId} className="rounded-xl border border-border bg-card p-4">
+                <div key={lp.learnerId} className="rounded-xl border border-border bg-background p-4">
                   <div className="flex items-center gap-4">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shrink-0">{initials}</div>
                     <div className="flex-1 min-w-0">
@@ -776,7 +736,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
                 ? Math.round(cohort.learnerProgress.reduce((a, l) => a + (l.skillTargetProgress[stId] ?? 0), 0) / cohort.learnerProgress.length)
                 : 0;
               return (
-                <div key={stId} className="rounded-xl border border-border bg-card p-5">
+                <div key={stId} className="rounded-xl border border-border bg-background p-5">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <p className="text-sm font-semibold text-foreground">{st.title}</p>
@@ -809,7 +769,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
 
         {/* Settings Tab */}
         <TabsContent value="settings">
-          <div className="rounded-xl border border-border bg-card p-5 max-w-lg space-y-5">
+          <div className="rounded-xl border border-border bg-background p-5 max-w-lg space-y-5">
             <div>
               <div className="flex items-center justify-between mb-2"><Label>Pass Percentage</Label><span className="text-sm font-bold text-foreground">{cohort.passPercentage}%</span></div>
               <Slider value={[cohort.passPercentage]} min={50} max={100} step={5} disabled />
@@ -826,8 +786,8 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
               <p className="text-xs font-medium text-foreground mb-2">Automated Rules</p>
               <div className="space-y-2 text-[0.7rem] text-muted-foreground">
                 <div className="flex items-center gap-2"><AlertTriangle className="h-3 w-3 text-destructive" />Flag as "At Risk" after 7 days inactive</div>
-                <div className="flex items-center gap-2"><Star className="h-3 w-3 text-amber-500" />Tag "Rising Star" at &gt;80% ahead of pace</div>
-                <div className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-emerald-500" />Complete when all learners pass</div>
+                <div className="flex items-center gap-2"><Star className="h-3 w-3 text-warning" />Tag "Rising Star" at &gt;80% ahead of pace</div>
+                <div className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3 text-success" />Complete when all learners pass</div>
               </div>
             </div>
           </div>

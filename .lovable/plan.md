@@ -1,62 +1,78 @@
-Two things in this plan: a quick bug fix and a new multi-step interaction layer for the two CTAs in `TeamHero`.
+Two unfinished pieces from earlier — bundling them so both ship together.
 
-## 1. Bug — Action Centre shows raw IDs (rb-l1, rb-l3…)
+## Part 1 — Restyle `/manager/programs` to match the old Program Context look
 
-**File:** `src/pages/ActionCentre.tsx`
+Keep the URL `/manager/programs`, keep all current functionality (list, create, detail, learner roster, assessment config, tags, progress). **Only** swap the visual styling to mirror `src/components/manager/ProgramContextPanel.tsx`.
 
-Today the page sets `learnerName: o.employeeId` (lines 33, 47) and passes `name: selected.employeeId` into the drawer (line 179). The fix mirrors what `TeamMode.tsx` already does:
+### Design language to adopt
 
-- Pull `employeesById` from `useAccount().normalizedAccount` (already populated from `RATHBONES_EMPLOYEES`).
-- Add `nameOf(id)` / `titleOf(id)` helpers.
-- Use `nameOf(o.employeeId)` for the chip label, and pass `{ employeeId, name: nameOf(...), title: titleOf(...) }` to `LearnerDrawer`.
+- **Containers**: `rounded-xl border border-border bg-background p-4` cards stacked with `mb-5` rhythm. No big colored hero blocks, no full-bleed gradient banners.
+- **Headers**: small icon (`h-4 w-4 text-primary`) + `font-display text-lg font-bold` title, with a quiet `text-sm text-muted-foreground` subtitle underneath.
+- **Section titles inside cards**: `text-sm font-medium text-foreground` with `mb-3`.
+- **Body copy**: `text-xs text-muted-foreground leading-relaxed`.
+- **Badges/chips**: shadcn `Badge` `variant="secondary" | "outline"` at `text-[0.65rem]` / `text-[0.6rem]`. Replace hand-rolled `emerald-*`, `amber-*`, `sky-*`, `orange-*` classes with semantic tokens (`primary`, `success`, `warning`, `destructive`, `muted`) via small helper maps.
+- **Lists**: tight rows, `hover:bg-secondary/50`, small avatar circles `h-7 w-7 bg-primary text-primary-foreground` with initials.
+- **Buttons**: default shadcn primary; full-width for the main save/CTA.
+- **Spacing**: page wrapper `p-6` with a single column max-width (`max-w-3xl`) instead of wide multi-column dashboards.
 
-**Sweep for the same pattern elsewhere** — I grepped `name: x.employeeId` / `learnerName: x.employeeId` across `src` and Action Centre is the only offender. No other surfaces leak the raw ID as a display name.
+### Files to change
 
-## 2. Schedule 1:1 + Send check-in — proper flows
+`src/pages/ProgramContextPage.tsx` — restyle the three views in place:
 
-Both CTAs in `src/components/team-home/TeamHero.tsx` currently fire a single toast. Replace each with a small multi-step dialog. Demo-only (no real Teams call) but UI clearly labels the data source.
+- **List view**: stacked column of `rounded-xl border` cohort cards. Each card: icon + cohort name (display font), one-line description, secondary badges (status / learner count / module count), inline progress bar, chevron to open detail. Page top: compact header (`Layers` icon + "Cohorts" + count subtitle) and right-aligned `+ New cohort` button.
+- **Detail view**: mirror the panel structure — About card, Assessment Configuration card (slider + adaptive-skip lines), Training Chapters card (checkbox list), Final Assessment card, Assigned Learners card with avatar rows, plus a Learner Progress card with tag chips (recolored to semantic tokens) + progress bar. `BackButton` at top.
+- **Create view**: same card pattern — one card per logical group (Basics, Skill target, Learners, Schedule), full-width primary button at the bottom.
 
-### 2a. Schedule 1:1 — `Schedule1on1Dialog.tsx`
+No changes to routes, data, mock, contexts, `ProgramContextPanel`, or `ManagerCohortHub`. No `index.css` / tailwind token edits.
 
-Three steps inside one shadcn `Dialog`:
+## Part 2 — Adaptive Paths Sankey on Team Home
 
-1. **Pick learner** — searchable list of the 9 cohort members (avatar, name, title from `employeesById`). Single-select.
-2. **Pick a time** — a 5-day grid (next Mon–Fri, Europe/London). Each row is a 30-min slot. Each slot has one of:
-   - `Free` chip + small `Teams` badge ("from Microsoft Teams calendar")
-   - `Busy` chip greyed out, with the conflicting meeting title ("Portfolio review", "Client call", etc.)
-   - `Tentative` chip (allowed but flagged)
-   Slots are deterministic per learner (seeded by employeeId so demo is stable).
-   A "Show only times we're both free" filter sits at the top.
-3. **Confirm** — title (default "1:1 with {name}"), 30-min duration toggle (15/30/45/60), agenda textarea pre-filled from the learner's most recent overlay risk/strength, "Send via Teams" toggle (on, with Teams icon). Primary button: `Schedule in Teams`.
+A new section under the existing "Module progress" heatmap card on `/team` (`src/pages/TeamMode.tsx`). Reads from the same `managerDemoOverlay` data (`pathChanges`, `cells`) plus the `catalog_modules` baseline spine.
 
-On confirm: toast "1:1 with {name} scheduled for {day} {time} (Teams • demo)". Optional: append a row to the existing `inboxNotifications` mock so it shows up in Action Centre history.
+### Sankey diagram — `AdaptivePathsSankey.tsx`
 
-### 2b. Send check-in — `SendCheckInDialog.tsx`
+- **Spine**: standard cohort path from `catalog_modules` ordered by `display_order`.
+- One ribbon per learner flowing left → right through columns.
+- Segment styles:
+  - solid primary = completed
+  - solid muted-primary = in progress
+  - thin dashed = skipped
+  - solid accent + dot = micro-learning
+  - chevron arrows = reordered
+  - thicker stroke = emphasis
+  - ghost = not yet reached
+- Hover dims other ribbons; tooltip shows module title, kind, and `pathChange.reason`.
+- Vertical "today" marker for cohort calendar.
 
-Three steps:
+### Toolbar
 
-1. **Recipients** — multi-select from the cohort, plus quick chips: "Whole cohort", "At-risk only" (filters by overlay risk tags), "Rising stars".
-2. **Template** — three preset cards (Weekly pulse / Wellbeing / Module nudge) each with editable subject + body. Auto-substitution `{first_name}`, `{module}`.
-3. **Channel + send** — radio between `Teams chat` (Teams badge) and `In-app inbox`. Schedule-now or schedule-for-later picker.
+- Learner chips (up to 4 selected; default = top 3 by adaptation count).
+- Compare mode: *Stack* (default), *Side-by-side* (2 learners), *vs Baseline* (1 learner).
+- Filter: All changes / Skips only / Microlearning only / Reorders only.
+- Legend.
 
-On send: toast `Check-in sent to N learner(s) via Teams (demo)`.
+### Click-through detail — `AdaptivePathDrawer.tsx`
 
-### Wiring
+- **Why**: `pathChange.reason`, `evidence[]`, confidence + risk badges.
+- **What changed**: original vs new form from `catalog_modules` + `pathChange.kind`.
+- **Approve** (only when `needs_approval = true`, logs `agent_one_event` of type `path_change_approved`) and **Revert** (always available, logs `path_change_reverted`, marks cell as `would_be_default`).
+- Both optimistic UI on in-memory overlay; no DB writes.
+- "View full learner story" opens the existing learner drawer.
 
-- `TeamHero.tsx`: replace the two `onClick={toast}` handlers with state to open the new dialogs. Pass `cohortMembers` (computed from `useAccount` + `getAllDemoOverlays` in the parent and threaded through, OR resolved inside the dialog — I'll resolve inside the dialog using the same `employeesById` pattern to keep `TeamHero` props lean).
-- New files: `src/components/team-home/Schedule1on1Dialog.tsx`, `src/components/team-home/SendCheckInDialog.tsx`. Use shadcn `Dialog`, `Command`, `Tabs`, `RadioGroup`, `Textarea`, `Checkbox`, `Badge` — all already in the project.
-- Visual `Teams` badge: outline badge with Microsoft Teams purple dot + label, semantic-token based, reused in both dialogs.
+### Data + state
 
-### Out of scope
+- Spine from `catalog_modules` filtered by cohort domain/role.
+- Per-learner segments from `LearnerOverlay.cells` + `pathChanges`.
+- Approve/revert tracked in a `useState` map keyed by `pathChange.id`.
 
-- No real Microsoft Teams / Graph API integration. All availability data is mocked deterministically per learner. (We can wire the existing Teams connector later — flagged as a follow-up.)
-- No persistence beyond the existing in-memory inbox/notification stores.
-- No changes to Action Centre beyond the name-bug fix.
+### Files
 
-## Files touched
+- New: `src/components/team-home/AdaptivePathsSankey.tsx`, `src/components/team-home/AdaptivePathDrawer.tsx`.
+- Edited: `src/pages/TeamMode.tsx` (insert section after the Module progress card).
 
-- `src/pages/ActionCentre.tsx` — bug fix
-- `src/components/team-home/TeamHero.tsx` — wire dialogs
-- `src/components/team-home/Schedule1on1Dialog.tsx` — new
-- `src/components/team-home/SendCheckInDialog.tsx` — new
-- (optional) `src/data/teamsAvailability.ts` — small deterministic mock helper used by the schedule dialog
+### Out of scope (both parts)
+
+- No DB schema changes, no route changes, no business-logic changes outside local approve/revert state.
+- No persisting beyond session.
+- No changes to the heatmap or existing learner drawer.
+- True volumetric Sankey (per-learner ribbons only, not weighted volumes).

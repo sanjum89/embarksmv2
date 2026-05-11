@@ -21,6 +21,7 @@ import { TeamRoster } from "@/components/team-home/TeamRoster";
 import type { RosterEntry } from "@/components/team-home/RosterRow";
 import { ActionQueue, type ActionQueueItem } from "@/components/team-home/ActionQueue";
 import { MyCohortsCard, type CohortItem } from "@/components/team-home/MyCohortsCard";
+import { AdaptivePathsSankey } from "@/components/team-home/AdaptivePathsSankey";
 
 function progressFromOverlay(o: LearnerOverlay) {
   const total = o.cells.length || 1;
@@ -219,6 +220,19 @@ export default function TeamMode() {
               />
             </div>
           </Card>
+        </section>
+
+        {/* Adaptive paths Sankey */}
+        <section className="mt-8">
+          <AdaptivePathsSankey
+            learners={entries.map((e) => ({ employeeId: e.employeeId, name: e.name, overlay: e.overlay }))}
+            modules={COHORT_MODULES_FALLBACK.map((m) => ({
+              module_code: m.module_code,
+              module_title: m.module_title,
+              progression_stage: m.progression_stage,
+            }))}
+            onOpenLearner={(id) => setOpenId(id)}
+          />
         </section>
       </div>
 

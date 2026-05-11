@@ -22,6 +22,7 @@ import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
 import { useLearnerJourney } from "@/hooks/useLearnerJourney";
+import { formatAdaptationLabel, sanitizeReason } from "@/lib/embarkAdaptation";
 import { SuggestionPillsRow, computeSuggestionPills, type SuggestionPill } from "./SuggestionPills";
 import { useEmbarkEngagement } from "@/hooks/useEmbarkEngagement";
 import { subscribeEngagementEvents } from "@/lib/embarkEngagementEvents";

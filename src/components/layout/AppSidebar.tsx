@@ -68,25 +68,20 @@ const meNavItems: NavItem[] = [
 ];
 
 const teamNavItems: NavItem[] = [
-  { label: "Admin", path: "/admin", icon: Shield },
-  { label: "Team Mode", path: "/team", icon: LayoutDashboard },
-  { label: "Team Dashboard", path: "/team-dashboard", icon: LayoutDashboard, dev: true },
-  { label: "Team Insights", path: "/team-insights", icon: BarChart3, dev: true },
+  { label: "Team Home", path: "/team", icon: LayoutDashboard },
+  { label: "Cohorts", path: "/manager/cohorts", icon: Layers },
   { label: "People Graph", path: "/manager/people-graph", icon: GitGraph },
-  { label: "New Chat", path: "/chat", icon: MessageSquare },
-  {
-    label: "Manage Learning",
-    path: "/manager/skill-targets",
-    icon: Building2,
-    children: [
-      { label: "Skill Targets", path: "/manager/skill-targets", icon: Target },
-      { label: "Role Play", path: "/manager/role-play", icon: Drama },
-      { label: "Cohorts", path: "/manager/cohorts", icon: Layers },
-    ],
-  },
   { label: "Action Centre", path: "/action-centre", icon: Inbox },
-  { label: "My 360", path: "/my-360", icon: CircleUser },
-  { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
+  { label: "New Chat", path: "/chat", icon: MessageSquare },
+  // Legacy / dev-only entries — kept reachable behind dev mode
+  { label: "Admin (legacy)", path: "/admin", icon: Shield, dev: true },
+  { label: "Skill Targets (legacy)", path: "/manager/skill-targets", icon: Target, dev: true },
+  { label: "Role Play Bank (legacy)", path: "/manager/role-play", icon: Drama, dev: true },
+  { label: "Program Context (legacy)", path: "/manager/programs", icon: Building2, dev: true },
+  { label: "Team Dashboard (legacy)", path: "/team-dashboard", icon: LayoutDashboard, dev: true },
+  { label: "Team Insights (legacy)", path: "/team-insights", icon: BarChart3, dev: true },
+  { label: "Manager View (legacy)", path: "/manager", icon: UsersRound, dev: true },
+  { label: "My 360 (legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
 ];
 
 export function AppSidebar() {

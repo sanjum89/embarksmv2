@@ -38,11 +38,16 @@ export function EmbarkContent() {
   const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted, canGoBack, goBack } = useEmbark();
   const { skillTargets } = useSkillTargets();
   const { user } = useUser();
-  const { normalizedAccount } = useAccount();
+  const { activeAccountId, normalizedAccount } = useAccount();
   const navigate = useNavigate();
   const { substitute } = useContentSubstitution();
   const autoResumedRef = useRef(false);
   const [moduleCompletedView, setModuleCompletedView] = useState(false);
+
+  const employeeId =
+    normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
+  const { journey } = useLearnerJourney(activeAccountId, employeeId);
+  const hasJourney = !!journey && journey.tracks.some((t) => t.totalChapters > 0);
 
   const catalog = buildCatalog(normalizedAccount?.learningModules);
 

@@ -74,9 +74,19 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
   const isCompleted = step.status === "completed";
   const isSkipped = step.status === "skipped";
   const isInProgress = step.status === "in_progress" || isActive;
+  const lens = step.lensState;
+  const isReadOnlySkipped =
+    lens === "skipped_by_diagnostic" || lens === "covered_by_evidence" || lens === "trimmed_by_micro";
 
   const handleOpen = () => {
     if (isLocked) return;
+    // Skipped chapters open in preview mode (read-only) so progress isn't tracked
+    if (isReadOnlySkipped) {
+      if (step.type === "assessment") openAssessmentPreview(step.stepId);
+      else if (step.type === "role_play") navigate(`/role-play/${step.referenceId ?? step.stepId}?preview=1`);
+      else openModulePreview(step.moduleId, step.skillTargetId);
+      return;
+    }
     if (step.type === "assessment") openAssessment(step.stepId);
     else if (step.type === "role_play") navigate(`/role-play/${step.referenceId ?? step.stepId}`);
     else openModule(step.moduleId, step.skillTargetId);

@@ -14,7 +14,7 @@ export interface ManagerNote {
 
 export interface ApprovalRecord {
   id: string;
-  decision: "approved" | "rejected" | "reverted";
+  decision: "approved" | "rejected" | "reverted" | "resolved";
   decided_at: string;
   decided_by: string;
 }

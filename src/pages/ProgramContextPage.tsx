@@ -161,77 +161,57 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
 
   const plural = (n: number, s: string) => `${n} ${s}${n === 1 ? "" : "s"}`;
 
-  const statusRail: Record<Cohort["status"], string> = {
-    active: "bg-emerald-500",
-    completed: "bg-primary",
-    draft: "bg-muted-foreground/40",
-  };
-  const statusIconBg: Record<Cohort["status"], string> = {
-    active: "bg-emerald-500/10 text-emerald-700",
-    completed: "bg-primary/10 text-primary",
-    draft: "bg-muted text-muted-foreground",
-  };
-
   const clearFilters = () => { setSearch(""); setFilter("all"); };
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-      {/* Hero header */}
-      <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
-        <div className="min-w-0">
-          <h1 className="font-display text-2xl font-bold text-foreground">Cohorts</h1>
-          <p className="text-sm text-muted-foreground mt-1">Create, manage, and track learning cohorts</p>
-          <p className="text-xs text-muted-foreground mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span><span className="font-semibold text-foreground tabular-nums">{stats.total}</span> {stats.total === 1 ? "cohort" : "cohorts"}</span>
-            <span className="text-muted-foreground/50">·</span>
-            <span><span className="font-semibold text-foreground tabular-nums">{stats.activeLearners}</span> active learner{stats.activeLearners === 1 ? "" : "s"}</span>
-            <span className="text-muted-foreground/50">·</span>
-            <span><span className="font-semibold text-foreground tabular-nums">{stats.avg}%</span> avg progress</span>
-            {stats.attention > 0 && (
-              <>
-                <span className="text-muted-foreground/50">·</span>
-                <span className="text-destructive inline-flex items-center gap-1">
-                  <AlertTriangle className="h-3 w-3" />
-                  {stats.attention} need{stats.attention === 1 ? "s" : ""} attention
-                </span>
-              </>
-            )}
-          </p>
+      {/* Compact header (Program Context style) */}
+      <div className="flex items-start justify-between gap-3 mb-1">
+        <div className="flex items-center gap-2">
+          <Layers className="h-4 w-4 text-primary" />
+          <h1 className="font-display text-lg font-bold text-foreground">Cohorts</h1>
         </div>
-        <Button onClick={onCreate} className="gap-2 shrink-0"><Plus className="h-4 w-4" />New Cohort</Button>
+        <Button size="sm" onClick={onCreate} className="gap-1.5 h-8">
+          <Plus className="h-3.5 w-3.5" /> New cohort
+        </Button>
       </div>
+      <p className="text-sm text-muted-foreground mb-5">
+        {stats.total} {stats.total === 1 ? "cohort" : "cohorts"} · {stats.activeLearners} active learner{stats.activeLearners === 1 ? "" : "s"} · {stats.avg}% avg progress
+        {stats.attention > 0 && (
+          <span className="text-destructive"> · {stats.attention} need{stats.attention === 1 ? "s" : ""} attention</span>
+        )}
+      </p>
 
       {/* Toolbar */}
-      <div className="flex items-center gap-3 flex-wrap pb-3 mb-4 border-b border-border/60">
-        <div className="relative w-full sm:w-72">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search cohorts…"
-            className="pl-9 h-9"
-          />
-        </div>
-        <div className="flex gap-1.5">
-          {(["all", "active", "draft", "completed"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors capitalize",
-                filter === f
-                  ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-card text-muted-foreground border-border hover:border-primary/30"
-              )}
-            >
-              {f === "all" ? "All" : f}
-            </button>
-          ))}
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          <span className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Sort</span>
+      <div className="rounded-xl border border-border bg-background p-3 mb-5">
+        <div className="flex items-center gap-2 flex-wrap">
+          <div className="relative flex-1 min-w-[180px]">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search cohorts…"
+              className="pl-8 h-8 text-xs"
+            />
+          </div>
+          <div className="flex gap-1">
+            {(["all", "active", "draft", "completed"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={cn(
+                  "px-2.5 py-1 rounded-full text-[0.65rem] font-medium border transition-colors capitalize",
+                  filter === f
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border hover:border-primary/30"
+                )}
+              >
+                {f === "all" ? "All" : f}
+              </button>
+            ))}
+          </div>
           <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
-            <SelectTrigger className="h-8 w-[140px] text-xs border-border/60">
+            <SelectTrigger className="h-8 w-[120px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -244,7 +224,7 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
         </div>
       </div>
 
-      {/* Cohort list */}
+      {/* Cohort cards — panel style */}
       <div className="space-y-3">
         {filtered.map(({ c: cohort, avgProgress, risingStar, atRisk }, i) => {
           const isDraftEmpty = cohort.status === "draft" && cohort.assignedLearnerIds.length === 0;
@@ -255,39 +235,25 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
               onClick={() => onSelect(cohort.id)}
-              className="relative w-full text-left rounded-xl border border-border bg-card p-5 pl-6 hover:bg-muted/30 hover:border-primary/40 hover:shadow-sm transition-all group overflow-hidden"
+              className="w-full text-left rounded-xl border border-border bg-background p-4 hover:bg-secondary/40 hover:border-primary/40 transition-colors group"
             >
-              {/* Status rail */}
-              <span aria-hidden className={cn("absolute inset-y-0 left-0 w-[3px]", statusRail[cohort.status])} />
-
-              <div className="flex items-start gap-4">
-                <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg shrink-0", statusIconBg[cohort.status])}>
-                  <Layers className="h-5 w-5" />
+              <div className="flex items-start gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+                  <Layers className="h-4 w-4" />
                 </div>
-
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-display text-base font-semibold text-foreground truncate">{cohort.name}</p>
-                        <Badge variant="outline" className={cn("text-[0.6rem] uppercase tracking-wide", statusColor(cohort.status))}>
-                          {cohort.status}
-                        </Badge>
-                      </div>
-                      {cohort.description && (
-                        <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{cohort.description}</p>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-2xl font-semibold text-foreground tabular-nums leading-none">{avgProgress}%</span>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-                    </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-display text-sm font-semibold text-foreground truncate">{cohort.name}</p>
+                    <Badge variant="outline" className={cn("text-[0.6rem] capitalize", statusColor(cohort.status))}>
+                      {cohort.status}
+                    </Badge>
                   </div>
-
-                  <Progress value={avgProgress} className="h-1 mt-3" />
+                  {cohort.description && (
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-1 mt-1">{cohort.description}</p>
+                  )}
 
                   {/* Meta row */}
-                  <div className="flex items-center gap-x-3 gap-y-1 mt-3 flex-wrap text-[0.7rem] text-muted-foreground">
+                  <div className="flex items-center gap-x-2 gap-y-1 mt-2 flex-wrap text-[0.65rem] text-muted-foreground">
                     {isDraftEmpty ? (
                       <span className="italic">No learners assigned yet</span>
                     ) : (
@@ -311,50 +277,44 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
                           </>
                         )}
                         {risingStar > 0 && (
-                          <>
-                            <span className="text-muted-foreground/40">·</span>
-                            <span className="inline-flex items-center gap-1 text-amber-600">
-                              <Star className="h-3 w-3" />
-                              {risingStar} rising
-                            </span>
-                          </>
+                          <Badge variant="outline" className={cn("text-[0.6rem] gap-1", tagBadge("rising_star").cls)}>
+                            <Star className="h-2.5 w-2.5" /> {risingStar}
+                          </Badge>
                         )}
                         {atRisk > 0 && (
-                          <>
-                            <span className="text-muted-foreground/40">·</span>
-                            <span className="inline-flex items-center gap-1 text-destructive">
-                              <AlertTriangle className="h-3 w-3" />
-                              {atRisk} at risk
-                            </span>
-                          </>
+                          <Badge variant="outline" className={cn("text-[0.6rem] gap-1", tagBadge("at_risk").cls)}>
+                            <AlertTriangle className="h-2.5 w-2.5" /> {atRisk}
+                          </Badge>
                         )}
                       </>
                     )}
                   </div>
 
-                  {/* Avatars */}
-                  {cohort.assignedLearnerIds.length > 0 && (
-                    <div className="flex -space-x-1.5 mt-3">
-                      {cohort.assignedLearnerIds.slice(0, 6).map((lid) => {
-                        const hire = learnerMap.get(lid);
-                        const name = hire?.user?.name ?? lid;
-                        return (
-                          <TeamAvatar
-                            key={lid}
-                            name={name}
-                            size={24}
-                            className="ring-2 ring-card"
-                          />
-                        );
-                      })}
-                      {cohort.assignedLearnerIds.length > 6 && (
-                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[0.6rem] font-medium text-muted-foreground ring-2 ring-card">
-                          +{cohort.assignedLearnerIds.length - 6}
-                        </span>
-                      )}
+                  {/* Progress + avatars */}
+                  <div className="flex items-center gap-3 mt-3">
+                    <div className="flex-1">
+                      <Progress value={avgProgress} className="h-1" />
                     </div>
-                  )}
+                    <span className="text-xs font-medium text-foreground tabular-nums">{avgProgress}%</span>
+                    {cohort.assignedLearnerIds.length > 0 && (
+                      <div className="flex -space-x-1.5">
+                        {cohort.assignedLearnerIds.slice(0, 4).map((lid) => {
+                          const hire = learnerMap.get(lid);
+                          const name = hire?.user?.name ?? lid;
+                          return (
+                            <TeamAvatar key={lid} name={name} size={20} className="ring-2 ring-background" />
+                          );
+                        })}
+                        {cohort.assignedLearnerIds.length > 4 && (
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[0.55rem] font-medium text-muted-foreground ring-2 ring-background">
+                            +{cohort.assignedLearnerIds.length - 4}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all shrink-0 mt-1" />
               </div>
             </motion.button>
           );
@@ -363,17 +323,17 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
 
       {/* Empty states */}
       {filtered.length === 0 && cohorts.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-center rounded-xl border border-dashed border-border bg-card/40">
-          <Layers className="h-10 w-10 text-muted-foreground mb-3" />
+        <div className="flex flex-col items-center justify-center py-16 text-center rounded-xl border border-dashed border-border bg-background">
+          <Layers className="h-8 w-8 text-muted-foreground mb-3" />
           <p className="text-sm font-semibold text-foreground">No cohorts yet</p>
           <p className="text-xs text-muted-foreground mt-1 max-w-sm">
             Create your first cohort to start tracking groups of learners together.
           </p>
-          <Button onClick={onCreate} className="gap-2 mt-4"><Plus className="h-4 w-4" />New Cohort</Button>
+          <Button size="sm" onClick={onCreate} className="gap-1.5 mt-4"><Plus className="h-3.5 w-3.5" />New cohort</Button>
         </div>
       )}
       {filtered.length === 0 && cohorts.length > 0 && (
-        <div className="flex flex-col items-center justify-center py-12 text-center text-xs text-muted-foreground">
+        <div className="flex flex-col items-center justify-center py-10 text-center text-xs text-muted-foreground">
           <p>No cohorts match your filters.</p>
           <button onClick={clearFilters} className="mt-2 text-primary hover:underline">Clear filters</button>
         </div>

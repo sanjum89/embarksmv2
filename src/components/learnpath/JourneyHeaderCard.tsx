@@ -1,23 +1,14 @@
 import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Calendar } from "lucide-react";
-import { cn } from "@/lib/utils";
-import type { JourneyCohort, JourneyTrack } from "@/hooks/useLearnerJourney";
+import type { JourneyCohort } from "@/hooks/useLearnerJourney";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 
 interface Props {
   cohort: JourneyCohort;
-  tracks: JourneyTrack[];
-  activeTrackCode: string | null;
-  onSelectTrack: (code: string) => void;
 }
 
-export function JourneyHeaderCard({ cohort, tracks, activeTrackCode, onSelectTrack }: Props) {
+export function JourneyHeaderCard({ cohort }: Props) {
   const { substitute } = useContentSubstitution();
-  const totalChapters = Math.max(
-    1,
-    tracks.reduce((s, t) => s + t.totalChapters, 0)
-  );
 
   const formatDue = (d?: string | null) => {
     if (!d) return null;

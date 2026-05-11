@@ -18,7 +18,7 @@ import { useUser } from "@/contexts/UserContext";
 import { LearnerStatusBadge } from "./LearnerStatusBadge";
 import { AIExplainPopover } from "./AIExplainPopover";
 import { useManagerActions } from "@/store/useManagerActions";
-import type { LearnerOverlay } from "@/data/managerDemoOverlay";
+import { COHORT_MODULES_FALLBACK, type LearnerOverlay } from "@/data/managerDemoOverlay";
 import type { CohortModuleCol } from "@/hooks/useManagerCohortData";
 import { cn } from "@/lib/utils";
 
@@ -185,10 +185,16 @@ export function LearnerDrawer({ open, onOpenChange, learner, overlay, modules, i
                     {overlay.cells
                       .filter((c) => c.score != null)
                       .map((c) => {
-                        const m = modules.find((mm) => mm.module_code === c.module_code);
+                        const title =
+                          modules.find((mm) => mm.module_code === c.module_code)?.module_title
+                          ?? COHORT_MODULES_FALLBACK.find((mm) => mm.module_code === c.module_code)?.module_title
+                          ?? c.module_code
+                              .replace(/^mod\.[^.]+\./, "")
+                              .replace(/_/g, " ")
+                              .replace(/\b\w/g, (ch) => ch.toUpperCase());
                         return (
                           <tr key={c.module_code} className="border-b border-border/50">
-                            <td className="py-2 text-foreground">{m?.module_title ?? c.module_code}</td>
+                            <td className="py-2 text-foreground">{title}</td>
                             <td className="py-2 text-right font-medium">{c.score}%</td>
                           </tr>
                         );

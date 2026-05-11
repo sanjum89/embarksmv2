@@ -1,42 +1,32 @@
-# Make the "Why AI did this" explanation clearer
+# Show human-friendly module titles in the Learner Drawer Assessments tab
 
-The current popover shows one terse sentence ("Diagnostic 92% — strong markets fluency.") plus an evidence chip and confidence/risk pills. A manager can't tell *why* that signal led to *this* decision, what the learner is excused from, what they still have to do, or how to challenge it. We'll enrich both the payload and the popover layout so each explanation reads like a short, structured rationale.
+The Assessments table in `LearnerDrawer.tsx` (line 191) does:
+```ts
+const m = modules.find((mm) => mm.module_code === c.module_code);
+return ...{m?.module_title ?? c.module_code}
+```
+The fallback to raw `module_code` is what produces the "weird" labels (`mod.assoc_im.foundations`, `mod.assoc_im.markets`, ...). It happens because the `modules` prop passed in from the cohort hub comes from live cohort tables whose `module_code`s don't match the demo overlay's fixed codes.
 
-## 1. Extend the explanation payload
+## Fix
 
-In `src/data/managerDemoOverlay.ts` (`AiPathChange`) and `src/components/manager-hub/AIExplainPopover.tsx` (`AIExplainPayload`), add optional fields:
+In `src/components/manager-hub/LearnerDrawer.tsx`:
 
-- `decision_rule: string` — the policy the AI applied, e.g. *"Skip when diagnostic ≥ 85% AND prior FS experience ≥ 2y."*
-- `signals: { label: string; value: string; weight?: "primary" | "supporting" }[]` — replaces the flat `evidence` chips with labelled facts (e.g. `Diagnostic score → 92% (top decile)`, `Prior role → Compliance officer, 4y`).
-- `outcome: { time_saved_minutes?: number; replaced_with?: string; still_required?: string[] }` — what the learner skips, what (if anything) replaces it, what they must still complete (e.g. end-of-track checkpoint).
-- `safeguards: string[]` — guardrails, e.g. *"Re-tested in week-4 checkpoint"*, *"Manager can revert in one click"*.
-- Keep `reason`, `confidence`, `risk`, `deepResearchPrompt` unchanged for backward compat. `evidence` stays as a fallback when `signals` isn't supplied.
-
-Backfill the 9 Rathbones overlays (every `pathChanges[]` entry) with a `decision_rule`, structured `signals`, `outcome`, and `safeguards` consistent with the existing reason. Use the diagnostic score thresholds the demo already implies (≥85% → skip, 60–84% → diagnostic-only, <60% → emphasis/microlearning).
-
-## 2. Redesign the popover
-
-Rework `AIExplainPopover.tsx` so the content is scannable in this order:
-
-1. **Header**: `Sparkles` icon + "Why AI did this" + a small kind-tag (`Skipped`, `Microlearning`, `Diagnostic-only`, `Emphasis`, `Reordered`) coloured by tone.
-2. **One-line summary**: `recommendation` in semibold (e.g. *"Skipped — Markets & Asset Classes"*).
-3. **Decision rule** block: muted card with label `Rule applied` and the `decision_rule` sentence — this is the core clarity fix.
-4. **Signals** list: each signal as `label → value` with a subtle dot separator; `primary` signals bold, `supporting` muted. Falls back to today's chip row when `signals` is absent.
-5. **Outcome** block: `Time saved`, `Still required`, optional `Replaced with` rendered as compact key/value rows so the manager sees what the learner does and doesn't do.
-6. **Safeguards** row: small shield-icon chips (e.g. *Re-tested week 4*, *One-click revert*) — reassures the manager the skip isn't permanent or unmonitored.
-7. **Confidence + risk** pills (existing) moved to the footer next to the deep-research link.
-8. **Deep research in Agent One** CTA stays at the bottom; prompt now includes the structured signals so the chat lands with full context.
-
-Widen `PopoverContent` from `w-96` to `w-[420px]` and add `max-h-[80vh] overflow-y-auto` so longer rationales remain readable. Keep the design tokens (no raw colors), reuse `Badge` and `Button` primitives.
+1. Import `COHORT_MODULES_FALLBACK` from `@/data/managerDemoOverlay`.
+2. Build a single resolver:
+   ```ts
+   const resolveModuleTitle = (code: string) =>
+     modules.find((m) => m.module_code === code)?.module_title
+     ?? COHORT_MODULES_FALLBACK.find((m) => m.module_code === code)?.module_title
+     ?? code.replace(/^mod\.[^.]+\./, "").replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+   ```
+   The third tier (prettify) protects against any future code that's missing from both lists, so the user never sees a raw `mod.x.y` string.
+3. Use `resolveModuleTitle(c.module_code)` in the Assessments tab and the Path tab (line ~115 also renders module titles via the same `modules.find` lookup) so both tabs are consistent.
 
 ## Out of scope
 
-- No changes to where the popover is triggered (Sankey nodes, roster cells, action cards stay as-is).
-- No changes to `RosterHeatmap` data lookup or path-change resolution logic.
-- No new edge functions or DB migrations — the rationale is authored in the demo overlay, same as today.
+- No changes to the underlying cohort data, overlay codes, or the `modules` prop contract.
+- No styling changes — only the displayed string.
 
 ## Files to touch
 
-- `src/data/managerDemoOverlay.ts` — extend `AiPathChange`, populate new fields on every `pathChanges[]` entry across rb-l1..rb-l9.
-- `src/components/manager-hub/AIExplainPopover.tsx` — extend `AIExplainPayload`, redesign body, keep backward-compatible fallbacks.
-- Any caller that constructs an `AIExplainPayload` from a `pathChange` (likely `AdaptivePathsSankey.tsx` and the learner drawer) — pass the new fields through; no behavioural change when they're absent.
+- `src/components/manager-hub/LearnerDrawer.tsx`

@@ -136,7 +136,7 @@ export function SendCheckInDialog({ open, onOpenChange, defaultLearnerId }: Prop
       <DialogContent className="max-w-2xl gap-0 p-0">
         <DialogHeader className="border-b border-border px-6 py-4">
           <div className="flex items-center gap-2">
-            {step !== "recipients" && (
+            {step !== "recipients" && !(step === "template" && defaultLearnerId) && (
               <Button variant="ghost" size="sm" className="-ml-2 h-7 px-2" onClick={() => setStep(step === "send" ? "template" : "recipients")}>
                 <ChevronLeft className="mr-1 h-3.5 w-3.5" /> Back
               </Button>

@@ -75,9 +75,9 @@ export function SendCheckInDialog({ open, onOpenChange, defaultLearnerId }: Prop
   const [channel, setChannel] = useState<"teams" | "inapp">("teams");
 
   const reset = () => {
-    setStep("recipients");
+    setStep(defaultLearnerId ? "template" : "recipients");
     setSearch("");
-    setPicked(new Set());
+    setPicked(initialPicked());
     setTemplateId(TEMPLATES[0].id);
     setSubject(TEMPLATES[0].subject);
     setBody(TEMPLATES[0].body);

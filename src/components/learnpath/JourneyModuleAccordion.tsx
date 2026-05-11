@@ -141,31 +141,35 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                 </div>
               ) : (
                 <div className="space-y-1 pt-1">
-                  {m.chapters.map((c, sIdx) => {
-                    const step: UnifiedStep = {
-                      stepId: c.code,
-                      moduleId: c.code,
-                      type: "module" as StepType,
-                      title: c.title,
-                      description: "",
-                      duration: c.minutes ? `${c.minutes} min` : undefined,
-                      contentType: c.contentType,
-                      status: statusToStepStatus(c.status),
-                      skillTargetId: cohortId,
-                      skillTargetTitle: m.title,
-                      progress: m.pct,
-                      referenceId: c.code,
-                    };
-                    return (
-                      <EmbarkChapterRow
-                        key={c.code}
-                        step={step}
-                        index={sIdx}
-                        isActive={c.code === activeChapterCode}
-                        isLast={sIdx === m.chapters.length - 1}
-                      />
-                    );
-                  })}
+                  {(() => {
+                    const lensType = m.adaptation?.adaptationType ?? "full_module";
+                    const displayChapters = buildLensChapters(m.chapters, lensType);
+                    return displayChapters.map((c, sIdx) => {
+                      const step: UnifiedStep = {
+                        stepId: c.code,
+                        moduleId: c.code,
+                        type: "module" as StepType,
+                        title: c.title,
+                        description: "",
+                        duration: c.minutes ? `${c.minutes} min` : undefined,
+                        contentType: c.contentType,
+                        status: statusToStepStatus(c.status),
+                        skillTargetId: cohortId,
+                        skillTargetTitle: m.title,
+                        progress: m.pct,
+                        referenceId: c.code,
+                      };
+                      return (
+                        <EmbarkChapterRow
+                          key={c.code}
+                          step={step}
+                          index={sIdx}
+                          isActive={c.code === activeChapterCode}
+                          isLast={sIdx === displayChapters.length - 1}
+                        />
+                      );
+                    });
+                  })()}
                 </div>
               )}
             </AccordionContent>

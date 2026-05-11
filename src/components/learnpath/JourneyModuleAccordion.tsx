@@ -7,11 +7,13 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Lock, CheckCircle2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Lock, CheckCircle2, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { EmbarkChapterRow } from "./LearnPathChapterRow";
 import type { JourneyModule, JourneyTrack } from "@/hooks/useLearnerJourney";
+import { formatAdaptationLabel, sanitizeReason, type ModuleAdaptation } from "@/lib/embarkAdaptation";
 import type { UnifiedStep } from "./LearnPathContent";
 import type { StepType } from "@/types/learning";
 

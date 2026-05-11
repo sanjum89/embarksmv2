@@ -280,7 +280,16 @@ export function useLearnerJourney(
             pct,
             status,
             displayOrder: m.display_order ?? 0,
+            adaptation: adaptationByModule.get(m.module_code),
           });
+        });
+
+        // Hide modules whose adaptation says "Already covered" + not visible
+        moduleByCode.forEach((mod, code) => {
+          const a = mod.adaptation;
+          if (a && a.adaptationType === "skip_after_validation" && !a.visibleToLearner) {
+            moduleByCode.delete(code);
+          }
         });
 
         // Resolve prerequisite titles + auto-lock if prereq isn't completed

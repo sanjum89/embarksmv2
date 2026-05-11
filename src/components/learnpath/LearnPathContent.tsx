@@ -273,6 +273,25 @@ export function EmbarkContent() {
     const currentIdx = allSteps.findIndex((ms) => ms.moduleId === activeModuleId);
     const nextStep = allSteps.slice(currentIdx + 1).find((s) => s.status !== "completed" && s.status !== "skipped");
 
+    // For Quick Diagnostic submissions: pre-compute the chapter to advance to.
+    // Priority: first wrong-answer chapter (reopened) → first non-skipped chapter
+    // in the next cohort module → legacy nextStep.
+    const computeDiagnosticNext = (wrongChapterCodes: string[]) => {
+      if (!diagModuleCode || !diagModuleMeta) return null;
+      if (wrongChapterCodes.length > 0) {
+        const orderedWrong = diagModuleMeta.module.chapters
+          .filter((c) => wrongChapterCodes.includes(c.code))
+          .map((c) => ({ id: c.code, title: c.title }));
+        if (orderedWrong[0]) return orderedWrong[0];
+      }
+      // No wrong chapters → next module in the track
+      const trackModules = diagModuleMeta.track.modules;
+      const idx = trackModules.findIndex((m) => m.code === diagModuleCode);
+      const next = trackModules.slice(idx + 1).find((m) => m.chapters.length > 0);
+      const ch = next?.chapters[0];
+      return ch ? { id: ch.code, title: ch.title } : null;
+    };
+
     const handleModuleComplete = () => {
       notifyModuleCompleted({
         moduleId: activeModuleId,
@@ -283,6 +302,16 @@ export function EmbarkContent() {
         skillTargetId: nextStep?.skillTargetId ?? stepInfo?.skillTargetId,
       });
     };
+
+    // Override "next" prop on the diagnostic screen so the CompletionScreen
+    // auto-advances into the first reopened chapter (or the next module).
+    let diagNext: { id: string; title: string } | null = null;
+    if (diagModuleCode) {
+      const recorded = diagnosticReopens.get(diagModuleCode);
+      if (recorded) {
+        diagNext = computeDiagnosticNext(Array.from(recorded.reopened));
+      }
+    }
 
     return (
       <div className="h-full flex flex-col">
@@ -299,12 +328,21 @@ export function EmbarkContent() {
             skillTargetId={stepInfo?.skillTargetId}
             stepId={stepInfo?.stepId}
             onComplete={handleModuleComplete}
-            nextModuleId={nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId}
-            nextModuleTitle={nextStep?.title}
+            nextModuleId={diagNext?.id ?? (nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId)}
+            nextModuleTitle={diagNext?.title ?? nextStep?.title}
             nextSkillTargetId={nextStep?.skillTargetId}
-            nextStepType={nextStep?.type}
+            nextStepType={diagNext ? "module" : nextStep?.type}
             initialCompleted={stepInfo?.status === "completed"}
             onCompletedChange={setModuleCompletedView}
+            onDiagnosticSubmit={(result) => {
+              if (!diagModuleCode) return;
+              diagnosticReopens.recordSubmission(
+                diagModuleCode,
+                result.wrongChapterCodes,
+                result.total,
+                result.correctCount,
+              );
+            }}
           />
         </div>
       </div>

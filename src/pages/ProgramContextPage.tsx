@@ -105,107 +105,277 @@ export default function ProgramContextPage() {
 function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCreate: () => void; onSelect: (id: string) => void }) {
   const { learnerMap } = useLearnerMap();
   const [filter, setFilter] = useState<"all" | Cohort["status"]>("all");
-  const filtered = filter === "all" ? cohorts : cohorts.filter((c) => c.status === filter);
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<"recent" | "progress" | "name" | "start">("recent");
+
+  const enriched = useMemo(() => {
+    return cohorts.map((c) => {
+      const avgProgress = c.learnerProgress.length
+        ? Math.round(c.learnerProgress.reduce((a, l) => a + l.overallProgress, 0) / c.learnerProgress.length)
+        : 0;
+      const risingStar = c.learnerProgress.filter((l) => l.tags.includes("rising_star")).length;
+      const atRisk = c.learnerProgress.filter((l) => l.tags.includes("at_risk")).length;
+      const needsAttention = c.learnerProgress.filter((l) => l.tags.includes("needs_attention")).length;
+      return { c, avgProgress, risingStar, atRisk, needsAttention };
+    });
+  }, [cohorts]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let rows = enriched;
+    if (filter !== "all") rows = rows.filter((r) => r.c.status === filter);
+    if (q) rows = rows.filter((r) =>
+      r.c.name.toLowerCase().includes(q) || (r.c.description ?? "").toLowerCase().includes(q)
+    );
+    const sorted = [...rows];
+    sorted.sort((a, b) => {
+      switch (sort) {
+        case "progress": return b.avgProgress - a.avgProgress;
+        case "name": return a.c.name.localeCompare(b.c.name);
+        case "start": return (b.c.startDate ?? "").localeCompare(a.c.startDate ?? "");
+        default: return (b.c.createdAt ?? "").localeCompare(a.c.createdAt ?? "");
+      }
+    });
+    return sorted;
+  }, [enriched, filter, search, sort]);
+
+  // Hero stats (from full cohort list, not filtered)
+  const stats = useMemo(() => {
+    const total = cohorts.length;
+    const activeCohorts = cohorts.filter((c) => c.status === "active");
+    const activeLearners = activeCohorts.reduce((s, c) => s + c.assignedLearnerIds.length, 0);
+    const measured = enriched.filter((r) => r.c.status !== "draft");
+    const avg = measured.length
+      ? Math.round(measured.reduce((s, r) => s + r.avgProgress, 0) / measured.length)
+      : 0;
+    const attention = enriched.reduce((s, r) => s + r.atRisk + r.needsAttention, 0);
+    return { total, activeLearners, avg, attention };
+  }, [cohorts, enriched]);
+
+  const fmtDate = (d?: string) => {
+    if (!d) return "";
+    try {
+      return new Date(d).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    } catch { return d; }
+  };
+
+  const plural = (n: number, s: string) => `${n} ${s}${n === 1 ? "" : "s"}`;
+
+  const statusRail: Record<Cohort["status"], string> = {
+    active: "bg-emerald-500",
+    completed: "bg-primary",
+    draft: "bg-muted-foreground/40",
+  };
+  const statusIconBg: Record<Cohort["status"], string> = {
+    active: "bg-emerald-500/10 text-emerald-700",
+    completed: "bg-primary/10 text-primary",
+    draft: "bg-muted text-muted-foreground",
+  };
+
+  const clearFilters = () => { setSearch(""); setFilter("all"); };
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-      <div className="flex items-center justify-between mb-6">
-        <div>
+      {/* Hero header */}
+      <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
+        <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold text-foreground">Cohorts</h1>
           <p className="text-sm text-muted-foreground mt-1">Create, manage, and track learning cohorts</p>
+          <p className="text-xs text-muted-foreground mt-2 flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span><span className="font-semibold text-foreground tabular-nums">{stats.total}</span> {stats.total === 1 ? "cohort" : "cohorts"}</span>
+            <span className="text-muted-foreground/50">·</span>
+            <span><span className="font-semibold text-foreground tabular-nums">{stats.activeLearners}</span> active learner{stats.activeLearners === 1 ? "" : "s"}</span>
+            <span className="text-muted-foreground/50">·</span>
+            <span><span className="font-semibold text-foreground tabular-nums">{stats.avg}%</span> avg progress</span>
+            {stats.attention > 0 && (
+              <>
+                <span className="text-muted-foreground/50">·</span>
+                <span className="text-destructive inline-flex items-center gap-1">
+                  <AlertTriangle className="h-3 w-3" />
+                  {stats.attention} need{stats.attention === 1 ? "s" : ""} attention
+                </span>
+              </>
+            )}
+          </p>
         </div>
-        <Button onClick={onCreate} className="gap-2"><Plus className="h-4 w-4" />New Cohort</Button>
+        <Button onClick={onCreate} className="gap-2 shrink-0"><Plus className="h-4 w-4" />New Cohort</Button>
       </div>
 
-      {/* Filter pills */}
-      <div className="flex gap-2 mb-5">
-        {(["all", "active", "draft", "completed"] as const).map((f) => (
-          <button key={f} onClick={() => setFilter(f)}
-            className={cn("px-3 py-1.5 rounded-full text-xs font-medium border transition-colors capitalize",
-              filter === f ? "bg-primary text-primary-foreground border-primary" : "bg-card text-muted-foreground border-border hover:border-primary/30"
-            )}>
-            {f === "all" ? "All" : f}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filtered.map((cohort, i) => {
-          const avgProgress = cohort.learnerProgress.length
-            ? Math.round(cohort.learnerProgress.reduce((a, l) => a + l.overallProgress, 0) / cohort.learnerProgress.length)
-            : 0;
-          const risingStar = cohort.learnerProgress.filter((l) => l.tags.includes("rising_star")).length;
-          const atRisk = cohort.learnerProgress.filter((l) => l.tags.includes("at_risk")).length;
-
-          return (
-            <motion.button key={cohort.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }} onClick={() => onSelect(cohort.id)}
-              className="w-full text-left rounded-xl border border-border bg-card p-5 hover:shadow-md hover:border-primary/30 transition-all group"
+      {/* Toolbar */}
+      <div className="flex items-center gap-3 flex-wrap pb-3 mb-4 border-b border-border/60">
+        <div className="relative w-full sm:w-72">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search cohorts…"
+            className="pl-9 h-9"
+          />
+        </div>
+        <div className="flex gap-1.5">
+          {(["all", "active", "draft", "completed"] as const).map((f) => (
+            <button
+              key={f}
+              onClick={() => setFilter(f)}
+              className={cn(
+                "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors capitalize",
+                filter === f
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card text-muted-foreground border-border hover:border-primary/30"
+              )}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
-                    <Layers className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-display text-sm font-semibold text-foreground">{cohort.name}</p>
-                    <Badge variant="outline" className={cn("text-[0.65rem] mt-1", statusColor(cohort.status))}>{cohort.status}</Badge>
-                  </div>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0 mt-1" />
-              </div>
+              {f === "all" ? "All" : f}
+            </button>
+          ))}
+        </div>
+        <div className="ml-auto flex items-center gap-2">
+          <span className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Sort</span>
+          <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+            <SelectTrigger className="h-8 w-[140px] text-xs border-border/60">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Recent</SelectItem>
+              <SelectItem value="progress">Progress</SelectItem>
+              <SelectItem value="name">Name</SelectItem>
+              <SelectItem value="start">Start date</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-              <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{cohort.description}</p>
+      {/* Cohort list */}
+      <div className="space-y-3">
+        {filtered.map(({ c: cohort, avgProgress, risingStar, atRisk }, i) => {
+          const isDraftEmpty = cohort.status === "draft" && cohort.assignedLearnerIds.length === 0;
+          return (
+            <motion.button
+              key={cohort.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.04 }}
+              onClick={() => onSelect(cohort.id)}
+              className="relative w-full text-left rounded-xl border border-border bg-card p-5 pl-6 hover:bg-muted/30 hover:border-primary/40 hover:shadow-sm transition-all group overflow-hidden"
+            >
+              {/* Status rail */}
+              <span aria-hidden className={cn("absolute inset-y-0 left-0 w-[3px]", statusRail[cohort.status])} />
 
-              {/* Progress */}
-              <div className="mb-3">
-                <div className="flex justify-between text-[0.65rem] text-muted-foreground mb-1">
-                  <span>Overall Progress</span><span className="font-semibold text-foreground">{avgProgress}%</span>
+              <div className="flex items-start gap-4">
+                <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg shrink-0", statusIconBg[cohort.status])}>
+                  <Layers className="h-5 w-5" />
                 </div>
-                <Progress value={avgProgress} className="h-1.5" />
-              </div>
 
-              {/* Meta row */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 text-[0.65rem] text-muted-foreground">
-                  <span className="flex items-center gap-1"><Users className="h-3 w-3" />{cohort.assignedLearnerIds.length}</span>
-                  <span className="flex items-center gap-1"><Target className="h-3 w-3" />{cohort.skillTargetIds.length} targets</span>
-                  <span className="flex items-center gap-1"><Calendar className="h-3 w-3" />{cohort.startDate}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  {risingStar > 0 && <span className="flex items-center gap-0.5 text-[0.65rem] text-amber-600"><Star className="h-3 w-3" />{risingStar}</span>}
-                  {atRisk > 0 && <span className="flex items-center gap-0.5 text-[0.65rem] text-destructive"><AlertTriangle className="h-3 w-3" />{atRisk}</span>}
-                </div>
-              </div>
-
-              {/* Stacked avatars */}
-              {cohort.assignedLearnerIds.length > 0 && (
-                <div className="flex -space-x-2 mt-3">
-                  {cohort.assignedLearnerIds.slice(0, 5).map((lid) => {
-                    const hire = learnerMap.get(lid);
-                    const initials = hire ? hire.user.name.split(" ").map(n => n[0]).join("") : "?";
-                    return (
-                      <div key={lid} className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[0.6rem] font-bold text-primary-foreground border-2 border-card">
-                        {initials}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="font-display text-base font-semibold text-foreground truncate">{cohort.name}</p>
+                        <Badge variant="outline" className={cn("text-[0.6rem] uppercase tracking-wide", statusColor(cohort.status))}>
+                          {cohort.status}
+                        </Badge>
                       </div>
-                    );
-                  })}
-                  {cohort.assignedLearnerIds.length > 5 && (
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-[0.6rem] font-medium text-muted-foreground border-2 border-card">
-                      +{cohort.assignedLearnerIds.length - 5}
+                      {cohort.description && (
+                        <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{cohort.description}</p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-2xl font-semibold text-foreground tabular-nums leading-none">{avgProgress}%</span>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
+                    </div>
+                  </div>
+
+                  <Progress value={avgProgress} className="h-1 mt-3" />
+
+                  {/* Meta row */}
+                  <div className="flex items-center gap-x-3 gap-y-1 mt-3 flex-wrap text-[0.7rem] text-muted-foreground">
+                    {isDraftEmpty ? (
+                      <span className="italic">No learners assigned yet</span>
+                    ) : (
+                      <>
+                        <span className="inline-flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {plural(cohort.assignedLearnerIds.length, "learner")}
+                        </span>
+                        <span className="text-muted-foreground/40">·</span>
+                        <span className="inline-flex items-center gap-1">
+                          <Target className="h-3 w-3" />
+                          {plural(cohort.skillTargetIds.length, "target")}
+                        </span>
+                        {cohort.startDate && (
+                          <>
+                            <span className="text-muted-foreground/40">·</span>
+                            <span className="inline-flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {fmtDate(cohort.startDate)}
+                            </span>
+                          </>
+                        )}
+                        {risingStar > 0 && (
+                          <>
+                            <span className="text-muted-foreground/40">·</span>
+                            <span className="inline-flex items-center gap-1 text-amber-600">
+                              <Star className="h-3 w-3" />
+                              {risingStar} rising
+                            </span>
+                          </>
+                        )}
+                        {atRisk > 0 && (
+                          <>
+                            <span className="text-muted-foreground/40">·</span>
+                            <span className="inline-flex items-center gap-1 text-destructive">
+                              <AlertTriangle className="h-3 w-3" />
+                              {atRisk} at risk
+                            </span>
+                          </>
+                        )}
+                      </>
+                    )}
+                  </div>
+
+                  {/* Avatars */}
+                  {cohort.assignedLearnerIds.length > 0 && (
+                    <div className="flex -space-x-1.5 mt-3">
+                      {cohort.assignedLearnerIds.slice(0, 6).map((lid) => {
+                        const hire = learnerMap.get(lid);
+                        const name = hire?.user?.name ?? lid;
+                        return (
+                          <TeamAvatar
+                            key={lid}
+                            name={name}
+                            size={24}
+                            className="ring-2 ring-card"
+                          />
+                        );
+                      })}
+                      {cohort.assignedLearnerIds.length > 6 && (
+                        <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-muted text-[0.6rem] font-medium text-muted-foreground ring-2 ring-card">
+                          +{cohort.assignedLearnerIds.length - 6}
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
-              )}
+              </div>
             </motion.button>
           );
         })}
       </div>
 
-      {filtered.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
+      {/* Empty states */}
+      {filtered.length === 0 && cohorts.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-20 text-center rounded-xl border border-dashed border-border bg-card/40">
           <Layers className="h-10 w-10 text-muted-foreground mb-3" />
-          <p className="text-sm text-muted-foreground">No cohorts found.</p>
+          <p className="text-sm font-semibold text-foreground">No cohorts yet</p>
+          <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+            Create your first cohort to start tracking groups of learners together.
+          </p>
+          <Button onClick={onCreate} className="gap-2 mt-4"><Plus className="h-4 w-4" />New Cohort</Button>
+        </div>
+      )}
+      {filtered.length === 0 && cohorts.length > 0 && (
+        <div className="flex flex-col items-center justify-center py-12 text-center text-xs text-muted-foreground">
+          <p>No cohorts match your filters.</p>
+          <button onClick={clearFilters} className="mt-2 text-primary hover:underline">Clear filters</button>
         </div>
       )}
     </motion.div>

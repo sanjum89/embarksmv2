@@ -673,32 +673,45 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
       timeSpent = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
     }
 
-    // Skill target progress
-    const currentTarget = skillTargetId ? skillTargets.find(t => t.id === skillTargetId) : undefined;
-    const totalSteps = currentTarget?.steps.length ?? 0;
-    const completedSteps = currentTarget?.steps.filter(s => s.status === "completed" || s.status === "skipped").length ?? 0;
-    const progressText = totalSteps > 0 ? `${completedSteps}/${totalSteps}` : "—";
+    // Cohort path: derive progress + streak from the chapter context (which mirrors the journey)
+    let progressText = "—";
+    let streakText = "—";
+    let assessmentScore = "—";
 
-    // Assessment score — look for a completed assessment sibling step
-    const assessmentStep = currentTarget?.steps.find(s =>
-      (s as any).type === "assessment" && (s.status === "completed" || s.status === "skipped")
-    );
-    const assessmentScore = (assessmentStep as any)?.score != null ? `${(assessmentStep as any).score}%` : "—";
+    if (cohortContext) {
+      const total = cohortContext.moduleTotalChapters;
+      // Optimistically include the just-completed chapter if not yet reflected
+      const done = Math.min(total, cohortContext.moduleCompletedChapters + (initialCompleted ? 0 : 1));
+      progressText = total > 0 ? `${done}/${total} chapters` : "—";
+      streakText = done > 0 ? `${done} in a row` : "—";
+    } else {
+      // Skill target progress
+      const currentTarget = skillTargetId ? skillTargets.find(t => t.id === skillTargetId) : undefined;
+      const totalSteps = currentTarget?.steps.length ?? 0;
+      const completedSteps = currentTarget?.steps.filter(s => s.status === "completed" || s.status === "skipped").length ?? 0;
+      progressText = totalSteps > 0 ? `${completedSteps}/${totalSteps}` : "—";
 
-    // Learning streak — consecutive completed steps ending at current
-    let streak = 0;
-    if (currentTarget) {
-      const sorted = [...currentTarget.steps].sort((a, b) => a.order - b.order);
-      const currentIdx = sorted.findIndex(s => s.id === stepId);
-      for (let i = currentIdx; i >= 0; i--) {
-        if (sorted[i].status === "completed") streak++;
-        else break;
+      // Assessment score — look for a completed assessment sibling step
+      const assessmentStep = currentTarget?.steps.find(s =>
+        (s as any).type === "assessment" && (s.status === "completed" || s.status === "skipped")
+      );
+      assessmentScore = (assessmentStep as any)?.score != null ? `${(assessmentStep as any).score}%` : "—";
+
+      // Learning streak — consecutive completed steps ending at current
+      let streak = 0;
+      if (currentTarget) {
+        const sorted = [...currentTarget.steps].sort((a, b) => a.order - b.order);
+        const currentIdx = sorted.findIndex(s => s.id === stepId);
+        for (let i = currentIdx; i >= 0; i--) {
+          if (sorted[i].status === "completed") streak++;
+          else break;
+        }
       }
+      streakText = streak > 0 ? `${streak} in a row` : "—";
     }
-    const streakText = streak > 0 ? `${streak} in a row` : "—";
 
     return { timeSpent, assessmentScore, progressText, streakText, modesUsed: Array.from(usedModesRef.current) };
-  }, [completed, skillTargetId, skillTargets, stepId, learningMode]);
+  }, [completed, skillTargetId, skillTargets, stepId, learningMode, cohortContext, initialCompleted, isRevisit]);
 
   if (showSummary && !previewMode) {
     const handleContinue = () => {

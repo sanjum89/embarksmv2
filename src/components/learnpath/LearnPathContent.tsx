@@ -21,6 +21,7 @@ import { getRecommendationsForUser } from "@/lib/skillRecommendations";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { StepType } from "@/types/learning";
+import { findCohortChapterLocation, findNextCohortChapter } from "@/lib/cohortNextChapter";
 
 export interface UnifiedStep {
   stepId: string;

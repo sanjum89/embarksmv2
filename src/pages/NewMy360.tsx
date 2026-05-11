@@ -3,20 +3,22 @@ import { Navigate } from "react-router-dom";
 import { useMy360Data } from "@/hooks/useMy360Data";
 import { bucketCapabilities } from "@/lib/my360v2/bucketing";
 import { useAccount } from "@/contexts/AccountContext";
-import { IdentityHeader } from "@/components/my360-v2/IdentityHeader";
-import { HrisSnapshotCard } from "@/components/my360-v2/HrisSnapshotCard";
-import { CompetencyRadarPanel } from "@/components/my360-v2/CompetencyRadarPanel";
-import { CapabilityBuckets } from "@/components/my360-v2/CapabilityBuckets";
+import { ProfileHero } from "@/components/my360-v2/ProfileHero";
+import { StatStrip } from "@/components/my360-v2/StatStrip";
+import { CompetencyRadarHero } from "@/components/my360-v2/CompetencyRadarHero";
+import { CapabilityStrip } from "@/components/my360-v2/CapabilityStrip";
+import { CohortPreviewCard } from "@/components/my360-v2/CohortPreviewCard";
 import { CohortJourneyTab } from "@/components/my360-v2/CohortJourneyTab";
 import { GrowthPathTab } from "@/components/my360-v2/GrowthPathTab";
 import { Loader2 } from "lucide-react";
 
-const tabs = ["Role & Strengths", "Cohort Journey", "Growth Path"] as const;
+const tabs = ["Profile", "Cohort Journey", "Growth Path"] as const;
+type Tab = (typeof tabs)[number];
 
 export default function NewMy360() {
   const data = useMy360Data();
   const { activeAccount } = useAccount();
-  const [tab, setTab] = useState<(typeof tabs)[number]>("Role & Strengths");
+  const [tab, setTab] = useState<Tab>("Profile");
 
   const buckets = useMemo(
     () => bucketCapabilities(data.proficiency, data.requirements),
@@ -35,23 +37,29 @@ export default function NewMy360() {
     return <Navigate to="/my-360-legacy" replace />;
   }
 
-  // Resolve manager name from account employees jsonb
   const employees = ((activeAccount as any)?.data?.employees ?? []) as Array<{ id: string; name: string }>;
   const managerName = data.employee?.reportsTo
     ? employees.find((e) => e.id === data.employee?.reportsTo)?.name
     : undefined;
 
-  return (
-    <div className="max-w-7xl mx-auto px-6 py-6 space-y-5">
-      <IdentityHeader employee={data.employee} managerName={managerName} />
+  const tenureLabel = data.employee?.hris?.tenureMonths
+    ? `${Math.floor(data.employee.hris.tenureMonths / 12)}y ${data.employee.hris.tenureMonths % 12}m`
+    : "—";
 
-      <div className="flex gap-1 border-b border-border">
+  return (
+    <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      <ProfileHero employee={data.employee} managerName={managerName} />
+
+      {/* Pill tab switcher */}
+      <div className="flex items-center gap-1 p-1 rounded-full bg-muted border border-border w-fit">
         {tabs.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors ${
-              tab === t ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"
+            className={`px-4 py-1.5 text-sm font-medium rounded-full transition-all ${
+              tab === t
+                ? "bg-card text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t}
@@ -59,28 +67,37 @@ export default function NewMy360() {
         ))}
       </div>
 
-      {tab === "Role & Strengths" && (
-        <div className="space-y-5">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-1"><HrisSnapshotCard hris={data.employee?.hris} /></div>
-            <div className="lg:col-span-2">
-              <CompetencyRadarPanel
-                catalog={data.competencyCatalog}
-                current={data.personaCompetencies}
-                required={data.roleCompetencyReqs}
-                proficiency={data.proficiency}
-                requirements={data.requirements}
-              />
-            </div>
-          </div>
-          <div>
-            <div className="mb-3">
-              <h2 className="text-base font-semibold">Capabilities vs role</h2>
-              <p className="text-xs text-muted-foreground">All {data.proficiency.length} capabilities sorted into where you stand against Associate IM.</p>
-            </div>
-            <CapabilityBuckets buckets={buckets} />
-          </div>
-        </div>
+      {tab === "Profile" && (
+        <>
+          <StatStrip
+            eyebrow="At a glance"
+            stats={[
+              { label: "Tenure", value: tenureLabel, hint: "at firm" },
+              { label: "Strengths", value: buckets.strengths.length, tone: "emerald", hint: "above target" },
+              { label: "At level", value: buckets.atLevel.length, tone: "primary", hint: "meeting target" },
+              { label: "Gaps", value: buckets.gaps.length, tone: "rose", hint: "to close" },
+              { label: "Stretch", value: buckets.stretch.length, tone: "violet", hint: "push beyond" },
+            ]}
+          />
+
+          <CompetencyRadarHero
+            catalog={data.competencyCatalog}
+            current={data.personaCompetencies}
+            required={data.roleCompetencyReqs}
+            proficiency={data.proficiency}
+            requirements={data.requirements}
+          />
+
+          <CapabilityStrip buckets={buckets} />
+
+          <CohortPreviewCard
+            cohort={data.cohort}
+            modules={data.modules}
+            adaptations={data.adaptations}
+            progress={data.progress}
+            onJumpToTab={() => setTab("Cohort Journey")}
+          />
+        </>
       )}
 
       {tab === "Cohort Journey" && (

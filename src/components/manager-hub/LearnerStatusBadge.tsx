@@ -17,9 +17,9 @@ const LABEL: Record<LearnerStatus, string> = {
 };
 
 export function LearnerStatusBadge({ status, className }: { status?: LearnerStatus | null; className?: string }) {
-  if (!status) return <Badge variant="outline" className={cn("text-[11px] font-normal", className)}>No data</Badge>;
+  if (!status) return <Badge variant="outline" className={cn("text-[11px] font-normal whitespace-nowrap", className)}>No data</Badge>;
   return (
-    <Badge variant="outline" className={cn("text-[11px] font-normal", TONE[status], className)}>
+    <Badge variant="outline" className={cn("text-[11px] font-normal whitespace-nowrap", TONE[status], className)}>
       {LABEL[status]}
     </Badge>
   );

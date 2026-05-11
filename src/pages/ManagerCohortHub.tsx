@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Plug } from "lucide-react";
 import BackButton from "@/components/layout/BackButton";
 import { useManagerCohortData } from "@/hooks/useManagerCohortData";
 import { RosterHeatmap } from "@/components/manager-hub/RosterHeatmap";

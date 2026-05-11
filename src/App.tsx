@@ -40,6 +40,7 @@ import PeopleGraphIntelligence from "./pages/PeopleGraphIntelligence";
 import TeamMode from "./pages/TeamMode";
 import ManagerCohortHub from "./pages/ManagerCohortHub";
 import ActionCentre from "./pages/ActionCentre";
+import ManagerCohortPicker from "./pages/ManagerCohortPicker";
 import { SupportiveToastBridge } from "@/components/SupportiveToastBridge";
 
 

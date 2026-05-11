@@ -2,12 +2,12 @@ import { useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Plug } from "lucide-react";
 import BackButton from "@/components/layout/BackButton";
 import { useManagerCohortData } from "@/hooks/useManagerCohortData";
 import { RosterHeatmap } from "@/components/manager-hub/RosterHeatmap";
 import { AIChangesFeed } from "@/components/manager-hub/AIChangesFeed";
-import { CpdPanel } from "@/components/manager-hub/CpdPanel";
+import { IntegrationsTab } from "@/components/manager-hub/IntegrationsTab";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";
 import { AdaptivePathsSankey } from "@/components/team-home/AdaptivePathsSankey";
 
@@ -101,7 +101,7 @@ export default function ManagerCohortHub() {
         <TabsList className="mb-4">
           <TabsTrigger value="roster">Roster</TabsTrigger>
           <TabsTrigger value="ai-changes">
-            AI Changes
+            AI Decisions
             {summary.pending > 0 && (
               <Badge variant="outline" className="ml-2 h-4 px-1 text-[10px] bg-amber-500/10 text-amber-700 border-amber-500/30">
                 {summary.pending}
@@ -109,7 +109,10 @@ export default function ManagerCohortHub() {
             )}
           </TabsTrigger>
           <TabsTrigger value="adaptive">Adaptive Paths</TabsTrigger>
-          <TabsTrigger value="cpd">CPD / CISI</TabsTrigger>
+          <TabsTrigger value="cpd" className="gap-1.5">
+            <Plug className="h-3 w-3" />
+            Integrations
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="roster">
@@ -135,7 +138,7 @@ export default function ManagerCohortHub() {
         </TabsContent>
 
         <TabsContent value="cpd">
-          <CpdPanel learners={learners} onOpenLearner={(id) => openLearner(id)} />
+          <IntegrationsTab learners={learners} onOpenLearner={(id) => openLearner(id)} />
         </TabsContent>
       </Tabs>
 

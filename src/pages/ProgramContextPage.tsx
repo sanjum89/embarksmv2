@@ -643,7 +643,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
         {/* Overview Tab */}
         <TabsContent value="overview">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-xl border border-border bg-card p-5">
+            <div className="rounded-xl border border-border bg-background p-5">
               <p className="text-sm font-semibold text-foreground mb-4">Progress Distribution</p>
               <div className="space-y-2">
                 {[
@@ -660,7 +660,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
                 ))}
               </div>
             </div>
-            <div className="rounded-xl border border-border bg-card p-5">
+            <div className="rounded-xl border border-border bg-background p-5">
               <p className="text-sm font-semibold text-foreground mb-4">Cohort Timeline</p>
               <div className="space-y-3 text-xs">
                 <div className="flex justify-between"><span className="text-muted-foreground">Start Date</span><span className="font-medium text-foreground">{cohort.startDate}</span></div>
@@ -680,7 +680,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
               const name = hire?.user?.name ?? lp.learnerId;
               const initials = name.split(" ").map(n => n[0]).join("");
               return (
-                <div key={lp.learnerId} className="rounded-xl border border-border bg-card p-4">
+                <div key={lp.learnerId} className="rounded-xl border border-border bg-background p-4">
                   <div className="flex items-center gap-4">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground shrink-0">{initials}</div>
                     <div className="flex-1 min-w-0">
@@ -736,7 +736,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
                 ? Math.round(cohort.learnerProgress.reduce((a, l) => a + (l.skillTargetProgress[stId] ?? 0), 0) / cohort.learnerProgress.length)
                 : 0;
               return (
-                <div key={stId} className="rounded-xl border border-border bg-card p-5">
+                <div key={stId} className="rounded-xl border border-border bg-background p-5">
                   <div className="flex items-start justify-between mb-3">
                     <div>
                       <p className="text-sm font-semibold text-foreground">{st.title}</p>
@@ -769,7 +769,7 @@ function CohortDetail({ cohort, onBack }: { cohort: Cohort; onBack: () => void }
 
         {/* Settings Tab */}
         <TabsContent value="settings">
-          <div className="rounded-xl border border-border bg-card p-5 max-w-lg space-y-5">
+          <div className="rounded-xl border border-border bg-background p-5 max-w-lg space-y-5">
             <div>
               <div className="flex items-center justify-between mb-2"><Label>Pass Percentage</Label><span className="text-sm font-bold text-foreground">{cohort.passPercentage}%</span></div>
               <Slider value={[cohort.passPercentage]} min={50} max={100} step={5} disabled />

@@ -37,6 +37,7 @@ function statusToStepStatus(s: string): string {
 
 export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: Props) {
   const { substitute } = useContentSubstitution();
+  const diagState = useDiagnosticReopens();
 
   // Default-expand the module containing the active chapter, otherwise the first
   // in-progress / up-next module.

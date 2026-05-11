@@ -41,7 +41,7 @@ export function TeamsBadge({ variant, label, className, size = 14 }: Props) {
         aria-label="Microsoft Teams integration"
         className={cn("inline-flex items-center justify-center", className)}
       >
-        <TeamsLogo className="block" />
+        <TeamsLogo className="block" size={size} />
       </span>
     );
   }

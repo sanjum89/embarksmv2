@@ -1,49 +1,29 @@
-## Problem
+## Plan: AI-style loading state for Embark page
 
-Clara is enrolled in the "Investment Management Readiness" cohort (with 5 tracks, 29 modules in Lovable Cloud), but the Embark page shows the **"No Learning Journey Yet"** empty state.
+**Problem:** When navigating to Embark, `useLearnerJourney` is fetching from the database. During that time, `EmbarkContent` renders the "No Learning Journey Yet" empty state because `hasJourney` is false and `hasSteps` is false. Once the fetch resolves, the journey view appears. This flash makes it feel broken.
 
-Root cause: `EmbarkContent` (`src/components/learnpath/LearnPathContent.tsx`) decides what to render based on `allSteps`, which is derived from the **legacy `skillTargets` pipeline**. Clara has no legacy skill targets assigned, so `hasSteps = false` and the legacy empty state wins — the new `EmbarkJourneyView` (cohort-driven) is only reached when `contentView === "modules"`, which the user never triggers because auto-resume can't find a step.
+**Fix:** Surface the loading state from `useLearnerJourney` into `EmbarkContent`, and render a polished AI-themed loading view instead of the empty state while the journey is still loading.
 
-The new `useLearnerJourney` data is never consulted at the top level.
+### Changes
 
-## Fix
+**1. `src/hooks/useLearnerJourney.ts`** — already exposes `isLoading`. No change needed (verify).
 
-Make the cohort journey the **primary source of truth** for "what to render on Embark when nothing else is open", so a learner enrolled in a cohort always sees the new view, regardless of legacy skill-target state.
+**2. `src/components/learnpath/LearnPathContent.tsx`**
+- Destructure `isLoading: journeyLoading` from `useLearnerJourney`.
+- Before the empty-state branch (`!hasSteps`), add: `if (journeyLoading) return <EmbarkLoadingState />;`
+- Also guard auto-resume: don't trigger before journey loads (already partially handled).
 
-### 1. Lift cohort-journey awareness into `EmbarkContent`
+**3. New component `src/components/learnpath/EmbarkLoadingState.tsx`**
+A friendly AI-working visual:
+- Centered layout, `animate-fade-in`
+- Sparkles / GraduationCap icon in a soft accent-tinted circle with a subtle pulsing glow (animated ring using `animate-ping` on an absolutely-positioned ring + the icon static on top)
+- Rotating status messages every ~1.2s using `setInterval`:
+  1. "Retrieving your learning journey…"
+  2. "Pulling your cohort and tracks…"
+  3. "Personalizing your next steps…"
+- Three skeleton bars below (using existing `Skeleton` component) mimicking the journey header card + track tabs + module rows so the layout shape is recognizable before content arrives.
+- All colors via semantic tokens (`text-accent`, `bg-muted`, `text-muted-foreground`).
 
-In `src/components/learnpath/LearnPathContent.tsx`:
-
-- Call `useLearnerJourney(activeAccountId, employeeId)` at the top, alongside the existing legacy data.
-- Compute `hasJourney = !!journey && journey.tracks.some(t => t.totalChapters > 0)`.
-- Treat `hasJourney || hasSteps` as "learner has something to do".
-
-### 2. Default Embark view = cohort journey when present
-
-Reorder the render branches so that, when `contentView === "welcome"` (the initial state) **and** `hasJourney` is true, we render `<EmbarkJourneyView legacySteps={allSteps} activeChapterId={activeModuleId} />` directly instead of the welcome card or the empty state.
-
-Render priority becomes:
-
-1. `assessment` view (unchanged)
-2. `module` view (unchanged)
-3. `contentView === "modules"` → `EmbarkJourneyView` (unchanged)
-4. **NEW:** `contentView === "welcome"` && `hasJourney` → `EmbarkJourneyView`
-5. Empty state ("No Learning Journey Yet") only when **both** `!hasJourney` and `!hasSteps`
-6. Legacy welcome card only when `hasSteps && !hasJourney` (legacy-only accounts like Cornerstone)
-
-### 3. Disable legacy auto-resume when journey is in charge
-
-The current auto-resume effect immediately calls `openModule` on the first legacy in-progress/available step. For Clara that array is empty so it's a no-op, but we must make sure it stays a no-op for cohort learners and doesn't fight the journey UI: gate it on `!hasJourney` so it only runs for legacy accounts.
-
-### 4. No changes to
-
-- `useLearnerJourney`, `JourneyHeaderCard`, `JourneyTrackTabs`, `JourneyModuleAccordion`, `EmbarkJourneyView` — already correct.
-- Legacy `skillTargets`/`learningModules` pipeline — still used for chapter content rendering and for non-cohort accounts (Cornerstone, Pinnacle).
-- Database, RLS, edge functions, sidebar, dashboard.
-
-## Verification
-
-- Log in as Clara → Embark page → see `JourneyHeaderCard` ("Investment Management Readiness", 0%), 5-segment track strip, `JourneyTrackTabs`, and the first track's modules with chapters. No "No Learning Journey Yet" screen.
-- Click a chapter → still opens via existing `openModule` path (chapter-click behavior in `JourneyModuleAccordion` is unchanged).
-- Log in as a Cornerstone learner with legacy skill targets → still sees legacy auto-resume + legacy welcome/modules behavior.
-- Log in as a learner with neither cohort nor skill targets → still sees the "No Learning Journey Yet" empty state with skill-gap recommendations.
+### Out of scope
+- No backend/data changes.
+- No change to legacy (Cornerstone/Pinnacle) flow — they go through a different code path that already auto-resumes immediately.

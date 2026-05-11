@@ -21,10 +21,11 @@ interface Props {
 
 export function EmbarkJourneyView({ legacySteps, activeChapterId }: Props) {
   const { user } = useUser();
-  const { activeAccountId } = useAccount();
+  const { activeAccountId, normalizedAccount } = useAccount();
   const { canGoBack, goBack } = useEmbark();
 
-  const employeeId = user.linkedEmployeeId || user.id;
+  const employeeId =
+    normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
   const { journey, isLoading, error } = useLearnerJourney(activeAccountId, employeeId);
 
   if (isLoading) {

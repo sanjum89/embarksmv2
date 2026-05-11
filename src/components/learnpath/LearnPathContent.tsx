@@ -4,7 +4,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { resolveModule, buildCatalog } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
-import { EmbarkJourneyAccordion } from "./LearnPathJourneyAccordion";
+import { EmbarkJourneyView } from "./EmbarkJourneyView";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";
 import { EmbarkAssessment } from "./LearnPathAssessment";
 import { EmbarkModeSelector } from "./LearnPathModeSelector";
@@ -199,44 +199,8 @@ export function EmbarkContent() {
   }
 
   if (contentView === "modules") {
-    // Derive a "back to chapter" target from the most recent non-modules history entry.
-    // We don't have direct access to viewHistory here, so just rely on canGoBack +
-    // the activeModuleId that was set before the user opened the grid.
-    const lastChapterTitle = (() => {
-      if (!activeModuleId) return null;
-      const step = allSteps.find(
-        (s) => s.moduleId === activeModuleId || s.stepId === activeModuleId
-      );
-      return step?.title ?? null;
-    })();
-
     return (
-      <div className="h-full overflow-y-auto">
-        <div className="p-6 space-y-4">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-accent" />
-              <h2 className="text-lg font-semibold text-foreground">Your Embark Journey</h2>
-            </div>
-            {canGoBack && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={goBack}
-                className="gap-1.5 text-xs"
-              >
-                <ArrowLeft className="h-3.5 w-3.5" />
-                {lastChapterTitle ? `Back to ${lastChapterTitle}` : "Back"}
-              </Button>
-            )}
-          </div>
-          {allSteps.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No chapters assigned yet.</p>
-          ) : (
-            <EmbarkJourneyAccordion steps={allSteps} activeChapterId={activeModuleId} />
-          )}
-        </div>
-      </div>
+      <EmbarkJourneyView legacySteps={allSteps} activeChapterId={activeModuleId} />
     );
   }
 

@@ -9,6 +9,7 @@ import { RosterHeatmap } from "@/components/manager-hub/RosterHeatmap";
 import { AIChangesFeed } from "@/components/manager-hub/AIChangesFeed";
 import { CpdPanel } from "@/components/manager-hub/CpdPanel";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";
+import { AdaptivePathsSankey } from "@/components/team-home/AdaptivePathsSankey";
 
 export default function ManagerCohortHub() {
   const { cohortId } = useParams<{ cohortId: string }>();
@@ -107,6 +108,7 @@ export default function ManagerCohortHub() {
               </Badge>
             )}
           </TabsTrigger>
+          <TabsTrigger value="adaptive">Adaptive Paths</TabsTrigger>
           <TabsTrigger value="cpd">CPD / CISI</TabsTrigger>
         </TabsList>
 
@@ -116,6 +118,20 @@ export default function ManagerCohortHub() {
 
         <TabsContent value="ai-changes">
           <AIChangesFeed learners={learners} onOpenLearner={(id) => openLearner(id, undefined, "path")} />
+        </TabsContent>
+
+        <TabsContent value="adaptive">
+          <AdaptivePathsSankey
+            learners={learners
+              .filter((l) => l.overlay)
+              .map((l) => ({ employeeId: l.employeeId, name: l.name, overlay: l.overlay! }))}
+            modules={modules.map((m) => ({
+              module_code: m.module_code,
+              module_title: m.module_title,
+              progression_stage: m.progression_stage ?? "",
+            }))}
+            onOpenLearner={(id) => openLearner(id, undefined, "path")}
+          />
         </TabsContent>
 
         <TabsContent value="cpd">

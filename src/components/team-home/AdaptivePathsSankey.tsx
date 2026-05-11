@@ -23,6 +23,7 @@ interface Props {
   learners: LearnerInput[];
   modules: ModuleSpine[];
   onOpenLearner?: (id: string) => void;
+  dense?: boolean;
 }
 
 type CompareMode = "stack" | "side" | "baseline";
@@ -46,7 +47,8 @@ function adaptationCount(o: LearnerOverlay) {
   return o.pathChanges.length;
 }
 
-export function AdaptivePathsSankey({ learners, modules, onOpenLearner }: Props) {
+export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = false }: Props) {
+  const MAX_SELECTED = dense ? 4 : 6;
   // Default selection: top 3 most-adapted learners
   const defaults = useMemo(() => {
     return [...learners]
@@ -65,7 +67,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner }: Props)
   const toggleLearner = (id: string) => {
     setSelected((prev) => {
       if (prev.includes(id)) return prev.filter((x) => x !== id);
-      if (prev.length >= 4) return prev;
+      if (prev.length >= MAX_SELECTED) return prev;
       return [...prev, id];
     });
   };
@@ -99,10 +101,10 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner }: Props)
   const visibleRows = compare === "side" ? rows.slice(0, 2) : compare === "baseline" ? rows.slice(0, 1) : rows;
 
   // Geometry
-  const COL_W = 120;
-  const ROW_H = 56;
-  const PADDING_X = 16;
-  const PADDING_TOP = 36;
+  const COL_W = dense ? 120 : 160;
+  const ROW_H = dense ? 56 : 72;
+  const PADDING_X = dense ? 16 : 24;
+  const PADDING_TOP = dense ? 36 : 44;
   const NODE_W = 14;
   const totalWidth = PADDING_X * 2 + modules.length * COL_W;
   const headerOffset = compare === "baseline" ? ROW_H : 0;
@@ -172,7 +174,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner }: Props)
               </button>
             );
           })}
-          <span className="ml-1 text-[10px] text-muted-foreground">{selected.length}/4</span>
+          <span className="ml-1 text-[10px] text-muted-foreground">{selected.length}/{MAX_SELECTED}</span>
         </div>
 
         <div className="ml-auto flex flex-wrap items-center gap-2">

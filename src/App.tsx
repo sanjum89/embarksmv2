@@ -40,6 +40,7 @@ import PeopleGraphIntelligence from "./pages/PeopleGraphIntelligence";
 import TeamMode from "./pages/TeamMode";
 import ManagerCohortHub from "./pages/ManagerCohortHub";
 import ActionCentre from "./pages/ActionCentre";
+import ManagerCohortPicker from "./pages/ManagerCohortPicker";
 import { SupportiveToastBridge } from "@/components/SupportiveToastBridge";
 
 
@@ -82,7 +83,8 @@ const App = () => (
               <Route path="/manager/role-play" element={<RolePlayBank />} />
               <Route path="/manager/skill-targets" element={<ManagerSkillTargets />} />
               <Route path="/manager/skill-target/:id" element={<ManagerSkillTargetDetail />} />
-              <Route path="/manager/cohorts" element={<ProgramContextPage />} />
+              <Route path="/manager/cohorts" element={<ManagerCohortPicker />} />
+              <Route path="/manager/programs" element={<ProgramContextPage />} />
               <Route path="/embark" element={<EmbarkAI />} />
               <Route path="/embark-v2" element={<EmbarkAIv2 />} />
               <Route path="/manager/people-graph" element={<PeopleGraphIntelligence />} />

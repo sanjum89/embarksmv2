@@ -35,7 +35,7 @@ export default function TeamMode() {
     <div className="flex-1 overflow-y-auto p-6">
       <BackButton />
       <div className="mb-6 mt-2">
-        <h1 className="font-display text-2xl font-bold text-foreground">Team Mode</h1>
+        <h1 className="font-display text-2xl font-bold text-foreground">Team Home</h1>
         <p className="mt-1 text-sm text-muted-foreground">Your team at a glance — risks, rising stars, and what to do next.</p>
       </div>
 
@@ -127,7 +127,15 @@ export default function TeamMode() {
         <Card className="p-4">
           <p className="mb-3 text-sm font-medium text-foreground">Cohorts I manage</p>
           <div className="space-y-2">
-            {cohorts.length === 0 && <p className="text-sm text-muted-foreground">No active cohorts.</p>}
+            {cohorts.length === 0 && (
+              <Link
+                to={`/manager/cohort/${RATHBONES_COHORT_ID}`}
+                className="block rounded-md border border-border p-3 hover:bg-muted/40"
+              >
+                <p className="text-sm font-medium text-foreground">Investment Management Readiness — Jan 2026</p>
+                <p className="text-xs text-muted-foreground">assoc_im · demo</p>
+              </Link>
+            )}
             {cohorts.map((c) => (
               <Link
                 key={c.id}

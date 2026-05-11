@@ -149,6 +149,19 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
         .maybeSingle();
 
       const personaCode = (persona as any)?.persona_code as string | undefined;
+      const personaRoleProgression = (persona as any)?.role_progression_code as string | undefined;
+
+      // Look up persona's default role progression as a fallback
+      let personaDefaultRole: string | undefined;
+      if (personaCode) {
+        const { data: personaRow } = await supabase
+          .from("employee_personas")
+          .select("default_role_progression_code")
+          .eq("account_id", accountId)
+          .eq("code", personaCode)
+          .maybeSingle();
+        personaDefaultRole = (personaRow as any)?.default_role_progression_code ?? undefined;
+      }
 
       // Capability proficiency
       const { data: prof } = await supabase

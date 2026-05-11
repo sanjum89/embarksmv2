@@ -130,12 +130,13 @@ export function EmbarkChat() {
         const upNextChapter =
           m.chapters.find((c) => c.status === "in_progress") ??
           m.chapters.find((c) => c.status === "not_started");
+        const a = m.adaptation;
         return {
           moduleId: m.code,
           moduleCode: m.code,
           title: substitute(m.title),
           trackName: track.name,
-          status: m.status, // up_next | in_progress | completed | locked
+          status: m.status,
           completedChapters: m.completedChapters,
           totalChapters: m.totalChapters,
           isCoreRequired: m.isCoreRequired,
@@ -145,6 +146,12 @@ export function EmbarkChat() {
           progress: m.pct,
           upNextChapterCode: upNextChapter?.code ?? null,
           upNextChapterTitle: upNextChapter ? substitute(upNextChapter.title) : null,
+          adaptationType: a?.adaptationType ?? null,
+          adaptationLabel: a ? formatAdaptationLabel(a.adaptationType) : null,
+          adaptationReason: a ? sanitizeReason(a.reason) : null,
+          adaptationCompetency: a?.competencyName ?? null,
+          adaptationCurrentLevel: a?.currentLevel ?? null,
+          adaptationRequiredLevel: a?.requiredLevel ?? null,
         };
       })
     );

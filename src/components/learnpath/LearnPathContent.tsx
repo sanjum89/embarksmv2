@@ -220,6 +220,9 @@ export function EmbarkContent() {
 
   // Empty state — no skill targets assigned and no cohort journey
   if (!hasSteps) {
+    if (journeyLoading) {
+      return <EmbarkLoadingState />;
+    }
     return (
       <div className="h-full overflow-y-auto">
         <div className="max-w-lg mx-auto px-6 py-10 space-y-6">

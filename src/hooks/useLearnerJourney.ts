@@ -67,16 +67,18 @@ interface State {
   journey: LearnerJourney | null;
   isLoading: boolean;
   error: string | null;
+  refresh: () => void;
 }
 
 export function useLearnerJourney(
   accountId: string | null | undefined,
   employeeId: string | null | undefined
 ): State {
-  const [state, setState] = useState<State>({ journey: null, isLoading: false, error: null });
+  const [refreshTick, setRefreshTick] = useState(0);
+  const [state, setState] = useState<Omit<State, "refresh">>({ journey: null, isLoading: false, error: null });
 
   // Stable key so we don't refetch on object identity churn
-  const key = `${accountId ?? ""}::${employeeId ?? ""}`;
+  const key = `${accountId ?? ""}::${employeeId ?? ""}::${refreshTick}`;
 
   useEffect(() => {
     if (!accountId || !employeeId) {
@@ -367,5 +369,6 @@ export function useLearnerJourney(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
-  return useMemo(() => state, [state]);
+  const refresh = useMemo(() => () => setRefreshTick((n) => n + 1), []);
+  return useMemo(() => ({ ...state, refresh }), [state, refresh]);
 }

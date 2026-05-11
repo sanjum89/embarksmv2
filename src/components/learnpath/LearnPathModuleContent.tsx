@@ -20,6 +20,17 @@ import { getHandsOnScenarios } from "@/data/handsOnScenarios";
 import { mockRolePlayBank, moduleRolePlayMap } from "@/data/mock";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { InlineQuiz, extractInlineQuizzes, type InlineQuizSubmitResult } from "./InlineQuiz";
+import { supabase } from "@/integrations/supabase/client";
+
+export interface CohortChapterContext {
+  accountId: string;
+  employeeId: string;
+  cohortId: string;
+  moduleCode: string;
+  chapterCode: string;
+  moduleCompletedChapters: number;
+  moduleTotalChapters: number;
+}
 
 interface Props {
   module: LearningModule;
@@ -40,6 +51,10 @@ interface Props {
   initialCompleted?: boolean;
   /** Notify parent when completion state changes (so parent can hide mode selector etc.) */
   onCompletedChange?: (completed: boolean) => void;
+  /** Cohort chapter context — when present, mark-complete persists to learner_progress */
+  cohortContext?: CohortChapterContext;
+  /** Called after a cohort chapter is successfully persisted, so parent can refresh the journey */
+  onChapterPersisted?: () => void;
   /** Fires when a Quick Diagnostic inline quiz is submitted (right OR wrong).
    * Receives the submission result so the parent can mark the diagnostic
    * complete and reopen wrong chapters. */
@@ -54,7 +69,7 @@ const modeBanners: Record<string, { icon: React.ElementType; label: string; desc
   combined: { icon: Layers, label: "Combined Mode", desc: "A curated blend of reading, visuals, and practice.", className: "bg-primary/10 text-primary border-primary/20" },
 };
 
-export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader, nextModuleId, nextModuleTitle, nextSkillTargetId, nextStepType, initialCompleted = false, onCompletedChange, onDiagnosticSubmit }: Props) {
+export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, learningModeOverride, skillTargetId, stepId, onComplete, hideHeader, nextModuleId, nextModuleTitle, nextSkillTargetId, nextStepType, initialCompleted = false, onCompletedChange, cohortContext, onChapterPersisted, onDiagnosticSubmit }: Props) {
   const learnPathCtx = useEmbark();
   const learningMode = learningModeOverride ?? learnPathCtx.learningMode;
   const openAssessment = learnPathCtx.openAssessment;
@@ -120,6 +135,48 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
   const wordCount = transcript.split(/\s+/).length;
   const readingMinutes = Math.max(1, Math.ceil(wordCount / 200));
 
+  const persistCohortChapterCompletion = useCallback(async () => {
+    if (!cohortContext) return;
+    try {
+      const { accountId, employeeId, cohortId, moduleCode, chapterCode } = cohortContext;
+      // Check for an existing row
+      const { data: existing } = await supabase
+        .from("learner_progress")
+        .select("id, started_at")
+        .eq("account_id", accountId)
+        .eq("employee_id", employeeId)
+        .eq("cohort_id", cohortId)
+        .eq("module_code", moduleCode)
+        .eq("chapter_code", chapterCode)
+        .maybeSingle();
+      const now = new Date().toISOString();
+      if (existing?.id) {
+        await supabase
+          .from("learner_progress")
+          .update({
+            status: "completed",
+            completed_at: now,
+            started_at: existing.started_at ?? now,
+          })
+          .eq("id", existing.id);
+      } else {
+        await supabase.from("learner_progress").insert({
+          account_id: accountId,
+          employee_id: employeeId,
+          cohort_id: cohortId,
+          module_code: moduleCode,
+          chapter_code: chapterCode,
+          status: "completed",
+          started_at: now,
+          completed_at: now,
+        });
+      }
+      onChapterPersisted?.();
+    } catch (err) {
+      console.error("[EmbarkModuleContent] Failed to persist cohort chapter completion", err);
+    }
+  }, [cohortContext, onChapterPersisted]);
+
   const handleMarkComplete = () => {
     setCompleted(true);
     setShowSummary(true);
@@ -142,8 +199,10 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
         return { ...target, steps: finalSteps, progress };
       });
     }
+    void persistCohortChapterCompletion();
     onComplete?.();
   };
+
 
   const renderModuleHeader = () => (
     <div className="rounded-xl border border-border bg-card p-4 flex items-start gap-4">
@@ -614,32 +673,45 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
       timeSpent = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
     }
 
-    // Skill target progress
-    const currentTarget = skillTargetId ? skillTargets.find(t => t.id === skillTargetId) : undefined;
-    const totalSteps = currentTarget?.steps.length ?? 0;
-    const completedSteps = currentTarget?.steps.filter(s => s.status === "completed" || s.status === "skipped").length ?? 0;
-    const progressText = totalSteps > 0 ? `${completedSteps}/${totalSteps}` : "—";
+    // Cohort path: derive progress + streak from the chapter context (which mirrors the journey)
+    let progressText = "—";
+    let streakText = "—";
+    let assessmentScore = "—";
 
-    // Assessment score — look for a completed assessment sibling step
-    const assessmentStep = currentTarget?.steps.find(s =>
-      (s as any).type === "assessment" && (s.status === "completed" || s.status === "skipped")
-    );
-    const assessmentScore = (assessmentStep as any)?.score != null ? `${(assessmentStep as any).score}%` : "—";
+    if (cohortContext) {
+      const total = cohortContext.moduleTotalChapters;
+      // Optimistically include the just-completed chapter if not yet reflected
+      const done = Math.min(total, cohortContext.moduleCompletedChapters + (initialCompleted ? 0 : 1));
+      progressText = total > 0 ? `${done}/${total} chapters` : "—";
+      streakText = done > 0 ? `${done} in a row` : "—";
+    } else {
+      // Skill target progress
+      const currentTarget = skillTargetId ? skillTargets.find(t => t.id === skillTargetId) : undefined;
+      const totalSteps = currentTarget?.steps.length ?? 0;
+      const completedSteps = currentTarget?.steps.filter(s => s.status === "completed" || s.status === "skipped").length ?? 0;
+      progressText = totalSteps > 0 ? `${completedSteps}/${totalSteps}` : "—";
 
-    // Learning streak — consecutive completed steps ending at current
-    let streak = 0;
-    if (currentTarget) {
-      const sorted = [...currentTarget.steps].sort((a, b) => a.order - b.order);
-      const currentIdx = sorted.findIndex(s => s.id === stepId);
-      for (let i = currentIdx; i >= 0; i--) {
-        if (sorted[i].status === "completed") streak++;
-        else break;
+      // Assessment score — look for a completed assessment sibling step
+      const assessmentStep = currentTarget?.steps.find(s =>
+        (s as any).type === "assessment" && (s.status === "completed" || s.status === "skipped")
+      );
+      assessmentScore = (assessmentStep as any)?.score != null ? `${(assessmentStep as any).score}%` : "—";
+
+      // Learning streak — consecutive completed steps ending at current
+      let streak = 0;
+      if (currentTarget) {
+        const sorted = [...currentTarget.steps].sort((a, b) => a.order - b.order);
+        const currentIdx = sorted.findIndex(s => s.id === stepId);
+        for (let i = currentIdx; i >= 0; i--) {
+          if (sorted[i].status === "completed") streak++;
+          else break;
+        }
       }
+      streakText = streak > 0 ? `${streak} in a row` : "—";
     }
-    const streakText = streak > 0 ? `${streak} in a row` : "—";
 
     return { timeSpent, assessmentScore, progressText, streakText, modesUsed: Array.from(usedModesRef.current) };
-  }, [completed, skillTargetId, skillTargets, stepId, learningMode]);
+  }, [completed, skillTargetId, skillTargets, stepId, learningMode, cohortContext, initialCompleted, isRevisit]);
 
   if (showSummary && !previewMode) {
     const handleContinue = () => {

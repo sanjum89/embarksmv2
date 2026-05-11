@@ -132,7 +132,30 @@ export function EmbarkContent() {
   }
 
   if (contentView === "module" && activeModuleId) {
-    const mod = resolveModule(activeModuleId, skillTargets, normalizedAccount?.learningModules);
+    let mod = resolveModule(activeModuleId, skillTargets, normalizedAccount?.learningModules);
+
+    // Cohort fallback: synthesize a LearningModule from journey chapter metadata when the
+    // ID is a cohort chapter code that isn't in the legacy module catalog.
+    if (!mod && journey) {
+      for (const t of journey.tracks) {
+        for (const m of t.modules) {
+          const ch = m.chapters.find((c) => c.code === activeModuleId);
+          if (ch) {
+            mod = {
+              id: ch.code,
+              title: ch.title,
+              contentType: (ch.contentType as any) ?? "document",
+              contentUrl: "",
+              transcript: `# ${ch.title}\n\nThis chapter is part of **${m.title}** in the **${t.name}** track of your cohort journey. Content is being prepared — open the right panel to see your full journey, or ask Embark AI to summarise the topic.`,
+              duration: ch.minutes ? `${ch.minutes} min` : "5 min",
+            };
+            break;
+          }
+        }
+        if (mod) break;
+      }
+    }
+
     if (!mod) {
       // If this ID belongs to a role-play step, route to the role-play page instead of "unavailable"
       const rpStep = allSteps.find(
@@ -232,7 +255,7 @@ export function EmbarkContent() {
             </div>
             <h1 className="text-xl font-bold text-foreground">No Learning Journey Yet</h1>
             <p className="text-sm text-muted-foreground">
-              You don't have any skill targets assigned. Based on your profile, here are some skill gaps you could work on.
+              You're not enrolled in a cohort yet. Based on your profile, here are some skill areas you could start exploring.
             </p>
           </div>
 

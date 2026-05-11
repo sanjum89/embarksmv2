@@ -21,6 +21,7 @@ import {
 import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
+import { useLearnerJourney } from "@/hooks/useLearnerJourney";
 import { SuggestionPillsRow, computeSuggestionPills, type SuggestionPill } from "./SuggestionPills";
 import { useEmbarkEngagement } from "@/hooks/useEmbarkEngagement";
 import { subscribeEngagementEvents } from "@/lib/embarkEngagementEvents";
@@ -78,10 +79,15 @@ function parseActions(text: string): { cleanText: string; actions: any[] } {
 
 export function EmbarkChat() {
   const { user } = useUser();
-  const { normalizedAccount } = useAccount();
+  const { normalizedAccount, activeAccountId } = useAccount();
   const { skillTargets } = useSkillTargets();
   const embark = useEmbark();
   const { substitute } = useContentSubstitution();
+
+  // Cohort journey (new model). Falls back to {} when learner has no enrollment.
+  const linkedEmployeeId =
+    normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
+  const { journey } = useLearnerJourney(activeAccountId, linkedEmployeeId);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -118,9 +124,66 @@ export function EmbarkChat() {
         })
     );
 
+    // ---- Cohort journey (new model). Flatten into module entries so the AI sees them. ----
+    const cohortModules = (journey?.tracks ?? []).flatMap((track) =>
+      track.modules.map((m) => {
+        const upNextChapter =
+          m.chapters.find((c) => c.status === "in_progress") ??
+          m.chapters.find((c) => c.status === "not_started");
+        return {
+          moduleId: m.code,
+          moduleCode: m.code,
+          title: substitute(m.title),
+          trackName: track.name,
+          status: m.status, // up_next | in_progress | completed | locked
+          completedChapters: m.completedChapters,
+          totalChapters: m.totalChapters,
+          isCoreRequired: m.isCoreRequired,
+          isStretch: m.isStretch,
+          skillTargetId: journey?.cohort.id ?? "",
+          skillTargetTitle: substitute(journey?.cohort.title ?? ""),
+          progress: m.pct,
+          upNextChapterCode: upNextChapter?.code ?? null,
+          upNextChapterTitle: upNextChapter ? substitute(upNextChapter.title) : null,
+        };
+      })
+    );
+
+    // Find resume target from cohort journey first, then fall back to legacy skill targets.
+    const cohortResumeModule =
+      cohortModules.find((m) => m.status === "in_progress") ??
+      cohortModules.find((m) => m.status === "up_next");
+
     const resumeModule =
+      (cohortResumeModule
+        ? {
+            moduleId: cohortResumeModule.upNextChapterCode ?? cohortResumeModule.moduleCode,
+            title: cohortResumeModule.upNextChapterTitle ?? cohortResumeModule.title,
+            skillTargetId: cohortResumeModule.skillTargetId,
+          }
+        : null) ??
       moduleSteps.find((module) => module.status === "in_progress") ??
       moduleSteps.find((module) => module.status === "available");
+
+    const cohortJourney = journey
+      ? {
+          cohortId: journey.cohort.id,
+          cohortTitle: substitute(journey.cohort.title),
+          dueDate: journey.cohort.dueDate ?? null,
+          overallPct: journey.cohort.overallPct,
+          completedModules: journey.cohort.completedModules,
+          totalModules: journey.cohort.totalModules,
+          completedChapters: journey.cohort.completedChapters,
+          totalChapters: journey.cohort.totalChapters,
+          activeTrackName:
+            (journey.tracks.find((t) => t.modules.some((m) => m.status === "in_progress"))?.name) ??
+            (journey.tracks[0]?.name ?? null),
+          resumeModuleCode: cohortResumeModule?.moduleCode ?? null,
+          resumeModuleTitle: cohortResumeModule ? substitute(cohortResumeModule.title) : null,
+          resumeChapterCode: cohortResumeModule?.upNextChapterCode ?? null,
+          resumeChapterTitle: cohortResumeModule?.upNextChapterTitle ?? null,
+        }
+      : null;
 
     const currentModuleId =
       embark.contentView === "assessment"
@@ -227,18 +290,23 @@ export function EmbarkChat() {
       employee?.performanceRating ? `Performance: ${employee.performanceRating}` : null,
     ].filter(Boolean).join(". ");
 
+    // Cohort modules first (they're the canonical source when present), then legacy steps.
+    const mergedModules = [...cohortModules, ...moduleSteps];
+    const hasModules = mergedModules.length > 0;
+
     return {
       userName: user.name,
       userRole: user.role,
       userTitle: user.title ?? "",
-      modules: moduleSteps,
+      modules: mergedModules,
+      cohortJourney,
       currentView: embark.contentView,
       activeModuleId: currentModuleId,
       activeModuleTitle: currentContent?.moduleTitle ?? null,
       activeSkillTargetId: embark.activeSkillTargetId,
       activeSkillTargetTitle: currentContent?.skillTargetTitle ?? null,
       learningMode: embark.learningMode,
-      hasModules: moduleSteps.length > 0,
+      hasModules,
       resumeModuleId: resumeModule?.moduleId ?? null,
       resumeModuleTitle: resumeModule?.title ?? null,
       resumeSkillTargetId: resumeModule?.skillTargetId ?? null,
@@ -258,6 +326,7 @@ export function EmbarkChat() {
     embark.assessmentModuleId,
     embark.contentView,
     embark.learningMode,
+    journey,
     normalizedAccount,
     skillTargets,
     substitute,
@@ -468,12 +537,18 @@ export function EmbarkChat() {
 
     setHasGreeted(true);
     const context = buildContext();
+    const cj = (context as any).cohortJourney;
+    const cohortIntro = cj
+      ? `They are enrolled in the cohort "${cj.cohortTitle}" (currently ${cj.overallPct}% complete, ${cj.completedChapters}/${cj.totalChapters} chapters across ${cj.totalModules} modules). ${cj.resumeChapterCode ? `The next chapter to resume is "${cj.resumeChapterTitle}" inside module "${cj.resumeModuleTitle}" (chapterCode: ${cj.resumeChapterCode}, moduleCode: ${cj.resumeModuleCode}, cohortId: ${cj.cohortId}). Welcome them by name and offer to open it now using an open_module action with that chapterCode as moduleId and the cohortId as skillTargetId — only if no module is already open.` : "Welcome them and suggest exploring their tracks."}`
+      : null;
     const greetMessage: ChatMessage = {
       id: "greet-system",
       role: "user",
-      content: context.hasModules
-        ? `[SYSTEM] The learner just opened LearnPath. They have ${context.modules.length} module(s) assigned. ${context.resumeModuleId ? `Suggest resuming with "${context.resumeModuleTitle}" (moduleId: ${context.resumeModuleId}, skillTargetId: ${context.resumeSkillTargetId}) and use an open_module action only if no module is already open.` : "Welcome them and suggest browsing modules."}`
-        : "[SYSTEM] The learner just opened LearnPath but has no modules or skill targets assigned. Welcome them warmly, explain that they don't have a learning path yet, and suggest they explore their dashboard to add skill targets.",
+      content: cohortIntro
+        ? `[SYSTEM] The learner just opened Embark AI. ${cohortIntro}`
+        : context.hasModules
+          ? `[SYSTEM] The learner just opened Embark AI. They have ${context.modules.length} module(s) assigned. ${context.resumeModuleId ? `Suggest resuming with "${context.resumeModuleTitle}" (moduleId: ${context.resumeModuleId}, skillTargetId: ${context.resumeSkillTargetId}) and use an open_module action only if no module is already open.` : "Welcome them and suggest browsing modules."}`
+          : "[SYSTEM] The learner just opened Embark AI but has no cohort enrollment and no skill targets assigned. Welcome them warmly, explain that they don't have a learning path yet, and suggest they speak with their manager to get enrolled.",
     };
     const assistantId = createMessageId("assistant");
     const assistantPlaceholder: ChatMessage = {

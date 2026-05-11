@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import type { ModuleAdaptation } from "@/lib/embarkAdaptation";
 
 export type ChapterStatus = "not_started" | "in_progress" | "completed" | "locked";
 export type ModuleStatus = "completed" | "in_progress" | "up_next" | "locked";
@@ -28,6 +29,7 @@ export interface JourneyModule {
   pct: number;
   status: ModuleStatus;
   displayOrder: number;
+  adaptation?: ModuleAdaptation;
 }
 
 export interface JourneyTrack {

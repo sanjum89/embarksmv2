@@ -42,6 +42,22 @@ export function formatAdaptationLabel(t: AdaptationType): string {
   }
 }
 
+/** One-paragraph plain-English explanation of each delivery mode, written for the learner. */
+export function adaptationExplanation(t: AdaptationType): string {
+  switch (t) {
+    case "full_module":
+      return "Read every chapter end-to-end. Recommended when this is new territory for you.";
+    case "microlearning":
+      return "A shorter pass through the same material. We've trimmed sections your profile already evidences, so you only see what's likely new.";
+    case "diagnostic_only":
+      return "Three questions to confirm you've got this. Pass and the module's done — no need to read it through.";
+    case "evidence_required":
+      return "Skip straight to the practice. Submit a short piece of work that shows you can apply this — no reading required.";
+    case "skip_after_validation":
+      return "Your profile already evidences this. We're not adding it to your journey, but you can revisit it anytime from the catalog.";
+  }
+}
+
 /** Tone class for the badge. */
 export function adaptationBadgeTone(t: AdaptationType):
   | "neutral"

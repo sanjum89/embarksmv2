@@ -209,6 +209,50 @@ function StatusPill({ status }: { status: JourneyModule["status"] }) {
   );
 }
 
+/**
+ * Reshape the chapter list based on the persona's delivery lens.
+ * - diagnostic_only → one synthetic 5-min entry that opens a 3-question MCQ on the first chapter's content
+ * - evidence_required → one synthetic 15-min entry that opens the practical activity on the first chapter
+ * - microlearning → same chapters, durations × 0.4
+ * - full_module / skip_after_validation → unchanged
+ */
+function buildLensChapters(
+  chapters: JourneyModule["chapters"],
+  lens: ModuleAdaptation["adaptationType"]
+): JourneyModule["chapters"] {
+  if (chapters.length === 0) return chapters;
+  const first = chapters[0];
+
+  if (lens === "diagnostic_only") {
+    return [
+      {
+        ...first,
+        title: "Quick diagnostic — 3 questions",
+        minutes: 5,
+        contentType: "diagnostic",
+      },
+    ];
+  }
+  if (lens === "evidence_required") {
+    return [
+      {
+        ...first,
+        title: "Submit evidence — short written task",
+        minutes: 15,
+        contentType: "evidence",
+      },
+    ];
+  }
+  if (lens === "microlearning") {
+    return chapters.map((c) => ({
+      ...c,
+      title: c.title,
+      minutes: Math.max(5, Math.round((c.minutes || 25) * 0.4)),
+    }));
+  }
+  return chapters;
+}
+
 function AdaptationBadge({ adaptation }: { adaptation: ModuleAdaptation }) {
   const label = formatAdaptationLabel(adaptation.adaptationType);
   const tone: Record<ModuleAdaptation["adaptationType"], string> = {

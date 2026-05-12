@@ -199,8 +199,8 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
         <div className="space-y-4">
           {rathbonesPresets.length > 0 && (
             <div className="space-y-2">
-              <Label className="text-sm font-medium">Rathbones modes</Label>
-              <div className="grid grid-cols-3 gap-2">
+              <Label className="text-sm font-medium">Rathbones theme</Label>
+              <div className="grid grid-cols-1 gap-2">
                 {rathbonesPresets.map(renderPresetButton)}
               </div>
             </div>

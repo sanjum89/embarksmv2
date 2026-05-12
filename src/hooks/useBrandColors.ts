@@ -42,14 +42,6 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
     swatch: ["hsl(230, 75%, 15%)", "hsl(12, 55%, 85%)"],
     family: "rathbones",
   },
-  "rathbones-vibrant": {
-    label: "Rathbones — Vibrant",
-    primary: "230 75% 15%",
-    accent: "14 88% 58%",
-    sidebar: "230 60% 13%",
-    swatch: ["hsl(230, 75%, 15%)", "hsl(14, 88%, 58%)"],
-    family: "rathbones",
-  },
   "navy-amber": {
     label: "Navy & Amber",
     primary: "222 60% 22%",
@@ -103,6 +95,7 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
 // Back-compat: legacy preset key "rathbones" → "rathbones-calm"
 export const PRESET_ALIASES: Record<string, string> = {
   "rathbones": "rathbones-calm",
+  "rathbones-vibrant": "rathbones-calm",
 };
 
 export function resolvePresetKey(key?: string): string | undefined {
@@ -330,8 +323,27 @@ export function useBrandColors() {
 
   useEffect(() => {
     const root = document.documentElement;
+    const isRathbones = (activeAccount?.name ?? "").trim().toLowerCase() === "rathbones";
 
-    if (!activeAccount?.accent_color) {
+    const rathbonesFallback = (): BrandColorConfig => {
+      const p = COLOR_PRESETS["rathbones-calm"];
+      return { preset: "rathbones-calm", primary: p.primary, accent: p.accent, sidebar: p.sidebar };
+    };
+
+    let config: BrandColorConfig | null = null;
+    if (activeAccount?.accent_color) {
+      try {
+        const parsed = JSON.parse(activeAccount.accent_color) as BrandColorConfig;
+        if (parsed.primary && parsed.accent && parsed.sidebar) config = parsed;
+      } catch {
+        /* fall through */
+      }
+    }
+
+    // Rathbones account always renders the Rathbones theme, even with empty/invalid accent_color.
+    if (!config && isRathbones) config = rathbonesFallback();
+
+    if (!config) {
       // Restore defaults — remove all inline overrides
       Object.keys(DEFAULTS_LIGHT).forEach((prop) => {
         root.style.removeProperty(prop);
@@ -340,9 +352,7 @@ export function useBrandColors() {
     }
 
     try {
-      const config: BrandColorConfig = JSON.parse(activeAccount.accent_color);
       const { primary, accent, sidebar } = config;
-      if (!primary || !accent || !sidebar) return;
 
       const vars = theme === "dark"
         ? deriveDarkThemeVars(primary, accent, sidebar)
@@ -393,5 +403,5 @@ export function useBrandColors() {
         root.style.removeProperty(prop);
       });
     };
-  }, [activeAccount?.accent_color, activeAccount?.id, superLight, theme, styleTheme]);
+  }, [activeAccount?.accent_color, activeAccount?.id, activeAccount?.name, superLight, theme, styleTheme]);
 }

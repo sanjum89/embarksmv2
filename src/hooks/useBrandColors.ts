@@ -95,6 +95,7 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
 // Back-compat: legacy preset key "rathbones" → "rathbones-calm"
 export const PRESET_ALIASES: Record<string, string> = {
   "rathbones": "rathbones-calm",
+  "rathbones-vibrant": "rathbones-calm",
 };
 
 export function resolvePresetKey(key?: string): string | undefined {

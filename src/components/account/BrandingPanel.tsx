@@ -72,11 +72,13 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
 
   if (!activeAccount) return null;
 
-  let currentPreset = "navy-amber";
+  const accountName = (activeAccount.name ?? "").trim().toLowerCase();
+  const isRathbonesFamily = accountName === "rathbones" || accountName === "pinnacle capital";
+  let currentPreset = isRathbonesFamily ? "rathbones-calm" : "navy-amber";
   try {
     if (activeAccount.accent_color) {
       const config = JSON.parse(activeAccount.accent_color);
-      currentPreset = resolvePresetKey(config.preset) || "navy-amber";
+      currentPreset = resolvePresetKey(config.preset) || currentPreset;
     }
   } catch {}
 

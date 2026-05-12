@@ -217,7 +217,7 @@ export function EmployeeSignalExplorer({ employees, rolesById, projectsById, get
             </div>
 
             {/* Reflections */}
-            <ReflectionsAnalysis employeeId={employee.id} employeeName={employee.name} />
+            <ReflectionsAnalysis employeeId={employee.id} employeeName={employee.name} reflectionsOverride={overlayReflections} />
 
             {/* Computation Details */}
             <ComputationDetails />

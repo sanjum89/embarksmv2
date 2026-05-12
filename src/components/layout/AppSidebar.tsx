@@ -71,7 +71,7 @@ const meNavItems: NavItem[] = [
 ];
 
 const teamNavItems: NavItem[] = [
-  { label: "Team Home", path: "/team", icon: LayoutDashboard },
+  { label: "Team Dashboard", path: "/team", icon: LayoutDashboard },
   { label: "Cohorts", path: "/manager/cohorts", icon: Layers },
   { label: "People Graph", path: "/manager/people-graph", icon: GitGraph },
   { label: "Deep Research", path: "/team/deep-research", icon: Microscope },

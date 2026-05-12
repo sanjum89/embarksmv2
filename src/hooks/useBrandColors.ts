@@ -403,5 +403,5 @@ export function useBrandColors() {
         root.style.removeProperty(prop);
       });
     };
-  }, [activeAccount?.accent_color, activeAccount?.id, superLight, theme, styleTheme]);
+  }, [activeAccount?.accent_color, activeAccount?.id, activeAccount?.name, superLight, theme, styleTheme]);
 }

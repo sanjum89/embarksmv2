@@ -8,28 +8,8 @@ import { StarterCards } from "@/components/deep-research/StarterCards";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Microscope, Plus, Send, Loader2, Pin, Trash2, MessageSquare, ChevronDown } from "lucide-react";
-import { ReadinessCardGrid } from "@/components/deep-research/blocks/ReadinessCard";
-import { CompetencyRadar } from "@/components/deep-research/blocks/CompetencyRadar";
-import { ModuleAdaptationStackedBar } from "@/components/deep-research/blocks/ModuleAdaptationStackedBar";
-import { RiskCriticalMatrix } from "@/components/deep-research/blocks/RiskCriticalMatrix";
-import { ManagerActionBoard } from "@/components/deep-research/blocks/ManagerActionBoard";
-import { EvidenceTable } from "@/components/deep-research/blocks/EvidenceTable";
-import { KpiStrip } from "@/components/deep-research/blocks/KpiStrip";
-import type { VisualBlock } from "@/lib/deepResearch/envelope";
-
-function PinnedBlock({ block }: { block: VisualBlock }) {
-  switch (block.type) {
-    case "kpi_strip": return <KpiStrip items={block.items} />;
-    case "readiness_cards": return <ReadinessCardGrid learners={block.learners} />;
-    case "competency_radar": return <CompetencyRadar subjects={block.subjects} series={block.series} height={240} />;
-    case "module_adaptation": return <ModuleAdaptationStackedBar learners={block.learners} />;
-    case "risk_matrix": return <RiskCriticalMatrix competencies={block.competencies} learners={block.learners} />;
-    case "action_board": return <ManagerActionBoard columns={block.columns} />;
-    case "evidence_table": return <EvidenceTable columns={block.columns} rows={block.rows} />;
-    default: return null;
-  }
-}
+import { Microscope, Plus, Send, Loader2, Pin, Trash2, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
+import type { PinnedAnswer } from "@/lib/deepResearch/envelope";
 
 export default function DeepResearch() {
   const { user } = useUser();

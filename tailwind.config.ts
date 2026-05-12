@@ -121,6 +121,14 @@ export default {
           "90%": { opacity: "1" },
           "100%": { right: "100%", opacity: "0" },
         },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(200%)" },
+        },
+        "pulse-soft": {
+          "0%, 100%": { opacity: "0.55", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.15)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -130,6 +138,8 @@ export default {
         "scale-in": "scale-in 0.3s ease-out",
         "flow-right": "flow-right 2s linear infinite",
         "flow-left": "flow-left 2s linear infinite",
+        shimmer: "shimmer 1.8s ease-in-out infinite",
+        "pulse-soft": "pulse-soft 1.4s ease-in-out infinite",
       },
     },
   },

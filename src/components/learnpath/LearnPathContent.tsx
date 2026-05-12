@@ -142,6 +142,12 @@ export function EmbarkContent() {
     return activeModuleId.slice("__diag::".length);
   }, [activeModuleId]);
 
+  // Detect synthetic Submit-evidence activeModuleId of the form `__evi::<moduleCode>`.
+  const eviModuleCode = useMemo(() => {
+    if (!activeModuleId || !activeModuleId.startsWith("__evi::")) return null;
+    return activeModuleId.slice("__evi::".length);
+  }, [activeModuleId]);
+
   // Determine if activeModuleId is a cohort chapter code, and look up its adaptation lens.
   const cohortChapterCode = useMemo(() => {
     if (!activeModuleId || !journey || diagModuleCode) return null;

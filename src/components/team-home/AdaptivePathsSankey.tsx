@@ -200,13 +200,14 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
   }, [spineModules]);
 
   // Geometry
-  const COL_W = dense ? 130 : 176;
+  const COL_W = dense ? 168 : 210;
   const ROW_H = dense ? 56 : 72;
   const PADDING_X = dense ? 100 : 140; // room for left learner labels
   const STAGE_BAND_Y = 8;
   const STAGE_BAND_H = 18;
-  const TITLES_Y = STAGE_BAND_Y + STAGE_BAND_H + 14; // baseline for module titles
-  const PADDING_TOP = TITLES_Y + 22;
+  const TITLES_Y = STAGE_BAND_Y + STAGE_BAND_H + 18; // baseline for first title line
+  const TITLE_LINE_H = 13;
+  const PADDING_TOP = TITLES_Y + TITLE_LINE_H * 2 + 18;
   const NODE_W = 14;
   const totalWidth = PADDING_X + spineModules.length * COL_W + 24;
   const headerOffset = compare === "baseline" ? ROW_H : 0;

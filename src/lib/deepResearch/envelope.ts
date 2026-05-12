@@ -101,11 +101,12 @@ export interface DeepResearchThread {
   updatedAt: string;
 }
 
-export interface PinnedTile {
+export interface PinnedAnswer {
   id: string;
   threadId: string;
+  threadTitle?: string;
   messageId: string;
-  block: VisualBlock;
   title: string;
+  envelope: ResponseEnvelope;
   createdAt: string;
 }

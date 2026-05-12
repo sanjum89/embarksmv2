@@ -8,28 +8,8 @@ import { StarterCards } from "@/components/deep-research/StarterCards";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Microscope, Plus, Send, Loader2, Pin, Trash2, MessageSquare, ChevronDown } from "lucide-react";
-import { ReadinessCardGrid } from "@/components/deep-research/blocks/ReadinessCard";
-import { CompetencyRadar } from "@/components/deep-research/blocks/CompetencyRadar";
-import { ModuleAdaptationStackedBar } from "@/components/deep-research/blocks/ModuleAdaptationStackedBar";
-import { RiskCriticalMatrix } from "@/components/deep-research/blocks/RiskCriticalMatrix";
-import { ManagerActionBoard } from "@/components/deep-research/blocks/ManagerActionBoard";
-import { EvidenceTable } from "@/components/deep-research/blocks/EvidenceTable";
-import { KpiStrip } from "@/components/deep-research/blocks/KpiStrip";
-import type { VisualBlock } from "@/lib/deepResearch/envelope";
-
-function PinnedBlock({ block }: { block: VisualBlock }) {
-  switch (block.type) {
-    case "kpi_strip": return <KpiStrip items={block.items} />;
-    case "readiness_cards": return <ReadinessCardGrid learners={block.learners} />;
-    case "competency_radar": return <CompetencyRadar subjects={block.subjects} series={block.series} height={240} />;
-    case "module_adaptation": return <ModuleAdaptationStackedBar learners={block.learners} />;
-    case "risk_matrix": return <RiskCriticalMatrix competencies={block.competencies} learners={block.learners} />;
-    case "action_board": return <ManagerActionBoard columns={block.columns} />;
-    case "evidence_table": return <EvidenceTable columns={block.columns} rows={block.rows} />;
-    default: return null;
-  }
-}
+import { Microscope, Plus, Send, Loader2, Pin, Trash2, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
+import type { PinnedAnswer } from "@/lib/deepResearch/envelope";
 
 export default function DeepResearch() {
   const { user } = useUser();
@@ -168,8 +148,11 @@ export default function DeepResearch() {
                       threadId={dr.activeThread!.id}
                       messageId={m.id}
                       authorId={user.id}
-                      onPin={(block, title) => dr.pinBlock(dr.activeThread!.id, m.id, block, title)}
+                      onPinAnswer={(env, title) =>
+                        dr.pinAnswer(dr.activeThread!.id, dr.activeThread!.title, m.id, env, title)
+                      }
                       onFollowup={(q) => submit(q)}
+                      onSubmitPrompt={(label) => submit(label)}
                     />
                   ) : (
                     <div className="text-sm text-muted-foreground">{m.content}</div>
@@ -210,36 +193,112 @@ export default function DeepResearch() {
         </main>
 
         {/* Right: pinned dashboard */}
-        <aside className="border-l border-border/60 overflow-y-auto p-4 space-y-3">
+        <aside className="border-l border-border/60 overflow-y-auto p-4 space-y-2">
           <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
             <Pin className="h-3 w-3" />
             Pinned dashboard
           </div>
           {dr.pins.length === 0 ? (
             <div className="text-xs text-muted-foreground rounded-lg border border-dashed border-border/60 p-3">
-              Hover any chart or table in an answer and click the pin icon to add it here.
+              Click the pin icon in any answer header to save the full response here with a title.
             </div>
           ) : (
-            dr.pins.map((tile) => (
-              <div key={tile.id} className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <div className="text-[11px] font-medium">{tile.title}</div>
-                  <button
-                    onClick={() => dr.unpin(tile.id)}
-                    className="text-muted-foreground hover:text-foreground"
-                    title="Unpin"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                </div>
-                <div className="text-[11px]">
-                  <PinnedBlock block={tile.block} />
-                </div>
-              </div>
+            dr.pins.map((pin) => (
+              <PinnedAnswerCard
+                key={pin.id}
+                pin={pin}
+                authorId={user.id}
+                onUnpin={() => dr.unpin(pin.id)}
+                onRename={(t) => dr.renamePin(pin.id, t)}
+                onJump={() => navigate(`/team/deep-research/${pin.threadId}`)}
+              />
             ))
           )}
         </aside>
       </div>
+    </div>
+  );
+}
+
+function PinnedAnswerCard({
+  pin,
+  authorId,
+  onUnpin,
+  onRename,
+  onJump,
+}: {
+  pin: PinnedAnswer;
+  authorId: string;
+  onUnpin: () => void;
+  onRename: (title: string) => void;
+  onJump: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(pin.title);
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-card">
+      <div className="flex items-center gap-1.5 px-2.5 py-2">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="text-muted-foreground hover:text-foreground"
+          title={open ? "Collapse" : "Expand"}
+        >
+          {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+        </button>
+        {editing ? (
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => {
+              onRename(title.trim() || pin.title);
+              setEditing(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                onRename(title.trim() || pin.title);
+                setEditing(false);
+              }
+            }}
+            className="h-6 text-[11px] flex-1"
+            autoFocus
+          />
+        ) : (
+          <button
+            onClick={() => setOpen((v) => !v)}
+            onDoubleClick={() => setEditing(true)}
+            className="flex-1 text-left text-[11px] font-medium truncate"
+            title="Double-click to rename"
+          >
+            {pin.title}
+          </button>
+        )}
+        <button
+          onClick={onUnpin}
+          className="text-muted-foreground hover:text-destructive"
+          title="Unpin"
+        >
+          <Trash2 className="h-3 w-3" />
+        </button>
+      </div>
+      {open && (
+        <div className="border-t border-border/60 p-2.5 space-y-2 text-[11px]">
+          <ResponseEnvelopeView
+            envelope={pin.envelope}
+            threadId={pin.threadId}
+            messageId={pin.messageId}
+            authorId={authorId}
+            readOnly
+          />
+          <button
+            onClick={onJump}
+            className="text-[10px] text-primary hover:underline"
+          >
+            Jump to thread →
+          </button>
+        </div>
+      )}
     </div>
   );
 }

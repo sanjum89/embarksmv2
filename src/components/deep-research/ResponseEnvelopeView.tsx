@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, Pin, Sparkles, ArrowRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Pin, Sparkles, ArrowRight, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import { ReadinessCardGrid } from "./blocks/ReadinessCard";
@@ -18,13 +19,15 @@ interface Props {
   threadId: string;
   messageId: string;
   authorId: string;
-  onPin?: (block: VisualBlock, title: string) => void;
+  onPinAnswer?: (envelope: ResponseEnvelope, title: string) => void;
   onFollowup?: (q: string) => void;
+  onSubmitPrompt?: (label: string) => void;
+  readOnly?: boolean;
 }
 
-function renderBlock(
+export function renderBlock(
   block: VisualBlock,
-  ctx: Pick<Props, "threadId" | "messageId" | "authorId">
+  ctx: { threadId: string; messageId: string; authorId: string; onSubmitPrompt?: (label: string) => void }
 ) {
   switch (block.type) {
     case "kpi_strip":
@@ -45,7 +48,7 @@ function renderBlock(
             if (!card.actionId) return;
             dispatchDeepResearchAction(
               { id: card.actionId, label: card.action, payload: card.payload ?? {} },
-              ctx
+              { ...ctx }
             );
           }}
         />
@@ -74,51 +77,73 @@ function renderBlock(
   }
 }
 
-function blockTitle(block: VisualBlock, idx: number): string {
-  switch (block.type) {
-    case "kpi_strip": return "Key indicators";
-    case "readiness_cards": return "Learner readiness";
-    case "competency_radar": return "Competency radar";
-    case "module_adaptation": return "Module adaptation";
-    case "risk_matrix": return "Risk-critical matrix";
-    case "action_board": return "Action board";
-    case "evidence_table": return "Evidence table";
-    case "narrative": return "Notes";
-    case "learner_list": return "Learners";
-    default: return `Visual ${idx + 1}`;
-  }
-}
-
-export function ResponseEnvelopeView({ envelope, threadId, messageId, authorId, onPin, onFollowup }: Props) {
+export function ResponseEnvelopeView({
+  envelope,
+  threadId,
+  messageId,
+  authorId,
+  onPinAnswer,
+  onFollowup,
+  onSubmitPrompt,
+  readOnly = false,
+}: Props) {
   const [traceOpen, setTraceOpen] = useState(false);
+  const [pinOpen, setPinOpen] = useState(false);
+  const [pinTitle, setPinTitle] = useState(() => envelope.executive.slice(0, 60));
+
+  const ctx = { threadId, messageId, authorId, onSubmitPrompt };
 
   return (
     <div className="space-y-4">
       {/* Executive */}
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
-        <div className="flex items-center gap-2 mb-2">
-          <Sparkles className="h-4 w-4 text-primary" />
-          <div className="text-[11px] font-semibold text-primary uppercase tracking-wide">Executive answer</div>
+        <div className="flex items-start gap-2 mb-2">
+          <Sparkles className="h-4 w-4 text-primary mt-0.5" />
+          <div className="text-[11px] font-semibold text-primary uppercase tracking-wide flex-1">
+            Executive answer
+          </div>
+          {!readOnly && onPinAnswer && (
+            <button
+              onClick={() => setPinOpen((v) => !v)}
+              className="text-muted-foreground hover:text-primary"
+              title="Pin this answer"
+            >
+              <Pin className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
         <p className="text-sm leading-relaxed">{envelope.executive}</p>
+
+        {pinOpen && onPinAnswer && (
+          <div className="mt-3 flex items-center gap-2 pt-3 border-t border-primary/15">
+            <Input
+              value={pinTitle}
+              onChange={(e) => setPinTitle(e.target.value)}
+              placeholder="Pin title"
+              className="h-8 text-xs"
+              autoFocus
+            />
+            <Button
+              size="sm"
+              onClick={() => {
+                onPinAnswer(envelope, pinTitle.trim() || envelope.executive.slice(0, 60));
+                setPinOpen(false);
+              }}
+            >
+              <Check className="h-3.5 w-3.5" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setPinOpen(false)}>
+              <X className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Visuals */}
       {envelope.visuals.length > 0 && (
         <div className="space-y-3">
           {envelope.visuals.map((block, i) => (
-            <div key={i} className="group relative">
-              {onPin && block.type !== "narrative" && (
-                <button
-                  className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md bg-background/80 border border-border/60 hover:bg-background"
-                  onClick={() => onPin(block, blockTitle(block, i))}
-                  title="Pin to dashboard"
-                >
-                  <Pin className="h-3.5 w-3.5" />
-                </button>
-              )}
-              {renderBlock(block, { threadId, messageId, authorId })}
-            </div>
+            <div key={i}>{renderBlock(block, ctx)}</div>
           ))}
         </div>
       )}
@@ -142,7 +167,7 @@ export function ResponseEnvelopeView({ envelope, threadId, messageId, authorId, 
       )}
 
       {/* Actions */}
-      {envelope.actions.length > 0 && (
+      {!readOnly && envelope.actions.length > 0 && (
         <div className="space-y-2">
           <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
             Recommended actions
@@ -154,7 +179,7 @@ export function ResponseEnvelopeView({ envelope, threadId, messageId, authorId, 
                 size="sm"
                 variant="outline"
                 className="h-8"
-                onClick={() => dispatchDeepResearchAction(a, { threadId, messageId, authorId })}
+                onClick={() => dispatchDeepResearchAction(a, ctx)}
               >
                 {a.label}
                 <ArrowRight className="h-3 w-3 ml-1.5" />
@@ -165,7 +190,7 @@ export function ResponseEnvelopeView({ envelope, threadId, messageId, authorId, 
       )}
 
       {/* Follow-ups */}
-      {envelope.followups.length > 0 && onFollowup && (
+      {!readOnly && envelope.followups.length > 0 && onFollowup && (
         <div className="space-y-2">
           <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
             Follow up
@@ -185,7 +210,7 @@ export function ResponseEnvelopeView({ envelope, threadId, messageId, authorId, 
       )}
 
       {/* Trace */}
-      {envelope.trace.length > 0 && (
+      {!readOnly && envelope.trace.length > 0 && (
         <div className="rounded-xl border border-border/40 bg-muted/20">
           <button
             onClick={() => setTraceOpen((v) => !v)}

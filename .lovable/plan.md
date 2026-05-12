@@ -1,137 +1,122 @@
+# Deep Research v2 — realistic responses + pin-whole-answer
 
-# Cohort Hub (Learner) — Plan
+Two clear improvements:
 
-A new top-level learner surface that turns the lonely solo journey into a connected, motivating experience: where do I stand vs my cohort, who's my mentor, who can I learn with, what's coming up, and what should I do next.
+1. **Every pre-generated prompt, follow-up and recommended-action button** in the Rathbones / Pinnacle showcase produces a rich, context-aware envelope (no more generic fallback for things like "Draft the message I should send Clara").
+2. **Pinned dashboard pins the entire response** (executive + visuals + actions) with a user-editable title, instead of pinning one orphan chart. Expanding a pin replays the full answer; the layout no longer breaks.
 
-## Goals
-- Make the learner feel embedded in a cohort, not alone.
-- One screen for: own progress, cohort comparison, mentor relationship, sessions (lead-led / peer / classroom), peer matches, study groups, announcements, activity, evidence, achievements, AI recommendations.
-- All actions feel real but stay demo-safe (in-app modals, toasts, Action Centre logging).
+---
 
-## Entry point & route
-- New top-level **"Cohort Hub"** sidebar item under the **Me** group in `AppSidebar.tsx`, between *Embark AI* and *My 360*. Icon: `Users` (lucide).
-- Route: `/cohort-hub` registered in `App.tsx`. Page: `src/pages/CohortHub.tsx`.
-- Replaces `CohortPreviewCard` link target in My 360 with a deep link to `/cohort-hub`.
+## 1. Realistic responses for every interaction
 
-## Data sources (read-only, existing tables)
-| Block | Source |
+### Problem today
+- The 5 starter prompts in `RATHBONES_SHOWCASE` are richly authored.
+- But every `followup` chip ("Draft the message I should send Clara", "Now do one for Theo", "What stretch content would suit Clara?") and every `action` button ("Export Clara's readiness pack", "Book a 15-min review with Clara") either hits the generic LLM fallback or fires a toast — neither uses Clara's actual on-page context.
+
+### Fix
+Extend `src/data/deepResearchShowcase.ts` with **scripted envelopes for every follow-up + action** triggered from the existing 5 starters. Each new envelope is built from the same canonical Clara/Theo persona facts already used elsewhere (Clara Whitfield, mid-career IM, strong research, Suitability + Consumer Duty evidence pending; Theo Marston, early-career IM, risk-critical Suitability/Consumer Duty/Regulatory Judgement gaps).
+
+New showcase prompts to add (all keyed via `findShowcaseMatch`):
+
+| Trigger | New envelope highlights |
 |---|---|
-| Active cohort, dates, code, due date | `cohort_enrollments` + `cohorts` for current learner |
-| Module list & progress | `catalog_modules`, `learner_progress`, `catalog_chapters` (already powered by `useLearnerJourney`) |
-| Cohort vs you (per module/track avg) | aggregate `learner_progress` across `cohort_enrollments.employee_id` of same `cohort_id` |
-| Cohort leaderboard | same aggregate, sorted by completion % |
-| Peer matches & "people learning similar topics" | other learners in same cohort, ranked by overlap of in-progress `module_code` and shared `topic_tags` |
-| Mentor card | `mentor_assignments` where `mentee_employee_id = me`, joined to mentor employee |
-| Pinned cohort announcements | new lightweight `cohort_announcements` table (see schema) |
-| Live cohort activity | derived from recent `learner_progress` updates, `assessment_instances` completions, `mentor_assignments` inserts, `agent_one_events`; plus seeded mock entries for demo personas |
-| Evidence captured | reflections (`reflections`), mentor feedback (`agent_one_events` with category=mentor), assessment scorecards (`assessment_instances`), session notes (mock for v1) |
-| Achievements / badges | derived rules over `learner_analytics` + `assessment_instances` (e.g. *First quiz passed*, *5-day streak*, *Module 1 complete*); locked badges shown struck-through |
-| Upcoming sessions, classroom/offline, study groups | new lightweight tables (see schema) — seeded for Rathbones cohort |
-| AI recommendations | reuse Embark AI / `nudge_cards` filtered to recipient + cohort context; wire CTAs through `actionDispatch` so they auto-log to Action Centre |
+| "Draft the message I should send Clara" | `narrative` block containing a fully drafted Teams/email message in Clara's voice context (acknowledges her strong research signals, asks for the two evidence items, proposes 15-min slot), plus `evidence_table` of the facts the draft is based on, and `actions` for "Send via Teams (mock)", "Copy to clipboard", "Edit & send". |
+| "Now do one for Theo" | Theo readiness summary mirroring the Clara one — KPI strip ("Not yet", 9/20 modules, 5 evidence open, stretch: No), competency radar (Theo only vs target), evidence table of his 5 risk-critical gaps, recommendation narrative. |
+| "What stretch content would suit Clara?" | KPI strip (stretch readiness areas), `learner_list`-style block of 3 recommended stretch modules (Research & Analysis deep-dive, ESG portfolio construction, Discretionary mandate scenarios) with rationale tied to her radar, action: "Assign stretch path to Clara". |
+| "Draft the message I should send Clara" follow-up "What stretch content…" | reused above. |
+| "Which mentor should pair with Theo?" | `evidence_table` of 3 mentor candidates with match reasons (Suitability seniority, availability, prior mentorship rating), action: "Assign mentor". |
+| "Show stretch readiness for Clara" | Variant of stretch suggestion, focused on readiness gates. |
+| "Which of Theo's modules will move readiness most?" | Bar-style narrative + ordered list of 5 modules ranked by readiness lift %. |
+| "What if Theo doesn't complete Suitability this week?" | `narrative` impact analysis + `risk_matrix` showing Theo regressing. |
+| "Show the impact/effort for these actions" | `evidence_table` (Action / Impact / Effort / Owner) for the 6 actions from the "this week" board. |
+| "Are either of them safe to progress?" (already exists) | unchanged. |
+| Action: "Export Clara's readiness pack" | New envelope: confirmation narrative + mock download link + KPI strip mirroring the readiness summary so it feels like the pack preview. |
+| Action: "Book a 15-min review with Clara" | New envelope: scheduling narrative with 3 proposed slots, action chips for each slot, evidence list (Clara's calendar tool ref). |
+| Action: "Build this week's manager pack" | Pack preview envelope reusing the action board + KPI strip. |
+| Action: "Send Consumer Duty check-in nudge" | Confirmation envelope: who the nudge will go to + draft message preview. |
+| Action: "Open stretch role-play in portfolio construction" (Felix) | Brief Felix-stretch envelope. |
+| Action: "Assign suitability evidence task" / "Pair Suitability mentor" | Confirmation + preview envelope. |
 
-## Schema additions (single migration)
-Four small tables, all `account_id`-scoped with permissive RLS matching the rest of the app:
+Matching changes to `findShowcaseMatch`:
+- Add the new ids and keyword sets (e.g. `["draft", "message", "clara"]`, `["stretch", "clara"]`, `["mentor", "theo"]`, `["readiness pack", "export"]`, `["book", "review", "clara"]`, `["impact effort", "impact / effort"]`, `["now do one for theo", "theo readiness"]`, `["what if theo"]`).
+- Keep existing matches unchanged.
 
-- `cohort_announcements` — `id, account_id, cohort_id, author_employee_id, body, posted_at, pinned bool`
-- `cohort_sessions` — `id, account_id, cohort_id, kind('lead_led'|'peer'|'classroom'), title, description, host_employee_id, starts_at, duration_minutes, capacity, joined_count, teams_link text, location text nullable, tags text[]`
-- `cohort_session_attendees` — `id, account_id, session_id, employee_id, status('joined'|'invited'|'declined')`
-- `cohort_study_groups` — `id, account_id, cohort_id, title, focus, schedule_text, member_employee_ids text[], teams_link text`
+### Wiring action chips through the showcase matcher
 
-No triggers; updated_at via existing `set_updated_at()` pattern.
+Currently `dispatchDeepResearchAction` handles actions by toasting + (sometimes) navigating. We change it to:
+1. If the active account is a showcase account AND there's a showcase envelope keyed by `action.id` (or by `action.label`), call `ask(actionLabel)` via a new `submitFromAction(label)` callback passed down from `DeepResearch.tsx`. This produces a rich answer in-thread, which is the user's stated expectation ("LLM should look at context for Clara on this page and respond properly").
+2. Otherwise, fall back to today's behaviour (toast / navigate).
 
-## Page layout
-3-zone editorial layout, scrolls vertically. Two visual modes (`Editorial` / `Cards`) toggled via segmented control in the header — same data, different density (Editorial = serif headings + generous spacing; Cards = compact tiles).
+In `useDeepResearch.ask`, the showcase short-circuit already runs first, so the new envelopes are picked up automatically — no edge-function changes needed for the showcase.
 
-```text
-┌────────────────────────────────────────────────────────────────┐
-│ HEADER: avatar · cohort title · code · status badge · Editorial│
-│         /Cards toggle                                          │
-│ KPIs: %, projected, due, days left, rank, cohort code          │
-│ Tags: chapter, next module gate                                │
-├──────────────────────────────────┬─────────────────────────────┤
-│ Cohort vs You (progress bars)    │ Your mentor (card)          │
-│ Cohort leaderboard (top 4 + me)  │   Edward Whitfield          │
-│                                  │   message · book session    │
-│                                  │   next 1:1                  │
-│                                  ├─────────────────────────────┤
-│                                  │ Lead-led / Live             │
-│                                  │ Open sessions list          │
-├──────────────────────────────────┴─────────────────────────────┤
-│ People learning similar topics │ Suggested peer matches │      │
-│ + Connect                       │ + Connect              │ Up- │
-│                                                          │coming│
-│                                                          │sess. │
-├────────────────────────────────────────────────────────────────┤
-│ Mentor support · Classroom/offline sessions · Evidence capt.   │
-├──────────────────────────────────┬─────────────────────────────┤
-│ Self-organised study groups      │ PINNED: Cohort announcements│
-│  (3 cards · Join group)          │ LIVE: Recent cohort activity│
-├──────────────────────────────────┴─────────────────────────────┤
-│ Achievements (badges)            │ Recommended actions (AI)    │
-└────────────────────────────────────────────────────────────────┘
+### Fallback path for non-showcase accounts
+Strengthen `supabase/functions/deep-research-chat/index.ts`:
+- Add a richer `system` message that, when the prompt looks like "Draft the message I should send X", instructs the model to produce a `narrative` visual block containing the actual drafted message (not a description of how to draft one), plus an `evidence_table` of the facts used.
+- Pass the prior assistant envelope's `executive` + `evidence` summary as additional system context so the LLM can ground the draft in what was just shown on screen. (`useDeepResearch` already has the message history — extend the body sent to the function to also include the last assistant `envelope.executive` and `evidence` array.)
+
+---
+
+## 2. Pin the whole answer, not one chart
+
+### Problem today
+- `PinnedTile` stores **one `VisualBlock`**.
+- Pinning multiple blocks from the same answer creates orphan tiles, layout breaks at narrow widths, and there's no heading to recognise what the pin means.
+
+### New model
+A pin = a snapshot of an entire **assistant response envelope** + a user-supplied title.
+
+```ts
+// envelope.ts
+export interface PinnedAnswer {
+  id: string;
+  threadId: string;
+  messageId: string;
+  title: string;            // user-editable, defaulted from envelope.executive
+  envelope: ResponseEnvelope; // full snapshot
+  createdAt: string;
+}
 ```
 
-## Privacy posture
-Per your call: full names + rank + % shown on leaderboard. We will:
-- Cap leaderboard to top 4 + a "You · #N" pinned row to avoid an endless ranked list.
-- Keep cohort-vs-you bars as **aggregate average only** (no per-person numbers in that block).
-- Activity feed shows names but never raw scores ("Sofia completed CISI L4 mock paper · 82%" stays — that's the screenshot intent and you confirmed).
+(Old `PinnedTile` is removed; localStorage key bumped to `deep-research-pins-v2` so old broken pins don't load.)
 
-## Sessions & comms behaviour (v1)
-Every "Join session", "Connect", "Message mentor", "Book session", "Join group" opens an **in-app modal** with:
-- session/peer details, time, host, tags
-- a `Copy Teams link` button (copies seeded `teams_link` to clipboard, toast confirmation)
-- a primary `Confirm join` button → writes a row to `cohort_session_attendees` and logs an action to Action Centre via existing `actionDispatch`/Action Centre store.
+### UX
+- **Pin button**: moves from per-block (top-right of every chart) to **one pin button in the response header** next to "Executive answer". Clicking it opens a tiny inline popover: title input (pre-filled with first 60 chars of `executive`, editable) + Save / Cancel.
+- **Right rail "Pinned dashboard"**:
+  - List of pin cards (title + small meta: thread title, timestamp, count of visuals).
+  - Click a card → expands inline accordion-style to render the **full `ResponseEnvelopeView`** for that snapshot (read-only: no nested pin button, no follow-ups). A "Jump to thread" link sets the active thread to its origin.
+  - Unpin (trash) and "Rename" (pencil) controls per card.
+- Empty state copy updated: "Pin a full response to keep it accessible. Click the pin in the answer header to save it here with your own title."
+- Layout: right rail width stays 320px; pinned cards collapse by default to avoid the breakage seen at present.
 
-No real Teams API calls in v1 (mentioned in tool-knowledge but kept out of scope to keep the demo deterministic).
+### Files affected (high-level)
 
-## AI Recommended actions
-Reuses the existing nudge surface:
-- Pulls `nudge_cards` for the learner where `category` relates to cohort/mentor/peer.
-- If empty, generates 3 contextual recs from a small client-side rules engine (e.g. *no 1:1 in 14 days → "Schedule 1:1 with mentor"*; *peer overlap > X → "Pair with a peer"*; *open lead-led session → "Join 'Deep dive: MiFID II'"*).
-- Each rec auto-logs to Action Centre when executed.
+Edit:
+- `src/lib/deepResearch/envelope.ts` — replace `PinnedTile` with `PinnedAnswer`.
+- `src/hooks/useDeepResearch.ts` — `pinBlock` → `pinAnswer(threadId, messageId, envelope, title)`; new storage key `deep-research-pins-v2`; `renamePin`.
+- `src/components/deep-research/ResponseEnvelopeView.tsx` — remove per-block pin button, add header-level pin popover with title input. Add `readOnly` prop that suppresses the pin button + follow-ups (used inside the right rail).
+- `src/pages/DeepResearch.tsx` — replace right-rail render block with new pin-card list (collapsed/expanded states).
+- `src/components/deep-research/PinnedAnswerCard.tsx` — new component for the rail card.
 
-## Demo determinism (Rathbones / Pinnacle)
-- For Clara Wren (primary persona) and the other 8 Rathbones learners, seed a deterministic showcase via a new `src/data/cohortHubShowcase.ts`:
-  - mentor = Edward Whitfield, next 1:1 Thu 14 May 10:30
-  - 3 lead-led sessions (Margaret Atherton, Edward Whitfield) and 2 peer sessions
-  - 3 study groups (Suitability Sprint, CISI L4 Mock Crew, Behavioural Lab)
-  - 3 pinned announcements
-  - leaderboard with the 9 Rathbones names + the live persona
-  - "people learning similar topics" suggests Aisha Rahman, James O'Connor, Sofia Martinelli
-- White-labelled automatically for Pinnacle Capital via `useContentSubstitution`.
-- For non-Rathbones accounts: components fall back to whatever rows exist; if none, show empty-state CTAs ("Your cohort lead hasn't scheduled sessions yet").
+Add:
+- All the new showcase envelopes & matcher entries in `src/data/deepResearchShowcase.ts`.
+- Follow-up wiring change in `dispatchDeepResearchAction.ts` (accept an optional `onSubmitPrompt(label)` callback; when present and a showcase match exists, invoke it instead of toasting).
 
-## Files to create
-- `src/pages/CohortHub.tsx` — page composition + scroll container
-- `src/hooks/useCohortHub.ts` — assembles cohort, mentor, peers, sessions, announcements, leaderboard
-- `src/lib/cohortHub/peerMatching.ts` — overlap-based peer ranking
-- `src/lib/cohortHub/leaderboard.ts` — % completion aggregation + rank derivation
-- `src/lib/cohortHub/achievements.ts` — rule-based badge derivation
-- `src/data/cohortHubShowcase.ts` — Rathbones demo seed
-- `src/components/cohort-hub/`
-  - `CohortHeaderEditorial.tsx`, `CohortHeaderCards.tsx`, `ViewModeToggle.tsx`
-  - `CohortVsYouCard.tsx`, `CohortLeaderboardCard.tsx`
-  - `MentorCard.tsx`, `OpenSessionsCard.tsx`, `ClassroomSessionsCard.tsx`
-  - `PeerMatchesCard.tsx`, `PeopleLearningSimilarCard.tsx`
-  - `StudyGroupsCard.tsx`, `PinnedAnnouncementsCard.tsx`, `RecentActivityCard.tsx`
-  - `EvidenceCapturedCard.tsx`, `AchievementsCard.tsx`, `RecommendedActionsCard.tsx`
-  - `SessionDetailsDialog.tsx`, `ConnectDialog.tsx`, `MessageMentorDialog.tsx`, `JoinGroupDialog.tsx`
+Edge function (`supabase/functions/deep-research-chat/index.ts`):
+- Accept `lastEnvelopeContext` in body.
+- Inject it into `system` messages so non-showcase accounts also get context-aware drafts.
 
-## Files to edit
-- `src/App.tsx` — register `/cohort-hub`
-- `src/components/layout/AppSidebar.tsx` — add **Cohort Hub** under Me
-- `src/components/my360-v2/CohortPreviewCard.tsx` — link to `/cohort-hub`
-- `src/components/team-home/MyCohortsCard.tsx` — link to `/cohort-hub` for learner side
-- `mem://index.md` + new `mem://features/cohort-hub` entry
+### Out of scope
+- Real Teams send (still mocked confirmation).
+- Persisting pins server-side (still localStorage, account-scoped).
+- Reordering / drag-and-drop in the pinned dashboard.
+- New visual block types (we reuse the existing eight).
 
-## Out of scope for v1
-- Real MS Teams API calls (only copyable links)
-- Creating new study groups / announcements from the learner UI (read + join only)
-- Cross-cohort comparisons
-- Evidence upload from this surface (links out to existing reflection/evidence pages)
+---
 
-## Risks / notes
-- Performance: cohort-vs-you & leaderboard aggregate `learner_progress` across the cohort. We'll memoise per cohort and cap learner count read for v1 (cohorts are <50).
-- Visual density is high — that's why the Editorial/Cards toggle exists; default to Editorial because it matches the brand voice in the screenshots.
-- We're adding 4 small tables; all permissive RLS to match existing app posture (which already uses public access).
+## Acceptance checks
+
+1. In Rathbones, click starter "Create a readiness-board summary for Clara" → click follow-up **"Draft the message I should send Clara"** → answer is a fully drafted message in a narrative block, with evidence table grounding it, plus action chips. Not the generic fallback.
+2. From the same answer, click action **"Export Clara's readiness pack"** → new in-thread envelope with the pack preview KPI strip, not just a toast.
+3. Click the pin icon in the response header → enter title "Clara readiness — week 3" → Save → tile appears in right rail.
+4. Click that tile → it expands inline to show the **same** executive + KPI strip + radar + evidence table, no layout break.
+5. Pin three different answers → all three render correctly stacked, collapsible, no overflow.

@@ -17,6 +17,10 @@ Your output envelope:
 - followups: 2–4 short follow-up questions
 - trace: short list of synthetic tool calls that show your reasoning
 
+Special handling:
+- If the user asks you to DRAFT a message, email, or note to a named learner, the FIRST visual MUST be a "narrative" block containing the fully written message itself (subject line + body, signed). Do not describe how to draft it; write it. Add an evidence_table block listing the facts you used.
+- If you are given lastEnvelopeContext (the previous answer's executive + evidence), ground your new answer in those facts so the conversation stays coherent.
+
 Tone: crisp, executive, evidence-led. No hedging, no apologies.`;
 
 const RENDER_ANSWER_TOOL = {
@@ -83,7 +87,7 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const { prompt, accountName, history = [] } = await req.json();
+    const { prompt, accountName, history = [], lastEnvelopeContext = null } = await req.json();
     if (!prompt || typeof prompt !== "string") {
       return new Response(JSON.stringify({ error: "prompt required" }), {
         status: 400,
@@ -94,6 +98,17 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
+    const contextMessages: Array<{ role: string; content: string }> = [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "system", content: `Active account: ${accountName ?? "unknown"}.` },
+    ];
+    if (lastEnvelopeContext) {
+      contextMessages.push({
+        role: "system",
+        content: `Previous answer context (ground new answers in these facts when relevant):\n${JSON.stringify(lastEnvelopeContext).slice(0, 4000)}`,
+      });
+    }
+
     const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -102,12 +117,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          { role: "system", content: `Active account: ${accountName ?? "unknown"}.` },
-          ...history.slice(-6),
-          { role: "user", content: prompt },
-        ],
+        messages: [...contextMessages, ...history.slice(-6), { role: "user", content: prompt }],
         tools: [RENDER_ANSWER_TOOL],
         tool_choice: { type: "function", function: { name: "render_answer" } },
       }),

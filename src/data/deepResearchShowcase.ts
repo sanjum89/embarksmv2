@@ -751,7 +751,7 @@ export const RATHBONES_SHOWCASE: ShowcasePrompt[] = [
             ["Schedule Theo client-conversation role-play", { text: "Medium", tone: "amber" }, "Medium (~20m)", "Mentor"],
             ["Open Felix stretch role-play", { text: "Medium", tone: "amber" }, "Low (~10m)", "Manager"],
             ["Cohort Consumer Duty check-in nudge", { text: "Medium", tone: "amber" }, "Low (~5m)", "Manager"],
-            ["Request Clara's first-meeting reflection", { text: "Low", tone: "neutral" }, "Low (~5m)", "Manager"],
+            ["Request Clara's first-meeting reflection", "Low", "Low (~5m)", "Manager"],
           ],
         },
         {

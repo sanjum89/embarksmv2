@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { ModuleAdaptation } from "@/lib/embarkAdaptation";
+import { diagnosticReopens } from "@/store/useDiagnosticReopens";
 
 export type ChapterStatus = "not_started" | "in_progress" | "completed" | "locked";
 export type ModuleStatus = "completed" | "in_progress" | "up_next" | "locked";
@@ -154,11 +155,25 @@ export function useLearnerJourney(
         // 6. Learner progress
         const { data: progress, error: prErr } = await supabase
           .from("learner_progress")
-          .select("module_code, chapter_code, status")
+          .select("module_code, chapter_code, status, metadata")
           .eq("account_id", accountId)
           .eq("employee_id", employeeId)
           .eq("cohort_id", cohortId);
         if (prErr) throw prErr;
+
+        // Hydrate diagnostic-reopens store from any persisted __diag rows so the
+        // lens UI survives page reloads.
+        (progress ?? []).forEach((p) => {
+          if (p.chapter_code !== "__diag") return;
+          const r = (p.metadata as any)?.diagnostic_result;
+          if (!r) return;
+          diagnosticReopens.recordSubmission(
+            p.module_code,
+            Array.isArray(r.wrong_chapters) ? r.wrong_chapters : [],
+            Number(r.total) || 0,
+            Number(r.correct) || 0,
+          );
+        });
 
         // 7. Open lock events (unlocked_at IS NULL = still locked)
         const { data: lockEvents, error: lkErr } = await supabase

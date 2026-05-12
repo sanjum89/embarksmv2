@@ -95,6 +95,27 @@ export function ResponseEnvelopeView({
 
   const ctx = { threadId, messageId, authorId, onSubmitPrompt };
 
+  // Count of sections we want to stagger: exec + each visual + evidence + actions + followups
+  const sectionCount = useMemo(() => {
+    let n = 1; // exec
+    n += envelope.visuals.length;
+    if (envelope.evidence.length) n += 1;
+    if (!readOnly && envelope.actions.length) n += 1;
+    if (!readOnly && envelope.followups.length && onFollowup) n += 1;
+    return n;
+  }, [envelope, readOnly, onFollowup]);
+
+  const reveal = useStagedReveal(readOnly ? 0 : sectionCount, 160, 60);
+  const isShown = (i: number) => readOnly || reveal[i] === true;
+  const revealCls = (i: number) =>
+    cn(
+      "transition-all duration-400 ease-out",
+      isShown(i) ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1.5 pointer-events-none"
+    );
+
+  let idx = 0;
+  const execIdx = idx++;
+
   return (
     <div className="space-y-4">
       {/* Executive */}

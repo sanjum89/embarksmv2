@@ -193,36 +193,112 @@ export default function DeepResearch() {
         </main>
 
         {/* Right: pinned dashboard */}
-        <aside className="border-l border-border/60 overflow-y-auto p-4 space-y-3">
+        <aside className="border-l border-border/60 overflow-y-auto p-4 space-y-2">
           <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
             <Pin className="h-3 w-3" />
             Pinned dashboard
           </div>
           {dr.pins.length === 0 ? (
             <div className="text-xs text-muted-foreground rounded-lg border border-dashed border-border/60 p-3">
-              Hover any chart or table in an answer and click the pin icon to add it here.
+              Click the pin icon in any answer header to save the full response here with a title.
             </div>
           ) : (
-            dr.pins.map((tile) => (
-              <div key={tile.id} className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <div className="text-[11px] font-medium">{tile.title}</div>
-                  <button
-                    onClick={() => dr.unpin(tile.id)}
-                    className="text-muted-foreground hover:text-foreground"
-                    title="Unpin"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                </div>
-                <div className="text-[11px]">
-                  <PinnedBlock block={tile.block} />
-                </div>
-              </div>
+            dr.pins.map((pin) => (
+              <PinnedAnswerCard
+                key={pin.id}
+                pin={pin}
+                authorId={user.id}
+                onUnpin={() => dr.unpin(pin.id)}
+                onRename={(t) => dr.renamePin(pin.id, t)}
+                onJump={() => navigate(`/team/deep-research/${pin.threadId}`)}
+              />
             ))
           )}
         </aside>
       </div>
+    </div>
+  );
+}
+
+function PinnedAnswerCard({
+  pin,
+  authorId,
+  onUnpin,
+  onRename,
+  onJump,
+}: {
+  pin: PinnedAnswer;
+  authorId: string;
+  onUnpin: () => void;
+  onRename: (title: string) => void;
+  onJump: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(pin.title);
+
+  return (
+    <div className="rounded-lg border border-border/60 bg-card">
+      <div className="flex items-center gap-1.5 px-2.5 py-2">
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="text-muted-foreground hover:text-foreground"
+          title={open ? "Collapse" : "Expand"}
+        >
+          {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+        </button>
+        {editing ? (
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onBlur={() => {
+              onRename(title.trim() || pin.title);
+              setEditing(false);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                onRename(title.trim() || pin.title);
+                setEditing(false);
+              }
+            }}
+            className="h-6 text-[11px] flex-1"
+            autoFocus
+          />
+        ) : (
+          <button
+            onClick={() => setOpen((v) => !v)}
+            onDoubleClick={() => setEditing(true)}
+            className="flex-1 text-left text-[11px] font-medium truncate"
+            title="Double-click to rename"
+          >
+            {pin.title}
+          </button>
+        )}
+        <button
+          onClick={onUnpin}
+          className="text-muted-foreground hover:text-destructive"
+          title="Unpin"
+        >
+          <Trash2 className="h-3 w-3" />
+        </button>
+      </div>
+      {open && (
+        <div className="border-t border-border/60 p-2.5 space-y-2 text-[11px]">
+          <ResponseEnvelopeView
+            envelope={pin.envelope}
+            threadId={pin.threadId}
+            messageId={pin.messageId}
+            authorId={authorId}
+            readOnly
+          />
+          <button
+            onClick={onJump}
+            className="text-[10px] text-primary hover:underline"
+          >
+            Jump to thread →
+          </button>
+        </div>
+      )}
     </div>
   );
 }

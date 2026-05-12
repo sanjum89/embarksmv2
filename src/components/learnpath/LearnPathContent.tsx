@@ -187,6 +187,47 @@ export function EmbarkContent() {
   }, [diagModuleCode, journey]);
 
   if (contentView === "module" && activeModuleId) {
+    // Synthetic "Submit evidence" row from the journey accordion (`__evi::<moduleCode>`).
+    if (eviModuleCode && journey && activeAccountId) {
+      let moduleTitle = eviModuleCode;
+      let reason: string | null = null;
+      for (const t of journey.tracks) for (const m of t.modules) {
+        if (m.code === eviModuleCode) { moduleTitle = m.title; reason = m.adaptation?.reason ?? null; }
+      }
+      // Next chapter = first chapter of the next module in journey order
+      let nextChapter: { id: string; title: string } | null = null;
+      const flat: { mCode: string; cCode: string; cTitle: string }[] = [];
+      for (const t of [...journey.tracks].sort((a,b)=>a.displayOrder-b.displayOrder))
+        for (const m of [...t.modules].sort((a,b)=>a.displayOrder-b.displayOrder))
+          for (const c of [...m.chapters].sort((a,b)=>a.displayOrder-b.displayOrder))
+            flat.push({ mCode: m.code, cCode: c.code, cTitle: c.title });
+      const afterIdx = flat.findIndex((f) => f.mCode !== eviModuleCode && flat.some((g, gi) => g.mCode === eviModuleCode && gi < flat.indexOf(f)));
+      const next = flat.find((f, i) => f.mCode !== eviModuleCode && i > (flat.findIndex(g => g.mCode === eviModuleCode)));
+      if (next) nextChapter = { id: next.cCode, title: next.cTitle };
+      void afterIdx;
+      return (
+        <div className="h-full flex flex-col">
+          <ExplainSelectionPopover />
+          <div className="flex-1 overflow-y-auto" data-explainable="true">
+            <EvidenceTaskCard
+              accountId={activeAccountId}
+              employeeId={employeeId}
+              cohortId={journey.cohort.id}
+              moduleCode={eviModuleCode}
+              moduleTitle={moduleTitle}
+              reason={reason}
+              nextChapter={nextChapter}
+              onContinue={() => {
+                if (nextChapter) openModule(nextChapter.id);
+                else showModuleGrid();
+              }}
+              onPersisted={refreshJourney}
+            />
+          </div>
+        </div>
+      );
+    }
+
     let mod = resolveModule(activeModuleId, skillTargets, normalizedAccount?.learningModules);
 
     // Cohort path: when the active ID is a cohort chapter, render REAL DB content.

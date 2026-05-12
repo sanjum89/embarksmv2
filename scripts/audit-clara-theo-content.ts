@@ -53,20 +53,50 @@ async function auditPersona(employeeId: string, label: string): Promise<PersonaR
     .eq("account_id", ACCOUNT_ID)
     .eq("employee_id", employeeId);
   const cohortIds = (enrol ?? []).map((e: any) => e.cohort_id);
-  const { data: cohorts } = await sb
-    .from("cohorts")
-    .select("id, role_cohort_code, domain_code")
-    .in("id", cohortIds.length ? cohortIds : ["00000000-0000-0000-0000-000000000000"]);
-  const roleCohortCodes = Array.from(new Set((cohorts ?? []).map((c: any) => c.role_cohort_code)));
-  const domainCodes = Array.from(new Set((cohorts ?? []).map((c: any) => c.domain_code)));
 
-  // Journey modules
-  const { data: modules } = await sb
-    .from("catalog_modules")
-    .select("module_code, module_title, learning_track_code, role_cohort_code, domain_code")
-    .eq("account_id", ACCOUNT_ID)
-    .in("role_cohort_code", roleCohortCodes.length ? roleCohortCodes : ["__none__"])
-    .in("domain_code", domainCodes.length ? domainCodes : ["__none__"]);
+  let modules: any[] = [];
+  if (cohortIds.length > 0) {
+    const { data: cohorts } = await sb
+      .from("cohorts")
+      .select("id, role_cohort_code, domain_code")
+      .in("id", cohortIds);
+    const roleCohortCodes = Array.from(new Set((cohorts ?? []).map((c: any) => c.role_cohort_code)));
+    const domainCodes = Array.from(new Set((cohorts ?? []).map((c: any) => c.domain_code)));
+    if (roleCohortCodes.length && domainCodes.length) {
+      const { data } = await sb
+        .from("catalog_modules")
+        .select("module_code, module_title, learning_track_code, role_cohort_code, domain_code")
+        .eq("account_id", ACCOUNT_ID)
+        .in("role_cohort_code", roleCohortCodes)
+        .in("domain_code", domainCodes);
+      modules = data ?? [];
+    }
+  }
+  // Fallback for personas without cohort enrollment: walk all modules referenced
+  // by their persona_module_adaptations (or all account modules if none).
+  if (modules.length === 0 && personaCode) {
+    const { data: adaptedMods } = await sb
+      .from("persona_module_adaptations")
+      .select("module_code")
+      .eq("account_id", ACCOUNT_ID)
+      .eq("persona_code", personaCode);
+    const codes = Array.from(new Set((adaptedMods ?? []).map((a: any) => a.module_code)));
+    if (codes.length) {
+      const { data } = await sb
+        .from("catalog_modules")
+        .select("module_code, module_title, learning_track_code, role_cohort_code, domain_code")
+        .eq("account_id", ACCOUNT_ID)
+        .in("module_code", codes);
+      modules = data ?? [];
+    }
+  }
+  if (modules.length === 0) {
+    const { data } = await sb
+      .from("catalog_modules")
+      .select("module_code, module_title, learning_track_code, role_cohort_code, domain_code")
+      .eq("account_id", ACCOUNT_ID);
+    modules = data ?? [];
+  }
 
   const moduleCodes = (modules ?? []).map((m: any) => m.module_code);
   if (moduleCodes.length === 0) {

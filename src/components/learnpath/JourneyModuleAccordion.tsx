@@ -257,9 +257,9 @@ function buildLensChapters(
         return { ...c, status: "skipped" as any, lensState: "skipped_by_diagnostic" };
       }
       if (reopened.has(c.code)) {
-        // Don't override a chapter that's already been completed
-        const status = c.status === "completed" ? "completed" : ("in_progress" as any);
-        return { ...c, status, lensState: "reopened_after_wrong" };
+        // Reopened chapters always show as in_progress (needs work) — never green-tick,
+        // even if the underlying learner_progress row is still stale-completed.
+        return { ...c, status: "in_progress" as any, lensState: "reopened_after_wrong" };
       }
       return { ...c, status: "skipped" as any, lensState: "skipped_by_diagnostic" };
     });

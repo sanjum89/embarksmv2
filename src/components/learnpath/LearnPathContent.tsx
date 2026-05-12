@@ -409,7 +409,7 @@ export function EmbarkContent() {
             onCompletedChange={setModuleCompletedView}
             cohortContext={cohortContext ?? undefined}
             onChapterPersisted={refreshJourney}
-            onDiagnosticSubmit={(result) => {
+            onDiagnosticSubmit={async (result) => {
               if (!diagModuleCode) return;
               diagnosticReopens.recordSubmission(
                 diagModuleCode,
@@ -417,6 +417,94 @@ export function EmbarkContent() {
                 result.total,
                 result.correctCount,
               );
+              // Persist outcome to learner_progress so module status (computed from
+              // chapter rows) reflects the diagnostic result. Wrong → in_progress,
+              // right → completed.
+              if (!journey || !activeAccountId) return;
+              const cohortId = journey.cohort.id;
+              const wrongSet = new Set(result.wrongChapterCodes);
+              const now = new Date().toISOString();
+              const submittedAt = now;
+              try {
+                const allChapterCodes = diagChapters.map((c) => c.chapter_code);
+                for (const chapterCode of allChapterCodes) {
+                  const isWrong = wrongSet.has(chapterCode);
+                  const status = isWrong ? "in_progress" : "completed";
+                  const outcome = isWrong ? "wrong" : "correct";
+                  const { data: existing } = await supabase
+                    .from("learner_progress")
+                    .select("id, started_at, metadata")
+                    .eq("account_id", activeAccountId)
+                    .eq("employee_id", employeeId)
+                    .eq("cohort_id", cohortId)
+                    .eq("module_code", diagModuleCode)
+                    .eq("chapter_code", chapterCode)
+                    .maybeSingle();
+                  const baseMeta = (existing?.metadata as any) ?? {};
+                  const metadata = { ...baseMeta, diagnostic_outcome: outcome, diagnostic_submitted_at: submittedAt };
+                  if (existing?.id) {
+                    await supabase.from("learner_progress").update({
+                      status,
+                      completed_at: isWrong ? null : now,
+                      started_at: existing.started_at ?? now,
+                      metadata,
+                    }).eq("id", existing.id);
+                  } else {
+                    await supabase.from("learner_progress").insert({
+                      account_id: activeAccountId,
+                      employee_id: employeeId,
+                      cohort_id: cohortId,
+                      module_code: diagModuleCode,
+                      chapter_code: chapterCode,
+                      status,
+                      started_at: now,
+                      completed_at: isWrong ? null : now,
+                      metadata,
+                    });
+                  }
+                }
+                // Synthetic module-level diagnostic row (chapter_code = '__diag') so we can
+                // rehydrate the reopens store on reload.
+                const { data: diagExisting } = await supabase
+                  .from("learner_progress")
+                  .select("id")
+                  .eq("account_id", activeAccountId)
+                  .eq("employee_id", employeeId)
+                  .eq("cohort_id", cohortId)
+                  .eq("module_code", diagModuleCode)
+                  .eq("chapter_code", "__diag")
+                  .maybeSingle();
+                const diagMeta = {
+                  diagnostic_result: {
+                    total: result.total,
+                    correct: result.correctCount,
+                    wrong_chapters: result.wrongChapterCodes,
+                    submitted_at: submittedAt,
+                  },
+                };
+                if (diagExisting?.id) {
+                  await supabase.from("learner_progress").update({
+                    status: "completed",
+                    completed_at: now,
+                    metadata: diagMeta,
+                  }).eq("id", diagExisting.id);
+                } else {
+                  await supabase.from("learner_progress").insert({
+                    account_id: activeAccountId,
+                    employee_id: employeeId,
+                    cohort_id: cohortId,
+                    module_code: diagModuleCode,
+                    chapter_code: "__diag",
+                    status: "completed",
+                    started_at: now,
+                    completed_at: now,
+                    metadata: diagMeta,
+                  });
+                }
+                refreshJourney();
+              } catch (err) {
+                console.error("[Embark] Failed to persist diagnostic outcome", err);
+              }
             }}
           />
         </div>

@@ -17,6 +17,10 @@ Your output envelope:
 - followups: 2–4 short follow-up questions
 - trace: short list of synthetic tool calls that show your reasoning
 
+Special handling:
+- If the user asks you to DRAFT a message, email, or note to a named learner, the FIRST visual MUST be a "narrative" block containing the fully written message itself (subject line + body, signed). Do not describe how to draft it; write it. Add an evidence_table block listing the facts you used.
+- If you are given lastEnvelopeContext (the previous answer's executive + evidence), ground your new answer in those facts so the conversation stays coherent.
+
 Tone: crisp, executive, evidence-led. No hedging, no apologies.`;
 
 const RENDER_ANSWER_TOOL = {

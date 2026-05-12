@@ -51,9 +51,13 @@ function savePins(accountId: string, pins: PinnedAnswer[]) {
   }
 }
 
-function fakeStreamDelay(ms = 350) {
-  return new Promise<void>((r) => setTimeout(r, ms));
-}
+export type ThinkingStage = "planning" | "retrieving" | "analysing" | "drafting" | "finalising";
+
+const STAGE_ORDER: ThinkingStage[] = ["planning", "retrieving", "analysing", "drafting", "finalising"];
+
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
 
 export function useDeepResearch(args: { accountId: string; accountName?: string | null; ownerId: string }) {
   const { accountId, accountName, ownerId } = args;

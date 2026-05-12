@@ -11,6 +11,7 @@ export interface ActionQueueItem {
   title: string;
   detail: string;
   severity: "high" | "medium" | "low";
+  kind?: string;
 }
 
 const RAIL: Record<ActionQueueItem["severity"], string> = {
@@ -24,7 +25,7 @@ export function ActionQueue({
   onOpen,
 }: {
   items: ActionQueueItem[];
-  onOpen: (employeeId: string) => void;
+  onOpen: (employeeId: string, item?: ActionQueueItem) => void;
 }) {
   return (
     <Card className="overflow-hidden">
@@ -44,7 +45,7 @@ export function ActionQueue({
             <button
               key={a.id}
               type="button"
-              onClick={() => onOpen(a.employeeId)}
+              onClick={() => onOpen(a.employeeId, a)}
               className="relative flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-muted/40"
             >
               <span className={cn("absolute left-0 top-3 bottom-3 w-1 rounded-r", RAIL[a.severity])} />

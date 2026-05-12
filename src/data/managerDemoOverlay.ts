@@ -680,3 +680,107 @@ for (const id of Object.keys(OVERLAY)) {
   ov.pathChanges = ov.pathChanges.map(enrichPathChange);
 }
 
+// =============================================================================
+// LIVE-MODULE MATERIALIZATION
+// =============================================================================
+// The persona overlays above are authored against the legacy 8-module fallback
+// catalog. Live cohorts (e.g. Rathbones assoc_im) now ship 28 real modules.
+// `materializeOverlay()` projects a persona's progression *pattern* + AI
+// decisions onto whatever live module list is in the database, so Roster and
+// Adaptive Paths always span the same set of real modules.
+// =============================================================================
+
+/** Map legacy fallback module codes → closest real catalog module code. */
+const LEGACY_TO_LIVE_CODE: Record<string, string> = {
+  "mod.assoc_im.foundations": "bk1.intro_wealth_rathbones",
+  "mod.assoc_im.markets": "bk3.markets_macro_assets",
+  "mod.assoc_im.bond_pricing": "tk3.performance_attribution",
+  "mod.assoc_im.equity_analysis": "bk4.portfolio_construction",
+  "mod.assoc_im.portfolio_construction": "tk1.charles_river_ims",
+  "mod.assoc_im.client_suitability": "bk2.kyc_suitability",
+  "mod.assoc_im.risk_compliance": "cps3.smcr_conduct",
+  "mod.assoc_im.client_review": "str1.lead_client_review",
+};
+
+interface MinModule {
+  module_code: string;
+  module_title: string;
+  display_order?: number | null;
+  progression_stage?: string | null;
+}
+
+/** Decade-bucket a module's `display_order` into a meaningful stage label. */
+export function bucketStageLabel(displayOrder?: number | null): string {
+  if (displayOrder == null) return "Programme";
+  if (displayOrder < 100) return "Foundations";
+  if (displayOrder < 200) return "Technical Toolkit";
+  if (displayOrder < 300) return "Behavioural Skills";
+  if (displayOrder < 400) return "Compliance & CPD";
+  if (displayOrder < 500) return "Onboarding";
+  return "Stretch";
+}
+
+/**
+ * Project a persona overlay onto the live module list.
+ * - Cells span ALL live modules (so the heatmap and Sankey are aligned).
+ * - Status pattern is preserved: N completed, then in_progress, rest not_started, last L locked.
+ * - Adaptations and scores are re-keyed via LEGACY_TO_LIVE_CODE.
+ * - pathChanges are remapped to live module_code + module_title.
+ */
+export function materializeOverlay(
+  base: LearnerOverlay,
+  liveModules: MinModule[]
+): LearnerOverlay {
+  if (!liveModules.length) return base;
+
+  // Count the persona's progression footprint from the legacy cells.
+  const nCompleted = base.cells.filter((c) => c.status === "completed").length;
+  const nInProgress = base.cells.filter((c) => c.status === "in_progress").length;
+  const nLocked = base.cells.filter((c) => c.status === "locked").length;
+
+  // Build per-live-code overrides from the legacy adaptation/score positions.
+  const adaptByLiveCode: Record<string, ModuleCellOverlay["adaptation"]> = {};
+  const scoreByLiveCode: Record<string, number> = {};
+  base.cells.forEach((c) => {
+    const live = LEGACY_TO_LIVE_CODE[c.module_code];
+    if (!live) return;
+    if (c.adaptation) adaptByLiveCode[live] = c.adaptation;
+    if (c.score != null) scoreByLiveCode[live] = c.score;
+  });
+
+  const total = liveModules.length;
+  const completedEnd = Math.min(nCompleted, total);
+  const inProgEnd = Math.min(completedEnd + nInProgress, total - nLocked);
+  const lockedStart = Math.max(total - nLocked, inProgEnd);
+
+  const cells: ModuleCellOverlay[] = liveModules.map((m, i) => {
+    let status: ModuleCellOverlay["status"];
+    if (i < completedEnd) status = "completed";
+    else if (i < inProgEnd) status = "in_progress";
+    else if (i >= lockedStart) status = "locked";
+    else status = "not_started";
+
+    return {
+      module_code: m.module_code,
+      status,
+      adaptation: adaptByLiveCode[m.module_code] ?? null,
+      score: scoreByLiveCode[m.module_code],
+      last_activity:
+        status === "completed" ? `${i + 1}d ago` : status === "in_progress" ? "today" : undefined,
+    };
+  });
+
+  // Remap pathChanges to live codes + titles.
+  const titleByCode = new Map(liveModules.map((m) => [m.module_code, m.module_title]));
+  const pathChanges: AiPathChange[] = base.pathChanges
+    .map((pc) => {
+      const liveCode = LEGACY_TO_LIVE_CODE[pc.module_code] ?? pc.module_code;
+      const liveTitle = titleByCode.get(liveCode);
+      if (!liveTitle) return null;
+      return { ...pc, module_code: liveCode, module_title: liveTitle };
+    })
+    .filter((x): x is AiPathChange => !!x);
+
+  return { ...base, cells, pathChanges };
+}
+

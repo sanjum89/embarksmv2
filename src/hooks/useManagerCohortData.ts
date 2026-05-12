@@ -5,7 +5,9 @@ import {
   COHORT_MODULES_FALLBACK,
   RATHBONES_COHORT_ID,
   RATHBONES_PERSONA_IDS,
+  bucketStageLabel,
   getDemoOverlay,
+  materializeOverlay,
   type LearnerOverlay,
 } from "@/data/managerDemoOverlay";
 
@@ -88,7 +90,10 @@ export function useManagerCohortData(cohortId: string | null): ManagerCohortData
         ? allMods.map((m) => ({
             module_code: m.module_code,
             module_title: m.module_title,
-            progression_stage: m.progression_stage,
+            // Override the upstream `progression_stage` (which is just the role
+            // slug echoed back) with a meaningful decade-bucket label so the
+            // Sankey draws several stage bands instead of one giant block.
+            progression_stage: bucketStageLabel(m.display_order),
           }))
         : COHORT_MODULES_FALLBACK;
 
@@ -106,12 +111,18 @@ export function useManagerCohortData(cohortId: string | null): ManagerCohortData
         {}
       );
 
-      const learners: CohortLearner[] = Array.from(ids).map((id) => ({
-        employeeId: id,
-        name: employees[id]?.name ?? id,
-        title: employees[id]?.title,
-        overlay: getDemoOverlay(id),
-      }));
+      const learners: CohortLearner[] = Array.from(ids).map((id) => {
+        const base = getDemoOverlay(id);
+        // Project the persona's progression pattern onto the LIVE module list
+        // so Roster and Adaptive Paths share the same spine.
+        const overlay = base ? materializeOverlay(base, liveModules) : null;
+        return {
+          employeeId: id,
+          name: employees[id]?.name ?? id,
+          title: employees[id]?.title,
+          overlay,
+        };
+      });
 
       // Order: rising stars first, then at-risk, then on track
       const rank = (s?: string) =>

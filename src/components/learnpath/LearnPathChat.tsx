@@ -132,6 +132,37 @@ export function EmbarkChat() {
           m.chapters.find((c) => c.status === "in_progress") ??
           m.chapters.find((c) => c.status === "not_started");
         const a = m.adaptation;
+
+        // Persona-aware entry point: for diagnostic/evidence modules, the real
+        // first chapter is bypassed in the UI by a synthetic row. Mirror that
+        // here so the AI never recommends a "skipped" reading chapter.
+        let upNextChapterCode: string | null = upNextChapter?.code ?? null;
+        let upNextChapterTitle: string | null = upNextChapter
+          ? substitute(upNextChapter.title)
+          : null;
+        let upNextChapterKind:
+          | "diagnostic"
+          | "evidence"
+          | "condensed"
+          | "already_covered"
+          | "reading" = "reading";
+
+        if (m.status !== "completed" && a) {
+          if (a.adaptationType === "diagnostic_only") {
+            upNextChapterCode = `__diag::${m.code}`;
+            upNextChapterTitle = "Quick diagnostic — 3 questions";
+            upNextChapterKind = "diagnostic";
+          } else if (a.adaptationType === "evidence_required") {
+            upNextChapterCode = `__evi::${m.code}`;
+            upNextChapterTitle = "Submit evidence — short written task";
+            upNextChapterKind = "evidence";
+          } else if (a.adaptationType === "microlearning") {
+            upNextChapterKind = "condensed";
+          } else if (a.adaptationType === "skip_after_validation") {
+            upNextChapterKind = "already_covered";
+          }
+        }
+
         return {
           moduleId: m.code,
           moduleCode: m.code,
@@ -145,8 +176,9 @@ export function EmbarkChat() {
           skillTargetId: journey?.cohort.id ?? "",
           skillTargetTitle: substitute(journey?.cohort.title ?? ""),
           progress: m.pct,
-          upNextChapterCode: upNextChapter?.code ?? null,
-          upNextChapterTitle: upNextChapter ? substitute(upNextChapter.title) : null,
+          upNextChapterCode,
+          upNextChapterTitle,
+          upNextChapterKind,
           adaptationType: a?.adaptationType ?? null,
           adaptationLabel: a ? formatAdaptationLabel(a.adaptationType) : null,
           adaptationReason: a ? sanitizeReason(a.reason) : null,
@@ -158,7 +190,12 @@ export function EmbarkChat() {
     );
 
     // Find resume target from cohort journey first, then fall back to legacy skill targets.
+    // Deprioritize "Already covered" modules — they should never be the suggested starting point.
+    const isCovered = (m: typeof cohortModules[number]) =>
+      m.adaptationType === "skip_after_validation";
     const cohortResumeModule =
+      cohortModules.find((m) => m.status === "in_progress" && !isCovered(m)) ??
+      cohortModules.find((m) => m.status === "up_next" && !isCovered(m)) ??
       cohortModules.find((m) => m.status === "in_progress") ??
       cohortModules.find((m) => m.status === "up_next");
 

@@ -20,7 +20,7 @@ export function TeamHero({ managerName, managerTitle, summary }: Props) {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Team Home
+            Team Dashboard
           </p>
           <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
             {managerName}

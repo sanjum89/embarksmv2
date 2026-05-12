@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { Layers, ChevronRight, Users, AlertCircle } from "lucide-react";
 import BackButton from "@/components/layout/BackButton";
-import { Badge } from "@/components/ui/badge";
 import { useAccountCohorts } from "@/hooks/useManagerCohortData";
 import { RATHBONES_COHORT_ID, getAllDemoOverlays } from "@/data/managerDemoOverlay";
 
@@ -25,12 +24,6 @@ export default function ManagerCohortPicker() {
     (o) => o.status === "at_risk" || o.status === "needs_check_in"
   ).length;
 
-  const tiles = [
-    { label: "Cohorts", value: list.length, icon: Layers },
-    { label: "Active learners", value: learnerCount, icon: Users },
-    { label: "Needs attention", value: needsAttn, icon: AlertCircle },
-  ];
-
   // Per-cohort metrics — for the demo cohort, attribute all learners; otherwise zero.
   const metricsFor = (cohortId: string) => {
     if (cohortId === RATHBONES_COHORT_ID && overlays.length) {
@@ -51,62 +44,123 @@ export default function ManagerCohortPicker() {
       <div className="mx-auto w-full max-w-[1400px] p-4 sm:p-6 lg:p-8">
         <BackButton />
 
-        <div className="mb-6 mt-2">
-          <h1 className="font-display text-2xl font-bold text-foreground">Cohorts</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+        <div className="mb-8 mt-2">
+          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
+            Cohorts
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
             Pick a cohort to open the manager hub — roster heatmap, AI changes, adaptive paths, and CPD.
           </p>
         </div>
 
-        <div className="mb-6 grid grid-cols-3 gap-3 sm:max-w-2xl">
-          {tiles.map((t) => {
-            const Icon = t.icon;
-            return (
-              <div
-                key={t.label}
-                className="rounded-xl border border-border bg-background p-3"
-              >
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Icon className="h-3.5 w-3.5" />
-                  <span className="text-[11px] uppercase tracking-wide">{t.label}</span>
-                </div>
-                <p className="mt-1 font-display text-xl font-bold text-foreground">{t.value}</p>
-              </div>
-            );
-          })}
+        {/* KPI tiles */}
+        <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
+          {/* Cohorts — accent border */}
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
+            <div className="absolute inset-y-0 left-0 w-1 bg-accent" />
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Layers className="h-3.5 w-3.5" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider">Cohorts</span>
+            </div>
+            <p className="mt-3 font-display text-4xl font-bold text-foreground">{list.length}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {list.length === 1 ? "active programme" : "active programmes"}
+            </p>
+          </div>
+
+          {/* Active learners — hero navy tile */}
+          <div className="relative overflow-hidden rounded-2xl bg-primary p-6 shadow-lg shadow-primary/20">
+            <div className="pointer-events-none absolute -right-10 -bottom-10 h-40 w-40 rounded-full bg-accent/30 blur-3xl" />
+            <div className="relative flex items-center gap-2 text-primary-foreground/70">
+              <Users className="h-3.5 w-3.5" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider">
+                Active learners
+              </span>
+            </div>
+            <p className="relative mt-3 font-display text-4xl font-bold text-primary-foreground">
+              {learnerCount}
+            </p>
+            <p className="relative mt-1 text-xs font-medium text-accent">
+              across all cohorts
+            </p>
+          </div>
+
+          {/* Needs attention — accent border */}
+          <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm transition-shadow hover:shadow-md">
+            <div className="absolute inset-y-0 left-0 w-1 bg-accent" />
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <AlertCircle className="h-3.5 w-3.5" />
+              <span className="text-[11px] font-semibold uppercase tracking-wider">
+                Needs attention
+              </span>
+            </div>
+            <p className="mt-3 font-display text-4xl font-bold text-foreground">{needsAttn}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {needsAttn === 0 ? "all on track" : "needs follow-up"}
+            </p>
+          </div>
         </div>
 
         {loading && <p className="text-sm text-muted-foreground">Loading cohorts…</p>}
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {/* Cohort cards */}
+        <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
           {list.map((c) => {
             const m = metricsFor(c.id);
+            const started = m.pct > 0;
             return (
               <Link
                 key={c.id}
                 to={`/manager/cohort/${c.id}`}
-                className="group block rounded-xl border border-border bg-background p-4 transition-colors hover:border-primary/40 hover:bg-muted/30"
+                className="group relative block overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-lg"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-foreground">
-                      {c.cohort_title}
-                    </p>
-                    <Badge variant="outline" className="mt-1.5 text-[10px]">
-                      {c.role_cohort_code}
-                    </Badge>
+                {/* Top accent strip */}
+                <div className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-primary to-accent transition-transform duration-300 group-hover:scale-x-100" />
+
+                <div className="p-6">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <span className="inline-block rounded-full bg-accent/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
+                        {c.role_cohort_code}
+                      </span>
+                      <h3 className="mt-3 font-display text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-primary">
+                        {c.cohort_title}
+                      </h3>
+                    </div>
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                      <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                    </div>
                   </div>
-                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
-                </div>
-                <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-[11px] text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5">
-                    <Users className="h-3.5 w-3.5" />
-                    {m.learners} learner{m.learners === 1 ? "" : "s"}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <Layers className="h-3.5 w-3.5" />
-                    {m.pct}% complete
-                  </span>
+
+                  {/* Progress */}
+                  <div className="mt-6">
+                    <div className="mb-2 flex items-center justify-between text-[11px]">
+                      <span className="font-semibold uppercase tracking-wider text-muted-foreground">
+                        {started ? "Progress" : "Not started"}
+                      </span>
+                      <span className="font-display text-sm font-bold text-foreground">
+                        {m.pct}%
+                      </span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-primary to-accent transition-all duration-700"
+                        style={{ width: `${Math.max(m.pct, started ? 4 : 0)}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Meta */}
+                  <div className="mt-5 flex items-center justify-between border-t border-border pt-4 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5 font-medium">
+                      <Users className="h-3.5 w-3.5" />
+                      {m.learners} learner{m.learners === 1 ? "" : "s"}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 font-medium">
+                      <Layers className="h-3.5 w-3.5" />
+                      {started ? `${m.pct}% complete` : "Awaiting kickoff"}
+                    </span>
+                  </div>
                 </div>
               </Link>
             );

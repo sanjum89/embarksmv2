@@ -148,8 +148,11 @@ export default function DeepResearch() {
                       threadId={dr.activeThread!.id}
                       messageId={m.id}
                       authorId={user.id}
-                      onPin={(block, title) => dr.pinBlock(dr.activeThread!.id, m.id, block, title)}
+                      onPinAnswer={(env, title) =>
+                        dr.pinAnswer(dr.activeThread!.id, dr.activeThread!.title, m.id, env, title)
+                      }
                       onFollowup={(q) => submit(q)}
+                      onSubmitPrompt={(label) => submit(label)}
                     />
                   ) : (
                     <div className="text-sm text-muted-foreground">{m.content}</div>

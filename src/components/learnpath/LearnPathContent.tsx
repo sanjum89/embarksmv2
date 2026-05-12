@@ -23,6 +23,7 @@ import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTa
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { StepType } from "@/types/learning";
 import { findCohortChapterLocation, findNextCohortChapter } from "@/lib/cohortNextChapter";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface UnifiedStep {
   stepId: string;

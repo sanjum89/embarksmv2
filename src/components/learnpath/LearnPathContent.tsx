@@ -427,7 +427,7 @@ export function EmbarkContent() {
               const now = new Date().toISOString();
               const submittedAt = now;
               try {
-                const allChapterCodes = diagChapters.map((c) => c.chapter_code);
+                const allChapterCodes = diagChapters.map((c) => c.chapterCode);
                 for (const chapterCode of allChapterCodes) {
                   const isWrong = wrongSet.has(chapterCode);
                   const status = isWrong ? "in_progress" : "completed";

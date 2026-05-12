@@ -99,17 +99,15 @@ export function EvidenceTaskCard({
           .eq("chapter_code", chapterCode)
           .maybeSingle();
         const now = new Date().toISOString();
-        const meta =
-          i === 0
-            ? { ...(existing?.metadata as object | null ?? {}), evidence_submission: submission }
-            : (existing?.metadata as object | null) ?? {};
+        const baseMeta = (existing?.metadata as Record<string, unknown> | null) ?? {};
+        const meta = (i === 0 ? { ...baseMeta, evidence_submission: submission } : baseMeta) as any;
         if (existing?.id) {
           await supabase
             .from("learner_progress")
             .update({ status: "completed", completed_at: now, started_at: existing.started_at ?? now, metadata: meta })
             .eq("id", existing.id);
         } else {
-          await supabase.from("learner_progress").insert({
+          await supabase.from("learner_progress").insert([{
             account_id: accountId,
             employee_id: employeeId,
             cohort_id: cohortId,
@@ -119,7 +117,7 @@ export function EvidenceTaskCard({
             started_at: now,
             completed_at: now,
             metadata: meta,
-          });
+          }]);
         }
       }
       setSubmitted(true);

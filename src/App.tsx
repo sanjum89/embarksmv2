@@ -41,6 +41,7 @@ import TeamMode from "./pages/TeamMode";
 import ManagerCohortHub from "./pages/ManagerCohortHub";
 import ActionCentre from "./pages/ActionCentre";
 import ManagerCohortPicker from "./pages/ManagerCohortPicker";
+import DeepResearch from "./pages/DeepResearch";
 import { SupportiveToastBridge } from "@/components/SupportiveToastBridge";
 
 
@@ -89,6 +90,8 @@ const App = () => (
               <Route path="/embark-v2" element={<EmbarkAIv2 />} />
               <Route path="/manager/people-graph" element={<PeopleGraphIntelligence />} />
               <Route path="/team" element={<TeamMode />} />
+              <Route path="/team/deep-research" element={<DeepResearch />} />
+              <Route path="/team/deep-research/:threadId" element={<DeepResearch />} />
               <Route path="/manager/cohort/:cohortId" element={<ManagerCohortHub />} />
               <Route path="/action-centre" element={<ActionCentre />} />
               <Route path="/admin" element={<AdminView />} />

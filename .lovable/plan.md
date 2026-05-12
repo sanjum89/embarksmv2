@@ -1,155 +1,134 @@
-# Deep Research — Plan (v1)
+# Deep Research — Revised Plan (v2)
 
-## Goal
-A premium BI-style conversational workspace for managers and cohort leaders. Ask complex questions about learners, cohorts, competencies, modules, progress, risk, readiness, and interventions; get answers as charts, tables, narrative, and one-click actions — with a visible reasoning trace.
+Incorporating the BI-canvas thinking, structured response format, and Clara/Theo-anchored Rathbones demo from your reference doc.
+
+## What changes from v1
+
+- **Default layout flips to a split BI canvas** (chat left, live insight canvas right) instead of conversational mode. Notebook + Conversational remain available as alternates.
+- **Every meaningful answer is a visual research artifact** — short executive line + at least one chart/table/card. No long-text-only replies.
+- **Response is a fixed 5-part envelope**: Executive answer → Visual insight → Evidence / reasoning → Recommended actions → Follow-up questions.
+- **Conversation starters are categorized "manager jobs"**, not random prompts. Five categories ship in v1 (others stub out).
+- **Demo spine = Clara vs Theo** in the Associate IM cohort, with five scripted prompts that flow as a guided wow story.
+- **Five visual components ship first**, the rest stub for v1.
 
 ## 1. Entry & navigation
-- New top-level **Deep Research** link in the Team-mode sidebar (icon: `Microscope` or `Telescope`).
-- Route: `/team/deep-research` and `/team/deep-research/:threadId`.
-- Visible to anyone with `canManage` (managers + cohort leaders). Scope is auto-derived:
-  - Reporting-tree subordinates (existing `accountHierarchy` selectors).
-  - Cohorts they lead (`cohorts` + `cohort_enrollments` where they are a manager).
-  - Union of both = the addressable population for that user.
+Unchanged: top-level "Deep Research" in Team sidebar, route `/team/deep-research/[:threadId]`, visible to anyone with `canManage`. Auto-scoped to reporting tree ∪ led cohorts.
 
-## 2. Workspace layout
-Three-zone shell with a **per-response output mode** the user picks:
+## 2. Layout — BI research canvas
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│  Header: thread title · scope chip · model · "New thread"   │
-├──────────────┬─────────────────────────────┬────────────────┤
-│ Threads &    │  Conversation + Answers     │  Pinned        │
-│ Suggested    │  (chat, canvas, or report   │  Dashboard     │
-│ research     │   per query)                │  (tiles)       │
-│              │                             │                │
-│ - Pinned     │  Composer w/ scope picker,  │  Drag to       │
-│ - Recent     │  output-mode selector,      │  reorder.      │
-│ - Templates  │  prompt pills               │  Auto-refresh. │
-└──────────────┴─────────────────────────────┴────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│ Deep Research · scope chip · output mode · model · New thread        │
+├───────────────────────────┬──────────────────────────────────────────┤
+│  Left: chat & starters    │  Right: live research canvas             │
+│                           │                                          │
+│  ┌─ Ask anything… ─────┐  │  ┌─ Executive answer ───────────────┐    │
+│  └─────────────────────┘  │  └──────────────────────────────────┘    │
+│                           │  ┌─ Visual ─┐ ┌─ Visual ─┐               │
+│  Starter categories:      │  │ radar    │ │ heatmap  │               │
+│   • Cohort health         │  └──────────┘ └──────────┘               │
+│   • Compare learners      │  ┌─ Evidence table ─────────────────┐    │
+│   • Risk-critical         │  └──────────────────────────────────┘    │
+│   • Manager actions       │  ┌─ Recommended actions (chips) ────┐    │
+│   • Readiness summary     │  └──────────────────────────────────┘    │
+│                           │  ┌─ Follow-up questions (pills) ────┐    │
+│  Recent threads · Pinned  │  └──────────────────────────────────┘    │
+└───────────────────────────┴──────────────────────────────────────────┘
 ```
 
-Output modes (chosen per query, default = Conversational):
-1. **Conversational + inline charts/tables** — chat thread with rich blocks.
-2. **Split BI canvas** — answer renders as full-width tiles on the right pane; follow-ups update them.
-3. **Notebook report** — long-form sections (Summary · Findings · Evidence · Risks · Recommended actions) with citations and an export-ready layout.
+Output modes (per-response, default = **Canvas**):
+- **Canvas** (BI split, default)
+- **Conversational** (inline blocks in chat)
+- **Notebook report** (long-form, export-ready)
 
-Every answer has: **Pin** (to dashboard), **Open trace**, **Action chips**, **Share** (copy link to thread).
+Top bar: pin to dashboard, open trace, share, switch mode.
 
-## 3. AI engine — tool-calling agent with transparent trace
-Single edge function `deep-research-chat` (streaming SSE, Lovable AI Gateway, default `google/gemini-3-flash-preview`, escalates to `openai/gpt-5` for `deep` mode).
+## 3. Structured response envelope
 
-Agent loop:
-1. **Plan** — model emits a short plan (1–5 steps).
-2. **Tool calls** — typed retrieval tools against the account context.
-3. **Synthesize** — final answer in a structured envelope (narrative + blocks + actions + citations).
-4. **Trace** — every tool call (name, args, row count, latency) is captured and streamed back; rendered in a collapsible "Reasoning" panel.
+Every answer the model returns:
 
-Retrieval tools (all auto-scoped to caller's addressable population):
-- `list_learners(filters)` — by cohort, role_cohort, status, risk, readiness.
-- `learner_profile(employee_id)` — persona, capability proficiency, progress, last activity.
-- `cohort_overview(cohort_id)` — enrollment, module/chapter completion, gate results, risk distribution.
-- `module_progress(module_code, scope)` — completion %, avg score, weak topic tags, retake counts.
-- `assessments(filters)` — instances, scores, weak/strong topic tags, agent actions.
-- `readiness(scope)` — gate results, AI recommendations, manager/assessor sign-off state.
-- `interventions(scope)` — micro_learnings, mentor_assignments, reflections, nudges.
-- `people_graph_signals(employee_id)` — direct + derived signals.
-- `work_signals(scope)` — work-system indicators (Bloomberg, Charles River…).
-- `action_centre_history(scope)` — past manager actions and outcomes.
-- `compare(a, b)` — generic compare across learners or cohorts.
-- `aggregate(metric, group_by, filters)` — counts/avgs/percentiles for charts.
-- `propose_actions(context)` — returns candidate action chips with deep-link payloads.
-
-Output envelope (model returns via tool-call `render_answer`):
 ```json
 {
-  "summary": "…1–3 sentence headline finding…",
-  "blocks": [
-    { "type": "kpi_strip", "items": [...] },
-    { "type": "bar_chart", "title": "...", "data": [...] },
-    { "type": "table", "columns": [...], "rows": [...] },
-    { "type": "learner_list", "ids": [...] },
-    { "type": "narrative", "markdown": "..." }
-  ],
-  "actions": [
-    { "id": "assign_module", "label": "Assign 'Suitability fundamentals' to 4 learners", "payload": {...}, "confirm": true }
-  ],
-  "citations": [{ "tool": "cohort_overview", "callId": "c1" }]
+  "executive": "1–2 sentence headline finding",
+  "visuals": [ { "type": "radar|heatmap|stacked_bar|risk_matrix|readiness_card|action_board|evidence_table|kpi_strip|learner_list|narrative", ... } ],
+  "evidence": [ { "label": "...", "source": "tool:cohort_overview#c1", "value": "..." } ],
+  "actions":  [ { "id": "assign_evidence_task", "label": "Assign suitability evidence task to Clara", "payload": {...} } ],
+  "followups":[ "Why does Theo need full modules?", "Show stretch readiness for Clara" ],
+  "trace":    [ { "tool": "...", "args": {...}, "rows": 12, "ms": 240 } ]
 }
 ```
 
-## 4. Actions (Execute + auto-log to Action Centre)
-Action chips are typed and run client-side via the existing stores:
-- `assign_module` / `assign_skill_target` → `useSkillTargetsContext` + `useManagerActions`.
-- `schedule_1on1` → `Schedule1on1Dialog`.
-- `send_check_in` → `SendCheckInDialog`.
-- `request_reflection` → `RequestReflectionDialog`.
-- `assign_mentor` → `AssignMentorDialog`.
-- `lock_unlock_chapter`, `nudge_learner`, `flag_for_review`.
+The renderer is strict: if `executive` is present but `visuals` is empty for a non-trivial query, the renderer auto-promotes the first table/list into a visual block. Long-text-only answers are explicitly disallowed for canvas mode.
 
-Every executed action:
-- Confirms in a small inline drawer (preview of who/what).
-- Writes an `agent_one_events` row with `event_type='deep_research_action'`, plus the existing per-action side effects.
-- Surfaces in **Action Centre** under a new "Deep Research" group with a back-link to the originating thread.
+## 4. Conversation starter categories (v1 ships 5)
 
-## 5. Demo determinism (Rathbones / Pinnacle)
-- New file `src/data/deepResearchShowcase.ts` registers ~8 scripted prompts keyed by normalized prompt text. Examples:
-  - "Who in my cohort is at risk of missing the readiness gate this week?"
-  - "Show me Clara's progress vs the rest of the early-IM cohort."
-  - "Which module is causing the most retakes across Investment Management?"
-  - "Suggest interventions for the bottom 3 learners by readiness."
-  - "Is Theo ready to be promoted to Investment Manager?"
-  - "What's the impact of the last 2 weeks of micro-learnings?"
-  - "Compare reflections sentiment between my two onboarding cohorts."
-  - "Where should I focus my next 1:1s?"
-- When the active account name matches Rathbones/Pinnacle and the prompt matches (loose normalize), the edge function returns the curated envelope verbatim (still streamed) and skips the live tool loop. Trace panel still renders, showing the scripted "tools that would have run".
-- Everything else goes live. A "Suggested research" rail surfaces the showcase prompts plus dynamic ones derived from current data.
+Each starter card has: icon, title, short description, example question, expected output type.
 
-## 6. Persistence
-New tables (migration):
-- `deep_research_threads` — id, account_id, owner_user_id, title, scope_json, created_at, updated_at, last_message_at.
-- `deep_research_messages` — id, thread_id, role (`user`|`assistant`|`tool`), content, blocks_json, actions_json, trace_json, created_at.
-- `deep_research_pins` — id, account_id, owner_user_id, source_message_id, block_json, position, created_at.
+1. **Cohort health** — "Show me the Associate IM cohort readiness picture." → readiness donut + competency heatmap + blocker list + actions.
+2. **Compare learners** — "Why are Clara and Theo seeing different journeys?" → side-by-side radar + module adaptation stacked bar + plain-English reason.
+3. **Risk-critical readiness** — "Are Clara and Theo safe to progress?" → red/amber/green risk matrix + evidence checklist + "do not progress until…" cards.
+4. **Manager action plan** — "What should I do this week to move the cohort forward?" → prioritized action board + impact/effort matrix.
+5. **Readiness summary** — "Create a readiness-board summary for Clara." → one-page evidence pack with radar, evidence checklist, recommendation.
 
-RLS: anon-permissive (matches the rest of the project's demo posture); scoped client-side by `account_id` + `owner_user_id`.
+Stubbed (visible but mark "coming soon"): Module adaptation audit, Competency gap analysis, Evidence gap view, Stretch readiness, Learning journey effectiveness.
 
-## 7. Reusable components
-- `RichBlockRenderer` (extends `RichContentBlock` with `kpi_strip`, `bar_chart`, `line_chart`, `table`, `learner_list`).
-- `ReasoningTracePanel` — collapsible right-rail view of tool calls.
-- `ActionChip` — confirm-then-execute, wired to existing stores.
-- `PinnedDashboard` — grid of pinned blocks, drag-to-reorder.
-- `ScopeChip` — shows current scope (cohort, team, custom filters); clickable to refine.
-- `OutputModeSwitch` — Conversational / Canvas / Report.
+## 5. Demo spine — Clara vs Theo guided flow
 
-## 8. Scope refinement UI
-A small "Scope" popover above the composer lets the user narrow before asking:
-- Cohorts (multi)
-- Roles / role_cohorts
-- Risk filter (at risk / on track / ahead)
-- Date range
-The selection is sent as `scope_json` and applied to all retrieval tools.
+The five scripted prompts are wired as the "Suggested research" rail and as the showcase deterministic responses for Rathbones / Pinnacle:
 
-## 9. Files to create / touch (technical)
+1. "Show me the Associate IM cohort readiness picture."
+2. "Why are Clara and Theo seeing different module formats?"
+3. "Are either of them safe to progress?"
+4. "What should I do this week?"
+5. "Create a readiness-board summary for Clara."
+
+When the active account is Rathbones or Pinnacle and the prompt loosely matches, `deep-research-chat` returns a curated envelope (still streamed, trace still shown). All other prompts run live through the tool-calling agent. Prompts 2 and 3 are the wow moments and get the most polished visuals.
+
+## 6. Visual components shipped in v1
+
+Built and used by the showcase:
+
+1. **ReadinessCard** — name · status pill · top gap · next action.
+2. **CompetencyRadar** — Clara vs Theo vs Associate IM requirement (uses existing `CompetencyRadarHero` patterns).
+3. **ModuleAdaptationStackedBar** — Full / Condensed / Diagnostic / Evidence / Already covered, per learner.
+4. **RiskCriticalMatrix** — competency × learner with R/A/G evidence status.
+5. **ManagerActionBoard** — prioritized "do this next" cards with execute chips.
+
+Lighter blocks reused from existing chat: `kpi_strip`, `evidence_table`, `learner_list`, `narrative`. Stubbed for later: evidence timeline, impact/effort scatter, stretch ladder.
+
+## 7. AI engine — unchanged from v1
+Single edge function `deep-research-chat`, streaming SSE via Lovable AI Gateway, default `google/gemini-3-flash-preview`, escalates to `openai/gpt-5` for `deep` mode. Tool-calling loop (Plan → Tools → Synthesize → Trace) with the 12 retrieval tools previously listed. Final answer returned through a `render_answer` tool whose schema is the structured envelope in §3.
+
+Showcase mode short-circuits the tool loop but still emits a synthetic trace ("tools that would have run") so the reasoning panel remains honest-looking for the demo.
+
+## 8. Actions — Execute + auto-log
+Unchanged: typed action chips dispatched client-side via existing stores (`useSkillTargetsContext`, `useManagerActions`, `Schedule1on1Dialog`, `SendCheckInDialog`, `RequestReflectionDialog`, `AssignMentorDialog`). Every executed action writes an `agent_one_events` row tagged `deep_research_action` and surfaces in **Action Centre** under a "Deep Research" group with back-link.
+
+New action types added for this surface: `assign_evidence_task`, `flag_risk_critical`, `generate_readiness_pack`.
+
+## 9. Persistence
+Unchanged: `deep_research_threads`, `deep_research_messages`, `deep_research_pins` with anon-permissive RLS (matches project posture), scoped client-side by `account_id` + `owner_user_id`.
+
+## 10. Files to create / touch
+
 - New page: `src/pages/DeepResearch.tsx`
-- New components: `src/components/deep-research/{ThreadList,Composer,AnswerRenderer,ReasoningTracePanel,PinnedDashboard,ScopeChip,OutputModeSwitch,ActionChip,SuggestedResearch}.tsx`
-- New hook: `src/hooks/useDeepResearch.ts` (thread state, streaming, pins, actions)
-- New lib: `src/lib/deepResearch/{toolSchemas.ts,actionDispatch.ts,scope.ts,showcase.ts}`
-- New edge function: `supabase/functions/deep-research-chat/index.ts` (tool-calling loop against Lovable AI Gateway)
-- New showcase data: `src/data/deepResearchShowcase.ts`
-- Sidebar: add Deep Research link in `src/components/layout/AppSidebar.tsx` (Team set)
+- New components: `src/components/deep-research/{ResearchCanvas,Composer,StarterCards,SuggestedRail,ResponseEnvelope,ReasoningTracePanel,PinnedDashboard,ScopeChip,OutputModeSwitch,ActionChip}.tsx`
+- New visual blocks: `src/components/deep-research/blocks/{ReadinessCard,CompetencyRadar,ModuleAdaptationStackedBar,RiskCriticalMatrix,ManagerActionBoard,EvidenceTable}.tsx`
+- New hook: `src/hooks/useDeepResearch.ts`
+- New lib: `src/lib/deepResearch/{toolSchemas.ts,actionDispatch.ts,scope.ts,showcase.ts,envelope.ts}`
+- New edge function: `supabase/functions/deep-research-chat/index.ts`
+- Showcase data: `src/data/deepResearchShowcase.ts` (the 5 Clara/Theo envelopes, fully populated with mock data drawn from existing Rathbones personas, cohort, modules)
+- Sidebar: add link in `src/components/layout/AppSidebar.tsx` (Team set)
 - Route: add to `src/App.tsx`
-- Action Centre: add "Deep Research" grouping in `src/pages/ActionCentre.tsx`
-- Migration: 3 tables above
+- Action Centre: new "Deep Research" grouping in `src/pages/ActionCentre.tsx`
+- Migration: 3 tables
 - Memory: add `mem://features/deep-research` and update Core/index
 
-## 10. Out of scope for v1
-- Cross-account / multi-tenant queries.
-- Saved scheduled reports / email digests.
-- Custom SQL / BYO-query.
-- Per-user OAuth to external BI tools.
-- Voice input (can add later via existing ElevenLabs path).
+## 11. Out of scope for v1
+Cross-account queries, scheduled reports/digests, custom SQL, per-user OAuth to BI tools, voice input, the 5 stubbed starter categories' live execution.
 
-## 11. Open follow-ups (your turn to share ideas)
-- Default output mode preference (Conversational vs Canvas)?
-- Should pinned tiles auto-refresh on a cadence, or only on-demand?
-- Any specific showcase prompts you want guaranteed for Rathbones beyond the 8 above?
-- Premium gating — do we want a "Premium" badge / paywall hint, or just ship it as part of Team mode?
+## 12. Open follow-ups for you
+1. Confirm **Canvas as default mode** (was Conversational in v1).
+2. Confirm the **5 v1 starter categories** above and that the other 5 stub out.
+3. Any preferred copy for the **executive lines** in the Clara/Theo showcase, or should I draft them based on the doc's examples?
+4. Should pinned tiles **auto-refresh** (e.g., on thread reload) or stay snapshot-only for v1?

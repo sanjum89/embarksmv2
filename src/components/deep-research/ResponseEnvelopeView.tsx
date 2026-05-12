@@ -119,7 +119,7 @@ export function ResponseEnvelopeView({
   return (
     <div className="space-y-4">
       {/* Executive */}
-      <div className="rounded-xl border border-primary/20 bg-primary/5 p-4">
+      <div className={cn("rounded-xl border border-primary/20 bg-primary/5 p-4", revealCls(execIdx))}>
         <div className="flex items-start gap-2 mb-2">
           <Sparkles className="h-4 w-4 text-primary mt-0.5" />
           <div className="text-[11px] font-semibold text-primary uppercase tracking-wide flex-1">
@@ -128,7 +128,7 @@ export function ResponseEnvelopeView({
           {!readOnly && onPinAnswer && (
             <button
               onClick={() => setPinOpen((v) => !v)}
-              className="text-muted-foreground hover:text-primary"
+              className="text-muted-foreground hover:text-primary transition-transform active:scale-90"
               title="Pin this answer"
             >
               <Pin className="h-3.5 w-3.5" />
@@ -138,7 +138,7 @@ export function ResponseEnvelopeView({
         <p className="text-sm leading-relaxed">{envelope.executive}</p>
 
         {pinOpen && onPinAnswer && (
-          <div className="mt-3 flex items-center gap-2 pt-3 border-t border-primary/15">
+          <div className="mt-3 flex items-center gap-2 pt-3 border-t border-primary/15 animate-fade-in">
             <Input
               value={pinTitle}
               onChange={(e) => setPinTitle(e.target.value)}
@@ -165,74 +165,88 @@ export function ResponseEnvelopeView({
       {/* Visuals */}
       {envelope.visuals.length > 0 && (
         <div className="space-y-3">
-          {envelope.visuals.map((block, i) => (
-            <div key={i}>{renderBlock(block, ctx)}</div>
-          ))}
+          {envelope.visuals.map((block, i) => {
+            const visIdx = idx++;
+            return (
+              <div key={i} className={revealCls(visIdx)}>
+                {renderBlock(block, ctx)}
+              </div>
+            );
+          })}
         </div>
       )}
 
       {/* Evidence */}
-      {envelope.evidence.length > 0 && (
-        <div className="rounded-xl border border-border/60 bg-card p-4">
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-            Evidence
+      {envelope.evidence.length > 0 && (() => {
+        const evIdx = idx++;
+        return (
+          <div className={cn("rounded-xl border border-border/60 bg-card p-4", revealCls(evIdx))}>
+            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              Evidence
+            </div>
+            <ul className="space-y-1 text-xs">
+              {envelope.evidence.map((e, i) => (
+                <li key={i} className="flex items-baseline gap-2">
+                  <span className="font-medium">{e.label}</span>
+                  {e.value && <span className="text-muted-foreground">— {e.value}</span>}
+                  <span className="text-[10px] text-muted-foreground/70 ml-auto">{e.source}</span>
+                </li>
+              ))}
+            </ul>
           </div>
-          <ul className="space-y-1 text-xs">
-            {envelope.evidence.map((e, i) => (
-              <li key={i} className="flex items-baseline gap-2">
-                <span className="font-medium">{e.label}</span>
-                {e.value && <span className="text-muted-foreground">— {e.value}</span>}
-                <span className="text-[10px] text-muted-foreground/70 ml-auto">{e.source}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Actions */}
-      {!readOnly && envelope.actions.length > 0 && (
-        <div className="space-y-2">
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-            Recommended actions
+      {!readOnly && envelope.actions.length > 0 && (() => {
+        const acIdx = idx++;
+        return (
+          <div className={cn("space-y-2", revealCls(acIdx))}>
+            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+              Recommended actions
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {envelope.actions.map((a, i) => (
+                <Button
+                  key={a.label}
+                  size="sm"
+                  variant="outline"
+                  className="h-8 transition-all hover:-translate-y-0.5 hover:shadow-sm"
+                  style={{ animation: `fade-in 0.35s ease-out ${i * 60}ms both` }}
+                  onClick={() => dispatchDeepResearchAction(a, ctx)}
+                >
+                  {a.label}
+                  <ArrowRight className="h-3 w-3 ml-1.5" />
+                </Button>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {envelope.actions.map((a) => (
-              <Button
-                key={a.label}
-                size="sm"
-                variant="outline"
-                className="h-8"
-                onClick={() => dispatchDeepResearchAction(a, ctx)}
-              >
-                {a.label}
-                <ArrowRight className="h-3 w-3 ml-1.5" />
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Follow-ups */}
-      {!readOnly && envelope.followups.length > 0 && onFollowup && (
-        <div className="space-y-2">
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-            Follow up
+      {!readOnly && envelope.followups.length > 0 && onFollowup && (() => {
+        const fuIdx = idx++;
+        return (
+          <div className={cn("space-y-2", revealCls(fuIdx))}>
+            <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+              Follow up
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {envelope.followups.map((q, i) => (
+                <button
+                  key={q}
+                  onClick={() => onFollowup(q)}
+                  className="text-xs px-3 py-1.5 rounded-full border border-border/60 hover:bg-muted/50 hover:border-primary/40 transition-colors"
+                  style={{ animation: `fade-in 0.35s ease-out ${i * 50}ms both` }}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            {envelope.followups.map((q) => (
-              <button
-                key={q}
-                onClick={() => onFollowup(q)}
-                className="text-xs px-3 py-1.5 rounded-full border border-border/60 hover:bg-muted/50 transition-colors"
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Trace */}
+        );
+      })()}
       {!readOnly && envelope.trace.length > 0 && (
         <div className="rounded-xl border border-border/40 bg-muted/20">
           <button

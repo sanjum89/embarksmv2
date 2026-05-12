@@ -1,89 +1,70 @@
-## Goal
+## What I found vs. what you described
 
-1. Make "Submit Evidence" chapters useful: show **why**, **what**, **examples**, plus a **textarea** the learner fills in and submits.
-2. Fix: clicking an evidence chapter from **All Modules** in Embark AI shows "Chapter unavailable".
-3. Produce a **read-only audit** of Clara (rb-l6) and Theo (rb-l1) chapter content quality. No DB writes.
+Your model:
+- **Sophie Linden (rb-l1, early__outside_fs)** — full set, every module end-to-end.
+- **Theo Marchant (rb-l3, early__in_im)** — smaller set (skips/microlearning shortcuts).
+- **Clara Wren (rb-l6, mid__in_im)** — smallest active load (mostly diagnostic-only).
+- All three enrolled in the same cohort (`cohort.assoc_im.2026_01`, Investment Management Readiness — Jan 2026).
 
----
+Current DB state:
 
-## 1. Evidence chapter — Brief + Textarea (mock submission)
+| Learner | Persona | Cohort enrolled? | Adaptation mix (29 modules) |
+|---|---|---|---|
+| Sophie (rb-l1) | early__outside_fs | **No** | 29 × full_module ✓ |
+| Theo (rb-l3) | early__in_im | Yes | 4 full + 17 microlearning + 9 evidence (+1 stale row) |
+| Clara (rb-l6) | mid__in_im | Yes | 3 full + 17 diagnostic_only + 9 evidence + 1 skip (+1 stale row) |
 
-### What we found
-- `catalog_evidence_tasks` already has rich, Rathbones-flavoured fields per module: `evidence_title`, `evidence_description` (~450–550 chars), `example_synthetic_evidence_summary`, `quality_indicators[]`, `submission_format`, `reviewer_role`, `required_for_gate`.
-- Today the UI only reads `catalog_chapters.practical_activity` (1–3 short sentences) and renders a plain markdown blob → looks empty/lifeless.
-- Only 12 of the ~19 evidence-required modules for Clara have a row in `catalog_evidence_tasks` (gaps: bk5, bs4, cps3, cps4, tk4, tk5, tk7). For these, fall back to a generated brief from `learning_objective` + `practical_activity` + module title, so nothing is ever blank.
+So the **adaptation content** already matches your model (full → micro → diagnostic). The actual gaps are:
 
-### UI changes (frontend only)
-File: `src/components/learnpath/LearnPathContent.tsx` — when `lens === "evidence"`, instead of feeding markdown into `EmbarkModuleContent`, render a new dedicated component:
-
-`src/components/learnpath/EvidenceTaskCard.tsx` (new) shows:
-- **Header**: `evidence_title` + adaptation reason ("Risk-critical content — please evidence current competence").
-- **Why this matters**: 1–2 sentence rationale derived from chapter `learning_objective` + module risk flags.
-- **What to submit**: `evidence_description` (rendered as markdown).
-- **What good looks like**: bulleted `quality_indicators` + collapsible "Worked example" using `example_synthetic_evidence_summary`.
-- **Format & reviewer**: small chips (`written` / `upload` / `observation` / `system_record` / `recording`; reviewer = manager/mentor/assessor; `required_for_gate` badge).
-- **Your evidence**: a `<textarea>` (200–800 word guide), autosave to `learner_progress.metadata.evidence_draft`.
-- **Submit button**: writes `learner_progress.metadata.evidence_submission = { text, submitted_at, format }` and marks chapter `completed` via the existing completion flow (so the "Continue to Next Chapter" path we just fixed still works). No file upload, no storage bucket.
-
-New hook: `useEvidenceTask(accountId, moduleCode)` → reads `catalog_evidence_tasks` (one row per module). When missing, returns a synthesized brief built from chapter row.
-
-### Why this is safe
-- No schema changes — uses existing `learner_progress.metadata` jsonb.
-- Falls back gracefully when `catalog_evidence_tasks` row is missing.
-- Reuses `useCatalogChapter` for the "why" snippet.
+1. **Sophie isn't in the cohort** — only Theo and Clara are. She has all the adaptations but no `cohort_enrollment` row, so Embark AI doesn't show her the journey.
+2. **Audit script targeted the wrong learner**: `scripts/audit-clara-theo-content.ts` lists `rb-l1` labelled as "Theo Vance" — but `rb-l1` is actually **Sophie**. Theo is `rb-l3`. The audit you have on disk (`/mnt/documents/clara-theo-content-audit.md`) audited Sophie thinking she was Theo, so Theo's journey was never inspected.
+3. **Stale extra adaptation rows** (30 instead of 29) for Theo and Clara — one duplicate `persona_module_adaptations` row each, leftover from an earlier seeding pass.
+4. **Earlier plan still partially open**: the May 11 "content backfill + persona adaptation seeding" pass completed seeding but never:
+   - enrolled Sophie,
+   - backfilled `catalog_evidence_tasks` for the 7 modules flagged (`bk5`, `bs4`, `cps3`, `cps4`, `tk4`, `tk5`, `tk7`),
+   - replaced the boilerplate "Risk-critical content — please evidence current competence" reasons.
+   These were intentionally deferred to "audit only", so they're real loose ends, not bugs.
 
 ---
 
-## 2. "Chapter unavailable" from All Modules
+## Plan
 
-### Root cause
-In `LearnPathContent.tsx`, `cohortChapterCode` is resolved by scanning `journey.tracks[].modules[].chapters[]`. When the user opens an evidence chapter from **All Modules** (a non-journey catalog list), `openModule(chapterCode)` is called but the active skill-target context's `journey` may not include that chapter (different track / not yet expanded), so `cohortChapterCode` is `null`, no `cohortChapterRow` is loaded, and the synthesis fallback at lines 223–242 also fails because the chapter isn't in `journey` either → "Chapter unavailable".
+### Step 1 — Cohort enrolment fix (data)
+- Insert a `cohort_enrollments` row for `rb-l1` into `cohort.assoc_im.2026_01`, status `active`.
+- Reset Sophie's `learner_progress` for that cohort (clean slate, same pattern we used for Clara).
+- Remove the duplicate `persona_module_adaptations` rows so each persona has exactly 29 (one per module).
 
-### Fix (frontend only)
-- Make `cohortChapterCode` independent of `journey`: if `activeModuleId` matches the catalog-chapter pattern (`<module>.c<n>`), treat it as a cohort chapter and let `useCatalogChapter` fetch it directly.
-- When `cohortChapterRow` loads but the chapter isn't in `journey`, derive `cohortAdaptationType` by querying `persona_module_adaptations` (already loaded into the journey context) by `module_code`.
-- Add a separate loading state ("Loading chapter…") instead of immediately rendering the unavailable card, so transient race conditions don't flash the error.
+### Step 2 — Fix the audit script (frontend/scripts)
+- Update `scripts/audit-clara-theo-content.ts`:
+  - Rename + re-target the `PERSONAS` array to `[Sophie rb-l1, Theo rb-l3, Clara rb-l6]`.
+  - Rename output to `/mnt/documents/sophie-theo-clara-content-audit.md`.
+  - Add a "module ↔ adaptation_type" matrix per persona at the top so it's obvious at a glance who does what for each module.
+- Re-run it and deliver the new report. Still **read-only** — no DB writes.
 
----
+### Step 3 — Verify Sophie's full journey actually renders
+- Walk through Embark AI as Sophie: pick one module per track and confirm chapters, evidence chapter, and post-module assessment all open (uses the fixes from the previous turn for `__evi::` and "Chapter unavailable").
+- Spot-check a microlearning module on Theo and a diagnostic-only module on Clara to make sure the cohort journey still shows their adapted format and not Sophie's full version.
 
-## 3. Audit (read-only, deliverable as Markdown)
+### Step 4 — Surface remaining content gaps in the audit
+The new audit will list (no fixes yet, just findings):
+- Modules where Sophie's full chapters have thin `chapter_long_form_content` (< 1,500 chars) — Sophie is the canonical baseline so any thin chapter affects all three.
+- Theo's microlearning modules where the adapted summary is missing or boilerplate.
+- Clara's diagnostic-only modules where `diagnostic_questions` are < 3 well-formed MCQs.
+- The 7 evidence-required modules still missing `catalog_evidence_tasks` rows (currently using the synthesized fallback).
+- Adaptations whose `reason` is still the generic "Risk-critical content…" boilerplate.
 
-Run a script that, for **Clara (rb-l6)** and **Theo (rb-l1)**, walks every chapter in their cohort journey and checks:
+After you see the report, you decide what to backfill next (one module at a time, or all of one type).
 
-| Check | Pass condition |
-|---|---|
-| `learning_objective` | ≥ 40 chars |
-| `chapter_long_form_content` or `content_sections` | body ≥ 1500 chars total |
-| For `diagnostic_only` modules: `diagnostic_questions` | ≥ 3 items, each with 4 options + `correctIndex` + explanation |
-| For `evidence_required` modules: `catalog_evidence_tasks` row exists | one row per module |
-| For `evidence_required`: `practical_activity` | ≥ 200 chars |
-| `persona_module_adaptations.reason` | not null, ≥ 30 chars, and not the generic "Risk-critical content…" boilerplate when adaptation is `microlearning`/`diagnostic_only` |
-| `micro_learnings` follow-ups for failed assessments | optional — flag if zero ever generated for the persona |
-| Realism flag | string-search for placeholder words (`lorem`, `TBD`, `TODO`, `Sample text`) |
-
-Output: `/mnt/documents/clara-theo-content-audit.md` with three sections:
-- **Summary table** (per persona × per track: pass/total counts).
-- **Per-chapter findings** grouped by module, only showing failed checks.
-- **Recommended fixes** per module (no SQL run, just suggested copy outlines you can approve later).
-
-No migrations. No data writes.
-
----
-
-## Out of scope
-
-- Real file upload / storage bucket for evidence (deferred — answered "textarea only").
-- Auto-generating the missing evidence-task rows or filling thin diagnostics (the audit will list them; you'll decide what to fix).
-- Manager-side review of submitted evidence.
+### Out of scope for this round
+- Writing real content into the gaps (Step 4 just reports them).
+- Adding the other 6 personas (rb-l2, rb-l4, rb-l5, rb-l7, rb-l8, rb-l9) to the cohort or any other cohort.
+- Touching modules outside the Associate IM / Investment Management catalogue.
 
 ---
 
 ## Technical notes
 
-- Files touched:
-  - `src/components/learnpath/LearnPathContent.tsx` — branch evidence rendering, fix `cohortChapterCode` resolution.
-  - `src/components/learnpath/EvidenceTaskCard.tsx` — new component.
-  - `src/hooks/useEvidenceTask.ts` — new hook.
-  - `src/lib/cohortNextChapter.ts` — no change (already handles next-chapter from evidence chapters).
-- Audit script: `scripts/audit-clara-theo-content.ts`, run via `bun`, reads only — outputs the markdown report to `/mnt/documents/`.
-- Adds one Vitest case to `src/lib/__tests__/cohortNextChapter.test.ts` to cover "evidence chapter completion routes to next chapter when opened outside journey context".
+- Cohort enrolment + duplicate cleanup is a single data mutation via the insert tool (no schema change).
+- Reset of Sophie's `learner_progress` mirrors the Clara reset migration from `20260512100337_…sql`.
+- Audit script change is a one-file edit + a `bun scripts/audit-…ts` run; output written to `/mnt/documents/`.
+- No edge-function changes; no UI changes (the evidence chapter UI fixes from the prior turn already cover Sophie too).

@@ -20,10 +20,11 @@ const severityColors = {
 interface Props {
   employeeId: string;
   employeeName: string;
+  reflectionsOverride?: EmployeeReflectionAnalysis[];
 }
 
-export function ReflectionsAnalysis({ employeeId, employeeName }: Props) {
-  const reflections = getEmployeeReflectionAnalysis(employeeId);
+export function ReflectionsAnalysis({ employeeId, employeeName, reflectionsOverride }: Props) {
+  const reflections = reflectionsOverride ?? getEmployeeReflectionAnalysis(employeeId);
 
   if (reflections.length === 0) {
     return (

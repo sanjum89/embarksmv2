@@ -124,19 +124,39 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
       );
 
       setIsStreaming(true);
+      setThinkingStage("planning");
+      setThinkingTrace([]);
+
+      // Kick off staged thinking timer in parallel with real work
+      const reduced = prefersReducedMotion();
+      const stageTimers: ReturnType<typeof setTimeout>[] = [];
+      const stageDurations = reduced
+        ? [200, 200, 200, 200, 200]
+        : [900, 1100, 1300, 1000, 900].map((d) => d + Math.floor(Math.random() * 250));
+      let cumulative = 0;
+      for (let i = 1; i < STAGE_ORDER.length; i++) {
+        cumulative += stageDurations[i - 1];
+        stageTimers.push(
+          setTimeout(() => {
+            setThinkingTrace((prev) => [...prev, STAGE_ORDER[i - 1]]);
+            setThinkingStage(STAGE_ORDER[i]);
+          }, cumulative)
+        );
+      }
+      const minThinkMs = reduced ? 400 : stageDurations.reduce((a, b) => a + b, 0);
+      const startedAt = Date.now();
+
       let envelope: ResponseEnvelope | null = null;
 
       if (isShowcaseAccount(accountName)) {
         const match = findShowcaseMatch(prompt);
         if (match) {
-          await fakeStreamDelay(700);
           envelope = match.envelope;
         }
       }
 
       if (!envelope) {
         try {
-          // grab last assistant envelope as grounding context
           const t = threads.find((x) => x.id === threadId);
           const lastAsst = [...(t?.messages ?? [])].reverse().find((m) => m.role === "assistant" && m.envelope);
           const lastEnvelopeContext = lastAsst?.envelope
@@ -190,6 +210,19 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
         };
       }
 
+      // Wait until the staged thinking has played out so the answer never
+      // pops in instantly even on cached responses.
+      const elapsed = Date.now() - startedAt;
+      const remaining = Math.max(0, minThinkMs - elapsed);
+      if (remaining > 0) {
+        await new Promise<void>((r) => setTimeout(r, remaining));
+      }
+      stageTimers.forEach(clearTimeout);
+      // settle: brief gap between trace finishing and answer appearing
+      setThinkingTrace((prev) => [...prev, STAGE_ORDER[STAGE_ORDER.length - 1]]);
+      setThinkingStage(null);
+      await new Promise<void>((r) => setTimeout(r, reduced ? 0 : 320));
+
       const assistantMsg: DeepResearchMessage = {
         id: newId(),
         role: "assistant",
@@ -207,6 +240,7 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
       );
 
       setIsStreaming(false);
+      setThinkingTrace([]);
       return assistantMsg;
     },
     [activeThreadId, newThread, accountName, threads]

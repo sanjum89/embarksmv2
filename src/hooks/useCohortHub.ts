@@ -408,7 +408,7 @@ export function useCohortHub({ accountId, employeeId, employeesById }: UseArgs):
             title: empTitle(mentorRes.data.mentor_employee_id) || "Embark Mentor — Wealth Strategy",
             avatarUrl: empAvatar(mentorRes.data.mentor_employee_id),
             notes: mentorRes.data.notes,
-            focusAreas: Array.isArray(mentorRes.data.focus_areas) ? mentorRes.data.focus_areas : [],
+            focusAreas: Array.isArray(mentorRes.data.focus_areas) ? (mentorRes.data.focus_areas as unknown[]).map(String) : [],
             startDate: mentorRes.data.start_date,
             nextOneOnOneAt: new Date(Date.now() + 2 * 86400000).toISOString(),
           }

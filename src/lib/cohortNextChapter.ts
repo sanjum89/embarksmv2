@@ -13,7 +13,10 @@ export interface NextCohortChapter {
   moduleTitle: string;
 }
 
-const isAdvanceable = (c: JourneyChapter) => c.status !== "locked";
+// Allow advancing into the next chapter even if it currently shows as "locked":
+// completing the current chapter will unlock it server-side, and the user always
+// needs a forward path from a completion screen.
+const isAdvanceable = (_c: JourneyChapter) => true;
 
 /** Build a flat ordered list of (track, module, chapter) honoring displayOrder. */
 function flattenJourney(journey: LearnerJourney): CohortChapterLocation[] {

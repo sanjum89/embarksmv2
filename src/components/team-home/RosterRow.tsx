@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Hand } from "lucide-react";
 import { TeamAvatar } from "./Avatar";
 import { LearnerStatusBadge } from "@/components/manager-hub/LearnerStatusBadge";
 import type { LearnerOverlay } from "@/data/managerDemoOverlay";
@@ -26,10 +26,14 @@ const CPD_TONE: Record<RosterEntry["cpdTone"], string> = {
 export function RosterRow({
   entry,
   onOpen,
+  onOpenRaisedHand,
 }: {
   entry: RosterEntry;
   onOpen: (employeeId: string) => void;
+  onOpenRaisedHand?: (employeeId: string, actionId: string) => void;
 }) {
+  const raisedHands = entry.overlay.actions.filter((a) => a.group === "raised_hand");
+  const latestHand = raisedHands[0];
   return (
     <button
       type="button"
@@ -50,6 +54,27 @@ export function RosterRow({
           <div className="shrink-0">
             <LearnerStatusBadge status={entry.overlay.status} />
           </div>
+          {latestHand && onOpenRaisedHand && (
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenRaisedHand(entry.employeeId, latestHand.id);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onOpenRaisedHand(entry.employeeId, latestHand.id);
+                }
+              }}
+              className="inline-flex shrink-0 cursor-pointer items-center gap-1 rounded-full border border-rose-500/30 bg-rose-500/10 px-1.5 py-0.5 text-[10px] font-medium text-rose-700 dark:text-rose-300 hover:bg-rose-500/20"
+            >
+              <Hand className="h-3 w-3" />
+              Hand raised{raisedHands.length > 1 ? ` ×${raisedHands.length}` : ""}
+            </span>
+          )}
           <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{entry.lastActivity}</span>
         </div>
         <p className="mt-1.5 truncate text-xs text-foreground/70">{entry.overlay.headline}</p>

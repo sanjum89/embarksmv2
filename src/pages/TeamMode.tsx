@@ -11,8 +11,12 @@ import {
   RATHBONES_COHORT_ID,
   COHORT_MODULES_FALLBACK,
   type LearnerOverlay,
+  type ActionItem,
 } from "@/data/managerDemoOverlay";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";
+import { RaisedHandDrawer } from "@/components/manager-hub/RaisedHandDrawer";
+import { Schedule1on1Dialog } from "@/components/team-home/Schedule1on1Dialog";
+import { SendCheckInDialog } from "@/components/team-home/SendCheckInDialog";
 import { RosterHeatmap } from "@/components/manager-hub/RosterHeatmap";
 
 import { TeamHero } from "@/components/team-home/TeamHero";
@@ -44,7 +48,20 @@ export default function TeamMode() {
   const { cohorts } = useAccountCohorts();
   const overlays = getAllDemoOverlays();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [handAction, setHandAction] = useState<ActionItem | null>(null);
+  const [scheduleId, setScheduleId] = useState<string | null>(null);
+  const [checkInId, setCheckInId] = useState<string | null>(null);
   const selected = overlays.find((o) => o.employeeId === openId) ?? null;
+
+  const openRaisedHand = (employeeId: string, actionId?: string) => {
+    const overlay = overlays.find((o) => o.employeeId === employeeId);
+    if (!overlay) return;
+    const hand = actionId
+      ? overlay.actions.find((a) => a.id === actionId && a.group === "raised_hand")
+      : overlay.actions.find((a) => a.group === "raised_hand");
+    if (hand) setHandAction(hand);
+    else setOpenId(employeeId);
+  };
 
   const employeesById = normalizedAccount?.employeesById ?? {};
   const nameOf = (id: string) => employeesById[id]?.name || id;
@@ -140,6 +157,7 @@ export default function TeamMode() {
           title: a.title,
           detail: a.detail,
           severity: a.severity,
+          kind: a.group,
         });
       }
     }
@@ -178,10 +196,16 @@ export default function TeamMode() {
         {/* Two-column body */}
         <div className="grid gap-6 lg:grid-cols-12">
           <div className="min-w-0 lg:col-span-8">
-            <TeamRoster entries={entries} onOpen={setOpenId} />
+            <TeamRoster entries={entries} onOpen={setOpenId} onOpenRaisedHand={openRaisedHand} />
           </div>
           <div className="space-y-6 lg:col-span-4">
-            <ActionQueue items={queueItems} onOpen={setOpenId} />
+            <ActionQueue
+              items={queueItems}
+              onOpen={(employeeId, item) => {
+                if (item?.kind === "raised_hand") openRaisedHand(employeeId, item.id);
+                else setOpenId(employeeId);
+              }}
+            />
             <MyCohortsCard cohorts={cohortItems} />
           </div>
         </div>
@@ -242,6 +266,34 @@ export default function TeamMode() {
           module_title: m.module_title,
           progression_stage: m.progression_stage,
         }))}
+      />
+
+      <RaisedHandDrawer
+        open={!!handAction}
+        onOpenChange={(o) => !o && setHandAction(null)}
+        action={handAction}
+        learner={
+          handAction
+            ? {
+                employeeId: handAction.employeeId,
+                name: nameOf(handAction.employeeId),
+                title: titleOf(handAction.employeeId),
+              }
+            : null
+        }
+        onScheduleOneOnOne={(id) => setScheduleId(id)}
+        onSendCheckIn={(id) => setCheckInId(id)}
+      />
+
+      <Schedule1on1Dialog
+        open={!!scheduleId}
+        onOpenChange={(o) => !o && setScheduleId(null)}
+        defaultLearnerId={scheduleId}
+      />
+      <SendCheckInDialog
+        open={!!checkInId}
+        onOpenChange={(o) => !o && setCheckInId(null)}
+        defaultLearnerId={checkInId}
       />
     </div>
   );

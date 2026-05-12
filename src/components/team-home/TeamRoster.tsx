@@ -27,9 +27,11 @@ const STATUS_RANK: Record<LearnerStatus, number> = {
 export function TeamRoster({
   entries,
   onOpen,
+  onOpenRaisedHand,
 }: {
   entries: RosterEntry[];
   onOpen: (employeeId: string) => void;
+  onOpenRaisedHand?: (employeeId: string, actionId: string) => void;
 }) {
   const [filter, setFilter] = useState<FilterKey>("all");
   const [sort, setSort] = useState<SortKey>("status");
@@ -139,7 +141,7 @@ export function TeamRoster({
         ) : (
           <div className="space-y-2 p-3">
             {visible.map((e) => (
-              <RosterRow key={e.employeeId} entry={e} onOpen={onOpen} />
+              <RosterRow key={e.employeeId} entry={e} onOpen={onOpen} onOpenRaisedHand={onOpenRaisedHand} />
             ))}
           </div>
         )}

@@ -34,7 +34,7 @@ export default function DeepResearch() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [dr.activeThread?.messages.length, dr.isStreaming]);
+  }, [dr.activeThread?.messages.length, dr.isStreaming, dr.thinkingStage]);
 
   const submit = async (text?: string) => {
     const prompt = (text ?? input).trim();

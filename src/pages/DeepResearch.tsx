@@ -183,8 +183,15 @@ export default function DeepResearch() {
                 disabled={dr.isStreaming}
                 className="flex-1"
               />
-              <Button type="submit" disabled={dr.isStreaming || !input.trim()}>
-                {dr.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              <Button type="submit" disabled={dr.isStreaming || !input.trim()} className="min-w-[44px]">
+                {dr.isStreaming ? (
+                  <span className="flex items-center gap-1.5 text-xs">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Researching
+                  </span>
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </form>
           </div>

@@ -101,7 +101,6 @@ export function EmployeeSignalExplorer({ employees, rolesById, projectsById, get
               {overlay.headline}
             </p>
           )}
-          </div>
         </CardContent>
       </Card>
 

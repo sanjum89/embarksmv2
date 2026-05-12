@@ -323,8 +323,27 @@ export function useBrandColors() {
 
   useEffect(() => {
     const root = document.documentElement;
+    const isRathbones = (activeAccount?.name ?? "").trim().toLowerCase() === "rathbones";
 
-    if (!activeAccount?.accent_color) {
+    const rathbonesFallback = (): BrandColorConfig => {
+      const p = COLOR_PRESETS["rathbones-calm"];
+      return { preset: "rathbones-calm", primary: p.primary, accent: p.accent, sidebar: p.sidebar };
+    };
+
+    let config: BrandColorConfig | null = null;
+    if (activeAccount?.accent_color) {
+      try {
+        const parsed = JSON.parse(activeAccount.accent_color) as BrandColorConfig;
+        if (parsed.primary && parsed.accent && parsed.sidebar) config = parsed;
+      } catch {
+        /* fall through */
+      }
+    }
+
+    // Rathbones account always renders the Rathbones theme, even with empty/invalid accent_color.
+    if (!config && isRathbones) config = rathbonesFallback();
+
+    if (!config) {
       // Restore defaults — remove all inline overrides
       Object.keys(DEFAULTS_LIGHT).forEach((prop) => {
         root.style.removeProperty(prop);
@@ -333,9 +352,7 @@ export function useBrandColors() {
     }
 
     try {
-      const config: BrandColorConfig = JSON.parse(activeAccount.accent_color);
       const { primary, accent, sidebar } = config;
-      if (!primary || !accent || !sidebar) return;
 
       const vars = theme === "dark"
         ? deriveDarkThemeVars(primary, accent, sidebar)

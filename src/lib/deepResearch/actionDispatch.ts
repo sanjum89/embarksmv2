@@ -6,6 +6,8 @@ export interface ActionDispatchContext {
   threadId: string;
   messageId: string;
   authorId: string;
+  /** When set and a showcase envelope can answer this action, run a follow-up prompt instead of just toasting. */
+  onSubmitPrompt?: (label: string) => void;
 }
 
 const labelFor: Record<DeepResearchActionId, string> = {
@@ -33,11 +35,24 @@ interface AuditEntry {
 
 const AUDIT_KEY = "deep-research-action-log";
 
-export function dispatchDeepResearchAction(
-  action: DeepResearchAction,
-  ctx: ActionDispatchContext
-) {
-  // Log to localStorage so Action Centre can render a "Deep Research" group
+/** Action labels that should produce a richer in-thread research answer rather than only a toast. */
+const PROMPT_TRIGGER_LABELS = [
+  "export clara",
+  "book ",
+  "build this week",
+  "manager pack",
+  "draft",
+  "pair theo",
+  "assign imogen",
+  "sign off clara",
+];
+
+function shouldRouteToPrompt(label: string): boolean {
+  const n = label.toLowerCase();
+  return PROMPT_TRIGGER_LABELS.some((t) => n.includes(t));
+}
+
+export function dispatchDeepResearchAction(action: DeepResearchAction, ctx: ActionDispatchContext) {
   const entry: AuditEntry = {
     id: `dr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
     actionId: action.id,
@@ -51,7 +66,13 @@ export function dispatchDeepResearchAction(
   const prev = readAuditLog();
   localStorage.setItem(AUDIT_KEY, JSON.stringify([entry, ...prev].slice(0, 200)));
 
-  // Best-effort side-effects through the existing store
+  // If we have a prompt-submit hook AND the action is one we have a richer answer for,
+  // re-ask the model so the user sees a fully populated envelope in-thread.
+  if (ctx.onSubmitPrompt && shouldRouteToPrompt(action.label)) {
+    ctx.onSubmitPrompt(action.label);
+    return;
+  }
+
   try {
     switch (action.id) {
       case "assign_module":
@@ -95,13 +116,10 @@ export function dispatchDeepResearchAction(
         break;
     }
   } catch (e) {
-    // non-fatal
     console.warn("Deep Research dispatch side-effect failed", e);
   }
 
-  toast.success(labelFor[action.id], {
-    description: action.label,
-  });
+  toast.success(labelFor[action.id], { description: action.label });
 }
 
 export function readAuditLog(): AuditEntry[] {

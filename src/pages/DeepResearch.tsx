@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Microscope, Plus, Send, Loader2, Pin, Trash2, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
 import type { PinnedAnswer } from "@/lib/deepResearch/envelope";
+import { ThinkingPanel } from "@/components/deep-research/ThinkingPanel";
 
 export default function DeepResearch() {
   const { user } = useUser();

@@ -18,7 +18,7 @@ serve(async (req) => {
       .map((module: any) => {
         if (module.moduleCode || module.trackName) {
           const upNext = module.upNextChapterTitle
-            ? `, up-next chapter: "${module.upNextChapterTitle}" (chapterCode: ${module.upNextChapterCode})`
+            ? `, up-next: "${module.upNextChapterTitle}" (chapterCode: ${module.upNextChapterCode}, kind: ${module.upNextChapterKind ?? "reading"})`
             : "";
           const adapt = module.adaptationLabel
             ? `, delivery: ${module.adaptationLabel}${module.adaptationReason ? ` — ${module.adaptationReason}` : ""}`

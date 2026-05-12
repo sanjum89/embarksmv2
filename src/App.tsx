@@ -42,6 +42,7 @@ import ManagerCohortHub from "./pages/ManagerCohortHub";
 import ActionCentre from "./pages/ActionCentre";
 import ManagerCohortPicker from "./pages/ManagerCohortPicker";
 import DeepResearch from "./pages/DeepResearch";
+import CohortHub from "./pages/CohortHub";
 import { SupportiveToastBridge } from "@/components/SupportiveToastBridge";
 
 

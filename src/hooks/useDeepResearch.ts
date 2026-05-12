@@ -65,6 +65,8 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
   const [pins, setPins] = useState<PinnedAnswer[]>(() => loadPins(accountId));
   const [isStreaming, setIsStreaming] = useState(false);
+  const [thinkingStage, setThinkingStage] = useState<ThinkingStage | null>(null);
+  const [thinkingTrace, setThinkingTrace] = useState<ThinkingStage[]>([]);
 
   useEffect(() => {
     setThreads(loadThreads(accountId));

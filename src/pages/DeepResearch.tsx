@@ -85,7 +85,7 @@ export default function DeepResearch() {
       <div className="flex-1 grid grid-cols-[280px_1fr_320px] min-h-0">
         {/* Left: starters + threads */}
         <aside className="border-r border-border/60 overflow-y-auto p-4 space-y-6">
-          <StarterCards onPick={(p) => submit(p)} />
+          <StarterCards onPick={(p) => submit(p)} disabled={dr.isStreaming} />
 
           {dr.threads.length > 0 && (
             <div>

@@ -23,6 +23,7 @@ import {
   Inbox,
   GraduationCap,
   Microscope,
+  Users,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
@@ -64,6 +65,7 @@ const meNavItems: NavItem[] = [
     ],
   },
   { label: "Action Centre", path: "/my-inbox", icon: Inbox },
+  { label: "Cohort Hub", path: "/cohort", icon: Users },
   { label: "My 360", path: "/my-360", icon: CircleUser },
   { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
 ];

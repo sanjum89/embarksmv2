@@ -1,69 +1,85 @@
-# Deep Research — Premium AI feel
+# End-to-End Test: Clara — Business Knowledge + Technical Knowledge
 
-Goal: make Deep Research feel like a real research engine working in the background, not a pre-baked lookup. Two layers: (1) a richer "thinking" experience while the answer is being built, and (2) progressive reveal of the answer instead of an instant pop-in.
+## Goal
 
-## 1. Multi-stage "thinking" status
+Walk Clara through every chapter of two full Rathbones tracks in the live preview, confirming the cohort journey advances correctly chapter-by-chapter, module-by-module, and across the BK → TK track boundary. Targets the recently-fixed completion-screen / next-chapter logic.
 
-Replace the single `isStreaming` boolean with a `thinkingStage` state in `useDeepResearch.ts`:
+## Scope
+
+**Account:** Rathbones (`6c49ca7c-fecb-4b34-a690-7e4e28bb2194`)
+**Learner:** Clara Wren (mid__in_im, primary onboarding persona)
+**Tracks (33 chapters across 13 modules):**
 
 ```text
-planning  → "Planning research approach…"
-retrieving → "Pulling cohort, learner & evidence signals…"
-analysing → "Cross-referencing modules, proficiency & risk…"
-drafting  → "Drafting executive summary…"
-finalising → "Composing visuals & recommended actions…"
+Business Knowledge (5 modules)
+  bk1.intro_wealth_rathbones        (3 chapters)
+  bk2.kyc_suitability               (3)
+  bk3.markets_macro_assets          (3)
+  bk4.portfolio_construction        (3)
+  bk5.regulatory_landscape          (3)
+
+Technical Knowledge (7 core + 1 stretch = 8 modules)
+  tk1.charles_river_ims             (3)
+  tk2.bloomberg_essentials          (2)
+  tk3.performance_attribution       (3)
+  tk4.risk_mandate_restrictions     (2)
+  tk5.tax_wrappers                  (2)
+  tk6.esg_responsible_investing     (2)
+  tk7.ops_workflows                 (2)
+  str2.investment_thesis            (stretch — included if surfaced to Clara)
 ```
 
-Stages cycle on a timer (≈900–1400 ms each, slightly randomised) for showcase responses (total ~4–5 s) and run in parallel with the live edge-function call for non-showcase. The hook exposes `{ isStreaming, thinkingStage, thinkingTrace[] }`.
+## Pre-flight (one-time DB work)
 
-In `DeepResearch.tsx` the existing `Loader2` row becomes a richer "ThinkingPanel":
-- Animated pulsing dot + Microscope icon
-- Current stage label (fades/slides in as it changes)
-- Small grey "trace" lines accumulating above (each prior stage shown as a checked step)
-- A subtle indeterminate progress bar across the top of the conversation area
+1. Resolve Clara's `employee_id` and active `cohort_id` from `cohort_enrollments` joined to her persona assignment (`rb-l1` / Clara Wren).
+2. **Reset progress** for the BK+TK module set:
+   ```sql
+   DELETE FROM learner_progress
+   WHERE account_id = '<rathbones>' AND employee_id = '<clara>'
+     AND module_code IN (<bk1..bk5, tk1..tk7, str2>);
+   DELETE FROM chapter_lock_events
+   WHERE account_id = '<rathbones>' AND employee_id = '<clara>'
+     AND module_code IN (<same set>);
+   ```
+3. Snapshot Clara's expected starting state (first chapter of bk1 should be "available", everything else gated by track sequencing).
 
-Component: `src/components/deep-research/ThinkingPanel.tsx` (new). Uses existing tokens + tailwind `animate-fade-in`, `animate-pulse`, plus a small custom shimmer keyframe added to `tailwind.config.ts`.
+## Test loop (per chapter)
 
-## 2. Progressive answer reveal
+For each of the 33 chapters in displayOrder:
 
-Today `ResponseEnvelopeView` renders the whole envelope at once. Change it to reveal sections in order with a short stagger:
+1. `observe` — confirm chapter title, "Mark as Complete" CTA visible, mode selector present.
+2. `act` click "Mark as Complete".
+3. `observe` — completion screen rendered with stats (Time Spent, Assessment, Progress, Streak).
+4. Screenshot only at module boundaries and on any anomaly.
+5. `act` click "Continue to Next Chapter" (don't wait for the 5 s auto-advance — keeps the run tight).
+6. Verify the next chapter's URL/title matches the expected next entry from `flattenJourney(BK+TK)`.
 
-1. Executive summary (fades + slides in, 0 ms)
-2. Visuals one-by-one (150 ms apart, scale-in 0.98→1)
-3. Evidence table (fade-in)
-4. Recommended actions (chips fade-in 60 ms each)
-5. Follow-ups (fade-in)
+## Boundary checks (the bug-prone spots)
 
-Implementation: a small `useStagedReveal(count, stepMs)` hook returning an array of booleans, used to gate `opacity-0 translate-y-1` → `opacity-100 translate-y-0 transition-all duration-300`. Skipped entirely when `readOnly` (pinned dashboard renders instantly).
+- **End of each module → first chapter of next module in same track.** Asserts `findNextCohortChapter` returns the new module's first chapter even while it's still flagged `locked`.
+- **End of bk5.c3 → first chapter of tk1 (track switch).** Same logic across track boundaries.
+- **End of tk7.c2 (or str2's last chapter) → CompletionScreen shows "Back to All Chapters" only.** Asserts terminal state is reachable.
+- After every "Mark as Complete", reload `useLearnerJourney` (refreshJourney is fired automatically by `onChapterPersisted`) and confirm the chapter status flips to `completed` in the journey panel.
 
-Add a 250–400 ms "settling" delay between thinking finishing and the assistant message appearing, so the transition from spinner → answer feels intentional.
+## Side-checks at module boundaries
 
-## 3. Composer & input micro-interactions
+At the end of each module, briefly verify:
+- Module pill in the journey panel turns green / "Completed".
+- Action Centre / Embark AI panel reflects the new resume point.
+- No stuck "Loading…" spinner, no console errors (will read browser console once per track).
 
-- Submit button: while streaming, swap to a small animated "thinking" pill ("Researching…") instead of just a spinner.
-- Disable starter cards while streaming; on hover add a subtle lift (`hover:-translate-y-0.5 transition-transform`).
-- User message bubble: animate-fade-in on mount.
-- Pin button in answer header: subtle scale on click; toast already exists.
+## Deliverable
 
-## 4. Scope guardrails
+A single test report covering:
+- Per-chapter pass/fail (33 rows).
+- Per-module-boundary advance pass/fail (12 transitions inside tracks + 1 BK→TK + 1 final terminal).
+- Any visual/console issues encountered, with screenshot.
+- Final DB state confirmation: `learner_progress` rows for all 33 chapters with `status='completed'`.
+- Verdict on whether the recent CompletionScreen / `findNextCohortChapter` fix holds end-to-end.
 
-- Frontend / presentation only. No envelope schema changes, no edge-function changes, no DB.
-- All timings tunable via constants at the top of `useDeepResearch.ts` and `ResponseEnvelopeView.tsx` so we can dial it back if it feels slow.
-- Respect `prefers-reduced-motion`: if set, skip stagger and just fade once.
+## Notes / risks
 
-## Files
-
-- edit `src/hooks/useDeepResearch.ts` — add `thinkingStage`, staged timing, settling delay
-- new  `src/components/deep-research/ThinkingPanel.tsx`
-- new  `src/hooks/useStagedReveal.ts`
-- edit `src/components/deep-research/ResponseEnvelopeView.tsx` — staged reveal wrapper
-- edit `src/components/deep-research/StarterCards.tsx` — hover lift, disabled state during streaming
-- edit `src/pages/DeepResearch.tsx` — render `ThinkingPanel`, pass `isStreaming` into starters, animate user bubbles
-- edit `tailwind.config.ts` — add `shimmer` keyframe + animation utility
-
-## Acceptance
-
-- Asking a starter shows 4–5 distinct stage labels over ~4 s with a visible progress shimmer.
-- Answer sections appear in sequence, not all at once.
-- Reduced-motion users see a single clean fade with no stagger.
-- Pinned dashboard renders pinned answers instantly (no re-stagger).
+- **Mutates Clara's progress.** Will leave her with both tracks fully completed unless rolled back. I'll reset before, and offer to reset again after if you want her returned to her current state.
+- **Auto-advance is 5 s per chapter.** Clicking "Continue" manually skips that wait — full run estimated 8–12 minutes of browser actions.
+- **Browser session must already be logged in as Clara in the preview.** If the browser lands on the auth screen I'll stop and ask you to sign in.
+- **Won't touch assessments / role-plays.** If a chapter requires an assessment to advance, I'll flag it and skip rather than auto-pass — completion of *learning* chapters is the contract being tested.

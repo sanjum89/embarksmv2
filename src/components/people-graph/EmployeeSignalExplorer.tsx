@@ -13,8 +13,17 @@ import { Progress } from "@/components/ui/progress";
 import type { AccountEmployee, AccountRole, AccountProject, SkillGapEntry } from "@/types/account-v2";
 import type { EmployeeLabelReasoning } from "@/data/peopleGraphSystems";
 import { getEmployeeLabelReasoning } from "@/data/peopleGraphSystems";
+import { getDemoOverlay } from "@/data/managerDemoOverlay";
+import { buildOverlayLabels, buildOverlayReflections } from "@/data/peopleGraphFromOverlay";
 import { ReflectionsAnalysis } from "./ReflectionsAnalysis";
 import { ComputationDetails } from "./ComputationDetails";
+
+const STATUS_PILL: Record<string, { label: string; cls: string }> = {
+  rising_star: { label: "Rising star", cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30" },
+  on_track: { label: "On track", cls: "bg-blue-500/15 text-blue-700 border-blue-500/30" },
+  needs_check_in: { label: "Needs check-in", cls: "bg-amber-500/15 text-amber-700 border-amber-500/30" },
+  at_risk: { label: "At risk", cls: "bg-red-500/15 text-red-700 border-red-500/30" },
+};
 
 const severityConfig: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
   critical: { icon: AlertTriangle, color: "text-red-600", bg: "bg-red-500/15 border-red-500/30" },

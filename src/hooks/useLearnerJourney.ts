@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { ModuleAdaptation } from "@/lib/embarkAdaptation";
+import { diagnosticReopens } from "@/store/useDiagnosticReopens";
 
 export type ChapterStatus = "not_started" | "in_progress" | "completed" | "locked";
 export type ModuleStatus = "completed" | "in_progress" | "up_next" | "locked";

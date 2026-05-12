@@ -1,0 +1,2 @@
+DELETE FROM learner_progress WHERE account_id='6c49ca7c-fecb-4b34-a690-7e4e28bb2194' AND employee_id='rb-l6';
+DELETE FROM chapter_lock_events WHERE account_id='6c49ca7c-fecb-4b34-a690-7e4e28bb2194' AND employee_id='rb-l6';

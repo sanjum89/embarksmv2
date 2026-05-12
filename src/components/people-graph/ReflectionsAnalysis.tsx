@@ -3,7 +3,7 @@ import { MessageCircle, AlertCircle, Calendar, ThumbsUp, ThumbsDown, Minus, Ligh
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getEmployeeReflectionAnalysis } from "@/data/peopleGraphSystems";
+import { getEmployeeReflectionAnalysis, type EmployeeReflectionAnalysis } from "@/data/peopleGraphSystems";
 
 const sentimentIcon = {
   positive: { icon: ThumbsUp, color: "text-emerald-600", bg: "bg-emerald-500/15" },

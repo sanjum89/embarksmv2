@@ -22,6 +22,7 @@ import {
   Layers,
   Inbox,
   GraduationCap,
+  Microscope,
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
@@ -71,6 +72,7 @@ const teamNavItems: NavItem[] = [
   { label: "Team Home", path: "/team", icon: LayoutDashboard },
   { label: "Cohorts", path: "/manager/cohorts", icon: Layers },
   { label: "People Graph", path: "/manager/people-graph", icon: GitGraph },
+  { label: "Deep Research", path: "/team/deep-research", icon: Microscope },
   { label: "Action Centre", path: "/action-centre", icon: Inbox },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
   // Legacy / dev-only entries — kept reachable behind dev mode

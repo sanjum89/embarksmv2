@@ -346,20 +346,35 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
             );
           })}
 
-          {/* Module titles (angled) + index chip + spine node */}
+          {/* Module titles (two-line, horizontal) + index chip + spine node */}
           {spineModules.map((m, ci) => {
             const x = PADDING_X + ci * COL_W + COL_W / 2;
-            const title = m.module_title.length > 18 ? m.module_title.slice(0, 17) + "…" : m.module_title;
+            // Wrap title into up to 2 lines, breaking on word boundary near the
+            // halfway mark; ellipsize if it still overflows.
+            const MAX_PER_LINE = Math.max(14, Math.floor(COL_W / 8));
+            const words = m.module_title.split(/\s+/);
+            let line1 = "";
+            let line2 = "";
+            for (const w of words) {
+              if ((line1 + " " + w).trim().length <= MAX_PER_LINE) {
+                line1 = (line1 + " " + w).trim();
+              } else {
+                line2 = (line2 + " " + w).trim();
+              }
+            }
+            if (line2.length > MAX_PER_LINE) {
+              line2 = line2.slice(0, MAX_PER_LINE - 1).trimEnd() + "…";
+            }
             return (
               <g key={m.module_code}>
                 <text
                   x={x}
                   y={TITLES_Y}
-                  textAnchor="end"
-                  transform={`rotate(-22 ${x} ${TITLES_Y})`}
+                  textAnchor="middle"
                   className="fill-foreground text-[11px] font-medium"
                 >
-                  {title}
+                  <tspan x={x} dy={0}>{line1}</tspan>
+                  {line2 && <tspan x={x} dy={TITLE_LINE_H}>{line2}</tspan>}
                   <title>{m.module_title}</title>
                 </text>
                 <text

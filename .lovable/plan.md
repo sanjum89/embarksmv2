@@ -1,85 +1,89 @@
-# End-to-End Test: Clara — Business Knowledge + Technical Knowledge
-
 ## Goal
 
-Walk Clara through every chapter of two full Rathbones tracks in the live preview, confirming the cohort journey advances correctly chapter-by-chapter, module-by-module, and across the BK → TK track boundary. Targets the recently-fixed completion-screen / next-chapter logic.
+1. Make "Submit Evidence" chapters useful: show **why**, **what**, **examples**, plus a **textarea** the learner fills in and submits.
+2. Fix: clicking an evidence chapter from **All Modules** in Embark AI shows "Chapter unavailable".
+3. Produce a **read-only audit** of Clara (rb-l6) and Theo (rb-l1) chapter content quality. No DB writes.
 
-## Scope
+---
 
-**Account:** Rathbones (`6c49ca7c-fecb-4b34-a690-7e4e28bb2194`)
-**Learner:** Clara Wren (mid__in_im, primary onboarding persona)
-**Tracks (33 chapters across 13 modules):**
+## 1. Evidence chapter — Brief + Textarea (mock submission)
 
-```text
-Business Knowledge (5 modules)
-  bk1.intro_wealth_rathbones        (3 chapters)
-  bk2.kyc_suitability               (3)
-  bk3.markets_macro_assets          (3)
-  bk4.portfolio_construction        (3)
-  bk5.regulatory_landscape          (3)
+### What we found
+- `catalog_evidence_tasks` already has rich, Rathbones-flavoured fields per module: `evidence_title`, `evidence_description` (~450–550 chars), `example_synthetic_evidence_summary`, `quality_indicators[]`, `submission_format`, `reviewer_role`, `required_for_gate`.
+- Today the UI only reads `catalog_chapters.practical_activity` (1–3 short sentences) and renders a plain markdown blob → looks empty/lifeless.
+- Only 12 of the ~19 evidence-required modules for Clara have a row in `catalog_evidence_tasks` (gaps: bk5, bs4, cps3, cps4, tk4, tk5, tk7). For these, fall back to a generated brief from `learning_objective` + `practical_activity` + module title, so nothing is ever blank.
 
-Technical Knowledge (7 core + 1 stretch = 8 modules)
-  tk1.charles_river_ims             (3)
-  tk2.bloomberg_essentials          (2)
-  tk3.performance_attribution       (3)
-  tk4.risk_mandate_restrictions     (2)
-  tk5.tax_wrappers                  (2)
-  tk6.esg_responsible_investing     (2)
-  tk7.ops_workflows                 (2)
-  str2.investment_thesis            (stretch — included if surfaced to Clara)
-```
+### UI changes (frontend only)
+File: `src/components/learnpath/LearnPathContent.tsx` — when `lens === "evidence"`, instead of feeding markdown into `EmbarkModuleContent`, render a new dedicated component:
 
-## Pre-flight (one-time DB work)
+`src/components/learnpath/EvidenceTaskCard.tsx` (new) shows:
+- **Header**: `evidence_title` + adaptation reason ("Risk-critical content — please evidence current competence").
+- **Why this matters**: 1–2 sentence rationale derived from chapter `learning_objective` + module risk flags.
+- **What to submit**: `evidence_description` (rendered as markdown).
+- **What good looks like**: bulleted `quality_indicators` + collapsible "Worked example" using `example_synthetic_evidence_summary`.
+- **Format & reviewer**: small chips (`written` / `upload` / `observation` / `system_record` / `recording`; reviewer = manager/mentor/assessor; `required_for_gate` badge).
+- **Your evidence**: a `<textarea>` (200–800 word guide), autosave to `learner_progress.metadata.evidence_draft`.
+- **Submit button**: writes `learner_progress.metadata.evidence_submission = { text, submitted_at, format }` and marks chapter `completed` via the existing completion flow (so the "Continue to Next Chapter" path we just fixed still works). No file upload, no storage bucket.
 
-1. Resolve Clara's `employee_id` and active `cohort_id` from `cohort_enrollments` joined to her persona assignment (`rb-l1` / Clara Wren).
-2. **Reset progress** for the BK+TK module set:
-   ```sql
-   DELETE FROM learner_progress
-   WHERE account_id = '<rathbones>' AND employee_id = '<clara>'
-     AND module_code IN (<bk1..bk5, tk1..tk7, str2>);
-   DELETE FROM chapter_lock_events
-   WHERE account_id = '<rathbones>' AND employee_id = '<clara>'
-     AND module_code IN (<same set>);
-   ```
-3. Snapshot Clara's expected starting state (first chapter of bk1 should be "available", everything else gated by track sequencing).
+New hook: `useEvidenceTask(accountId, moduleCode)` → reads `catalog_evidence_tasks` (one row per module). When missing, returns a synthesized brief built from chapter row.
 
-## Test loop (per chapter)
+### Why this is safe
+- No schema changes — uses existing `learner_progress.metadata` jsonb.
+- Falls back gracefully when `catalog_evidence_tasks` row is missing.
+- Reuses `useCatalogChapter` for the "why" snippet.
 
-For each of the 33 chapters in displayOrder:
+---
 
-1. `observe` — confirm chapter title, "Mark as Complete" CTA visible, mode selector present.
-2. `act` click "Mark as Complete".
-3. `observe` — completion screen rendered with stats (Time Spent, Assessment, Progress, Streak).
-4. Screenshot only at module boundaries and on any anomaly.
-5. `act` click "Continue to Next Chapter" (don't wait for the 5 s auto-advance — keeps the run tight).
-6. Verify the next chapter's URL/title matches the expected next entry from `flattenJourney(BK+TK)`.
+## 2. "Chapter unavailable" from All Modules
 
-## Boundary checks (the bug-prone spots)
+### Root cause
+In `LearnPathContent.tsx`, `cohortChapterCode` is resolved by scanning `journey.tracks[].modules[].chapters[]`. When the user opens an evidence chapter from **All Modules** (a non-journey catalog list), `openModule(chapterCode)` is called but the active skill-target context's `journey` may not include that chapter (different track / not yet expanded), so `cohortChapterCode` is `null`, no `cohortChapterRow` is loaded, and the synthesis fallback at lines 223–242 also fails because the chapter isn't in `journey` either → "Chapter unavailable".
 
-- **End of each module → first chapter of next module in same track.** Asserts `findNextCohortChapter` returns the new module's first chapter even while it's still flagged `locked`.
-- **End of bk5.c3 → first chapter of tk1 (track switch).** Same logic across track boundaries.
-- **End of tk7.c2 (or str2's last chapter) → CompletionScreen shows "Back to All Chapters" only.** Asserts terminal state is reachable.
-- After every "Mark as Complete", reload `useLearnerJourney` (refreshJourney is fired automatically by `onChapterPersisted`) and confirm the chapter status flips to `completed` in the journey panel.
+### Fix (frontend only)
+- Make `cohortChapterCode` independent of `journey`: if `activeModuleId` matches the catalog-chapter pattern (`<module>.c<n>`), treat it as a cohort chapter and let `useCatalogChapter` fetch it directly.
+- When `cohortChapterRow` loads but the chapter isn't in `journey`, derive `cohortAdaptationType` by querying `persona_module_adaptations` (already loaded into the journey context) by `module_code`.
+- Add a separate loading state ("Loading chapter…") instead of immediately rendering the unavailable card, so transient race conditions don't flash the error.
 
-## Side-checks at module boundaries
+---
 
-At the end of each module, briefly verify:
-- Module pill in the journey panel turns green / "Completed".
-- Action Centre / Embark AI panel reflects the new resume point.
-- No stuck "Loading…" spinner, no console errors (will read browser console once per track).
+## 3. Audit (read-only, deliverable as Markdown)
 
-## Deliverable
+Run a script that, for **Clara (rb-l6)** and **Theo (rb-l1)**, walks every chapter in their cohort journey and checks:
 
-A single test report covering:
-- Per-chapter pass/fail (33 rows).
-- Per-module-boundary advance pass/fail (12 transitions inside tracks + 1 BK→TK + 1 final terminal).
-- Any visual/console issues encountered, with screenshot.
-- Final DB state confirmation: `learner_progress` rows for all 33 chapters with `status='completed'`.
-- Verdict on whether the recent CompletionScreen / `findNextCohortChapter` fix holds end-to-end.
+| Check | Pass condition |
+|---|---|
+| `learning_objective` | ≥ 40 chars |
+| `chapter_long_form_content` or `content_sections` | body ≥ 1500 chars total |
+| For `diagnostic_only` modules: `diagnostic_questions` | ≥ 3 items, each with 4 options + `correctIndex` + explanation |
+| For `evidence_required` modules: `catalog_evidence_tasks` row exists | one row per module |
+| For `evidence_required`: `practical_activity` | ≥ 200 chars |
+| `persona_module_adaptations.reason` | not null, ≥ 30 chars, and not the generic "Risk-critical content…" boilerplate when adaptation is `microlearning`/`diagnostic_only` |
+| `micro_learnings` follow-ups for failed assessments | optional — flag if zero ever generated for the persona |
+| Realism flag | string-search for placeholder words (`lorem`, `TBD`, `TODO`, `Sample text`) |
 
-## Notes / risks
+Output: `/mnt/documents/clara-theo-content-audit.md` with three sections:
+- **Summary table** (per persona × per track: pass/total counts).
+- **Per-chapter findings** grouped by module, only showing failed checks.
+- **Recommended fixes** per module (no SQL run, just suggested copy outlines you can approve later).
 
-- **Mutates Clara's progress.** Will leave her with both tracks fully completed unless rolled back. I'll reset before, and offer to reset again after if you want her returned to her current state.
-- **Auto-advance is 5 s per chapter.** Clicking "Continue" manually skips that wait — full run estimated 8–12 minutes of browser actions.
-- **Browser session must already be logged in as Clara in the preview.** If the browser lands on the auth screen I'll stop and ask you to sign in.
-- **Won't touch assessments / role-plays.** If a chapter requires an assessment to advance, I'll flag it and skip rather than auto-pass — completion of *learning* chapters is the contract being tested.
+No migrations. No data writes.
+
+---
+
+## Out of scope
+
+- Real file upload / storage bucket for evidence (deferred — answered "textarea only").
+- Auto-generating the missing evidence-task rows or filling thin diagnostics (the audit will list them; you'll decide what to fix).
+- Manager-side review of submitted evidence.
+
+---
+
+## Technical notes
+
+- Files touched:
+  - `src/components/learnpath/LearnPathContent.tsx` — branch evidence rendering, fix `cohortChapterCode` resolution.
+  - `src/components/learnpath/EvidenceTaskCard.tsx` — new component.
+  - `src/hooks/useEvidenceTask.ts` — new hook.
+  - `src/lib/cohortNextChapter.ts` — no change (already handles next-chapter from evidence chapters).
+- Audit script: `scripts/audit-clara-theo-content.ts`, run via `bun`, reads only — outputs the markdown report to `/mnt/documents/`.
+- Adds one Vitest case to `src/lib/__tests__/cohortNextChapter.test.ts` to cover "evidence chapter completion routes to next chapter when opened outside journey context".

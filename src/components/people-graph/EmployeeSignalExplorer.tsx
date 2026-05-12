@@ -13,8 +13,17 @@ import { Progress } from "@/components/ui/progress";
 import type { AccountEmployee, AccountRole, AccountProject, SkillGapEntry } from "@/types/account-v2";
 import type { EmployeeLabelReasoning } from "@/data/peopleGraphSystems";
 import { getEmployeeLabelReasoning } from "@/data/peopleGraphSystems";
+import { getDemoOverlay } from "@/data/managerDemoOverlay";
+import { buildOverlayLabels, buildOverlayReflections } from "@/data/peopleGraphFromOverlay";
 import { ReflectionsAnalysis } from "./ReflectionsAnalysis";
 import { ComputationDetails } from "./ComputationDetails";
+
+const STATUS_PILL: Record<string, { label: string; cls: string }> = {
+  rising_star: { label: "Rising star", cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30" },
+  on_track: { label: "On track", cls: "bg-blue-500/15 text-blue-700 border-blue-500/30" },
+  needs_check_in: { label: "Needs check-in", cls: "bg-amber-500/15 text-amber-700 border-amber-500/30" },
+  at_risk: { label: "At risk", cls: "bg-red-500/15 text-red-700 border-red-500/30" },
+};
 
 const severityConfig: Record<string, { icon: React.ElementType; color: string; bg: string }> = {
   critical: { icon: AlertTriangle, color: "text-red-600", bg: "bg-red-500/15 border-red-500/30" },
@@ -35,9 +44,16 @@ export function EmployeeSignalExplorer({ employees, rolesById, projectsById, get
   const [expandedLabel, setExpandedLabel] = useState<string | null>(null);
 
   const employee = employees.find(e => e.id === selectedId);
-  const labels = employee ? getEmployeeLabelReasoning(employee.id, employee.name) : [];
+  const overlay = employee ? getDemoOverlay(employee.id) : null;
+  const labels = employee
+    ? overlay
+      ? buildOverlayLabels(overlay)
+      : getEmployeeLabelReasoning(employee.id, employee.name)
+    : [];
+  const overlayReflections = overlay ? buildOverlayReflections(overlay) : undefined;
   const gaps = employee ? getSkillGaps(employee.id) : { roleGaps: [], projectGaps: [] };
   const role = employee?.roleId ? rolesById[employee.roleId] : null;
+  const statusPill = overlay ? STATUS_PILL[overlay.status] : null;
 
   return (
     <div className="space-y-6">
@@ -63,13 +79,28 @@ export function EmployeeSignalExplorer({ employees, rolesById, projectsById, get
               </Select>
             </div>
             {employee && (
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
                 {role && <Badge variant="outline">{role.name}</Badge>}
                 {employee.department && <span>{employee.department}</span>}
                 {employee.tenure && <span>Tenure: {employee.tenure}y</span>}
+                {overlay && (
+                  <Badge variant="outline" className="border-accent/40 text-accent-foreground bg-accent/10">
+                    Investment Management Readiness · Jan 2026
+                  </Badge>
+                )}
+                {statusPill && (
+                  <Badge variant="outline" className={statusPill.cls}>
+                    {statusPill.label}
+                  </Badge>
+                )}
               </div>
             )}
           </div>
+          {overlay && (
+            <p className="mt-3 text-sm text-foreground/80 leading-relaxed border-l-2 border-accent/40 pl-3">
+              {overlay.headline}
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -186,7 +217,7 @@ export function EmployeeSignalExplorer({ employees, rolesById, projectsById, get
             </div>
 
             {/* Reflections */}
-            <ReflectionsAnalysis employeeId={employee.id} employeeName={employee.name} />
+            <ReflectionsAnalysis employeeId={employee.id} employeeName={employee.name} reflectionsOverride={overlayReflections} />
 
             {/* Computation Details */}
             <ComputationDetails />

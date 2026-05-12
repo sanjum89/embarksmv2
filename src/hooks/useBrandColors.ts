@@ -31,13 +31,32 @@ const DEFAULTS_LIGHT: Record<string, string> = {
   "--sidebar-muted": "222 30% 32%",
 };
 
-export const COLOR_PRESETS: Record<string, { label: string; primary: string; accent: string; sidebar: string; swatch: [string, string] }> = {
+export type PresetFamily = "rathbones" | "generic";
+
+export const COLOR_PRESETS: Record<string, { label: string; primary: string; accent: string; sidebar: string; swatch: [string, string]; family?: PresetFamily }> = {
+  "rathbones-calm": {
+    label: "Rathbones — Calm",
+    primary: "230 75% 15%",
+    accent: "12 55% 85%",
+    sidebar: "230 75% 10%",
+    swatch: ["hsl(230, 75%, 15%)", "hsl(12, 55%, 85%)"],
+    family: "rathbones",
+  },
+  "rathbones-vibrant": {
+    label: "Rathbones — Vibrant",
+    primary: "230 75% 15%",
+    accent: "14 88% 58%",
+    sidebar: "230 60% 13%",
+    swatch: ["hsl(230, 75%, 15%)", "hsl(14, 88%, 58%)"],
+    family: "rathbones",
+  },
   "navy-amber": {
     label: "Navy & Amber",
     primary: "222 60% 22%",
     accent: "38 92% 50%",
     sidebar: "222 60% 16%",
     swatch: ["hsl(222, 60%, 22%)", "hsl(38, 92%, 50%)"],
+    family: "generic",
   },
   "teal-coral": {
     label: "Teal & Coral",
@@ -45,6 +64,7 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
     accent: "12 80% 55%",
     sidebar: "180 35% 14%",
     swatch: ["hsl(180, 45%, 25%)", "hsl(12, 80%, 55%)"],
+    family: "generic",
   },
   "purple-gold": {
     label: "Purple & Gold",
@@ -52,6 +72,7 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
     accent: "42 90% 50%",
     sidebar: "270 40% 18%",
     swatch: ["hsl(270, 50%, 35%)", "hsl(42, 90%, 50%)"],
+    family: "generic",
   },
   "forest-amber": {
     label: "Forest & Amber",
@@ -59,6 +80,7 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
     accent: "38 85% 48%",
     sidebar: "150 35% 14%",
     swatch: ["hsl(150, 40%, 25%)", "hsl(38, 85%, 48%)"],
+    family: "generic",
   },
   "slate-blue": {
     label: "Slate & Blue",
@@ -66,6 +88,7 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
     accent: "210 80% 52%",
     sidebar: "215 20% 16%",
     swatch: ["hsl(215, 25%, 30%)", "hsl(210, 80%, 52%)"],
+    family: "generic",
   },
   "charcoal-red": {
     label: "Charcoal & Red",
@@ -73,15 +96,19 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
     accent: "0 72% 51%",
     sidebar: "0 0% 12%",
     swatch: ["hsl(0, 0%, 20%)", "hsl(0, 72%, 51%)"],
-  },
-  "rathbones": {
-    label: "Rathbones",
-    primary: "230 75% 15%",
-    accent: "12 55% 85%",
-    sidebar: "230 75% 10%",
-    swatch: ["hsl(230, 75%, 15%)", "hsl(12, 55%, 85%)"],
+    family: "generic",
   },
 };
+
+// Back-compat: legacy preset key "rathbones" → "rathbones-calm"
+export const PRESET_ALIASES: Record<string, string> = {
+  "rathbones": "rathbones-calm",
+};
+
+export function resolvePresetKey(key?: string): string | undefined {
+  if (!key) return key;
+  return PRESET_ALIASES[key] ?? key;
+}
 
 function deriveThemeVars(primary: string, accent: string, sidebar: string): Record<string, string> {
   const [pH] = primary.split(" ").map((v) => parseFloat(v));

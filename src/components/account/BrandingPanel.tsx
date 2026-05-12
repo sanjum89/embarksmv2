@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useAccount } from "@/contexts/AccountContext";
 import { supabase } from "@/integrations/supabase/client";
-import { COLOR_PRESETS, deriveFromCustomColors } from "@/hooks/useBrandColors";
+import { COLOR_PRESETS, deriveFromCustomColors, resolvePresetKey } from "@/hooks/useBrandColors";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -76,9 +76,30 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
   try {
     if (activeAccount.accent_color) {
       const config = JSON.parse(activeAccount.accent_color);
-      currentPreset = config.preset || "navy-amber";
+      currentPreset = resolvePresetKey(config.preset) || "navy-amber";
     }
   } catch {}
+
+  const rathbonesPresets = Object.entries(COLOR_PRESETS).filter(([, p]) => p.family === "rathbones");
+  const genericPresets = Object.entries(COLOR_PRESETS).filter(([, p]) => p.family !== "rathbones");
+
+  const renderPresetButton = ([key, preset]: [string, typeof COLOR_PRESETS[string]]) => (
+    <button
+      key={key}
+      onClick={() => handlePresetSelect(key)}
+      className={cn(
+        "flex flex-col items-center gap-1.5 p-2 rounded-lg border transition-all",
+        currentPreset === key ? "border-ring bg-muted shadow-sm" : "border-transparent hover:bg-muted/50"
+      )}
+    >
+      <div className="flex gap-0.5">
+        <div className="h-6 w-6 rounded-l-md" style={{ backgroundColor: preset.swatch[0] }} />
+        <div className="h-6 w-6 rounded-r-md" style={{ backgroundColor: preset.swatch[1] }} />
+      </div>
+      <span className="text-[0.65rem] font-medium text-muted-foreground leading-tight text-center">{preset.label}</span>
+      {currentPreset === key && <Check className="h-3 w-3 text-primary" />}
+    </button>
+  );
 
   const handlePresetSelect = async (presetKey: string) => {
     const preset = COLOR_PRESETS[presetKey];
@@ -175,27 +196,23 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
         <Separator />
 
         {/* Preset Color Schemes */}
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Color Scheme</Label>
-          <div className="grid grid-cols-3 gap-2">
-            {Object.entries(COLOR_PRESETS).map(([key, preset]) => (
-              <button
-                key={key}
-                onClick={() => handlePresetSelect(key)}
-                className={cn(
-                  "flex flex-col items-center gap-1.5 p-2 rounded-lg border transition-all",
-                  currentPreset === key ? "border-ring bg-muted shadow-sm" : "border-transparent hover:bg-muted/50"
-                )}
-              >
-                <div className="flex gap-0.5">
-                  <div className="h-6 w-6 rounded-l-md" style={{ backgroundColor: preset.swatch[0] }} />
-                  <div className="h-6 w-6 rounded-r-md" style={{ backgroundColor: preset.swatch[1] }} />
-                </div>
-                <span className="text-[0.65rem] font-medium text-muted-foreground leading-tight text-center">{preset.label}</span>
-                {currentPreset === key && <Check className="h-3 w-3 text-primary" />}
-              </button>
-            ))}
-          </div>
+        <div className="space-y-4">
+          {rathbonesPresets.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Rathbones modes</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {rathbonesPresets.map(renderPresetButton)}
+              </div>
+            </div>
+          )}
+          {genericPresets.length > 0 && (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Other palettes</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {genericPresets.map(renderPresetButton)}
+              </div>
+            </div>
+          )}
         </div>
 
         <Separator />

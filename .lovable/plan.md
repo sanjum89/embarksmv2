@@ -1,70 +1,78 @@
 ## Goal
-Make the Adaptive Paths Sankey reflect the **real cohort modules** (not an 8-cell dummy overlay), group them by **meaningful stages** instead of one repeated role-slug band, and fix the **unreadable angled titles**.
+Add a more vibrant Rathbones theme variant alongside the current calm one, switchable from the existing Branding dialog so the user can flip back, and so additional Rathbones variants can be added later without touching consuming components.
 
-Roster and Adaptive Paths will be guaranteed to stay in sync because both will read from the same live `modules[]` source.
-
----
-
-## A. Correlate overlay cells with live modules (data fix)
-
-**File: `src/data/managerDemoOverlay.ts`**
-
-- Stop using `COHORT_MODULES_FALLBACK` as the source of truth for cell positions.
-- Change `LearnerOverlay.cells` generation: instead of a hand-written 8-element array, each persona now defines a **progression *pattern*** (a recipe), e.g.
-  - `{ completedThrough: 6, inProgressCount: 1, adaptations: { 'TECH-130': 'microlearning', 'BEH-220': 'skip_after_validation', ... } }`
-- Build the actual `cells[]` at hook time by mapping over the **live `modules[]`** passed in from `useManagerCohortData`, keyed by `module_code`.
-- `pathChanges[]` continues to reference real `module_code`s; any orphan changes (module not in live cohort) are silently dropped.
-- Result: every learner row spans **all 28 real modules**, and adaptations always land on the correct cell regardless of catalog edits.
-
-**File: `src/hooks/useManagerCohortData.ts`** (small)
-- Pass live `modules` into the overlay materializer; expose the materialized overlay per learner.
+The current calm Rathbones (deep navy + soft peach) and the new vibrant Rathbones become **two named modes inside one "Rathbones modes" group** in the existing preset picker.
 
 ---
 
-## B. Real stage groupings (replace the meaningless single band)
+## What "vibrant" means here
 
-**File: `src/data/managerDemoOverlay.ts`** (or a small helper next to it)
+Brand identity stays intact:
+- **Primary** stays deep Rathbones navy `230 75% 15%`.
+- **Sidebar** stays navy.
+- **Logos** unchanged (existing white + dark navy already in storage).
 
-- Derive stage groups from `display_order` decade buckets present in the live data:
-  - `10–90` → **Foundations · Books**
-  - `100–199` → **Technical**
-  - `200–299` → **Behavioural Skills**
-  - `300–399` → **Compliance**
-  - `400–499` → **Onboarding**
-  - `500+` → **Stretch**
-- Override each module's `progression_stage` with the bucket label before passing to the Sankey, so `stageGroups` in the chart produces 5–6 contiguous bands instead of one giant `Associate Investment Manager 18M` band.
-- Drop the redundant top-level "Associate Investment Manager" wrapper line — the cohort title already lives in the page header.
+Vibrancy is injected via the **accent** channel, which the theme system already propagates to badges, focus rings, the `bg-gradient-primary` hero gradient, chips, progress strokes and CTA highlights:
+- Replace muted peach `12 55% 85%` with a saturated Rathbones peach/coral around `14 88% 58%` — below the 65% lightness threshold so `deriveThemeVars` takes the "standard" branch and produces a punchy `--accent` plus a warm `--secondary`/`--muted` family tinted toward the accent hue.
 
-If a future cohort happens to bucket into a single decade, the existing contiguous-run logic will naturally render one band — no special-case needed.
+Hero gradients, toggle pills, AI Decisions chips, the Sankey legend, focus rings, etc. gain a coral pop while navigation and primary surfaces stay unmistakably Rathbones.
 
 ---
 
-## C1. Readable module titles (lightest layout fix)
+## Mode rules — must be respected
 
-**File: `src/components/team-home/AdaptivePathsSankey.tsx`**
+The existing `useBrandColors` hook already branches on `theme` (light/dark) and `superLight` (white-sidebar variant). The new preset must obey the same rules; no theme-mode logic is duplicated or bypassed.
 
-- Widen `COL_W` (e.g. 130/176 → **180/220**) so titles get breathing room.
-- Replace the `-22°` rotated single-line title with a **horizontal two-line `<text>`** using two `<tspan>` rows:
-  - Line 1: first ~22 chars
-  - Line 2: next ~22 chars, with ellipsis if longer
-  - Native `<title>` tooltip retains the full name on hover (already in place).
-- Bump `TITLES_Y` and `PADDING_TOP` to fit two lines.
-- Keep the `M1…M28` chip beneath the title as the compact reference.
-- Stage band text stays uppercase but is now genuinely informative (Foundations, Technical, …).
+**Light mode**
+- Navy `--primary` on light surfaces; coral `--accent` derived via `deriveThemeVars`.
+- Sidebar uses the dark navy variant — derived sidebar vars applied as today.
 
-No changes to ribbon rendering, legend, drawer, filters, or compare modes.
+**Dark mode**
+- `deriveDarkThemeVars` lightens both navy primary and coral accent for legibility on the dark canvas. Coral lifts to ~`14 88% 62%`-ish via the existing formula — no extra code, just hand it the same input and let the existing dark-mode derivation run.
+- Sidebar background uses the existing `${pH} 35% 10%` formula → consistent dark sidebar.
+
+**Super Light mode**
+- Sidebar background stays white; per existing rule, only `--sidebar-primary` (and its foreground/active highlight) get coloured from the brand. The new preset routes through the same super-light branch — sidebar surface is **not** repainted with navy or coral.
+- Active nav icons render in navy primary; hover/active row uses the existing `${pH} 40% 95%` light tint — keeping super-light's airy feel intact while the rest of the page picks up coral accents.
+
+No new branches are added to the hook. The new preset is data-only; all mode handling reuses the current code paths so behaviour stays identical to the existing Rathbones preset across Light / Dark / Super Light.
 
 ---
 
-## Out of scope
-- Roster heatmap visuals (already correct).
-- Drawer copy, AI Decisions feed, Integrations tab.
-- Changing how many modules render (still all of them, just readable).
-- Any catalog/database edits.
+## Implementation
+
+**File: `src/hooks/useBrandColors.ts`**
+
+1. Rename the existing `"rathbones"` entry to `"rathbones-calm"` (same values, label "Rathbones — Calm").
+2. Add a new entry:
+   ```ts
+   "rathbones-vibrant": {
+     label: "Rathbones — Vibrant",
+     primary: "230 75% 15%",
+     accent: "14 88% 58%",
+     sidebar: "230 60% 13%",
+     swatch: ["hsl(230, 75%, 15%)", "hsl(14, 88%, 58%)"],
+     family: "rathbones",
+   }
+   ```
+   Mark `rathbones-calm` with `family: "rathbones"` too. All other presets get `family: "generic"` (or omit).
+3. Keep back-compat: if a row stores `preset: "rathbones"` it should resolve to `rathbones-calm` (alias map at lookup time).
+
+**File: `src/components/account/BrandingPanel.tsx`**
+
+1. Split the preset grid into two labelled sections:
+   - **"Rathbones modes"** — presets with `family === "rathbones"` (Calm, Vibrant). Adding `rathbones-editorial`, `rathbones-mono`, etc. later is a one-line addition to the preset map.
+   - **"Other palettes"** — the existing generic presets.
+2. Active-preset detection already reads `config.preset`; only change is to treat `"rathbones"` as `"rathbones-calm"` for the checkmark state.
+3. Toast copy uses each preset's `label`.
+
+**Out of scope**
+- No changes to logo storage, theme/super-light toggling logic, sidebar geometry, or any consuming component.
+- No new DB columns — uses the existing `accounts.accent_color` JSON.
+- No edits to Sankey, Roster, AI Decisions, or any feature surface.
 
 ---
 
 ## Files touched
-- `src/data/managerDemoOverlay.ts` — pattern-based overlay + stage bucketing helper
-- `src/hooks/useManagerCohortData.ts` — wire live modules into materializer, apply stage labels
-- `src/components/team-home/AdaptivePathsSankey.tsx` — wider columns, two-line horizontal titles, taller header
+- `src/hooks/useBrandColors.ts` — new preset + `family` field + back-compat alias
+- `src/components/account/BrandingPanel.tsx` — group presets into "Rathbones modes" / "Other palettes"

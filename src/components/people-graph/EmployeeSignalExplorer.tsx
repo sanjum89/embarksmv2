@@ -44,9 +44,16 @@ export function EmployeeSignalExplorer({ employees, rolesById, projectsById, get
   const [expandedLabel, setExpandedLabel] = useState<string | null>(null);
 
   const employee = employees.find(e => e.id === selectedId);
-  const labels = employee ? getEmployeeLabelReasoning(employee.id, employee.name) : [];
+  const overlay = employee ? getDemoOverlay(employee.id) : null;
+  const labels = employee
+    ? overlay
+      ? buildOverlayLabels(overlay)
+      : getEmployeeLabelReasoning(employee.id, employee.name)
+    : [];
+  const overlayReflections = overlay ? buildOverlayReflections(overlay) : undefined;
   const gaps = employee ? getSkillGaps(employee.id) : { roleGaps: [], projectGaps: [] };
   const role = employee?.roleId ? rolesById[employee.roleId] : null;
+  const statusPill = overlay ? STATUS_PILL[overlay.status] : null;
 
   return (
     <div className="space-y-6">

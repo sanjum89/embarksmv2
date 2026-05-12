@@ -1,9 +1,9 @@
 /**
- * Read-only content audit for Clara (rb-l6) and Theo (rb-l1).
- * Walks every cohort chapter on each persona's journey and flags weak data.
+ * Read-only content audit for Sophie (rb-l1), Theo (rb-l3) and Clara (rb-l6).
+ * Walks every cohort module on each persona's journey and flags weak data.
  *
  * Run: bun scripts/audit-clara-theo-content.ts
- * Output: /mnt/documents/clara-theo-content-audit.md
+ * Output: /mnt/documents/sophie-theo-clara-content-audit.md
  */
 import { writeFileSync, mkdirSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
@@ -12,8 +12,9 @@ const SUPABASE_URL = process.env.SUPABASE_URL!;
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const ACCOUNT_ID = "6c49ca7c-fecb-4b34-a690-7e4e28bb2194"; // Rathbones
 const PERSONAS: { employeeId: string; label: string }[] = [
+  { employeeId: "rb-l1", label: "Sophie Linden (early · outside FS — canonical baseline)" },
+  { employeeId: "rb-l3", label: "Theo Marchant (early · IM)" },
   { employeeId: "rb-l6", label: "Clara Wren (mid · IM)" },
-  { employeeId: "rb-l1", label: "Theo Vance (early · IM)" },
 ];
 const PLACEHOLDERS = [/\blorem\b/i, /\bTBD\b/, /\bTODO\b/, /\bsample text\b/i, /\bplaceholder\b/i];
 
@@ -34,10 +35,10 @@ interface PersonaReport {
   trackSummary: Record<string, { total: number; failing: number }>;
   modulesMissingEvidenceTask: string[];
   modulesWithGenericReason: string[];
+  adaptationMatrix: { module_code: string; module_title: string; track: string; adaptation_type: string }[];
 }
 
 async function auditPersona(employeeId: string, label: string): Promise<PersonaReport> {
-  // Persona for adaptations
   const { data: persRow } = await sb
     .from("employee_persona_assignments")
     .select("persona_code")
@@ -46,7 +47,6 @@ async function auditPersona(employeeId: string, label: string): Promise<PersonaR
     .maybeSingle();
   const personaCode = persRow?.persona_code as string | undefined;
 
-  // Cohort enrollment → cohort
   const { data: enrol } = await sb
     .from("cohort_enrollments")
     .select("cohort_id")
@@ -72,8 +72,6 @@ async function auditPersona(employeeId: string, label: string): Promise<PersonaR
       modules = data ?? [];
     }
   }
-  // Fallback for personas without cohort enrollment: walk all modules referenced
-  // by their persona_module_adaptations (or all account modules if none).
   if (modules.length === 0 && personaCode) {
     const { data: adaptedMods } = await sb
       .from("persona_module_adaptations")
@@ -101,11 +99,12 @@ async function auditPersona(employeeId: string, label: string): Promise<PersonaR
   const moduleCodes = (modules ?? []).map((m: any) => m.module_code);
   if (moduleCodes.length === 0) {
     return {
-      employeeId, label, findings: [], trackSummary: {}, modulesMissingEvidenceTask: [], modulesWithGenericReason: [],
+      employeeId, label, findings: [], trackSummary: {},
+      modulesMissingEvidenceTask: [], modulesWithGenericReason: [],
+      adaptationMatrix: [],
     };
   }
 
-  // Adaptations
   const { data: adapts } = personaCode
     ? await sb
         .from("persona_module_adaptations")
@@ -117,7 +116,6 @@ async function auditPersona(employeeId: string, label: string): Promise<PersonaR
   const adaptByMod = new Map<string, { adaptation_type: string; reason: string | null }>();
   for (const a of adapts ?? []) adaptByMod.set((a as any).module_code, a as any);
 
-  // Chapters
   const { data: chapters } = await sb
     .from("catalog_chapters")
     .select("module_code, chapter_code, chapter_title, learning_objective, chapter_long_form_content, content_sections, diagnostic_questions, practical_activity, display_order")
@@ -126,24 +124,35 @@ async function auditPersona(employeeId: string, label: string): Promise<PersonaR
     .order("module_code", { ascending: true })
     .order("display_order", { ascending: true });
 
-  // Evidence tasks (one row per module typically)
   const { data: evTasks } = await sb
     .from("catalog_evidence_tasks")
-    .select("module_code, evidence_title, evidence_description, example_synthetic_evidence_summary, quality_indicators")
+    .select("module_code")
     .eq("account_id", ACCOUNT_ID)
     .in("module_code", moduleCodes);
-  const evByMod = new Map<string, any>();
-  for (const e of evTasks ?? []) evByMod.set((e as any).module_code, e);
+  const evByMod = new Set<string>((evTasks ?? []).map((e: any) => e.module_code));
 
-  // Module → track
   const trackByMod = new Map<string, string>();
-  for (const m of modules ?? []) trackByMod.set((m as any).module_code, (m as any).learning_track_code);
+  const titleByMod = new Map<string, string>();
+  for (const m of modules ?? []) {
+    trackByMod.set((m as any).module_code, (m as any).learning_track_code);
+    titleByMod.set((m as any).module_code, (m as any).module_title);
+  }
 
   const findings: Finding[] = [];
   const trackSummary: Record<string, { total: number; failing: number }> = {};
   const modulesMissingEvidenceTask: string[] = [];
   const modulesWithGenericReason: string[] = [];
   const seenAdaptations = new Set<string>();
+
+  const adaptationMatrix = moduleCodes
+    .slice()
+    .sort()
+    .map((code) => ({
+      module_code: code,
+      module_title: titleByMod.get(code) ?? "—",
+      track: trackByMod.get(code) ?? "unknown",
+      adaptation_type: adaptByMod.get(code)?.adaptation_type ?? "full_module",
+    }));
 
   for (const ch of chapters ?? []) {
     const c = ch as any;
@@ -214,15 +223,38 @@ async function auditPersona(employeeId: string, label: string): Promise<PersonaR
     }
   }
 
-  return { employeeId, label, findings, trackSummary, modulesMissingEvidenceTask, modulesWithGenericReason };
+  return {
+    employeeId, label, findings, trackSummary,
+    modulesMissingEvidenceTask, modulesWithGenericReason, adaptationMatrix,
+  };
 }
 
 function renderReport(reports: PersonaReport[]): string {
   const lines: string[] = [];
-  lines.push(`# Clara + Theo content audit`);
+  lines.push(`# Sophie + Theo + Clara content audit`);
   lines.push(`_Generated ${new Date().toISOString()}_`);
   lines.push(`_Account: Rathbones (${ACCOUNT_ID})_`);
   lines.push("");
+  lines.push("## Adaptation matrix (module × persona)");
+  lines.push("");
+  // Build a wide matrix: rows = module, columns = personas
+  const allCodes = new Set<string>();
+  for (const r of reports) for (const m of r.adaptationMatrix) allCodes.add(m.module_code);
+  const codes = Array.from(allCodes).sort();
+  const headers = ["module", "track", ...reports.map((r) => r.label.split(" ")[0])];
+  lines.push(`| ${headers.join(" | ")} |`);
+  lines.push(`| ${headers.map(() => "---").join(" | ")} |`);
+  for (const code of codes) {
+    const first = reports[0].adaptationMatrix.find((m) => m.module_code === code);
+    const cells = [
+      `\`${code}\``,
+      first?.track ?? "—",
+      ...reports.map((r) => r.adaptationMatrix.find((m) => m.module_code === code)?.adaptation_type ?? "—"),
+    ];
+    lines.push(`| ${cells.join(" | ")} |`);
+  }
+  lines.push("");
+
   lines.push("## Summary");
   lines.push("");
   lines.push("| Persona | Track | Chapters | Failing |");
@@ -276,8 +308,8 @@ function renderReport(reports: PersonaReport[]): string {
   lines.push("");
   lines.push("- Backfill `catalog_evidence_tasks` for the modules listed under \"Missing evidence-task rows\" so the new evidence-brief UI shows real Rathbones-flavoured prompts (currently falls back to a generated brief).");
   lines.push("- Replace boilerplate adaptation reasons (\"Risk-critical content — please evidence current competence.\") with persona-specific rationale that explains _why_ this module is being adapted for that learner.");
-  lines.push("- For chapters flagged with a thin body, expand `chapter_long_form_content` or `content_sections` to ≥ 1,500 chars with concrete Rathbones examples.");
-  lines.push("- For diagnostic-only modules with sparse questions, top each chapter up to ≥ 3 well-formed MCQs (4 options + correctIndex + explanation).");
+  lines.push("- For chapters flagged with a thin body (Sophie is the canonical baseline — anything thin for her affects all three personas), expand `chapter_long_form_content` or `content_sections` to ≥ 1,500 chars with concrete Rathbones examples.");
+  lines.push("- For diagnostic-only modules (mostly Clara) with sparse questions, top each chapter up to ≥ 3 well-formed MCQs (4 options + correctIndex + explanation).");
 
   return lines.join("\n");
 }
@@ -290,7 +322,7 @@ function renderReport(reports: PersonaReport[]): string {
   }
   const md = renderReport(reports);
   mkdirSync("/mnt/documents", { recursive: true });
-  const out = "/mnt/documents/clara-theo-content-audit.md";
+  const out = "/mnt/documents/sophie-theo-clara-content-audit.md";
   writeFileSync(out, md, "utf-8");
   console.log(`Wrote ${out} (${md.length} chars)`);
 })();

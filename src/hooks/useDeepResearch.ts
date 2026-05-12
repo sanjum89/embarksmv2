@@ -287,6 +287,8 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
     deleteThread,
     ask,
     isStreaming,
+    thinkingStage,
+    thinkingTrace,
     pins,
     pinAnswer,
     renamePin,

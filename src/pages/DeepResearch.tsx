@@ -136,10 +136,10 @@ export default function DeepResearch() {
               </div>
             ) : (
               dr.activeThread.messages.map((m) => (
-                <div key={m.id} className="space-y-3">
+                <div key={m.id} className="space-y-3 animate-fade-in">
                   {m.role === "user" ? (
                     <div className="flex justify-end">
-                      <div className="rounded-2xl rounded-br-sm bg-primary text-primary-foreground px-4 py-2 text-sm max-w-[80%]">
+                      <div className="rounded-2xl rounded-br-sm bg-primary text-primary-foreground px-4 py-2 text-sm max-w-[80%] shadow-sm">
                         {m.content}
                       </div>
                     </div>
@@ -163,10 +163,7 @@ export default function DeepResearch() {
             )}
 
             {dr.isStreaming && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Researching · planning tools · synthesising answer…
-              </div>
+              <ThinkingPanel stage={dr.thinkingStage} trace={dr.thinkingTrace} />
             )}
           </div>
 

@@ -123,9 +123,10 @@ export const STARTERS: StarterCard[] = [
 
 interface Props {
   onPick: (prompt: string) => void;
+  disabled?: boolean;
 }
 
-export function StarterCards({ onPick }: Props) {
+export function StarterCards({ onPick, disabled }: Props) {
   return (
     <div className="space-y-4">
       <div>
@@ -137,10 +138,16 @@ export function StarterCards({ onPick }: Props) {
             <button
               key={s.id}
               onClick={() => onPick(s.prompt)}
-              className="text-left rounded-xl border border-border/60 bg-card hover:bg-muted/40 hover:border-primary/40 transition-colors p-3 group"
+              disabled={disabled}
+              className={cn(
+                "text-left rounded-xl border border-border/60 bg-card p-3 group transition-all duration-200",
+                disabled
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-muted/40 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-sm"
+              )}
             >
               <div className="flex items-start gap-2.5">
-                <div className="rounded-md bg-primary/10 p-1.5 text-primary shrink-0">
+                <div className="rounded-md bg-primary/10 p-1.5 text-primary shrink-0 transition-transform group-hover:scale-110">
                   <s.icon className="h-3.5 w-3.5" />
                 </div>
                 <div className="flex-1 min-w-0">

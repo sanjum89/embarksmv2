@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Microscope, Plus, Send, Loader2, Pin, Trash2, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
 import type { PinnedAnswer } from "@/lib/deepResearch/envelope";
+import { ThinkingPanel } from "@/components/deep-research/ThinkingPanel";
 
 export default function DeepResearch() {
   const { user } = useUser();
@@ -33,7 +34,7 @@ export default function DeepResearch() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [dr.activeThread?.messages.length, dr.isStreaming]);
+  }, [dr.activeThread?.messages.length, dr.isStreaming, dr.thinkingStage]);
 
   const submit = async (text?: string) => {
     const prompt = (text ?? input).trim();
@@ -84,7 +85,7 @@ export default function DeepResearch() {
       <div className="flex-1 grid grid-cols-[280px_1fr_320px] min-h-0">
         {/* Left: starters + threads */}
         <aside className="border-r border-border/60 overflow-y-auto p-4 space-y-6">
-          <StarterCards onPick={(p) => submit(p)} />
+          <StarterCards onPick={(p) => submit(p)} disabled={dr.isStreaming} />
 
           {dr.threads.length > 0 && (
             <div>
@@ -135,10 +136,10 @@ export default function DeepResearch() {
               </div>
             ) : (
               dr.activeThread.messages.map((m) => (
-                <div key={m.id} className="space-y-3">
+                <div key={m.id} className="space-y-3 animate-fade-in">
                   {m.role === "user" ? (
                     <div className="flex justify-end">
-                      <div className="rounded-2xl rounded-br-sm bg-primary text-primary-foreground px-4 py-2 text-sm max-w-[80%]">
+                      <div className="rounded-2xl rounded-br-sm bg-primary text-primary-foreground px-4 py-2 text-sm max-w-[80%] shadow-sm">
                         {m.content}
                       </div>
                     </div>
@@ -162,10 +163,7 @@ export default function DeepResearch() {
             )}
 
             {dr.isStreaming && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Researching · planning tools · synthesising answer…
-              </div>
+              <ThinkingPanel stage={dr.thinkingStage} trace={dr.thinkingTrace} />
             )}
           </div>
 
@@ -185,8 +183,15 @@ export default function DeepResearch() {
                 disabled={dr.isStreaming}
                 className="flex-1"
               />
-              <Button type="submit" disabled={dr.isStreaming || !input.trim()}>
-                {dr.isStreaming ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              <Button type="submit" disabled={dr.isStreaming || !input.trim()} className="min-w-[44px]">
+                {dr.isStreaming ? (
+                  <span className="flex items-center gap-1.5 text-xs">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Researching
+                  </span>
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
               </Button>
             </form>
           </div>

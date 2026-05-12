@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { ChevronDown, ChevronRight, Pin, Sparkles, ArrowRight, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,8 @@ import { EvidenceTable } from "./blocks/EvidenceTable";
 import { KpiStrip } from "./blocks/KpiStrip";
 import type { ResponseEnvelope, VisualBlock } from "@/lib/deepResearch/envelope";
 import { dispatchDeepResearchAction } from "@/lib/deepResearch/actionDispatch";
+import { useStagedReveal } from "@/hooks/useStagedReveal";
+import { cn } from "@/lib/utils";
 
 interface Props {
   envelope: ResponseEnvelope;

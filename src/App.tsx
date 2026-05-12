@@ -94,6 +94,7 @@ const App = () => (
               <Route path="/team/deep-research" element={<DeepResearch />} />
               <Route path="/team/deep-research/:threadId" element={<DeepResearch />} />
               <Route path="/manager/cohort/:cohortId" element={<ManagerCohortHub />} />
+              <Route path="/cohort" element={<CohortHub />} />
               <Route path="/action-centre" element={<ActionCentre />} />
               <Route path="/admin" element={<AdminView />} />
             </Route>

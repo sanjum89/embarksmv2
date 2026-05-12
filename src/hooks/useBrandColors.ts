@@ -323,7 +323,11 @@ export function useBrandColors() {
 
   useEffect(() => {
     const root = document.documentElement;
-    const isRathbones = (activeAccount?.name ?? "").trim().toLowerCase() === "rathbones";
+    const accountName = (activeAccount?.name ?? "").trim().toLowerCase();
+    const isRathbones = accountName === "rathbones";
+    // Pinnacle Capital is a white-label clone of Rathbones — share the same default theme.
+    const isPinnacle = accountName === "pinnacle capital";
+    const shouldDefaultToRathbones = isRathbones || isPinnacle;
 
     const rathbonesFallback = (): BrandColorConfig => {
       const p = COLOR_PRESETS["rathbones-calm"];
@@ -340,8 +344,9 @@ export function useBrandColors() {
       }
     }
 
-    // Rathbones account always renders the Rathbones theme, even with empty/invalid accent_color.
-    if (!config && isRathbones) config = rathbonesFallback();
+    // Rathbones / Pinnacle accounts always render the Rathbones theme by default,
+    // even with empty/invalid accent_color.
+    if (!config && shouldDefaultToRathbones) config = rathbonesFallback();
 
     if (!config) {
       // Restore defaults — remove all inline overrides

@@ -5,7 +5,9 @@ import {
   COHORT_MODULES_FALLBACK,
   RATHBONES_COHORT_ID,
   RATHBONES_PERSONA_IDS,
+  bucketStageLabel,
   getDemoOverlay,
+  materializeOverlay,
   type LearnerOverlay,
 } from "@/data/managerDemoOverlay";
 

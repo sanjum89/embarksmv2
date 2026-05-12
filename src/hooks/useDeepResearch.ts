@@ -3,13 +3,12 @@ import { findShowcaseMatch, isShowcaseAccount } from "@/data/deepResearchShowcas
 import type {
   DeepResearchMessage,
   DeepResearchThread,
-  PinnedTile,
+  PinnedAnswer,
   ResponseEnvelope,
-  VisualBlock,
 } from "@/lib/deepResearch/envelope";
 
 const THREADS_KEY = "deep-research-threads";
-const PINS_KEY = "deep-research-pins";
+const PINS_KEY = "deep-research-pins-v2";
 
 const newId = () => `dr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
@@ -32,18 +31,18 @@ function saveThreads(threads: DeepResearchThread[]) {
   }
 }
 
-function loadPins(accountId: string): PinnedTile[] {
+function loadPins(accountId: string): PinnedAnswer[] {
   try {
-    const all: (PinnedTile & { accountId: string })[] = JSON.parse(localStorage.getItem(PINS_KEY) ?? "[]");
+    const all: (PinnedAnswer & { accountId: string })[] = JSON.parse(localStorage.getItem(PINS_KEY) ?? "[]");
     return all.filter((p) => p.accountId === accountId);
   } catch {
     return [];
   }
 }
 
-function savePins(accountId: string, pins: PinnedTile[]) {
+function savePins(accountId: string, pins: PinnedAnswer[]) {
   try {
-    const all: (PinnedTile & { accountId: string })[] = JSON.parse(localStorage.getItem(PINS_KEY) ?? "[]");
+    const all: (PinnedAnswer & { accountId: string })[] = JSON.parse(localStorage.getItem(PINS_KEY) ?? "[]");
     const others = all.filter((p) => p.accountId !== accountId);
     const next = [...others, ...pins.map((p) => ({ ...p, accountId }))];
     localStorage.setItem(PINS_KEY, JSON.stringify(next));
@@ -60,10 +59,9 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
   const { accountId, accountName, ownerId } = args;
   const [threads, setThreads] = useState<DeepResearchThread[]>(() => loadThreads(accountId));
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
-  const [pins, setPins] = useState<PinnedTile[]>(() => loadPins(accountId));
+  const [pins, setPins] = useState<PinnedAnswer[]>(() => loadPins(accountId));
   const [isStreaming, setIsStreaming] = useState(false);
 
-  // reload when account changes
   useEffect(() => {
     setThreads(loadThreads(accountId));
     setPins(loadPins(accountId));
@@ -122,7 +120,6 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
       setIsStreaming(true);
       let envelope: ResponseEnvelope | null = null;
 
-      // Showcase short-circuit
       if (isShowcaseAccount(accountName)) {
         const match = findShowcaseMatch(prompt);
         if (match) {
@@ -131,9 +128,18 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
         }
       }
 
-      // Live fallback via edge function
       if (!envelope) {
         try {
+          // grab last assistant envelope as grounding context
+          const t = threads.find((x) => x.id === threadId);
+          const lastAsst = [...(t?.messages ?? [])].reverse().find((m) => m.role === "assistant" && m.envelope);
+          const lastEnvelopeContext = lastAsst?.envelope
+            ? {
+                executive: lastAsst.envelope.executive,
+                evidence: lastAsst.envelope.evidence,
+              }
+            : null;
+
           const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deep-research-chat`;
           const resp = await fetch(url, {
             method: "POST",
@@ -144,10 +150,8 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
             body: JSON.stringify({
               prompt,
               accountName,
-              history: (threads.find((t) => t.id === threadId)?.messages ?? []).map((m) => ({
-                role: m.role,
-                content: m.content,
-              })),
+              lastEnvelopeContext,
+              history: (t?.messages ?? []).map((m) => ({ role: m.role, content: m.content })),
             }),
           });
           if (resp.ok) {
@@ -159,7 +163,6 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
         }
       }
 
-      // Final fallback if everything failed
       if (!envelope) {
         envelope = {
           executive:
@@ -203,20 +206,25 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
     [activeThreadId, newThread, accountName, threads]
   );
 
-  const pinBlock = useCallback(
-    (threadId: string, messageId: string, block: VisualBlock, title: string) => {
-      const tile: PinnedTile = {
+  const pinAnswer = useCallback(
+    (threadId: string, threadTitle: string | undefined, messageId: string, envelope: ResponseEnvelope, title: string) => {
+      const pin: PinnedAnswer = {
         id: newId(),
         threadId,
+        threadTitle,
         messageId,
-        block,
+        envelope,
         title,
         createdAt: new Date().toISOString(),
       };
-      setPins((p) => [tile, ...p]);
+      setPins((p) => [pin, ...p]);
     },
     []
   );
+
+  const renamePin = useCallback((id: string, title: string) => {
+    setPins((p) => p.map((t) => (t.id === id ? { ...t, title } : t)));
+  }, []);
 
   const unpin = useCallback((id: string) => {
     setPins((p) => p.filter((t) => t.id !== id));
@@ -240,7 +248,8 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
     ask,
     isStreaming,
     pins,
-    pinBlock,
+    pinAnswer,
+    renamePin,
     unpin,
   };
 }

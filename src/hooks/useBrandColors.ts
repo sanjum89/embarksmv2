@@ -42,14 +42,6 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
     swatch: ["hsl(230, 75%, 15%)", "hsl(12, 55%, 85%)"],
     family: "rathbones",
   },
-  "rathbones-vibrant": {
-    label: "Rathbones — Vibrant",
-    primary: "230 75% 15%",
-    accent: "14 88% 58%",
-    sidebar: "230 60% 13%",
-    swatch: ["hsl(230, 75%, 15%)", "hsl(14, 88%, 58%)"],
-    family: "rathbones",
-  },
   "navy-amber": {
     label: "Navy & Amber",
     primary: "222 60% 22%",

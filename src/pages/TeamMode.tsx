@@ -196,10 +196,16 @@ export default function TeamMode() {
         {/* Two-column body */}
         <div className="grid gap-6 lg:grid-cols-12">
           <div className="min-w-0 lg:col-span-8">
-            <TeamRoster entries={entries} onOpen={setOpenId} />
+            <TeamRoster entries={entries} onOpen={setOpenId} onOpenRaisedHand={openRaisedHand} />
           </div>
           <div className="space-y-6 lg:col-span-4">
-            <ActionQueue items={queueItems} onOpen={setOpenId} />
+            <ActionQueue
+              items={queueItems}
+              onOpen={(employeeId, item) => {
+                if (item?.kind === "raised_hand") openRaisedHand(employeeId, item.id);
+                else setOpenId(employeeId);
+              }}
+            />
             <MyCohortsCard cohorts={cohortItems} />
           </div>
         </div>

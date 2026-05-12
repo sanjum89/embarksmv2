@@ -322,12 +322,14 @@ export function EmbarkContent() {
 
     // Override "next" prop on the diagnostic screen so the CompletionScreen
     // auto-advances into the first reopened chapter (or the next module).
+    // If the learner bypasses the diagnostic by clicking "Mark as Complete"
+    // (no submission recorded), still resolve a forward path to the next
+    // module's first chapter so the completion screen never dead-ends.
     let diagNext: { id: string; title: string } | null = null;
     if (diagModuleCode) {
       const recorded = diagState[diagModuleCode];
-      if (recorded) {
-        diagNext = computeDiagnosticNext(Array.from(recorded.reopened));
-      }
+      const wrong = recorded ? Array.from(recorded.reopened) : [];
+      diagNext = computeDiagnosticNext(wrong);
     }
 
     // Resolve final "next" priorities: diagnostic > cohort-journey > skill-target nextStep

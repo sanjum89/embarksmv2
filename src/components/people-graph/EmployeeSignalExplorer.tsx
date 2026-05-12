@@ -79,12 +79,28 @@ export function EmployeeSignalExplorer({ employees, rolesById, projectsById, get
               </Select>
             </div>
             {employee && (
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
                 {role && <Badge variant="outline">{role.name}</Badge>}
                 {employee.department && <span>{employee.department}</span>}
                 {employee.tenure && <span>Tenure: {employee.tenure}y</span>}
+                {overlay && (
+                  <Badge variant="outline" className="border-accent/40 text-accent-foreground bg-accent/10">
+                    Investment Management Readiness · Jan 2026
+                  </Badge>
+                )}
+                {statusPill && (
+                  <Badge variant="outline" className={statusPill.cls}>
+                    {statusPill.label}
+                  </Badge>
+                )}
               </div>
             )}
+          </div>
+          {overlay && (
+            <p className="mt-3 text-sm text-foreground/80 leading-relaxed border-l-2 border-accent/40 pl-3">
+              {overlay.headline}
+            </p>
+          )}
           </div>
         </CardContent>
       </Card>

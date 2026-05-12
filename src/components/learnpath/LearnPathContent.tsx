@@ -12,6 +12,7 @@ import { EmbarkJourneyView } from "./EmbarkJourneyView";
 import { EmbarkLoadingState } from "./EmbarkLoadingState";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";
 import { EmbarkAssessment } from "./LearnPathAssessment";
+import { EvidenceTaskCard } from "./EvidenceTaskCard";
 import { EmbarkModeSelector } from "./LearnPathModeSelector";
 import { ExplainSelectionPopover } from "./ExplainSelectionPopover";
 import { GraduationCap, Sparkles, AlertTriangle, ArrowRight } from "lucide-react";

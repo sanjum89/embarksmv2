@@ -638,6 +638,45 @@ export type Database = {
           },
         ]
       }
+      cohort_announcements: {
+        Row: {
+          account_id: string
+          author_employee_id: string
+          body: string
+          cohort_id: string
+          created_at: string
+          id: string
+          metadata: Json
+          pinned: boolean
+          posted_at: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          author_employee_id: string
+          body: string
+          cohort_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          pinned?: boolean
+          posted_at?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          author_employee_id?: string
+          body?: string
+          cohort_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          pinned?: boolean
+          posted_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cohort_enrollments: {
         Row: {
           account_id: string
@@ -678,6 +717,141 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      cohort_session_attendees: {
+        Row: {
+          account_id: string
+          created_at: string
+          employee_id: string
+          id: string
+          session_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          employee_id: string
+          id?: string
+          session_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          employee_id?: string
+          id?: string
+          session_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cohort_sessions: {
+        Row: {
+          account_id: string
+          capacity: number
+          cohort_id: string
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          host_employee_id: string | null
+          id: string
+          joined_count: number
+          kind: string
+          location: string | null
+          metadata: Json
+          starts_at: string
+          tags: string[]
+          teams_link: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          capacity?: number
+          cohort_id: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          host_employee_id?: string | null
+          id?: string
+          joined_count?: number
+          kind?: string
+          location?: string | null
+          metadata?: Json
+          starts_at: string
+          tags?: string[]
+          teams_link?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          capacity?: number
+          cohort_id?: string
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          host_employee_id?: string | null
+          id?: string
+          joined_count?: number
+          kind?: string
+          location?: string | null
+          metadata?: Json
+          starts_at?: string
+          tags?: string[]
+          teams_link?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      cohort_study_groups: {
+        Row: {
+          account_id: string
+          cohort_id: string
+          created_at: string
+          focus: string | null
+          id: string
+          member_employee_ids: string[]
+          metadata: Json
+          next_meeting_at: string | null
+          schedule_text: string | null
+          teams_link: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          cohort_id: string
+          created_at?: string
+          focus?: string | null
+          id?: string
+          member_employee_ids?: string[]
+          metadata?: Json
+          next_meeting_at?: string | null
+          schedule_text?: string | null
+          teams_link?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          cohort_id?: string
+          created_at?: string
+          focus?: string | null
+          id?: string
+          member_employee_ids?: string[]
+          metadata?: Json
+          next_meeting_at?: string | null
+          schedule_text?: string | null
+          teams_link?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       cohorts: {
         Row: {

@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { CalendarPlus, MessageSquarePlus, Send, Link2, CheckCircle2, Quote } from "lucide-react";
+import { CalendarPlus, MessageSquarePlus, Send, Link2, CheckCircle2, Quote, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useUser } from "@/contexts/UserContext";
 import { useManagerActions } from "@/store/useManagerActions";
 import { TeamAvatar } from "@/components/team-home/Avatar";
 import { TeamsBadge } from "@/components/team-home/TeamsBadge";
+import { AssignMentorDialog } from "@/components/manager-hub/AssignMentorDialog";
 import type { ActionItem } from "@/data/managerDemoOverlay";
 
 interface Props {
@@ -32,6 +33,7 @@ export function RaisedHandDrawer({ open, onOpenChange, action, learner, onSchedu
   const { recordDecision } = useManagerActions();
   const [reply, setReply] = useState("");
   const [sent, setSent] = useState(false);
+  const [mentorOpen, setMentorOpen] = useState(false);
 
   if (!action || !learner) return null;
 
@@ -169,6 +171,17 @@ export function RaisedHandDrawer({ open, onOpenChange, action, learner, onSchedu
             <Button
               variant="outline"
               className="h-auto justify-start gap-2 py-2"
+              onClick={() => setMentorOpen(true)}
+            >
+              <UserPlus className="h-4 w-4 text-primary" />
+              <div className="text-left">
+                <p className="text-xs font-medium text-foreground">Assign mentor</p>
+                <p className="text-[10px] text-muted-foreground">Pair with a senior colleague</p>
+              </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto justify-start gap-2 py-2"
               onClick={() => {
                 recordDecision(action.id, "resolved", user.name);
                 toast.success("Marked as resolved");
@@ -183,6 +196,22 @@ export function RaisedHandDrawer({ open, onOpenChange, action, learner, onSchedu
             </Button>
           </div>
         </div>
+
+        <AssignMentorDialog
+          open={mentorOpen}
+          onOpenChange={setMentorOpen}
+          mentee={learner}
+          contextLabel={action.module_title ? `Raised hand on ${action.module_title} · ${action.age}` : `Raised hand · ${action.age}`}
+          prefillReason={action.module_title ? `Stuck on ${action.module_title} — raised hand` : "Raised hand — needs support"}
+          prefillFocusAreas={action.module_title ? [action.module_title] : []}
+          showResolveOption
+          onAssigned={(_mentorId, opts) => {
+            if (opts.markResolved) {
+              recordDecision(action.id, "resolved", user.name);
+            }
+            close(false);
+          }}
+        />
       </SheetContent>
     </Sheet>
   );

@@ -218,7 +218,11 @@ function StatusPill({ status }: { status: JourneyModule["status"] }) {
 }
 
 type DiagSnap = { submitted: boolean; reopened: Set<string>; total: number; correct: number };
-type LensChapter = JourneyModule["chapters"][number] & { lensState?: string; pendingSkip?: boolean };
+type LensChapter = JourneyModule["chapters"][number] & {
+  lensState?: string;
+  pendingSkip?: boolean;
+  diagResult?: { correct: number; total: number; reopenedCount: number };
+};
 
 /**
  * Reshape the chapter list based on the persona's delivery lens.

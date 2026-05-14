@@ -57,6 +57,13 @@ export const diagnosticReopens = {
   reset() {
     setState({ byModule: {} });
   },
+  /** Clear a single module's recorded submission (used by Retry). */
+  clear(moduleCode: string) {
+    if (!state.byModule[moduleCode]) return;
+    const next = { ...state.byModule };
+    delete next[moduleCode];
+    setState({ ...state, byModule: next });
+  },
   get(moduleCode: string): ModuleDiagState | undefined {
     return state.byModule[moduleCode];
   },

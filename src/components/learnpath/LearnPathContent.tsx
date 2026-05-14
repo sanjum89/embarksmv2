@@ -11,6 +11,7 @@ import { diagnosticReopens, useDiagnosticReopens } from "@/store/useDiagnosticRe
 import { EmbarkJourneyView } from "./EmbarkJourneyView";
 import { EmbarkLoadingState } from "./EmbarkLoadingState";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";
+import { DiagnosticResultsCard } from "./DiagnosticResultsCard";
 import { EmbarkAssessment } from "./LearnPathAssessment";
 import { EvidenceTaskCard } from "./EvidenceTaskCard";
 import { EmbarkModeSelector } from "./LearnPathModeSelector";
@@ -43,6 +44,9 @@ export interface UnifiedStep {
    *  but the triggering action (evidence submission / diagnostic) has not yet
    *  been completed. Renders the SkipForward icon greyed-out instead of amber. */
   pendingSkip?: boolean;
+  /** Set on the synthetic Quick Diagnostic row once submitted, so the row can
+   *  show a compact score pill alongside the existing QUICK DIAGNOSTIC pill. */
+  diagResult?: { correct: number; total: number; reopenedCount: number };
 }
 
 export function EmbarkContent() {
@@ -54,6 +58,9 @@ export function EmbarkContent() {
   const { substitute } = useContentSubstitution();
   const autoResumedRef = useRef(false);
   const [moduleCompletedView, setModuleCompletedView] = useState(false);
+  /** Module codes the learner just clicked "Retake" on — bypasses the results
+   *  card and shows the inline quiz again. Reset when the active module changes. */
+  const [retryingDiag, setRetryingDiag] = useState<Set<string>>(new Set());
 
   const employeeId =
     normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
@@ -117,6 +124,7 @@ export function EmbarkContent() {
   // Reset completion-view flag when active module changes (so mode selector returns)
   useEffect(() => {
     setModuleCompletedView(false);
+    setRetryingDiag(new Set());
   }, [activeModuleId]);
 
   // Get skill gap recommendations for empty state
@@ -228,6 +236,58 @@ export function EmbarkContent() {
                 else showModuleGrid();
               }}
               onPersisted={refreshJourney}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // Quick Diagnostic results screen — short-circuits when the learner has
+    // already submitted (and hasn't clicked Retake on this view).
+    if (diagModuleCode && diagModuleMeta && diagState[diagModuleCode]?.submitted && !retryingDiag.has(diagModuleCode)) {
+      const recorded = diagState[diagModuleCode]!;
+      const chapterEntries = diagModuleMeta.module.chapters.map((c) => ({
+        code: c.code,
+        title: substitute(c.title),
+        minutes: c.minutes ?? undefined,
+      }));
+      const wrong = Array.from(recorded.reopened);
+      const diagNext = (() => {
+        if (wrong.length > 0) {
+          const ordered = diagModuleMeta.module.chapters
+            .filter((c) => recorded.reopened.has(c.code))
+            .map((c) => ({ id: c.code, title: c.title }));
+          if (ordered[0]) return ordered[0];
+        }
+        const trackModules = diagModuleMeta.track.modules;
+        const idx = trackModules.findIndex((m) => m.code === diagModuleCode);
+        const next = trackModules.slice(idx + 1).find((m) => m.chapters.length > 0);
+        const ch = next?.chapters[0];
+        return ch ? { id: ch.code, title: ch.title } : null;
+      })();
+      return (
+        <div className="h-full flex flex-col">
+          <ExplainSelectionPopover />
+          <div className="flex-1 overflow-y-auto" data-explainable="true">
+            <DiagnosticResultsCard
+              moduleTitle={substitute(diagModuleMeta.title)}
+              total={recorded.total}
+              correct={recorded.correct}
+              chapters={chapterEntries}
+              reopenedCodes={recorded.reopened}
+              nextTitle={diagNext ? substitute(diagNext.title) : null}
+              onRetry={() => {
+                diagnosticReopens.clear(diagModuleCode);
+                setRetryingDiag((prev) => {
+                  const next = new Set(prev);
+                  next.add(diagModuleCode);
+                  return next;
+                });
+              }}
+              onContinue={() => {
+                if (diagNext) openModule(diagNext.id);
+                else showModuleGrid();
+              }}
             />
           </div>
         </div>

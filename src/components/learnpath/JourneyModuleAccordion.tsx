@@ -166,6 +166,7 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                         referenceId: c.code,
                         lensState: (c as any).lensState,
                         pendingSkip: (c as any).pendingSkip,
+                        diagResult: (c as any).diagResult,
                       };
                       return (
                         <EmbarkChapterRow
@@ -218,7 +219,11 @@ function StatusPill({ status }: { status: JourneyModule["status"] }) {
 }
 
 type DiagSnap = { submitted: boolean; reopened: Set<string>; total: number; correct: number };
-type LensChapter = JourneyModule["chapters"][number] & { lensState?: string; pendingSkip?: boolean };
+type LensChapter = JourneyModule["chapters"][number] & {
+  lensState?: string;
+  pendingSkip?: boolean;
+  diagResult?: { correct: number; total: number; reopenedCount: number };
+};
 
 /**
  * Reshape the chapter list based on the persona's delivery lens.
@@ -244,15 +249,20 @@ function buildLensChapters(
     const reopened = diag?.reopened ?? new Set<string>();
     const synthetic: LensChapter = {
       code: `__diag::${moduleCode}`,
-      title: submitted
-        ? `Quick diagnostic — ${diag!.correct}/${diag!.total} correct`
-        : "Quick diagnostic — 3 questions",
+      title: "Quick diagnostic — 3 questions",
       contentType: "diagnostic",
       minutes: 5,
       status: submitted ? ("completed" as any) : ("in_progress" as any),
       displayOrder: -1,
       lensState: "synthetic_diagnostic",
-    };
+      diagResult: submitted
+        ? {
+            correct: diag!.correct,
+            total: diag!.total,
+            reopenedCount: diag!.reopened.size,
+          }
+        : undefined,
+    } as LensChapter;
     const real: LensChapter[] = chapters.map((c) => {
       if (!submitted) {
         // Predicted skip — keep original status (don't show amber until the

@@ -201,6 +201,26 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
                     {lensPill[lens].label}
                   </Badge>
                 )}
+                {step.diagResult && (() => {
+                  const { correct, total, reopenedCount } = step.diagResult;
+                  const allCorrect = correct === total;
+                  const noneCorrect = correct === 0;
+                  const tone = allCorrect
+                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                    : noneCorrect
+                      ? "bg-destructive/10 text-destructive border-destructive/30"
+                      : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
+                  const label = allCorrect
+                    ? `✓ ${correct}/${total}`
+                    : noneCorrect
+                      ? `${correct}/${total} · revisit all`
+                      : `${correct}/${total} · ${reopenedCount} to revisit`;
+                  return (
+                    <Badge variant="outline" className={cn("h-5 px-1.5 text-[0.65rem] border font-medium", tone)}>
+                      {label}
+                    </Badge>
+                  );
+                })()}
               </div>
 
               <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground flex-wrap">

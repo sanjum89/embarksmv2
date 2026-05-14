@@ -74,7 +74,7 @@ export function useEvidenceBrief(args: Args | null) {
       .eq("module_code", a.moduleCode)
       .eq("chapter_code", a.firstChapterCode)
       .maybeSingle();
-    const meta = { ...(existing?.metadata as Record<string, unknown> | null ?? {}), evidence_brief: brief };
+    const meta: any = { ...(existing?.metadata as Record<string, unknown> | null ?? {}), evidence_brief: brief };
     if (existing?.id) {
       await supabase.from("learner_progress").update({ metadata: meta }).eq("id", existing.id);
     } else {

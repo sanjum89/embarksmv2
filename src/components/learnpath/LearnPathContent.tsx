@@ -121,6 +121,7 @@ export function EmbarkContent() {
   // Reset completion-view flag when active module changes (so mode selector returns)
   useEffect(() => {
     setModuleCompletedView(false);
+    setRetryingDiag(new Set());
   }, [activeModuleId]);
 
   // Get skill gap recommendations for empty state

@@ -343,6 +343,24 @@ export const podcastTranscripts: Record<string, PodcastScript> = {
     { speaker: "Alex Rivera", role: "Host", text: "Other techniques?" },
     { speaker: "Taylor Simmons", role: "Enterprise AE", text: "The 'peer perspective' reframe — sharing how similar companies approached the same decision. The 'timeline reframe' — shifting from short-term cost to long-term value. And the 'risk reframe' — what happens if they choose wrong? Each one shifts the frame of reference in a way that naturally positions your solution." },
   ],
+
+  /* ═══ DISCRETIONARY WEALTH MANAGEMENT — bk1.c1 ═══ */
+  "bk1.c1": [
+    { speaker: "Sarah Chen", role: "Host, Head of Training", text: "Welcome back to 'Inside Rathbones.' Today we're answering a question every new joiner asks in their first week — what actually is discretionary wealth management? I'm joined by James Morton, Senior Investment Manager." },
+    { speaker: "James Morton", role: "Senior Investment Manager", text: "Great topic, Sarah. It sounds like jargon, but once you understand it, the rest of what we do at Rathbones starts to make sense." },
+    { speaker: "Sarah Chen", role: "Host", text: "So let's start with the simplest possible definition. What is discretionary management?" },
+    { speaker: "James Morton", role: "Senior Investment Manager", text: "It means the client has given us, within an agreed mandate, the authority to make day-to-day investment decisions on their behalf, without needing to ring them up before every trade. They're trusting our judgement to act in their best interests." },
+    { speaker: "Sarah Chen", role: "Host", text: "And how is that different from the advisory model people might know from an IFA?" },
+    { speaker: "James Morton", role: "Senior Investment Manager", text: "An adviser recommends, the client decides. Discretionary flips that. We're not just suggesting, we're acting, day in, day out. That speed and consistency is one of the biggest reasons private clients choose this model. Markets don't wait for a phone call." },
+    { speaker: "Sarah Chen", role: "Host", text: "Where's the boundary then? Discretion can't mean we do whatever we want." },
+    { speaker: "James Morton", role: "Senior Investment Manager", text: "Absolutely not. Everything sits inside the suitability framework: the client's objectives, their attitude to risk, their capacity for loss, their time horizon, any ethical preferences, tax constraints. The mandate is the perimeter, and suitability is the rulebook inside it." },
+    { speaker: "Sarah Chen", role: "Host", text: "Let's talk about the mandate. What does it actually cover?" },
+    { speaker: "James Morton", role: "Senior Investment Manager", text: "Asset class ranges, geographic exposure, ESG screens, liquidity requirements, any specific exclusions, single-stock concentration limits for example. It's a written agreement, reviewed regularly, that tells me what I can and can't do with that portfolio." },
+    { speaker: "Sarah Chen", role: "Host", text: "And monitoring, how does that work in practice?" },
+    { speaker: "James Morton", role: "Senior Investment Manager", text: "Continuously. We're watching markets, watching individual holdings, watching the portfolio's drift against its strategic asset allocation. Plus formal reviews with the client, usually twice a year, where we walk through performance, positioning, and any changes in their circumstances." },
+    { speaker: "Sarah Chen", role: "Host", text: "Last one, the regulatory framing. Why does the FCA care so much about this model?" },
+    { speaker: "James Morton", role: "Senior Investment Manager", text: "Because we're handling other people's money with delegated authority. Consumer Duty, MiFID II, suitability rules, they all exist to make sure discretion is exercised properly, transparently, and demonstrably in the client's interest. Get that right, and discretionary management is the most powerful service in wealth management." },
+  ],
 };
 
 /**

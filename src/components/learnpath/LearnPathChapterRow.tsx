@@ -197,6 +197,15 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
                   <Badge
                     variant="outline"
                     className={cn("h-5 px-1.5 text-[0.65rem] border", lensPill[lens].className)}
+                    data-tour={
+                      lens === "synthetic_diagnostic"
+                        ? "lens-diagnostic"
+                        : lens === "synthetic_evidence"
+                          ? "lens-evidence"
+                          : lens === "trimmed_by_micro"
+                            ? "lens-condensed"
+                            : undefined
+                    }
                   >
                     {lensPill[lens].label}
                   </Badge>

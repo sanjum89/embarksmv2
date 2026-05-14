@@ -11,6 +11,7 @@ import { diagnosticReopens, useDiagnosticReopens } from "@/store/useDiagnosticRe
 import { EmbarkJourneyView } from "./EmbarkJourneyView";
 import { EmbarkLoadingState } from "./EmbarkLoadingState";
 import { EmbarkModuleContent } from "./LearnPathModuleContent";
+import { DiagnosticResultsCard } from "./DiagnosticResultsCard";
 import { EmbarkAssessment } from "./LearnPathAssessment";
 import { EvidenceTaskCard } from "./EvidenceTaskCard";
 import { EmbarkModeSelector } from "./LearnPathModeSelector";

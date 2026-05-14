@@ -121,6 +121,9 @@ export const AgentOneContext = createContext<AgentOneContextType>(null!);
 export function AgentOneProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();
   const { normalizedAccount, activeAccount } = useAccount();
+  const linkedEmployeeId =
+    normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
+  const { journey } = useLearnerJourney(activeAccount?.id ?? null, linkedEmployeeId);
   const { skillTargets, updateSkillTarget } = useSkillTargets();
   const { rolePlays } = useRolePlays();
   const location = useLocation();

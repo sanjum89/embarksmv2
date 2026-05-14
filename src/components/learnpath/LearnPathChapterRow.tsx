@@ -73,10 +73,11 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
   const isLocked = step.status === "locked";
   const isCompleted = step.status === "completed";
   const isSkipped = step.status === "skipped";
-  const isInProgress = step.status === "in_progress" || isActive;
+  const isPendingSkip = !!step.pendingSkip && !isSkipped && !isCompleted;
+  const isInProgress = (step.status === "in_progress" || isActive) && !isPendingSkip;
   const lens = step.lensState;
   const isReadOnlySkipped =
-    lens === "skipped_by_diagnostic" || lens === "covered_by_evidence" || lens === "trimmed_by_micro";
+    lens === "skipped_by_diagnostic" || lens === "covered_by_evidence" || lens === "trimmed_by_micro" || isPendingSkip;
 
   const handleOpen = () => {
     if (isLocked) return;
@@ -109,6 +110,11 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
   ) : isSkipped ? (
     <div className="h-7 w-7 rounded-full bg-amber-500/15 ring-2 ring-amber-500/40 flex items-center justify-center">
       <SkipForward className="h-4 w-4 text-amber-600" />
+    </div>
+  ) : isPendingSkip ? (
+    // Predicted skip — same icon, greyed out until the trigger is committed.
+    <div className="h-7 w-7 rounded-full bg-muted ring-2 ring-border flex items-center justify-center">
+      <SkipForward className="h-4 w-4 text-muted-foreground" />
     </div>
   ) : isInProgress ? (
     <div className="h-7 w-7 rounded-full bg-accent ring-2 ring-accent/40 flex items-center justify-center">

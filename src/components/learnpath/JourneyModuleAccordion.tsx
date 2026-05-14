@@ -165,6 +165,7 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                         progress: m.pct,
                         referenceId: c.code,
                         lensState: (c as any).lensState,
+                        pendingSkip: (c as any).pendingSkip,
                       };
                       return (
                         <EmbarkChapterRow
@@ -217,7 +218,7 @@ function StatusPill({ status }: { status: JourneyModule["status"] }) {
 }
 
 type DiagSnap = { submitted: boolean; reopened: Set<string>; total: number; correct: number };
-type LensChapter = JourneyModule["chapters"][number] & { lensState?: string };
+type LensChapter = JourneyModule["chapters"][number] & { lensState?: string; pendingSkip?: boolean };
 
 /**
  * Reshape the chapter list based on the persona's delivery lens.
@@ -254,7 +255,9 @@ function buildLensChapters(
     };
     const real: LensChapter[] = chapters.map((c) => {
       if (!submitted) {
-        return { ...c, status: "skipped" as any, lensState: "skipped_by_diagnostic" };
+        // Predicted skip — keep original status (don't show amber until the
+        // diagnostic has actually been taken).
+        return { ...c, lensState: "skipped_by_diagnostic", pendingSkip: true };
       }
       if (reopened.has(c.code)) {
         // Reopened chapters always show as in_progress (needs work) — never green-tick,
@@ -276,11 +279,16 @@ function buildLensChapters(
       contentType: "evidence",
       lensState: "synthetic_evidence",
     };
-    const real: LensChapter[] = chapters.map((c) => ({
-      ...c,
-      status: "skipped" as any,
-      lensState: "covered_by_evidence",
-    }));
+    const real: LensChapter[] = chapters.map((c) => {
+      // Once evidence is submitted, applyEvidenceOutcome marks the underlying
+      // learner_progress rows as "skipped". Until then, keep the original
+      // status and flag as pendingSkip so the row renders a greyed-out icon.
+      const committed = (c.status as any) === "skipped";
+      if (committed) {
+        return { ...c, lensState: "covered_by_evidence" };
+      }
+      return { ...c, lensState: "covered_by_evidence", pendingSkip: true };
+    });
     return [synthetic, ...real];
   }
 

@@ -55,6 +55,9 @@ export function EmbarkContent() {
   const { substitute } = useContentSubstitution();
   const autoResumedRef = useRef(false);
   const [moduleCompletedView, setModuleCompletedView] = useState(false);
+  /** Module codes the learner just clicked "Retake" on — bypasses the results
+   *  card and shows the inline quiz again. Reset when the active module changes. */
+  const [retryingDiag, setRetryingDiag] = useState<Set<string>>(new Set());
 
   const employeeId =
     normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;

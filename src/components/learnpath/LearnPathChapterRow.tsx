@@ -73,10 +73,11 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
   const isLocked = step.status === "locked";
   const isCompleted = step.status === "completed";
   const isSkipped = step.status === "skipped";
-  const isInProgress = step.status === "in_progress" || isActive;
+  const isPendingSkip = !!step.pendingSkip && !isSkipped && !isCompleted;
+  const isInProgress = (step.status === "in_progress" || isActive) && !isPendingSkip;
   const lens = step.lensState;
   const isReadOnlySkipped =
-    lens === "skipped_by_diagnostic" || lens === "covered_by_evidence" || lens === "trimmed_by_micro";
+    lens === "skipped_by_diagnostic" || lens === "covered_by_evidence" || lens === "trimmed_by_micro" || isPendingSkip;
 
   const handleOpen = () => {
     if (isLocked) return;

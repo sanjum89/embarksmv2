@@ -14,6 +14,7 @@ import type { RichBlock } from "@/components/chat/RichContentBlock";
 import { chapterSummaries, agentOneContent, onboardingSuggestionPills, isDemoLearner, getDemoPersona, findDemoMatch, MANAGER_MILESTONES } from "@/data/rathbonesOnboarding";
 import { emitEvent } from "@/lib/agentOneEventEmitter";
 import { applyContentNames } from "@/lib/contentSubstitution";
+import { useLearnerJourney } from "@/hooks/useLearnerJourney";
 
 /* ─── Stage-based Reflection Triggers (derived from cohort) ─── */
 import { investmentManagerCohort } from "@/data/rathbonesOnboarding";

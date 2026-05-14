@@ -288,6 +288,52 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     return applyContentNames(t, nameMap);
   }, [nameMap]);
 
+  // Cohort & learning track context (cohort-first source of truth)
+  const cohortContext = useMemo(() => {
+    if (!journey) return null;
+    const c = journey.cohort;
+    const tracks = (journey.tracks || []).map((t) => {
+      const modules = (t.modules || []).map((m) => ({
+        code: m.code,
+        title: sub(m.title),
+        status: m.status,
+        pct: m.pct,
+        completedChapters: m.completedChapters,
+        totalChapters: m.totalChapters,
+        adaptationType: m.adaptation?.adaptationType ?? null,
+      }));
+      const upNextModule = modules.find((m) => m.status === "up_next") || modules.find((m) => m.status === "in_progress") || null;
+      return {
+        code: t.code,
+        name: sub(t.name),
+        pct: t.pct,
+        completedModules: t.completedModules,
+        totalModules: t.totalModules,
+        completedChapters: t.completedChapters,
+        totalChapters: t.totalChapters,
+        upNextModule,
+        modules,
+      };
+    });
+    const upNextTrack = tracks.find((t) => t.upNextModule) || null;
+    return {
+      cohortCode: c.code,
+      cohortTitle: sub(c.title),
+      roleCohortCode: c.roleCohortCode,
+      startDate: c.startDate ?? null,
+      dueDate: c.dueDate ?? null,
+      overallPct: c.overallPct,
+      completedModules: c.completedModules,
+      totalModules: c.totalModules,
+      completedChapters: c.completedChapters,
+      totalChapters: c.totalChapters,
+      upNext: upNextTrack
+        ? { trackName: upNextTrack.name, moduleTitle: upNextTrack.upNextModule?.title, status: upNextTrack.upNextModule?.status }
+        : null,
+      tracks,
+    };
+  }, [journey, sub]);
+
   const userContext = {
     name: user.name,
     role: user.role,
@@ -319,6 +365,7 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     inboxSummary,
     skillGaps,
     chapterContext: chapterContext ? { ...chapterContext, title: sub(chapterContext.title), summary: sub(chapterContext.summary) } : null,
+    cohortContext,
     reflectionContext: reflectionContext || undefined,
     roleDescription: employeeRole?.description || null,
     roleDetailedDescription: employeeRole?.detailedDescription || null,

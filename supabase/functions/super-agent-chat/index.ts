@@ -77,6 +77,15 @@ function buildSystemPrompt(stage: string, userContext: any): string {
     ? `\n\nCURRENT CHAPTER: "${chapterContext.title}" — ${chapterContext.summary}\nKey takeaways: ${chapterContext.keyTakeaways.map((t: string) => `• ${t}`).join("; ")}\nIf the user asks to summarise this chapter, use the summary and takeaways above.`
     : "";
 
+  // Cohort & learning track context — primary source of truth for the learner's journey
+  const cohortData = cohortContext
+    ? `\n\nLEARNER COHORT (primary source of truth — use this when the user asks about their cohort, learning path, tracks, modules, what's next, or progress):\n` +
+      `Cohort: "${cohortContext.cohortTitle}" (code ${cohortContext.cohortCode})${cohortContext.startDate ? ` · started ${cohortContext.startDate}` : ""}${cohortContext.dueDate ? ` · due ${cohortContext.dueDate}` : ""}\n` +
+      `Overall progress: ${cohortContext.overallPct}% — ${cohortContext.completedModules}/${cohortContext.totalModules} modules, ${cohortContext.completedChapters}/${cohortContext.totalChapters} chapters\n` +
+      (cohortContext.upNext ? `Up next: ${cohortContext.upNext.moduleTitle} (track: ${cohortContext.upNext.trackName}, status: ${cohortContext.upNext.status})\n` : "") +
+      `Tracks:\n${(cohortContext.tracks || []).map((t: any) => `- ${t.name} [${t.code}] — ${t.pct}% (${t.completedModules}/${t.totalModules} modules)\n  modules: ${(t.modules || []).map((m: any) => `${m.title} [${m.status}${m.totalChapters ? ` ${m.completedChapters}/${m.totalChapters}` : ""}${m.adaptationType ? ` · ${m.adaptationType}` : ""}]`).join(" | ")}`).join("\n")}\n\nWhen the user asks "what should I do next", "where am I", "what's left", or anything about their cohort or learning tracks, ground your answer in this data and reference exact module / track titles. Prefer this over the legacy SKILL TARGETS data above when both are available.`
+    : "";
+
   const richBlockInstructions = `
 
 RICH CONTENT BLOCKS (critical — use these to show data visually):

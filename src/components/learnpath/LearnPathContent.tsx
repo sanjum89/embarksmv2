@@ -44,6 +44,9 @@ export interface UnifiedStep {
    *  but the triggering action (evidence submission / diagnostic) has not yet
    *  been completed. Renders the SkipForward icon greyed-out instead of amber. */
   pendingSkip?: boolean;
+  /** Set on the synthetic Quick Diagnostic row once submitted, so the row can
+   *  show a compact score pill alongside the existing QUICK DIAGNOSTIC pill. */
+  diagResult?: { correct: number; total: number; reopenedCount: number };
 }
 
 export function EmbarkContent() {

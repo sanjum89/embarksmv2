@@ -239,6 +239,58 @@ export function EmbarkContent() {
       );
     }
 
+    // Quick Diagnostic results screen — short-circuits when the learner has
+    // already submitted (and hasn't clicked Retake on this view).
+    if (diagModuleCode && diagModuleMeta && diagState[diagModuleCode]?.submitted && !retryingDiag.has(diagModuleCode)) {
+      const recorded = diagState[diagModuleCode]!;
+      const chapterEntries = diagModuleMeta.module.chapters.map((c) => ({
+        code: c.code,
+        title: substitute(c.title),
+        minutes: c.minutes ?? undefined,
+      }));
+      const wrong = Array.from(recorded.reopened);
+      const diagNext = (() => {
+        if (wrong.length > 0) {
+          const ordered = diagModuleMeta.module.chapters
+            .filter((c) => recorded.reopened.has(c.code))
+            .map((c) => ({ id: c.code, title: c.title }));
+          if (ordered[0]) return ordered[0];
+        }
+        const trackModules = diagModuleMeta.track.modules;
+        const idx = trackModules.findIndex((m) => m.code === diagModuleCode);
+        const next = trackModules.slice(idx + 1).find((m) => m.chapters.length > 0);
+        const ch = next?.chapters[0];
+        return ch ? { id: ch.code, title: ch.title } : null;
+      })();
+      return (
+        <div className="h-full flex flex-col">
+          <ExplainSelectionPopover />
+          <div className="flex-1 overflow-y-auto" data-explainable="true">
+            <DiagnosticResultsCard
+              moduleTitle={substitute(diagModuleMeta.title)}
+              total={recorded.total}
+              correct={recorded.correct}
+              chapters={chapterEntries}
+              reopenedCodes={recorded.reopened}
+              nextTitle={diagNext ? substitute(diagNext.title) : null}
+              onRetry={() => {
+                diagnosticReopens.clear(diagModuleCode);
+                setRetryingDiag((prev) => {
+                  const next = new Set(prev);
+                  next.add(diagModuleCode);
+                  return next;
+                });
+              }}
+              onContinue={() => {
+                if (diagNext) openModule(diagNext.id);
+                else showModuleGrid();
+              }}
+            />
+          </div>
+        </div>
+      );
+    }
+
     let mod = resolveModule(activeModuleId, skillTargets, normalizedAccount?.learningModules);
 
     // Cohort path: when the active ID is a cohort chapter, render REAL DB content.

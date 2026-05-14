@@ -534,7 +534,22 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
     }
     // Fallback: synthesize a 2-persona script from the transcript so every
     // listening module has a play button + a podcast-style transcript.
-    const synthesized = synthesizePodcastScript(transcript, module.title);
+    const source = (typeof transcript === "string" ? transcript : "") || `Welcome to a short discussion on ${module.title}.`;
+    const sentences = source
+      .replace(/\s+/g, " ")
+      .split(/(?<=[.!?])\s+/)
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const synthesized = sentences.length
+      ? sentences.map((text, i) =>
+          i % 2 === 0
+            ? { speaker: "Host" as const, role: "Curious learner", text }
+            : { speaker: "Expert" as const, role: "Senior practitioner", text },
+        )
+      : [
+          { speaker: "Host" as const, role: "Curious learner", text: `Let's talk about ${module.title}.` },
+          { speaker: "Expert" as const, role: "Senior practitioner", text: "Happy to walk you through it." },
+        ];
     return <EmbarkPodcastPlayer script={synthesized} staticAudioUrl={staticUrl} />;
   };
 

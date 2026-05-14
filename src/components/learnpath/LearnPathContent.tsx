@@ -39,6 +39,10 @@ export interface UnifiedStep {
   progress: number;
   learningFormat?: string;
   referenceId: string;
+  /** True when the chapter is *predicted* to be skipped by the persona's lens
+   *  but the triggering action (evidence submission / diagnostic) has not yet
+   *  been completed. Renders the SkipForward icon greyed-out instead of amber. */
+  pendingSkip?: boolean;
 }
 
 export function EmbarkContent() {

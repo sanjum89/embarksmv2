@@ -106,7 +106,7 @@ export default function ActionCentre() {
   const handleReject = (id: string) => { recordDecision(id, "rejected", user.name); toast.success("Rejected"); };
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto" data-tour="action-centre">
       {/* Header band */}
       <div className="border-b border-border/60 bg-gradient-to-br from-primary/5 via-background to-accent/5">
         <div className="px-6 pt-4 pb-6">

@@ -1,48 +1,82 @@
 ## Goal
-Treat the Quick Diagnostic like an assessment after submission: (a) show a proper results screen when the synthetic diagnostic row is re-opened, and (b) surface the score on the chapter row prominently — without cluttering the existing `QUICK DIAGNOSTIC` pill area.
+Add a guided product tour for Clara (rb-l6) and Theo (rb-l3) that walks them through Embark, content adaptation, Cohort Hub, Action Centre, My 360, and Role Play. The tour is launchable from any page via a persistent "Take the tour" button, and is announced once on first login with a dismissible banner.
 
-## Current state
-- Synthetic diagnostic chapter (`__diag::<moduleCode>`) renders an inline quiz via `EmbarkModuleContent` → `InlineQuiz`.
-- Result is recorded in `diagnosticReopens` store and persisted to `learner_progress`.
-- The only feedback today is the title appending "— 0/3 correct" (lost in row noise per the screenshot). Re-opening shows the quiz again with no recap.
+## What "tour" means here
+A step-driven coach-mark overlay (separate from the existing `FirstLoginTour`, which is a full-screen onboarding wizard). Each step has:
+- A route to be on (the tour navigates the user there)
+- An optional target selector (`data-tour="…"`) on a real UI element — the overlay dims the page and spotlights that element with a popover
+- Title, body copy, and optional next/back/skip
 
-## Changes
+When a step has no target it renders as a centered modal card (used for intros and "how adaptation works" explainers).
 
-### 1. New results screen — `src/components/learnpath/DiagnosticResultsCard.tsx`
-Mirrors the look of `LearnPathAssessment.tsx`'s results panel but slimmer:
-- Top: large score badge (`{correct}/{total}`) + percentage; success/warning ring depending on whether all correct.
-- Sub-line: "X chapters skipped · Y reopened to revisit" (counts derived from `recorded.reopened` vs total chapters in the module).
-- Per-question list: question text + ✓ Correct or ✗ "answered _ — correct: _" (uses the same `diagnostic_questions` payload already loaded by `useCatalogChaptersForModule`).
-- Footer actions: **Retry diagnostic** (clears the store entry for that module + reopens the quiz) and **Continue** (navigates to the next chapter via the existing diag-next resolver in `LearnPathContent`).
+## Tour outline (sections × steps)
 
-### 2. Wire results screen into the module render path
-In `src/components/learnpath/LearnPathContent.tsx`, in the branch that handles `activeModuleId.startsWith("__diag::")`:
-- After resolving `diagModuleCode` and `recorded = diagState[diagModuleCode]`, add an early branch:
-  - If `recorded?.submitted` and the user did not click Retry, render `<DiagnosticResultsCard ... />` instead of `<EmbarkModuleContent>`.
-  - Local `retry` state lives in this component (a `useState<boolean>(false)` keyed by `diagModuleCode`); Retry sets it true and calls `diagnosticReopens.reset()` for the module (add a `clear(moduleCode)` helper to the store) so the standard quiz UI shows again.
-- Keep the existing `onDiagnosticSubmit` flow untouched — submission still records, and after submission the results card mounts on the next render.
+```text
+1. WELCOME (modal)
+   "Tour of Embark — 5 minutes. Skip anytime."
 
-### 3. Row-level score pill — `LearnPathChapterRow.tsx` + accordion
-- Strip score from the synthetic chapter's title in `JourneyModuleAccordion.buildLensChapters` so it always reads "Quick diagnostic — 3 questions".
-- Pass score data through to the row: extend `UnifiedStep` with optional `diagResult?: { correct: number; total: number; reopenedCount: number }`, populated only for the synthetic diagnostic step from `recorded`.
-- In `LearnPathChapterRow.tsx`, when `step.diagResult` is present, render a small pill **next to the QUICK DIAGNOSTIC pill** (same row of badges, not a new row):
-  - All correct → emerald `✓ 3/3`
-  - Partial   → amber `2/3 · 1 to revisit`
-  - None correct → destructive `0/3 · revisit all`
-- Keep the status circle as the existing green check (the diagnostic is "done"); the pill carries the qualitative outcome. No layout changes elsewhere.
+2. EMBARK PAGE  (route: /)
+   • Embark home & AI chat panel  → spotlight chat panel
+   • Cohort → Track → Module → Chapter (terminology, drop "Learning")
+       → spotlight cohort header on / and journey accordion
+   • Open a module accordion to show chapter rows
 
-### 4. Store helper
-Add `diagnosticReopens.clear(moduleCode)` (one-line) used by Retry. Existing `reset()` clears everything; we want module-scoped clear.
+3. CONTENT ADAPTATION  (still on /)
+   • Condensed lens          → spotlight a CONDENSED pill on a chapter row
+   • Quick Diagnostic        → spotlight QUICK DIAGNOSTIC row + explain reopen/skip
+   • Evidence Task           → spotlight EVIDENCE TASK row + explain submission
+   • Why it adapts           → modal: persona profile + 360 gaps drive lens choice
+
+4. COHORT HUB  (route: /cohort)
+   • Members, milestones, progress strip — spotlight each
+
+5. ACTION CENTRE  (route: /action-centre — confirm with code)
+   • Nudges, reflections, reminders — spotlight each card
+
+6. MY 360  (route: /my-360)
+   • Competency radar, skills-gap matrix, career timeline — spotlight each
+
+7. ROLE PLAY  (route: /role-play)
+   • Bank of role-plays, character persona, voice option — spotlight each
+
+8. WRAP  (modal)
+   "You can replay this any time from the help button."
+```
+
+Exact route names will be verified against `src/App.tsx` while implementing (e.g. `/action-centre` vs `/inbox`).
+
+## Components & files
+
+New:
+- `src/contexts/TourContext.tsx` — provider with `start(sectionId?)`, `next`, `back`, `skip`, `open` state, current step index. Persists "seen" to `localStorage` under `embark_tour_seen::<userId>`.
+- `src/components/tour/EmbarkTour.tsx` — the overlay renderer: dim layer, spotlight ring around the targeted element (computed via `getBoundingClientRect` + `ResizeObserver`), popover card with title/body/Next/Back/Skip, and centered modal variant when no target.
+- `src/components/tour/tourSteps.ts` — declarative step list (the outline above) with `{ route, target?, title, body, placement? }`.
+- `src/components/tour/TourLaunchButton.tsx` — small floating/help-corner button visible on every page (lives in `AppLayout`). Clicking starts/resumes the tour.
+- `src/components/tour/TourWelcomeBanner.tsx` — one-time toast/banner after sign-in for Clara/Theo, dismissible, with a "Take the tour" CTA.
+
+Modified:
+- `src/components/layout/AppLayout.tsx` — wrap children in `<TourProvider>`, mount `<EmbarkTour />`, `<TourLaunchButton />`, and `<TourWelcomeBanner />`.
+- A handful of components get `data-tour="…"` attributes on the elements that get spotlighted (Embark chat panel, journey accordion, lens pills, Cohort Hub sections, Action Centre cards, My 360 sections, Role Play list). No logic changes — purely attribute additions.
+
+## Persona gating
+- Show the launch button and the welcome banner **only when** the active user's employee id is `rb-l6` (Clara) or `rb-l3` (Theo). All other users see neither — this matches the existing demo-deterministic-flow pattern (see memory: Rathbones Demo Deterministic Flows).
+- The user can still trigger `start()` programmatically if needed (kept simple — gating is just on the entry points).
+
+## Navigation behaviour
+- Each step declares its route. Advancing to a step on a different route calls `navigate(step.route)` and waits one frame for the target element to mount before spotlighting (uses a small retry loop with `requestAnimationFrame`).
+- If a target selector can't be found within ~800 ms, fall back to centered-modal rendering for that step so the tour never dead-ends.
+
+## Visual style
+- Dim layer: `bg-background/80 backdrop-blur-sm` with a CSS-clip cutout for the spotlight rect (4 px ring, 8 px radius, soft outer glow with `hsl(var(--accent))`).
+- Popover card: `rounded-xl border bg-card shadow-card p-4 max-w-sm` with header (step n/total + section name), body, and Skip/Back/Next button row using existing `<Button>` variants.
+- No new colour tokens; everything via semantic tokens already in the design system.
 
 ## Out of scope
-- Persisting "viewed results" state — re-opening always lands on the results screen until Retry is pressed.
-- Touching the `evidence_required` or microlearning lenses.
-- Changing the recorded data model in `learner_progress`.
+- Persisting tour progress server-side (localStorage only).
+- Translating any step content.
+- Adapting the existing `FirstLoginTour` (kept as-is; it's a different artefact).
+- Auto-launching the tour without a click — we only show the dismissible banner on first sign-in.
 
-## Files touched
-- `src/store/useDiagnosticReopens.ts` — add `clear(code)` + getter for retry state.
-- `src/components/learnpath/DiagnosticResultsCard.tsx` — new file.
-- `src/components/learnpath/LearnPathContent.tsx` — early branch to render results card; local retry state.
-- `src/components/learnpath/JourneyModuleAccordion.tsx` — clean title; thread `diagResult` for the synthetic step.
-- `src/components/learnpath/LearnPathContent.tsx` (UnifiedStep type) — add optional `diagResult`.
-- `src/components/learnpath/LearnPathChapterRow.tsx` — render score pill alongside the existing lens pill.
+## Files touched (summary)
+- New: `TourContext.tsx`, `EmbarkTour.tsx`, `tourSteps.ts`, `TourLaunchButton.tsx`, `TourWelcomeBanner.tsx`
+- Edited: `AppLayout.tsx`, and ~6 page/component files to add `data-tour` attributes on spotlight targets (Embark journey, lens pills, Cohort Hub, Action Centre, My 360, Role Play Bank)

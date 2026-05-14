@@ -1,13 +1,32 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, ArrowRight, ShieldAlert, FileText, Sparkles, Loader2 } from "lucide-react";
+import {
+  CheckCircle2,
+  ArrowRight,
+  ShieldAlert,
+  FileText,
+  Sparkles,
+  Loader2,
+  RefreshCcw,
+  Clipboard,
+  UserCheck,
+  SkipForward,
+  RotateCcw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useEvidenceTask } from "@/hooks/useEvidenceTask";
 import { useCatalogChaptersForModule } from "@/hooks/useCatalogChaptersForModule";
+import { useEvidenceBrief } from "@/hooks/useEvidenceBrief";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
+import { useAccount } from "@/contexts/AccountContext";
+import {
+  generateEvidenceAssessment,
+  applyEvidenceOutcome,
+  type EvidenceAssessment,
+} from "@/lib/evidenceAssessment";
 
 interface Props {
   accountId: string;
@@ -47,6 +66,7 @@ export function EvidenceTaskCard({
   onPersisted,
 }: Props) {
   const { substitute } = useContentSubstitution();
+  const { normalizedAccount } = useAccount();
   const { chapters } = useCatalogChaptersForModule(accountId, moduleCode);
   const fallback = useMemo(
     () => ({
@@ -58,9 +78,28 @@ export function EvidenceTaskCard({
   );
   const { task, isLoading } = useEvidenceTask(accountId, moduleCode, fallback);
 
+  // Generate the actual scenario / data pack the learner has to work on
+  const briefArgs = useMemo(() => {
+    if (!task) return null;
+    return {
+      accountId,
+      employeeId,
+      cohortId,
+      moduleCode,
+      moduleTitle,
+      evidenceTitle: task.evidenceTitle,
+      evidenceDescription: task.evidenceDescription ?? undefined,
+      qualityIndicators: task.qualityIndicators,
+      submissionFormat: task.submissionFormat,
+      firstChapterCode: chapters[0]?.chapterCode ?? null,
+      accountName: normalizedAccount?.branding?.name,
+    };
+  }, [accountId, employeeId, cohortId, moduleCode, moduleTitle, task, chapters, normalizedAccount?.branding?.name]);
+  const { brief, isLoading: briefLoading, regenerate } = useEvidenceBrief(briefArgs);
+
   const [draft, setDraft] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [assessment, setAssessment] = useState<EvidenceAssessment | null>(null);
   const [error, setError] = useState<string | null>(null);
   const wordCount = draft.trim() ? draft.trim().split(/\s+/).length : 0;
   const canSubmit = wordCount >= 50 && !submitting;
@@ -73,12 +112,18 @@ export function EvidenceTaskCard({
     );
   }
 
+  const handleRegenerate = () => {
+    if (draft.trim().length > 0) {
+      const ok = window.confirm("Regenerating will replace the current scenario. Your draft is kept. Continue?");
+      if (!ok) return;
+    }
+    regenerate();
+  };
+
   const handleSubmit = async () => {
     setSubmitting(true);
     setError(null);
     try {
-      // Mark every chapter in this module as completed (they are all "covered by evidence")
-      // and stash the submission on the first chapter's metadata.
       const chapterCodes = chapters.length > 0 ? chapters.map((c) => c.chapterCode) : [moduleCode];
       const submission = {
         text: draft.trim(),
@@ -88,6 +133,19 @@ export function EvidenceTaskCard({
         submitted_at: new Date().toISOString(),
       };
 
+      // Generate the simulated assessment
+      const base = generateEvidenceAssessment(task.qualityIndicators);
+      // Apply structural outcome (skip / reopen) — non-blocking visually
+      const applied = await applyEvidenceOutcome({
+        accountId,
+        employeeId,
+        cohortId,
+        moduleCode,
+        outcome: base.outcome,
+      });
+      const finalAssessment: EvidenceAssessment = { ...base, ...applied };
+
+      // Persist the chapter completions + submission + assessment
       for (const [i, chapterCode] of chapterCodes.entries()) {
         const { data: existing } = await supabase
           .from("learner_progress")
@@ -100,11 +158,19 @@ export function EvidenceTaskCard({
           .maybeSingle();
         const now = new Date().toISOString();
         const baseMeta = (existing?.metadata as Record<string, unknown> | null) ?? {};
-        const meta = (i === 0 ? { ...baseMeta, evidence_submission: submission } : baseMeta) as any;
+        const meta: any =
+          i === 0
+            ? { ...baseMeta, evidence_submission: submission, evidence_assessment: finalAssessment }
+            : baseMeta;
         if (existing?.id) {
           await supabase
             .from("learner_progress")
-            .update({ status: "completed", completed_at: now, started_at: existing.started_at ?? now, metadata: meta })
+            .update({
+              status: "completed",
+              completed_at: now,
+              started_at: existing.started_at ?? now,
+              metadata: meta,
+            })
             .eq("id", existing.id);
         } else {
           await supabase.from("learner_progress").insert([{
@@ -120,7 +186,7 @@ export function EvidenceTaskCard({
           }]);
         }
       }
-      setSubmitted(true);
+      setAssessment(finalAssessment);
       onPersisted?.();
     } catch (e: any) {
       console.error("[EvidenceTaskCard] submit failed", e);
@@ -130,30 +196,101 @@ export function EvidenceTaskCard({
     }
   };
 
-  if (submitted) {
+  if (assessment) {
+    const scoreColour =
+      assessment.score >= 85
+        ? "text-emerald-600 dark:text-emerald-400"
+        : assessment.score >= 70
+          ? "text-amber-600 dark:text-amber-400"
+          : "text-rose-600 dark:text-rose-400";
+    const ringColour =
+      assessment.score >= 85
+        ? "border-emerald-500/40 bg-emerald-500/10"
+        : assessment.score >= 70
+          ? "border-amber-500/40 bg-amber-500/10"
+          : "border-rose-500/40 bg-rose-500/10";
     return (
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto p-6 space-y-4"
+        className="max-w-2xl mx-auto p-6 space-y-5"
       >
-        <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-6 text-center space-y-3">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-green-500/15 flex items-center justify-center">
-            <CheckCircle2 className="h-7 w-7 text-green-600" />
+        <div className="rounded-2xl border border-border bg-card p-6 space-y-5">
+          <div className="flex items-center gap-2">
+            <UserCheck className="h-4 w-4 text-primary" />
+            <Badge variant="outline" className="text-[0.65rem]">
+              Assessed by Manager (simulated)
+            </Badge>
+            <span className="ml-auto text-xs text-muted-foreground">
+              {new Date(assessment.assessedAt).toLocaleString()}
+            </span>
           </div>
-          <h2 className="text-lg font-semibold text-foreground">Evidence submitted</h2>
-          <p className="text-sm text-muted-foreground">
-            We've sent your submission for review. {REVIEWER_LABEL[task.reviewerRole] ?? "It will be reviewed shortly."}
-          </p>
-          {nextChapter ? (
-            <Button onClick={onContinue} className="gap-2 mx-auto">
-              Continue to next chapter <ArrowRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button onClick={onContinue} variant="outline" className="gap-2 mx-auto">
-              Back to all chapters <ArrowRight className="h-4 w-4" />
-            </Button>
+
+          <div className="flex items-center gap-5">
+            <div
+              className={`shrink-0 h-20 w-20 rounded-full border-4 ${ringColour} flex items-center justify-center`}
+            >
+              <span className={`text-2xl font-display font-bold ${scoreColour}`}>{assessment.score}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg font-display font-bold text-foreground">
+                Evidence accepted
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Score {assessment.score} / 100 against the suitability criteria.
+              </p>
+            </div>
+          </div>
+
+          <ul className="space-y-1.5">
+            {assessment.feedback.map((f, i) => (
+              <li key={i} className="text-sm text-foreground flex gap-2">
+                <span className="text-primary">•</span>
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+
+          {assessment.outcome === "skip_remaining" && (
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 flex items-start gap-3">
+              <SkipForward className="h-5 w-5 text-emerald-600 mt-0.5 shrink-0" />
+              <div className="text-sm">
+                <p className="font-semibold text-foreground">You can skip the remaining modules in this track.</p>
+                <p className="text-muted-foreground mt-0.5">
+                  Your evidence demonstrates current competence — we've marked the rest of this track as covered.
+                </p>
+              </div>
+            </div>
           )}
+          {assessment.outcome === "reopen_for_refresh" && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 flex items-start gap-3">
+              <RotateCcw className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+              <div className="text-sm">
+                <p className="font-semibold text-foreground">
+                  Refresher added{assessment.refresherModuleTitle ? `: ${assessment.refresherModuleTitle}` : ""}
+                </p>
+                <p className="text-muted-foreground mt-0.5">
+                  Your manager wants you to revisit one earlier topic to bed it in before moving on.
+                </p>
+              </div>
+            </div>
+          )}
+          {assessment.outcome === "pass_continue" && (
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-4 flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+              <div className="text-sm">
+                <p className="font-semibold text-foreground">Pass — continue with the next chapter.</p>
+                <p className="text-muted-foreground mt-0.5">No structural changes to your plan.</p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-end pt-1">
+            <Button onClick={onContinue} className="gap-2">
+              {nextChapter ? "Continue to next chapter" : "Back to all chapters"}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </motion.div>
     );
@@ -199,10 +336,88 @@ export function EvidenceTaskCard({
           <Badge variant="outline" className="text-[0.65rem]">
             {REVIEWER_LABEL[task.reviewerRole] ?? task.reviewerRole}
           </Badge>
-          {task.synthesized && (
-            <Badge variant="outline" className="text-[0.65rem] text-muted-foreground">
-              Generic brief — no evidence template configured for this module
-            </Badge>
+        </div>
+      </section>
+
+      {/* YOUR TASK — generated brief */}
+      <section className="space-y-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+            <Clipboard className="h-3.5 w-3.5" /> Your task
+          </h3>
+          {brief && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRegenerate}
+              className="h-7 px-2 text-xs gap-1"
+              disabled={briefLoading}
+            >
+              <RefreshCcw className={`h-3 w-3 ${briefLoading ? "animate-spin" : ""}`} />
+              Regenerate
+            </Button>
+          )}
+        </div>
+        <div className="rounded-2xl border border-primary/30 bg-primary/5 p-5 space-y-4">
+          {briefLoading || !brief ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
+              <Loader2 className="h-4 w-4 animate-spin" /> Generating your scenario…
+            </div>
+          ) : (
+            <>
+              <div>
+                <h4 className="font-display text-base font-bold text-foreground">
+                  {substitute(brief.scenarioTitle)}
+                </h4>
+                <p className="text-sm text-foreground mt-1.5 leading-relaxed">
+                  {substitute(brief.contextParagraph)}
+                </p>
+              </div>
+
+              {brief.keyFigures && brief.keyFigures.length > 0 && (
+                <div className="grid grid-cols-2 gap-2">
+                  {brief.keyFigures.map((kf, i) => (
+                    <div
+                      key={i}
+                      className="rounded-lg bg-card border border-border px-3 py-2"
+                    >
+                      <div className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+                        {substitute(kf.label)}
+                      </div>
+                      <div className="text-sm font-medium text-foreground">{substitute(kf.value)}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {brief.sections?.map((sec, i) => (
+                <div key={i} className="space-y-1.5">
+                  <h5 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {substitute(sec.heading)}
+                  </h5>
+                  {sec.bullets && sec.bullets.length > 0 ? (
+                    <ul className="space-y-1">
+                      {sec.bullets.map((b, j) => (
+                        <li key={j} className="text-sm text-foreground flex gap-2">
+                          <span className="text-primary mt-0.5">•</span>
+                          <span>{substitute(b)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-foreground whitespace-pre-line">
+                      {substitute(sec.body ?? "")}
+                    </p>
+                  )}
+                </div>
+              ))}
+
+              {brief.promptToLearner && (
+                <div className="text-sm font-medium text-foreground border-t border-border pt-3">
+                  {substitute(brief.promptToLearner)}
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>

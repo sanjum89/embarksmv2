@@ -165,6 +165,7 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                         progress: m.pct,
                         referenceId: c.code,
                         lensState: (c as any).lensState,
+                        pendingSkip: (c as any).pendingSkip,
                       };
                       return (
                         <EmbarkChapterRow

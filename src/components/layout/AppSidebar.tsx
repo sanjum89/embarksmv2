@@ -55,18 +55,13 @@ const meNavItems: NavItem[] = [
   { label: "Embark AI", path: "/", icon: GraduationCap },
   { label: "Embark AI v2", path: "/embark-v2", icon: GraduationCap, dev: true },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
-  {
-    label: "Learning Spaces",
-    path: "/dashboard",
-    icon: LayoutDashboard,
-    children: [
-      { label: "Skill Targets", path: "/dashboard", icon: Target },
-      { label: "Role Play", path: "/role-play-bank", icon: Drama },
-    ],
-  },
+  { label: "Role Play", path: "/role-play-bank", icon: Drama },
   { label: "Action Centre", path: "/my-inbox", icon: Inbox },
   { label: "Cohort Hub", path: "/cohort", icon: Users },
   { label: "My 360", path: "/my-360", icon: CircleUser },
+  // Moved into EOL Mode
+  { label: "Learning Spaces", path: "/dashboard", icon: LayoutDashboard, dev: true },
+  { label: "Skill Targets", path: "/dashboard", icon: Target, dev: true },
   { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
 ];
 

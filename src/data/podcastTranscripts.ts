@@ -20,11 +20,13 @@ const HERITAGE_MP3 = `${STORAGE_BASE}/m-rb-intro-heritage.mp3`;
 const PINNACLE_HERITAGE_MP3 = `${STORAGE_BASE}/pinnacle-heritage.mp3`;
 
 const HERITAGE_ALIASES = new Set(["m-rb-intro-heritage", "RAT-INTRO-001", "RAT-INTRO-LM-001"]);
+const DISCRETIONARY_MP3 = `${STORAGE_BASE}/bk1.c1.mp3`;
 
 export const staticPodcastUrls: Record<string, string> = {
   "m-rb-intro-heritage": HERITAGE_MP3,
   "RAT-INTRO-001": HERITAGE_MP3,
   "RAT-INTRO-LM-001": HERITAGE_MP3,
+  "bk1.c1": DISCRETIONARY_MP3,
 };
 
 /**

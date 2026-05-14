@@ -528,20 +528,14 @@ export function EmbarkModuleContent({ module, skillTargetTitle, learningFormat, 
 
   /* ═══ LISTENING MODE ═══ */
   const renderListening = () => {
+    const staticUrl = getStaticPodcastUrl(module.id, normalizedAccount?.branding?.name);
     if (podcastScript) {
-      const staticUrl = getStaticPodcastUrl(module.id, normalizedAccount?.branding?.name);
       return <EmbarkPodcastPlayer script={podcastScript} staticAudioUrl={staticUrl} />;
     }
-    return (
-      <div className="space-y-4">
-        <div className="bg-card rounded-xl border border-border p-4">
-          <p className="text-sm text-muted-foreground">Podcast version not available for this module. Showing reading transcript instead.</p>
-        </div>
-        <div className="prose prose-sm dark:prose-invert max-w-none">
-          <ReactMarkdown>{transcript}</ReactMarkdown>
-        </div>
-      </div>
-    );
+    // Fallback: synthesize a 2-persona script from the transcript so every
+    // listening module has a play button + a podcast-style transcript.
+    const synthesized = synthesizePodcastScript(transcript, module.title);
+    return <EmbarkPodcastPlayer script={synthesized} staticAudioUrl={staticUrl} />;
   };
 
   /* ═══ HANDS-ON MODE ═══ */

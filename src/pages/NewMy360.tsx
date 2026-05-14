@@ -50,7 +50,7 @@ export default function NewMy360() {
   const tabs = hasCohortData ? allTabs : (["Profile"] as const);
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto" data-tour="my360">
       <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
       <ProfileHero employee={data.employee} managerName={managerName} />
 

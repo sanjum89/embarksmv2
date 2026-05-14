@@ -244,15 +244,20 @@ function buildLensChapters(
     const reopened = diag?.reopened ?? new Set<string>();
     const synthetic: LensChapter = {
       code: `__diag::${moduleCode}`,
-      title: submitted
-        ? `Quick diagnostic — ${diag!.correct}/${diag!.total} correct`
-        : "Quick diagnostic — 3 questions",
+      title: "Quick diagnostic — 3 questions",
       contentType: "diagnostic",
       minutes: 5,
       status: submitted ? ("completed" as any) : ("in_progress" as any),
       displayOrder: -1,
       lensState: "synthetic_diagnostic",
-    };
+      diagResult: submitted
+        ? {
+            correct: diag!.correct,
+            total: diag!.total,
+            reopenedCount: diag!.reopened.size,
+          }
+        : undefined,
+    } as LensChapter;
     const real: LensChapter[] = chapters.map((c) => {
       if (!submitted) {
         // Predicted skip — keep original status (don't show amber until the

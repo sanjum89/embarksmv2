@@ -55,18 +55,13 @@ const meNavItems: NavItem[] = [
   { label: "Embark AI", path: "/", icon: GraduationCap },
   { label: "Embark AI v2", path: "/embark-v2", icon: GraduationCap, dev: true },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
-  {
-    label: "Learning Spaces",
-    path: "/dashboard",
-    icon: LayoutDashboard,
-    children: [
-      { label: "Skill Targets", path: "/dashboard", icon: Target },
-      { label: "Role Play", path: "/role-play-bank", icon: Drama },
-    ],
-  },
+  { label: "Role Play", path: "/role-play-bank", icon: Drama },
   { label: "Action Centre", path: "/my-inbox", icon: Inbox },
   { label: "Cohort Hub", path: "/cohort", icon: Users },
   { label: "My 360", path: "/my-360", icon: CircleUser },
+  // Moved into EOL Mode
+  { label: "Learning Spaces", path: "/dashboard", icon: LayoutDashboard, dev: true },
+  { label: "Skill Targets", path: "/dashboard", icon: Target, dev: true },
   { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
 ];
 
@@ -445,7 +440,7 @@ export function AppSidebar() {
                 className={cn("flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium", devMode ? "text-foreground bg-white/50" : "text-muted-foreground hover:bg-white/50 hover:text-foreground")}
               >
                 <Code className="h-4 w-4 shrink-0" />
-                <span>Dev</span>
+                <span>EOL Mode</span>
                 {devMode && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
               </button>
             ) : (
@@ -458,7 +453,7 @@ export function AppSidebar() {
                     <Code className="h-4 w-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>Dev mode {devMode ? "on" : "off"}</TooltipContent>
+                <TooltipContent side="right" sideOffset={8}>EOL Mode {devMode ? "on" : "off"}</TooltipContent>
               </Tooltip>
             )}
           </div>
@@ -820,7 +815,7 @@ export function AppSidebar() {
             className={cn("flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium", devMode ? "text-sidebar-accent-foreground bg-sidebar-accent" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground")}
           >
             <Code className="h-4 w-4 shrink-0" />
-            <span>Dev</span>
+            <span>EOL Mode</span>
             {devMode && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
           </button>
         ) : (
@@ -833,7 +828,7 @@ export function AppSidebar() {
                 <Code className="h-4 w-4" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}>Dev mode {devMode ? "on" : "off"}</TooltipContent>
+            <TooltipContent side="right" sideOffset={8}>EOL Mode {devMode ? "on" : "off"}</TooltipContent>
           </Tooltip>
         )}
       </div>

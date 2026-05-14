@@ -111,6 +111,11 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
     <div className="h-7 w-7 rounded-full bg-amber-500/15 ring-2 ring-amber-500/40 flex items-center justify-center">
       <SkipForward className="h-4 w-4 text-amber-600" />
     </div>
+  ) : isPendingSkip ? (
+    // Predicted skip — same icon, greyed out until the trigger is committed.
+    <div className="h-7 w-7 rounded-full bg-muted ring-2 ring-border flex items-center justify-center">
+      <SkipForward className="h-4 w-4 text-muted-foreground" />
+    </div>
   ) : isInProgress ? (
     <div className="h-7 w-7 rounded-full bg-accent ring-2 ring-accent/40 flex items-center justify-center">
       <Play className="h-3.5 w-3.5 text-accent-foreground fill-current" />

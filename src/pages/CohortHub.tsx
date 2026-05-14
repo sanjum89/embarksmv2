@@ -111,7 +111,7 @@ export default function CohortHub() {
   });
 
   return (
-    <div className="flex-1 overflow-y-auto bg-background">
+    <div className="flex-1 overflow-y-auto bg-background" data-tour="cohort-hub">
       {/* HEADER */}
       <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-6 py-[18px]">

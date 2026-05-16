@@ -304,7 +304,7 @@ export function EmbarkTour() {
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="min-w-0">
             <div className="text-[0.65rem] font-medium uppercase tracking-wider text-accent">
-              {step.section} · {tour.stepIndex + 1} / {TOUR_STEPS.length}
+              {step.section} · {tour.stepIndex + 1} / {tour.steps.length}
             </div>
             <h3 className="font-display text-base font-semibold text-foreground mt-0.5">
               {step.title}

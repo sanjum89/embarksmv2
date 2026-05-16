@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { resolvePillAction } from "@/lib/pillActionResolver";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, Home, ArrowRight, X, ChevronUp, RotateCcw } from "lucide-react";
+import { Send, Sparkles, Home, ArrowRight, X, ChevronUp, RotateCcw, Compass, UserCircle2, Inbox, Users, BarChart3, Target, Briefcase, Activity, ClipboardList, MessageCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";
@@ -84,12 +84,19 @@ const CardIllustration = ({ type }: { type: string }) => {
 };
 
 const suggestionCards = [
-  { label: "Grow My Skills", description: "Get recommendations for growing your skills.", prompt: "Show me recommendations for growing my skills", illustration: "skills" },
-  { label: "Required Skills", description: "Required skills for your job role.", prompt: "Show me the required skills for my role", illustration: "required" },
-  { label: "Explore Career Paths", description: "Discover potential career paths.", prompt: "Explore career paths based on my current skills", illustration: "career" },
-  { label: "View My Activities", description: "Track your recent activities.", prompt: "Show me my recent learning activities", illustration: "activities" },
-  { label: "Build Your Profile", description: "Upload resume to build your profile.", prompt: "Help me build my professional profile", illustration: "profile" },
-  { label: "Create a Reflection", description: "Reflect on your learning journey.", prompt: "Help me create a reflection on my recent learning", illustration: "reflection" },
+  { label: "Grow My Skills", description: "Get recommendations for growing your skills.", prompt: "Show me recommendations for growing my skills", illustration: "skills", icon: BarChart3 },
+  { label: "Required Skills", description: "Required skills for your job role.", prompt: "Show me the required skills for my role", illustration: "required", icon: Target },
+  { label: "Explore Career Paths", description: "Discover potential career paths.", prompt: "Explore career paths based on my current skills", illustration: "career", icon: Briefcase },
+  { label: "View My Activities", description: "Track your recent activities.", prompt: "Show me my recent learning activities", illustration: "activities", icon: Activity },
+  { label: "Build Your Profile", description: "Upload resume to build your profile.", prompt: "Help me build my professional profile", illustration: "profile", icon: UserCircle2 },
+  { label: "Create a Reflection", description: "Reflect on your learning journey.", prompt: "Help me create a reflection on my recent learning", illustration: "reflection", icon: ClipboardList },
+];
+
+const quickLinks = [
+  { label: "Embark AI", path: "/", icon: Compass, desc: "Your guided learning journey" },
+  { label: "My 360", path: "/my-360", icon: UserCircle2, desc: "Profile, skills, gaps" },
+  { label: "Action Centre", path: "/action-centre", icon: Inbox, desc: "Tasks and reflections" },
+  { label: "Cohort", path: "/cohort", icon: Users, desc: "Your group and peers" },
 ];
 
 function ThinkingIndicator() {
@@ -263,17 +270,98 @@ export default function LearnerChat() {
               exit={{ opacity: 0, y: -20 }}
               className="flex-1 overflow-y-auto min-h-0"
             >
-              <div className="flex flex-col items-center justify-center min-h-full px-6">
-                <div className="w-full max-w-[680px] pt-16 pb-8">
+              <div className="mx-auto w-full max-w-[1180px] grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6 px-4 lg:px-6 pt-8 pb-10">
+                {/* ── Left rail ── */}
+                <aside className="hidden lg:flex flex-col gap-6">
+                  {/* Quick links */}
+                  <div>
+                    <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      Quick links
+                    </div>
+                    <div className="space-y-1">
+                      {quickLinks.map((q) => (
+                        <button
+                          key={q.path}
+                          onClick={() => navigate(q.path)}
+                          className="group w-full text-left rounded-lg border border-border/60 bg-card px-2.5 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all flex items-start gap-2.5"
+                        >
+                          <div className="rounded-md bg-primary/10 p-1.5 text-primary shrink-0 transition-transform group-hover:scale-110">
+                            <q.icon className="h-3.5 w-3.5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-medium leading-tight">{q.label}</div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5 truncate">{q.desc}</div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Suggested topics */}
+                  <div>
+                    <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      Suggested topics
+                    </div>
+                    <div className="space-y-1">
+                      {suggestionCards.map((card, i) => (
+                        <motion.button
+                          key={card.label}
+                          initial={{ opacity: 0, y: 6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.04 * i }}
+                          onClick={() => handleCardSend(card.prompt)}
+                          title={card.description}
+                          className="group w-full text-left rounded-lg border border-border/60 bg-card px-2.5 py-2 hover:border-primary/40 hover:bg-muted/40 transition-all flex items-start gap-2.5"
+                        >
+                          <div className="rounded-md bg-primary/10 p-1.5 text-primary shrink-0 transition-transform group-hover:scale-110">
+                            <card.icon className="h-3.5 w-3.5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-medium leading-tight">{card.label}</div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{card.description}</div>
+                          </div>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Recent prompts */}
+                  {(() => {
+                    const recent = messages.filter((m) => m.role === "user").slice(-5).reverse();
+                    if (recent.length === 0) return null;
+                    return (
+                      <div>
+                        <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                          Recent
+                        </div>
+                        <div className="space-y-1">
+                          {recent.map((m, i) => (
+                            <button
+                              key={i}
+                              onClick={() => handleCardSend(m.content)}
+                              className="w-full text-left rounded-lg px-2 py-1.5 hover:bg-muted/40 transition-colors flex items-center gap-2"
+                            >
+                              <MessageCircle className="h-3 w-3 text-muted-foreground shrink-0" />
+                              <span className="text-[11px] truncate text-foreground">{m.content}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </aside>
+
+                {/* ── Main column ── */}
+                <div className="min-w-0">
                   <motion.h1
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="font-display text-[1.6rem] font-bold text-foreground mb-6"
+                    className="font-display text-[1.6rem] font-bold text-foreground mb-5"
                   >
                     Hi {firstName}, let's grow together
                   </motion.h1>
 
-                  <div className="mb-6">
+                  <div className="mb-5">
                     <AgentOneNudgeStack
                       onAgentClick={handleNudgeClick}
                       onChatAction={async (prompt) => {
@@ -281,7 +369,6 @@ export default function LearnerChat() {
                           setChatActive(true);
                           return;
                         }
-                        // Reset conversation first so nudge always starts a fresh journey
                         if (hasMessages) {
                           await handleReset(prompt);
                         }
@@ -290,68 +377,74 @@ export default function LearnerChat() {
                         setCtaLabel(deriveCTALabel(prompt));
                         setChatActive(true);
                         setIsOpen(true);
-                        // Small delay to let reset complete before sending
                         setTimeout(() => handleSend(prompt), 100);
                       }}
                     />
                   </div>
-                  {/* Suggestion Cards Grid */}
-                  <div className="grid grid-cols-3 gap-3 mb-6">
-                    {suggestionCards.map((card, i) => (
-                      <motion.button
-                        key={card.label}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.05 + i * 0.04 }}
-                        onClick={() => handleCardSend(card.prompt)}
-                        className="flex flex-col rounded-xl border border-border bg-card p-3 text-left hover:shadow-md hover:border-primary/30 transition-all group"
-                      >
-                        <div className="bg-primary/5 rounded-lg p-2 mb-3">
-                          <CardIllustration type={card.illustration} />
-                        </div>
-                        <span className="text-[0.8rem] font-medium text-foreground leading-snug mb-1">{card.label}</span>
-                        <span className="text-[0.7rem] text-muted-foreground leading-snug line-clamp-2">{card.description}</span>
-                      </motion.button>
-                    ))}
+
+                  {/* Composer */}
+                  <div className="relative w-full mb-3">
+                    <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary pointer-events-none" />
+                    <Input
+                      ref={inputRef}
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && input.trim()) {
+                          setChatActive(true);
+                          setIsOpen(true);
+                          handleSend(input);
+                        }
+                      }}
+                      placeholder="Ask anything..."
+                      className="h-12 rounded-xl border-border text-[0.85rem] focus-visible:ring-primary/30 pl-9 pr-12 shadow-sm"
+                      disabled={isStreaming}
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className={cn(
+                        "absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 rounded-lg transition-all",
+                        input.trim() && "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+                      )}
+                      onClick={() => {
+                        if (input.trim()) {
+                          setChatActive(true);
+                          setIsOpen(true);
+                          handleSend(input);
+                        }
+                      }}
+                      disabled={!input.trim() || isStreaming}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
                   </div>
 
-                  {/* Input Bar — Home State */}
-                  <div className="w-full pb-8">
-                    <div className="relative w-full">
-                      <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary pointer-events-none" />
-                      <Input
-                        ref={inputRef}
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && input.trim()) {
-                            setChatActive(true);
-                            setIsOpen(true);
-                            handleSend(input);
-                          }
-                        }}
-                        placeholder="Ask anything..."
-                        className="h-11 rounded-xl border-border text-[0.8rem] focus-visible:ring-primary/30 pl-9 pr-11"
-                        disabled={isStreaming}
-                      />
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className={cn(
-                          "absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg transition-all",
-                          input.trim() && "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
-                        )}
-                        onClick={() => {
-                          if (input.trim()) {
-                            setChatActive(true);
-                            setIsOpen(true);
-                            handleSend(input);
-                          }
-                        }}
-                        disabled={!input.trim() || isStreaming}
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
+                  <p className="text-[11px] text-muted-foreground mb-6">
+                    Tip: pick a suggested topic on the left, or just type your own question.
+                  </p>
+
+                  {/* Mobile suggestions — visible only when left rail is hidden */}
+                  <div className="lg:hidden">
+                    <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      Suggested topics
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {suggestionCards.map((card) => (
+                        <button
+                          key={card.label}
+                          onClick={() => handleCardSend(card.prompt)}
+                          className="text-left rounded-lg border border-border/60 bg-card p-2.5 hover:border-primary/40 transition-all flex items-start gap-2"
+                        >
+                          <div className="rounded-md bg-primary/10 p-1.5 text-primary shrink-0">
+                            <card.icon className="h-3.5 w-3.5" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-medium leading-tight">{card.label}</div>
+                            <div className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">{card.description}</div>
+                          </div>
+                        </button>
+                      ))}
                     </div>
                   </div>
                 </div>

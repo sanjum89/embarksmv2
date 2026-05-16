@@ -1,66 +1,89 @@
-## Goal
+## 1. Make Embark AI the default learner landing
 
-Make Clara's and Theo's adaptation feel realistic and proportionate. Today a single 3-question Quick Diagnostic visually skips an entire 9-chapter module, and Evidence Tasks cover whole modules — so the journey looks like "do one thing, skip everything". Cap savings at ~30% per persona and surface chapters inside locked modules so learners can see what's coming.
+Today learners are dropped on `/chat` after login or profile switch. Embark AI (`/`) is already the route, we just need to point learners at it.
 
-## What's wrong today
+- `src/components/layout/AppSidebar.tsx`
+  - `handleLogin`: when the user is a learner (`!u?.canManage`), navigate to `/` instead of `/chat`. Keep managers/admins on `/chat`.
+  - Profile-switcher click handler (around line 491): same rule — learners → `/`, managers in `team` view stay on `/chat`.
+- No changes to routes; `/chat` stays reachable from the sidebar.
 
-In `src/components/learnpath/JourneyModuleAccordion.tsx → buildLensChapters`:
+## 2. Onboarding nudge → Embark AI
 
-- **`diagnostic_only`** prepends a synthetic Quick Diagnostic row and marks **every** chapter as `skipped`/`pendingSkip`. Screenshot shows bk1 (9 chapters) with all 9 skipped after a 3-question check — implausible.
-- **`evidence_required`** prepends a synthetic Evidence row and marks **every** chapter as `covered_by_evidence`. Same problem.
-- `evidenceAssessment.applyEvidenceOutcome` (with the `skip_remaining` outcome) goes further and marks all chapters in every *other* module in the same track as `skipped`. That's an even bigger cliff.
-- **Locked modules** render only a "Complete X to unlock" banner with no chapter list. The user wants the chapter list visible underneath (still read-only, with the locked banner preserved).
+When a learner has an `onboarding_progress` nudge in the Agent One stack (image 2), clicking it should open Embark AI instead of starting a chat thread.
 
-## Fix
+- `src/lib/agentOneActions.ts`
+  - In the learner CTA map for `onboarding_progress`, change from `{ type: "open_agentone_chat", prompt: "I'm ready to start my onboarding journey…" }` to `{ type: "navigate", path: "/" }`.
+- `src/components/chat/AgentOneNudgeStack.tsx` already supports `cta.path` → `navigate(path)`, so no change required there.
+- Reflection-request nudge stays as a chat action (unchanged).
 
-### 1. Cap per-module savings from a single signal
+## 3. Redesign the AI Chat home (image 1)
 
-`buildLensChapters`:
+Goal: feel like a lighter sibling of Deep Research — left rail for suggestions/threads, calm central canvas, no big empty whitespace. Keep the chat-state UI (when a conversation is active) intact; only the home state changes.
 
-- **`diagnostic_only`** — only the **first 3 chapters** are considered "diagnostic candidates". The synthetic Quick Diagnostic row stays at the top. Pre-submission: those 3 show `pendingSkip` (subtle, no SKIPPED badge); chapters 4..N render as normal `available`/`locked` rows with no SKIPPED treatment. Post-submission: of the first 3, correctly-answered = `skipped`; wrong-answered = `reopened_after_wrong` (in-progress). Chapters 4..N are untouched. Synthetic row gets a small "skips up to 3 chapters" hint.
-- **`evidence_required`** — synthetic Evidence row plus the **first 3 chapters** as `covered_by_evidence` (pendingSkip pre-commit). Chapters 4..N render normally. The evidence card copy already mentions "the module's chapters are covered" — soften to "the foundation chapters are covered". 
-- **`microlearning`** — unchanged (timing × 0.4 across the whole module).
-- Helper constant `MAX_LENS_SKIPS = 3` centralises the cap.
+### Layout
 
-### 2. Soften the cross-module evidence cascade
+`src/pages/LearnerChat.tsx` home state becomes a 2-column grid `grid-cols-[260px_1fr]` (collapses to single column under `lg`):
 
-`src/lib/evidenceAssessment.ts → applyEvidenceOutcome` for `skip_remaining`:
+```text
+┌───────────────────────────┬───────────────────────────────────┐
+│ LEFT RAIL (260px)         │ MAIN (1fr)                        │
+│ ─ Quick links             │ Hi Clara, let's grow together     │
+│   Embark AI               │                                   │
+│   My 360                  │ [ Agent One nudge stack ]         │
+│   Action Centre           │                                   │
+│   Cohort                  │ Ask anything… (composer)          │
+│ ─ Suggested topics        │                                   │
+│   • Grow my skills        │ Recent conversations (chips)      │
+│   • Required skills       │   "Reflection draft" · 2h         │
+│   • Career paths          │   "Skill recs"        · yesterday │
+│   • My activities         │                                   │
+│   • Build profile         │ Today's focus (small strip)       │
+│   • Create a reflection   │   Next chapter · upcoming nudge   │
+│ ─ Recent threads          │                                   │
+│   (last 5, click to load) │                                   │
+└───────────────────────────┴───────────────────────────────────┘
+```
 
-- Instead of skipping all not-started chapters across every other module in the track, skip only the **first 3 not-started chapters of the next not-completed module** (the immediate follow-on), and leave the rest of the track intact. Same metadata reason.
-- Update the result type so the caller still gets a `skippedModuleCodes` (now usually 1 module, partial). No UI changes required — the existing toast logic handles it.
+### Left rail (new `src/components/chat/LearnerChatSidebar.tsx`)
 
-### 3. Show chapters inside locked modules
+- **Quick links** — 4 compact rows with icon + label routing to `/`, `/my-360`, `/action-centre`, `/cohort`. Single source for sidebar nav so we don't fight the global sidebar.
+- **Suggested topics** — the existing 6 suggestion cards converted to slim list items (icon + 1-line label, 1-line description on hover). Reuses the existing `suggestionCards` array and `handleCardSend`. Removes the bulky 3-column grid that creates the whitespace today.
+- **Recent threads** — list of past chat sessions persisted via `useAgentOne` (one entry per `handleReset` boundary, last 5). Clicking re-hydrates that thread. If thread persistence isn't available, show a "Conversations appear here" empty hint instead.
 
-`JourneyModuleAccordion.tsx`:
+### Main column
 
-- Replace the early-return for `m.status === "locked"` with: render the existing "Complete X to unlock" banner **plus** the full chapter list below it.
-- Pass a `displayLocked` flag down to the row build so chapter rows render as read-only/muted: lens pills still visible (so users see "Quick Diagnostic" / "Evidence Task" badges on locked modules too), but row click is disabled and the status icon is the lock variant.
-- Adaptation badge on the module header continues to show (no change there).
+- **Greeting** — unchanged copy, smaller top padding (`pt-8` instead of `pt-16`) so the page feels tighter.
+- **Agent One nudge stack** — kept as the hero element; this is the only thing that needs the full width.
+- **Composer** — moved directly under the nudge stack so the input is reachable in the first viewport.
+- **Recent conversation chips** — a small horizontal strip of the last 3 questions asked, click to re-send. Hidden if empty.
+- **Today's focus strip** — one card with two slots: "Next chapter in Embark" (deep-links to active chapter via `useLearnerJourney`) and "Pending nudge" (count from `useAgentOne`). Hidden if both empty.
 
-### 4. Realism guard: cap total savings ~30% per persona
+### Style cues from Deep Research (intentionally lighter)
 
-After `buildLensChapters` runs across the journey, the natural ratio with cap-3 + softer cascade lands around:
+- Same left-rail typography (`text-[11px] uppercase tracking-wide` section labels, `text-xs` items).
+- Same card chrome (`rounded-xl border-border/60 bg-card`, hover `border-primary/40`, subtle lift).
+- No right pinned-dashboard column, no scope badges, no "new thread" button in the header. Composer stays minimal.
 
-- **Clara (mid__in_im)** — diagnostic modules contribute ≤3 skip-eligible chapters each (currently 6 modules × full chapter counts → drops from ~45 to ≤18). Evidence modules drop from full to 3. Cross-module cascade drops from ~all-other-modules to one. Net savings move from ~60–70% to ~25–30%.
-- **Theo (early__in_im)** — same cap rules; he has fewer diagnostic modules, mostly microlearning (which only shortens timing, doesn't skip chapters), so his savings land around ~15–20%.
+### Chat-active state
 
-No DB change needed; this is purely client-side reshaping. The `persona_module_adaptations` rows stay as-is.
+No structural change. Left rail collapses (hidden under `lg` and via a small chevron toggle on `lg+`) so the conversation gets full width, matching today's behaviour.
 
-### 5. Light copy updates
+## 4. Other options worth adding to the page (pick any)
 
-- `src/lib/embarkAdaptation.ts → adaptationExplanation("diagnostic_only" | "evidence_required")` — adjust strings to reflect "skips up to the first few chapters" rather than "skip those chapters" / "marks the module covered".
-- Synthetic Quick Diagnostic row body hint: "Answer 3 questions to skip up to 3 chapters."
-- Synthetic Evidence row body hint: "Submit a short task to cover the first few foundation chapters."
+Listed so you can choose — none are in the build above unless you say yes:
 
-## Files to touch
-
-- `src/components/learnpath/JourneyModuleAccordion.tsx` — cap lens reshapes to first 3 chapters; render chapters under locked modules.
-- `src/lib/evidenceAssessment.ts` — limit `skip_remaining` cross-module cascade to one follow-on module's first 3 not-started chapters.
-- `src/lib/embarkAdaptation.ts` — softened explanation strings.
-- `src/components/learnpath/LearnPathChapterRow.tsx` — accept a `disabled`/`displayLocked` prop and render rows non-interactive when set (or wrap at the call site; pick whichever is less invasive after a read).
+1. **Voice ask** — mic button in the composer that streams to the existing role-play STT, drops the transcript into the input.
+2. **"Pick up where you left off" card** — single CTA showing the last in-progress Embark chapter with a Resume button, above the nudge stack.
+3. **Mood / energy pulse** — 3-emoji quick check-in that writes to reflections so the manager dashboard shows trend.
+4. **Weekly digest tile** — small card summarising chapters completed, reflections submitted, role plays done this week.
+5. **Cohort presence chip** — "3 peers active now" linking to Cohort Hub.
+6. **Saved answers** — bookmarkable assistant replies surfaced as chips in the left rail (the learner-side analogue of Deep Research pins).
+7. **Suggested next prompt** — after every assistant reply, show 1 contextual follow-up chip generated from the last response (reuses `suggestions` already returned by `useAgentOne`).
+8. **Keyboard shortcut hint** — `⌘K` opens the composer and `⌘/` cycles suggested topics.
 
 ## Out of scope
 
-- Tour, login, persona DB rows, catalog content, chapter counts.
-- Reflection / mentor / role-play flows.
-- New badges or visual redesign of the chapter row beyond a muted/locked variant.
+- Deep Research itself (untouched).
+- Agent One backend, nudge seeding, or category color tokens.
+- Tour, login, account-switch logic.
+- Chat-active conversation UI (only the home state is being redesigned).

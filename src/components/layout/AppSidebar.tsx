@@ -115,7 +115,7 @@ export function AppSidebar() {
       } else {
         setRole("learner");
         setViewMode("me");
-        navigate("/chat");
+        navigate("/");
       }
       setSwitchingProfile(false);
     }, 1000);
@@ -490,7 +490,7 @@ export function AppSidebar() {
                         setTimeout(() => {
                           switchUser(u.id);
                           if (u.canManage && viewMode === "team") { const switchTeamRole = u.role === "admin" ? "admin" : "manager"; setRole(switchTeamRole); navigate("/chat"); }
-                          else { setRole("learner"); setViewMode("me"); navigate("/chat"); }
+                          else { setRole("learner"); setViewMode("me"); navigate("/"); }
                           setSwitchingProfile(false);
                         }, 1000);
                       }}
@@ -865,7 +865,7 @@ export function AppSidebar() {
                     setTimeout(() => {
                       switchUser(u.id);
                       if (u.canManage && viewMode === "team") { const switchTeamRole = u.role === "admin" ? "admin" : "manager"; setRole(switchTeamRole); navigate("/manager"); }
-                      else { setRole("learner"); setViewMode("me"); navigate("/chat"); }
+                      else { setRole("learner"); setViewMode("me"); navigate("/"); }
                       setSwitchingProfile(false);
                     }, 1000);
                   }}

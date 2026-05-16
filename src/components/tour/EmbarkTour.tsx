@@ -195,6 +195,7 @@ export function EmbarkTour() {
             </h3>
           </div>
           <button
+            type="button"
             onClick={tour.close}
             aria-label="Close tour"
             className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
@@ -204,17 +205,17 @@ export function EmbarkTour() {
         </div>
         <p className="text-sm text-muted-foreground leading-relaxed">{step.body}</p>
         <div className="mt-4 flex items-center justify-between gap-2">
-          <Button variant="ghost" size="sm" onClick={tour.close}>
+          <Button type="button" variant="ghost" size="sm" onClick={tour.close}>
             Skip tour
           </Button>
           <div className="flex items-center gap-2">
             {!isFirst && (
-              <Button variant="outline" size="sm" onClick={tour.back} className="gap-1">
+              <Button type="button" variant="outline" size="sm" onClick={tour.back} className="gap-1">
                 <ChevronLeft className="h-3.5 w-3.5" />
                 Back
               </Button>
             )}
-            <Button size="sm" onClick={tour.next} className="gap-1">
+            <Button type="button" size="sm" onClick={tour.next} className="gap-1">
               {isLast ? "Done" : "Next"}
               {!isLast && <ChevronRight className="h-3.5 w-3.5" />}
             </Button>

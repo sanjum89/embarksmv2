@@ -62,7 +62,19 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
   // (Condensed / Quick Diagnostic / Evidence Task) regardless of which module
   // they live in.
   useEffect(() => {
-    const handler = () => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ moduleCode?: string }>).detail;
+      if (detail?.moduleCode) {
+        setOpen((prev) => (prev.includes(detail.moduleCode!) ? prev : [...prev, detail.moduleCode!]));
+        // Scroll the requested module into view after expansion.
+        requestAnimationFrame(() => {
+          const el = document.querySelector(
+            `[data-module-code="${CSS.escape(detail.moduleCode!)}"]`,
+          ) as HTMLElement | null;
+          el?.scrollIntoView({ block: "center", behavior: "smooth" });
+        });
+        return;
+      }
       setOpen(track.modules.map((m) => m.code));
     };
     window.addEventListener("embark:tour-expand-all-modules", handler);

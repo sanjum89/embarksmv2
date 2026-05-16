@@ -1,54 +1,51 @@
+# Tour highlight & visibility fixes
+
 ## Problem
 
-Clara is signed in via the profile switcher. Clicking the floating **Take the tour** button causes the page to reload in the background; on the next render the app shows the login form and (after re-submit) signs the user in as **admin**, not Clara.
-
-Two distinct bugs combine to cause this:
-
-1. **The tour Button has no explicit `type`.** `shadcn/ui` `<Button>` is a native `<button>`, which defaults to `type="submit"`. When a button without `type="button"` is clicked, browsers walk up the DOM looking for an enclosing `<form>`; if one exists anywhere up the tree it submits, which in a SPA performs a full-page navigation/reload. The Embark page contains chat composer `<form>` elements (`AIChatPanel`, etc.) that the floating tour button can end up inside when re-parented under the `<main>` flex container.
-2. **`LoginPage.handleSubmit` defaults to admin.** After the reload, if the active account's persisted `signedInUsers_<accountId>` is empty, the LoginPage renders and its submit handler picks `availableUsers.find(u => u.role === "admin")` as the fallback — so Clara is silently replaced by admin.
-
-The session replay confirms the sequence: click → "Retrieving your learning journey…" full reload → login form → Rathbones selected → "No Learning Journey Yet" (admin view, since admin has no learner journey).
+1. **Lens steps (Condensed, Quick Diagnostic, Evidence Task) blur the entire screen.** Their targets (`[data-tour="lens-condensed"]` etc.) live on chapter-row badges inside a Module accordion that is **collapsed** when the tour starts. The selector misses → the popover falls back to a centered modal with a full backdrop blur, so users see nothing of what's being described.
+2. **Even when a target is found, the highlight is too subtle** — just a thin ring. New users can't tell what's being pointed at.
+3. **No directional cue** linking the popover to its target.
 
 ## Fix
 
-### 1. Add `type="button"` to every tour control (primary fix)
+### 1. Guarantee the target is visible before each step
 
-Components to update:
+Extend `TourStep` with an optional `prepare?: () => void | Promise<void>` hook. In `EmbarkTour`, await `prepare()` before searching for the target. For the three lens steps, `prepare` will:
 
-- `src/components/tour/TourLaunchButton.tsx` — the floating "Take the tour" button.
-- `src/components/tour/TourWelcomeBanner.tsx` — "Start tour", "Later", and the dismiss `<button>`.
-- `src/components/tour/EmbarkTour.tsx` — "Skip tour", "Back", "Next/Done", and the close `<button>`.
+- Expand the first Module accordion in the active Track (dispatch a custom event, e.g. `embark:tour-open-first-module`, that `JourneyModuleAccordion` listens for and opens its first item).
+- After the DOM updates, `scrollIntoView({ block: "center", behavior: "smooth" })` on the matched lens pill.
 
-This guarantees the click never accidentally submits an ancestor form (now or in future layouts).
+Also raise `useTargetRect`'s retry budget from ~500ms to ~1.5s so the row has time to mount, and re-poll the rect for a few frames after match (the row animates in).
 
-### 2. Harden tour navigation so it never triggers a reload
+### 2. Stronger, more elegant spotlight
 
-In `EmbarkTour.tsx`, the navigation effect should:
+Replace the current ring with a layered treatment in `EmbarkTour`:
 
-- Only call `navigate(step.route)` when `pathname !== step.route` (already the case — keep it).
-- Use `navigate(step.route, { replace: false })` explicitly and never call `window.location.*`.
+- Soft animated **glow halo** around the cutout: `box-shadow: 0 0 0 6px hsl(var(--accent)/.35), 0 0 32px 8px hsl(var(--accent)/.45)` with a gentle pulse (`@keyframes` 1.6s ease-in-out, respecting `prefers-reduced-motion`).
+- Crisp 2px accent ring on the inner edge.
+- Slightly increased `SPOTLIGHT_PAD` (8 → 10) and a 12px border-radius for friendlier framing.
+- Backdrop opacity bumped from `bg-background/70` to `/82` for stronger contrast outside the spotlight.
 
-No code path currently calls `window.location.reload`, so this is just a guard against regressions.
+### 3. Connector pointing from popover → target
 
-### 3. Make the LoginPage fallback safer
+Render a small **caret/arrow** on the popover edge facing the target (computed from the chosen placement) — a 12px rotated square with the same border/background as the card. When there's no target (intro/wrap steps), suppress the caret and keep the centered modal as today, but reduce the full-screen blur (`/60` instead of `/80`) so the page is still recognizable behind the card.
 
-In `src/components/layout/LoginPage.tsx` `handleSubmit`, instead of silently picking the admin user when no user is selected, keep the existing "admin or first user" fallback but **remember the last-active user per account** so an accidental reload restores the same persona.
+### 4. Centered-modal fallback fix for missing targets
 
-- Read `lastActiveUser_<accountId>` from `localStorage` on submit; if present and valid, sign that user in instead of the admin fallback.
-- Write `lastActiveUser_<accountId>` from `UserContext` whenever `user` changes (small `useEffect` in `UserProvider`).
+If after `prepare()` + retries the selector still isn't found, **don't** fall back to a fully blurred screen. Instead:
 
-This means even if a reload happens for some other reason, Clara stays Clara after re-entering the password.
+- Dim only with a translucent vignette (no blur), and
+- Show a banner-style card anchored to the top-center with text "Look for the **Condensed** badge on chapters in any Module" so the user has a visual cue to scan for.
 
-### 4. Smoke test
+This makes the lens steps still useful if a learner's Module legitimately has no Condensed pill.
 
-After the change:
+## Files to touch
 
-- Sign in as Clara on Rathbones → confirm `signedInUsers_<accountId>` and `lastActiveUser_<accountId>` are set.
-- Click the floating **Take the tour** button → tour overlay appears, no reload, no route change, no login form.
-- Step through the tour → routes change via `react-router` `navigate` only, session preserved throughout.
-- Hard-refresh the browser tab while signed in as Clara → after re-entering the password the app restores Clara, not admin.
+- `src/components/tour/tourSteps.ts` — add `prepare` field; wire it for `adapt-condensed`, `adapt-diagnostic`, `adapt-evidence`.
+- `src/components/tour/EmbarkTour.tsx` — await `prepare`, longer retry, scroll-into-view, glow + caret rendering, vignette fallback.
+- `src/components/learnpath/JourneyModuleAccordion.tsx` — listen for `embark:tour-open-first-module` and open its first accordion item.
+- `src/index.css` — add `@keyframes tour-pulse` (reduced-motion safe).
 
 ## Out of scope
 
-- Any change to tour content, step ordering, or visuals.
-- Any change to `ProfileSwitcher` or `AccountContext`.
+Tour content/wording, step order, login/auth flow (already fixed), other pages' targets (which already have valid selectors).

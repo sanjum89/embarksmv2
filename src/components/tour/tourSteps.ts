@@ -1,10 +1,5 @@
 /**
  * Declarative step list for the Clara/Theo product tour.
- * - `route` is where the user should be when this step shows. If they're not
- *   there, the tour navigates them.
- * - `target` is an optional CSS selector (we use `data-tour="…"` attributes).
- *   When omitted (or not found within a small retry window) the step renders
- *   as a centered modal card.
  */
 export interface TourStep {
   id: string;
@@ -13,12 +8,21 @@ export interface TourStep {
   target?: string;
   title: string;
   body: string;
-  /** Preferred popover placement relative to the target. */
   placement?: "top" | "bottom" | "left" | "right";
+  /** Optional hook fired before searching for the target. Use this to expand
+   * accordions, switch tabs, etc., so the target is in the DOM. */
+  prepare?: () => void | Promise<void>;
+  /** Optional helper shown in the missing-target fallback banner. */
+  fallbackHint?: string;
 }
 
+const expandAllModules = () => {
+  window.dispatchEvent(new CustomEvent("embark:tour-expand-all-modules"));
+  // Give the accordion a beat to mount its rows
+  return new Promise<void>((r) => setTimeout(r, 350));
+};
+
 export const TOUR_STEPS: TourStep[] = [
-  // 1. WELCOME
   {
     id: "welcome",
     section: "Welcome",
@@ -26,8 +30,6 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Welcome to Embark",
     body: "A 2-minute tour of the main areas — Embark, your Cohort, Action Centre, My 360 and Role Play. You can skip anytime.",
   },
-
-  // 2. EMBARK PAGE
   {
     id: "embark-home",
     section: "Embark",
@@ -54,14 +56,15 @@ export const TOUR_STEPS: TourStep[] = [
     body: "Your Cohort is the program you're in. It contains Tracks. Each Track has Modules, and each Module has Chapters. Open one to see the chapter list.",
     placement: "left",
   },
-
-  // 3. CONTENT ADAPTATION
   {
     id: "adapt-intro",
     section: "How content adapts",
     route: "/",
+    target: '[data-tour="embark-journey"]',
     title: "Content adapts to you",
     body: "Embark reshapes each Module for you based on your profile and your 360 gaps. You'll see three lenses on chapter rows: Condensed, Quick Diagnostic, and Evidence Task.",
+    placement: "left",
+    prepare: expandAllModules,
   },
   {
     id: "adapt-condensed",
@@ -71,6 +74,8 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Condensed",
     body: "When you already have related skills, chapters are shortened to the essentials so you spend less time on what you mostly know.",
     placement: "left",
+    prepare: expandAllModules,
+    fallbackHint: "Look for the Condensed badge next to a chapter title in an open Module.",
   },
   {
     id: "adapt-diagnostic",
@@ -80,6 +85,8 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Quick Diagnostic",
     body: "A 3-question check across the Module's chapters. Get them right and we skip those chapters. Get one wrong and just that chapter reopens for you.",
     placement: "left",
+    prepare: expandAllModules,
+    fallbackHint: "Look for the Quick Diagnostic badge on a chapter row.",
   },
   {
     id: "adapt-evidence",
@@ -89,16 +96,18 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Evidence Task",
     body: "Show you've already done this in the real world: submit a short written task. Once accepted, the Module's chapters are marked covered.",
     placement: "left",
+    prepare: expandAllModules,
+    fallbackHint: "Look for the Evidence Task badge on a chapter row.",
   },
   {
     id: "adapt-why",
     section: "How content adapts",
     route: "/",
+    target: '[data-tour="embark-journey"]',
     title: "Why each lens?",
     body: "Your role, prior projects, and skill gaps from My 360 determine which lens fits each Module. The goal: less filler, more of what moves you forward.",
+    placement: "left",
   },
-
-  // 4. COHORT HUB
   {
     id: "cohort-hub",
     section: "Cohort Hub",
@@ -107,8 +116,6 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Your Cohort Hub",
     body: "See who's in your cohort, where everyone is in the journey, and what's coming up. Use it to compare notes and stay aligned.",
   },
-
-  // 5. ACTION CENTRE
   {
     id: "action-centre",
     section: "Action Centre",
@@ -117,8 +124,6 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Action Centre",
     body: "Nudges from your manager, reflections to complete, and reminders for your next steps — all in one inbox.",
   },
-
-  // 6. MY 360
   {
     id: "my360",
     section: "My 360",
@@ -127,8 +132,6 @@ export const TOUR_STEPS: TourStep[] = [
     title: "My 360",
     body: "Your professional profile: competency radar, skills-gap matrix, and career timeline. This is what drives the adaptation in Embark.",
   },
-
-  // 7. ROLE PLAY
   {
     id: "role-play",
     section: "Role Play",
@@ -137,8 +140,6 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Role Play",
     body: "Practise real conversations with AI characters — review a client meeting, rehearse a tricky message, or try a voice scenario. Manager-set or self-chosen.",
   },
-
-  // 8. WRAP
   {
     id: "wrap",
     section: "All set",

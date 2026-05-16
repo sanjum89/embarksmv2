@@ -58,6 +58,17 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
     setOpen((prev) => Array.from(new Set([...prev, ...defaultOpen])));
   }, [defaultOpen]);
 
+  // Tour helper: expand every module so the tour can spotlight lens pills
+  // (Condensed / Quick Diagnostic / Evidence Task) regardless of which module
+  // they live in.
+  useEffect(() => {
+    const handler = () => {
+      setOpen(track.modules.map((m) => m.code));
+    };
+    window.addEventListener("embark:tour-expand-all-modules", handler);
+    return () => window.removeEventListener("embark:tour-expand-all-modules", handler);
+  }, [track.modules]);
+
   if (track.modules.length === 0) {
     return (
       <p className="text-sm text-muted-foreground px-1 py-6 text-center">

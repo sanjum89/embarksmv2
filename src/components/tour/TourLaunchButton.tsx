@@ -15,6 +15,7 @@ export function TourLaunchButton() {
   return (
     <div className="fixed bottom-5 right-5 z-[9000]">
       <Button
+        type="button"
         onClick={() => tour.start(0)}
         size="sm"
         className="gap-2 shadow-lg rounded-full px-4"

@@ -319,6 +319,22 @@
   }
 }
 
+/* Tour spotlight pulse */
+@keyframes tour-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px hsl(var(--accent)), 0 0 0 8px hsl(var(--accent) / 0.28), 0 0 36px 8px hsl(var(--accent) / 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 2px hsl(var(--accent)), 0 0 0 12px hsl(var(--accent) / 0.18), 0 0 56px 14px hsl(var(--accent) / 0.55);
+  }
+}
+.animate-tour-pulse {
+  animation: tour-pulse 1.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-tour-pulse { animation: none; }
+}
+
 /* Dark mode scrollbar styling */
 .dark *::-webkit-scrollbar {
   width: 8px;

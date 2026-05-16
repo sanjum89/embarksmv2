@@ -13,7 +13,7 @@ import { TourProvider } from "@/contexts/TourContext";
 import { EmbarkTour } from "@/components/tour/EmbarkTour";
 import { TourLaunchButton } from "@/components/tour/TourLaunchButton";
 import { TourWelcomeBanner } from "@/components/tour/TourWelcomeBanner";
-import { TOUR_STEPS } from "@/components/tour/tourSteps";
+
 
 export function AppLayout() {
   const { expanded } = useSidebarState();
@@ -31,7 +31,7 @@ export function AppLayout() {
   }
 
   return (
-    <TourProvider totalSteps={TOUR_STEPS.length}>
+    <TourProvider>
       <div className="h-screen overflow-hidden bg-background flex flex-col">
         {switching && (
           <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/80 backdrop-blur-sm">

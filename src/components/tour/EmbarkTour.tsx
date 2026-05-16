@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTour } from "@/contexts/TourContext";
-import { TOUR_STEPS, type TourStep } from "./tourSteps";
+import { type TourStep } from "./tourSteps";
+import { buildLensSteps } from "./buildLensSteps";
 
 const POPOVER_WIDTH = 360;
 const POPOVER_MARGIN = 18;
@@ -168,7 +169,24 @@ export function EmbarkTour() {
   const tour = useTour();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const step: TourStep | undefined = TOUR_STEPS[tour.stepIndex];
+  const step: TourStep | undefined = tour.steps[tour.stepIndex];
+
+  // When we hit the intro lens step, dynamically build per-persona lens steps
+  // from the actual rendered journey and splice them in.
+  useEffect(() => {
+    if (!tour.open || !step) return;
+    if (step.id !== "adapt-intro") return;
+    if (pathname !== step.route) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const dynamic = await buildLensSteps();
+        if (cancelled || dynamic.length === 0) return;
+        tour.spliceSteps(["adapt-condensed", "adapt-diagnostic", "adapt-evidence"], dynamic);
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, [tour.open, step?.id, pathname]);
 
   // Navigate to the route the step expects.
   useEffect(() => {
@@ -202,7 +220,7 @@ export function EmbarkTour() {
   const placement: Placement = step.placement ?? "bottom";
   const cardStyle = placeCard(showSpotlight ? rect : null, placement);
   const isFirst = tour.stepIndex === 0;
-  const isLast = tour.stepIndex === TOUR_STEPS.length - 1;
+  const isLast = tour.stepIndex === tour.steps.length - 1;
   const hasTarget = !!step.target;
   // If the step expects a target but we couldn't find it, show the fallback hint banner.
   const showFallbackHint = onRoute && hasTarget && !rect && prepared;
@@ -286,7 +304,7 @@ export function EmbarkTour() {
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="min-w-0">
             <div className="text-[0.65rem] font-medium uppercase tracking-wider text-accent">
-              {step.section} · {tour.stepIndex + 1} / {TOUR_STEPS.length}
+              {step.section} · {tour.stepIndex + 1} / {tour.steps.length}
             </div>
             <h3 className="font-display text-base font-semibold text-foreground mt-0.5">
               {step.title}

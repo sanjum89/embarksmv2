@@ -161,6 +161,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }, [activeAccountId, loading]);
 
+  // Persist the last-active user per account so accidental reloads can restore them
+  useEffect(() => {
+    if (!activeAccountId || !user?.id) return;
+    if (!signedInUserIds.includes(user.id)) return;
+    try { localStorage.setItem(lastActiveKey(activeAccountId), user.id); } catch {}
+  }, [activeAccountId, user?.id, signedInUserIds]);
+
   const setRole = (role: UserRole) => {
     setUser((prev) => ({ ...prev, role }));
   };

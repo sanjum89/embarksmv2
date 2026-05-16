@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,8 @@ export function LoginPage() {
   const [selectedAccountId, setSelectedAccountId] = useState(activeAccountId ?? "");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  // When true, perform login as soon as activeAccountId catches up to selectedAccountId
+  const pendingLoginRef = useRef(false);
 
   const handleAccountChange = (id: string) => {
     setSelectedAccountId(id);
@@ -26,17 +28,7 @@ export function LoginPage() {
     setError("");
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    if (!selectedAccountId) {
-      setError("Please select an account");
-      return;
-    }
-    if (password !== PASSWORD) {
-      setError("Incorrect password");
-      return;
-    }
+  const performLogin = () => {
     // Prefer the last-active user for this account if still valid
     let preferredUser = null as typeof availableUsers[number] | null;
     try {
@@ -55,6 +47,35 @@ export function LoginPage() {
     }
     setStyleTheme("new");
     setSuperLight(true);
+  };
+
+  // If the user submits before the account switch settles, defer until it does.
+  useEffect(() => {
+    if (!pendingLoginRef.current) return;
+    if (activeAccountId !== selectedAccountId) return;
+    pendingLoginRef.current = false;
+    performLogin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeAccountId, availableUsers]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (!selectedAccountId) {
+      setError("Please select an account");
+      return;
+    }
+    if (password !== PASSWORD) {
+      setError("Incorrect password");
+      return;
+    }
+    // Wait for availableUsers to reflect the selected account before logging in,
+    // otherwise we'd silently fall back to the previous account's admin user.
+    if (activeAccountId !== selectedAccountId) {
+      pendingLoginRef.current = true;
+      return;
+    }
+    performLogin();
   };
 
   if (accountsLoading) {

@@ -102,6 +102,8 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
           <AccordionItem
             key={m.code}
             value={m.code}
+            data-module-code={m.code}
+            data-module-title={m.title}
             className={cn(
               "rounded-xl border border-border bg-card overflow-hidden transition-shadow",
               "data-[state=open]:shadow-sm",

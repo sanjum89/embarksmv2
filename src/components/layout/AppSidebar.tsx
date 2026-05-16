@@ -115,7 +115,7 @@ export function AppSidebar() {
       } else {
         setRole("learner");
         setViewMode("me");
-        navigate("/chat");
+        navigate("/");
       }
       setSwitchingProfile(false);
     }, 1000);

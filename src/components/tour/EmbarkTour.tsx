@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTour } from "@/contexts/TourContext";
-import { TOUR_STEPS } from "./tourSteps";
+import { TOUR_STEPS, type TourStep } from "./tourSteps";
 
 const POPOVER_WIDTH = 360;
-const POPOVER_MARGIN = 16;
-const SPOTLIGHT_PAD = 8;
+const POPOVER_MARGIN = 18;
+const SPOTLIGHT_PAD = 10;
+const CARET = 12;
 
 interface Rect {
   top: number;
@@ -18,8 +19,12 @@ interface Rect {
   height: number;
 }
 
-/** Try to find the target element across a few animation frames. */
-function useTargetRect(selector: string | undefined, stepIndex: number, route: string): Rect | null {
+function useTargetRect(
+  selector: string | undefined,
+  stepIndex: number,
+  route: string,
+  ready: boolean,
+): Rect | null {
   const [rect, setRect] = useState<Rect | null>(null);
   const { pathname } = useLocation();
 
@@ -27,10 +32,11 @@ function useTargetRect(selector: string | undefined, stepIndex: number, route: s
     setRect(null);
     if (!selector) return;
     if (pathname !== route) return;
+    if (!ready) return;
 
     let cancelled = false;
     let attempts = 0;
-    const MAX_ATTEMPTS = 30; // ~500ms
+    const MAX_ATTEMPTS = 90; // ~1.5s @60fps
 
     const compute = (el: Element) => {
       const r = el.getBoundingClientRect();
@@ -38,10 +44,23 @@ function useTargetRect(selector: string | undefined, stepIndex: number, route: s
       setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
     };
 
+    let scrolled = false;
     const tick = () => {
       if (cancelled) return;
       const el = document.querySelector(selector);
       if (el) {
+        if (!scrolled) {
+          scrolled = true;
+          try {
+            (el as HTMLElement).scrollIntoView({ block: "center", behavior: "smooth" });
+          } catch {}
+          // Wait a couple frames after scroll for layout to settle
+          setTimeout(() => {
+            const el2 = document.querySelector(selector);
+            if (el2) compute(el2);
+          }, 320);
+          return;
+        }
         compute(el);
         return;
       }
@@ -62,48 +81,94 @@ function useTargetRect(selector: string | undefined, stepIndex: number, route: s
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onResize, true);
     };
-  }, [selector, stepIndex, route, pathname]);
+  }, [selector, stepIndex, route, pathname, ready]);
 
   return rect;
 }
 
-function placeCard(rect: Rect | null, placement: "top" | "bottom" | "left" | "right" = "bottom") {
+type Placement = "top" | "bottom" | "left" | "right";
+
+function placeCard(rect: Rect | null, placement: Placement = "bottom") {
   if (!rect) {
-    // Centered fallback
-    return {
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-    } as const;
+    return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" } as const;
   }
   const vw = window.innerWidth;
   const vh = window.innerHeight;
+  const estH = 200;
 
   let top = rect.top + rect.height + POPOVER_MARGIN;
   let left = rect.left;
 
-  if (placement === "top") top = rect.top - POPOVER_MARGIN - 180;
+  if (placement === "top") top = rect.top - POPOVER_MARGIN - estH;
   if (placement === "right") {
-    top = rect.top;
+    top = rect.top + rect.height / 2 - estH / 2;
     left = rect.left + rect.width + POPOVER_MARGIN;
   }
   if (placement === "left") {
-    top = rect.top;
+    top = rect.top + rect.height / 2 - estH / 2;
     left = rect.left - POPOVER_WIDTH - POPOVER_MARGIN;
   }
+  if (placement === "bottom") {
+    left = rect.left + rect.width / 2 - POPOVER_WIDTH / 2;
+  }
 
-  // Clamp to viewport
   left = Math.max(12, Math.min(left, vw - POPOVER_WIDTH - 12));
-  top = Math.max(12, Math.min(top, vh - 220));
-
+  top = Math.max(12, Math.min(top, vh - estH - 12));
   return { top, left, transform: "none" } as const;
+}
+
+function caretStyle(rect: Rect, placement: Placement): React.CSSProperties | null {
+  // Position the caret on the side of the card that faces the target.
+  const half = CARET / 2;
+  const base: React.CSSProperties = {
+    position: "absolute",
+    width: CARET,
+    height: CARET,
+    background: "hsl(var(--card))",
+    transform: "rotate(45deg)",
+  };
+  if (placement === "left") {
+    return {
+      ...base,
+      top: `calc(50% - ${half}px)`,
+      right: -half,
+      borderRight: "1px solid hsl(var(--border))",
+      borderTop: "1px solid hsl(var(--border))",
+    };
+  }
+  if (placement === "right") {
+    return {
+      ...base,
+      top: `calc(50% - ${half}px)`,
+      left: -half,
+      borderLeft: "1px solid hsl(var(--border))",
+      borderBottom: "1px solid hsl(var(--border))",
+    };
+  }
+  if (placement === "top") {
+    return {
+      ...base,
+      left: `calc(50% - ${half}px)`,
+      bottom: -half,
+      borderRight: "1px solid hsl(var(--border))",
+      borderBottom: "1px solid hsl(var(--border))",
+    };
+  }
+  // bottom
+  return {
+    ...base,
+    left: `calc(50% - ${half}px)`,
+    top: -half,
+    borderLeft: "1px solid hsl(var(--border))",
+    borderTop: "1px solid hsl(var(--border))",
+  };
 }
 
 export function EmbarkTour() {
   const tour = useTour();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const step = TOUR_STEPS[tour.stepIndex];
+  const step: TourStep | undefined = TOUR_STEPS[tour.stepIndex];
 
   // Navigate to the route the step expects.
   useEffect(() => {
@@ -111,29 +176,48 @@ export function EmbarkTour() {
     if (pathname !== step.route) navigate(step.route);
   }, [tour.open, tour.stepIndex, step, pathname, navigate]);
 
-  const rect = useTargetRect(step?.target, tour.stepIndex, step?.route ?? "/");
+  // Run the step's prepare() (e.g. expand accordions) once we're on-route.
+  const [prepared, setPrepared] = useState(false);
+  useEffect(() => {
+    setPrepared(false);
+    if (!tour.open || !step) return;
+    if (pathname !== step.route) return;
+    let cancelled = false;
+    const run = async () => {
+      if (step.prepare) {
+        try { await step.prepare(); } catch {}
+      }
+      if (!cancelled) setPrepared(true);
+    };
+    run();
+    return () => { cancelled = true; };
+  }, [tour.open, tour.stepIndex, step, pathname]);
+
+  const rect = useTargetRect(step?.target, tour.stepIndex, step?.route ?? "/", prepared);
 
   if (!tour.open || !step) return null;
 
   const onRoute = pathname === step.route;
   const showSpotlight = onRoute && !!rect;
-  const cardStyle = placeCard(showSpotlight ? rect : null, step.placement);
+  const placement: Placement = step.placement ?? "bottom";
+  const cardStyle = placeCard(showSpotlight ? rect : null, placement);
   const isFirst = tour.stepIndex === 0;
   const isLast = tour.stepIndex === TOUR_STEPS.length - 1;
+  const hasTarget = !!step.target;
+  // If the step expects a target but we couldn't find it, show the fallback hint banner.
+  const showFallbackHint = onRoute && hasTarget && !rect && prepared;
 
   return createPortal(
     <div className="fixed inset-0 z-[10000] pointer-events-none">
-      {/* Dim layer with cutout for spotlight (or full dim) */}
       {showSpotlight && rect ? (
         <>
-          {/* top */}
+          {/* 4-piece dim outside the spotlight (no blur over the target) */}
           <div
-            className="absolute bg-background/70 backdrop-blur-[2px] pointer-events-auto"
+            className="absolute bg-background/80 pointer-events-auto transition-opacity"
             style={{ top: 0, left: 0, right: 0, height: Math.max(0, rect.top - SPOTLIGHT_PAD) }}
           />
-          {/* bottom */}
           <div
-            className="absolute bg-background/70 backdrop-blur-[2px] pointer-events-auto"
+            className="absolute bg-background/80 pointer-events-auto"
             style={{
               top: rect.top + rect.height + SPOTLIGHT_PAD,
               left: 0,
@@ -141,9 +225,8 @@ export function EmbarkTour() {
               bottom: 0,
             }}
           />
-          {/* left */}
           <div
-            className="absolute bg-background/70 backdrop-blur-[2px] pointer-events-auto"
+            className="absolute bg-background/80 pointer-events-auto"
             style={{
               top: Math.max(0, rect.top - SPOTLIGHT_PAD),
               left: 0,
@@ -151,9 +234,8 @@ export function EmbarkTour() {
               height: rect.height + SPOTLIGHT_PAD * 2,
             }}
           />
-          {/* right */}
           <div
-            className="absolute bg-background/70 backdrop-blur-[2px] pointer-events-auto"
+            className="absolute bg-background/80 pointer-events-auto"
             style={{
               top: Math.max(0, rect.top - SPOTLIGHT_PAD),
               left: rect.left + rect.width + SPOTLIGHT_PAD,
@@ -161,30 +243,46 @@ export function EmbarkTour() {
               height: rect.height + SPOTLIGHT_PAD * 2,
             }}
           />
-          {/* spotlight ring */}
+          {/* Glowing spotlight ring */}
           <div
             aria-hidden
-            className="absolute rounded-xl ring-2 ring-accent shadow-[0_0_0_4px_hsl(var(--accent)/0.25)] pointer-events-none animate-in fade-in"
+            className="absolute rounded-xl pointer-events-none animate-tour-pulse"
             style={{
               top: rect.top - SPOTLIGHT_PAD,
               left: rect.left - SPOTLIGHT_PAD,
               width: rect.width + SPOTLIGHT_PAD * 2,
               height: rect.height + SPOTLIGHT_PAD * 2,
+              boxShadow:
+                "0 0 0 2px hsl(var(--accent)), 0 0 0 8px hsl(var(--accent) / 0.28), 0 0 40px 10px hsl(var(--accent) / 0.45)",
             }}
           />
         </>
       ) : (
-        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm pointer-events-auto" />
+        // No-target step — keep the page readable: vignette, no blur.
+        <div className="absolute inset-0 bg-background/55 pointer-events-auto" />
+      )}
+
+      {/* Fallback hint banner anchored top-center if the target wasn't found */}
+      {showFallbackHint && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 pointer-events-auto">
+          <div className="rounded-full border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs text-foreground shadow-sm flex items-center gap-2">
+            <Sparkles className="h-3.5 w-3.5 text-accent" />
+            {step.fallbackHint ?? "Scan the page for the highlighted element."}
+          </div>
+        </div>
       )}
 
       {/* Popover card */}
       <div
         className={cn(
           "absolute rounded-xl border border-border bg-card text-card-foreground shadow-2xl pointer-events-auto",
-          "p-4 w-[360px] max-w-[calc(100vw-24px)]",
+          "p-4 w-[360px] max-w-[calc(100vw-24px)] animate-in fade-in zoom-in-95",
         )}
         style={cardStyle as React.CSSProperties}
       >
+        {showSpotlight && rect && (
+          <div aria-hidden style={caretStyle(rect, placement) ?? undefined} />
+        )}
         <div className="flex items-start justify-between gap-3 mb-2">
           <div className="min-w-0">
             <div className="text-[0.65rem] font-medium uppercase tracking-wider text-accent">

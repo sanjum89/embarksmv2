@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { resolvePillAction } from "@/lib/pillActionResolver";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, Home, ArrowRight, X, ChevronUp, RotateCcw, Compass, UserCircle2, Inbox, Users, BarChart3, Target, Briefcase, Activity, ClipboardList, MessageCircle, CornerDownRight } from "lucide-react";
+import { Send, Sparkles, Home, ArrowRight, X, ChevronUp, RotateCcw, UserCircle2, Users, BarChart3, Target, Briefcase, Activity, ClipboardList, MessageCircle, CornerDownRight, Clock3, CheckCircle2 } from "lucide-react";
 import { ChatContextRail } from "@/components/chat/ChatContextRail";
 import { VoiceDictateButton } from "@/components/chat/VoiceDictateButton";
 import ReactMarkdown from "react-markdown";
@@ -92,13 +92,6 @@ const suggestionCards = [
   { label: "View My Activities", description: "Track your recent activities.", prompt: "Show me my recent learning activities", illustration: "activities", icon: Activity },
   { label: "Build Your Profile", description: "Upload resume to build your profile.", prompt: "Help me build my professional profile", illustration: "profile", icon: UserCircle2 },
   { label: "Create a Reflection", description: "Reflect on your learning journey.", prompt: "Help me create a reflection on my recent learning", illustration: "reflection", icon: ClipboardList },
-];
-
-const quickLinks = [
-  { label: "Embark AI", path: "/", icon: Compass, desc: "Your guided learning journey" },
-  { label: "My 360", path: "/my-360", icon: UserCircle2, desc: "Profile, skills, gaps" },
-  { label: "Action Centre", path: "/action-centre", icon: Inbox, desc: "Tasks and reflections" },
-  { label: "Cohort", path: "/cohort", icon: Users, desc: "Your group and peers" },
 ];
 
 function ThinkingIndicator() {

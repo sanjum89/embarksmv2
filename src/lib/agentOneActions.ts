@@ -268,7 +268,7 @@ export function groupByCategory(
       onboarding_progress: { type: "open_action_center", path: "/team-dashboard" },
     },
     learner: {
-      onboarding_progress: { type: "open_agentone_chat", prompt: "I'm ready to start my onboarding journey. What should I do first?" },
+      onboarding_progress: { type: "navigate", path: "/" },
       reflection_request: { type: "open_agentone_chat", prompt: "My manager has requested a reflection to hear about my onboarding experience. How are you finding things so far?" },
     },
   };

@@ -158,19 +158,19 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
             </AccordionTrigger>
 
             <AccordionContent className="px-4 pb-4 pt-0">
-              {m.status === "locked" && m.prerequisiteTitle ? (
-                <div className="rounded-lg bg-muted/50 border border-dashed border-border p-3 flex items-start gap-2">
+              {m.status === "locked" && m.prerequisiteTitle && (
+                <div className="rounded-lg bg-muted/50 border border-dashed border-border p-3 flex items-start gap-2 mb-3">
                   <Lock className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                   <p className="text-xs text-muted-foreground">
                     Complete{" "}
                     <span className="font-medium text-foreground">
                       {substitute(m.prerequisiteTitle)}
                     </span>{" "}
-                    to unlock this module.
+                    to unlock this module. Preview of what's inside:
                   </p>
                 </div>
-              ) : (
-                <div className="space-y-1 pt-1">
+              )}
+              <div className={cn("space-y-1 pt-1", m.status === "locked" && "opacity-80")}>
                   {(() => {
                     const lensType = m.adaptation?.adaptationType ?? "full_module";
                     const recorded = diagState[m.code];

@@ -37,13 +37,18 @@ export function LoginPage() {
       setError("Incorrect password");
       return;
     }
-    // Find the admin user, fall back to first user
-    const adminUser = availableUsers.find((u) => u.role === "admin") || availableUsers[0];
-    if (!adminUser) {
+    // Prefer the last-active user for this account if still valid
+    let preferredUser = null as typeof availableUsers[number] | null;
+    try {
+      const lastId = localStorage.getItem(`lastActiveUser_${selectedAccountId}`);
+      if (lastId) preferredUser = availableUsers.find((u) => u.id === lastId) ?? null;
+    } catch {}
+    const targetUser = preferredUser || availableUsers.find((u) => u.role === "admin") || availableUsers[0];
+    if (!targetUser) {
       setError("No users available for this account.");
       return;
     }
-    const success = loginUser(adminUser.id);
+    const success = loginUser(targetUser.id);
     if (!success) {
       setError("Login failed. Please try again.");
       return;

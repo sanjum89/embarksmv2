@@ -205,7 +205,6 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                     });
                   })()}
                 </div>
-              )}
             </AccordionContent>
           </AccordionItem>
         );

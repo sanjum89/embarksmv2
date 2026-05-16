@@ -71,6 +71,29 @@ function persistIds(accountId: string | null, ids: string[]) {
   localStorage.setItem(storageKey(accountId), JSON.stringify(ids));
 }
 
+function readLastActiveId(accountId: string | null): string | null {
+  if (!accountId) return null;
+  try {
+    return localStorage.getItem(lastActiveKey(accountId));
+  } catch {
+    return null;
+  }
+}
+
+function persistLastActiveId(accountId: string | null, userId: string) {
+  if (!accountId) return;
+  try {
+    localStorage.setItem(lastActiveKey(accountId), userId);
+  } catch {}
+}
+
+function pickPersistedActiveUser(users: User[], accountId: string | null, persistedIds: string[]): User | undefined {
+  const validIds = persistedIds.filter((id) => users.some((u) => u.id === id));
+  const lastActiveId = readLastActiveId(accountId);
+  const preferredId = lastActiveId && validIds.includes(lastActiveId) ? lastActiveId : validIds[0];
+  return preferredId ? users.find((u) => u.id === preferredId) : undefined;
+}
+
 const fallbackUserContext: UserContextType = {
   user: currentUser,
   setRole: () => undefined,
@@ -129,10 +152,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const [user, setUser] = useState<User>(() => {
     const signedIn = readPersistedIds(activeAccountId);
-    if (signedIn.length > 0) {
-      const found = users.find((u) => u.id === signedIn[0]);
-      if (found) return found;
-    }
+    const found = pickPersistedActiveUser(users, activeAccountId, signedIn);
+    if (found) return found;
     return users[0] || currentUser;
   });
 
@@ -148,7 +169,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (validIds.length > 0) {
           setSignedInUserIds(validIds);
           persistIds(activeAccountId, validIds);
-          const activeUser = newUsers.find((u) => u.id === validIds[0]);
+          const activeUser = pickPersistedActiveUser(newUsers, activeAccountId, validIds);
           if (activeUser) setUser(activeUser);
           return;
         }
@@ -175,8 +196,11 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const switchUser = useCallback((userId: string) => {
     if (!signedInUserIds.includes(userId)) return;
     const found = users.find((u) => u.id === userId);
-    if (found) setUser(found);
-  }, [signedInUserIds, users]);
+    if (found) {
+      persistLastActiveId(activeAccountId, userId);
+      setUser(found);
+    }
+  }, [signedInUserIds, users, activeAccountId]);
 
   const loginUser = useCallback((userId: string): boolean => {
     const found = users.find((u) => u.id === userId);
@@ -184,6 +208,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const updated = [...new Set([...signedInUserIds, userId])];
     setSignedInUserIds(updated);
     persistIds(activeAccountId, updated);
+    persistLastActiveId(activeAccountId, userId);
     setUser(found);
     return true;
   }, [signedInUserIds, users, activeAccountId]);

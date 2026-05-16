@@ -8,6 +8,10 @@ function storageKey(accountId: string) {
   return `signedInUsers_${accountId}`;
 }
 
+function lastActiveKey(accountId: string) {
+  return `lastActiveUser_${accountId}`;
+}
+
 interface UserContextType {
   user: User;
   setRole: (role: UserRole) => void;

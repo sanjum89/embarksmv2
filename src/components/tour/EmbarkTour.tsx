@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTour } from "@/contexts/TourContext";
-import { TOUR_STEPS, type TourStep } from "./tourSteps";
+import { type TourStep } from "./tourSteps";
+import { buildLensSteps } from "./buildLensSteps";
 
 const POPOVER_WIDTH = 360;
 const POPOVER_MARGIN = 18;

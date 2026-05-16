@@ -158,19 +158,19 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
             </AccordionTrigger>
 
             <AccordionContent className="px-4 pb-4 pt-0">
-              {m.status === "locked" && m.prerequisiteTitle ? (
-                <div className="rounded-lg bg-muted/50 border border-dashed border-border p-3 flex items-start gap-2">
+              {m.status === "locked" && m.prerequisiteTitle && (
+                <div className="rounded-lg bg-muted/50 border border-dashed border-border p-3 flex items-start gap-2 mb-3">
                   <Lock className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                   <p className="text-xs text-muted-foreground">
                     Complete{" "}
                     <span className="font-medium text-foreground">
                       {substitute(m.prerequisiteTitle)}
                     </span>{" "}
-                    to unlock this module.
+                    to unlock this module. Preview of what's inside:
                   </p>
                 </div>
-              ) : (
-                <div className="space-y-1 pt-1">
+              )}
+              <div className={cn("space-y-1 pt-1", m.status === "locked" && "opacity-80")}>
                   {(() => {
                     const lensType = m.adaptation?.adaptationType ?? "full_module";
                     const recorded = diagState[m.code];
@@ -205,7 +205,6 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                     });
                   })()}
                 </div>
-              )}
             </AccordionContent>
           </AccordionItem>
         );
@@ -252,15 +251,13 @@ type LensChapter = JourneyModule["chapters"][number] & {
 
 /**
  * Reshape the chapter list based on the persona's delivery lens.
- * - diagnostic_only → synthetic Quick Diagnostic at top + every real chapter
- *   shown beneath (read-only "Skipped" state). Once the diagnostic has been
- *   submitted, chapters whose questions were answered wrong become
- *   `reopened_after_wrong` (clickable, in-progress).
- * - evidence_required → synthetic Submit-evidence row at top + chapters as
- *   "Covered by evidence" (read-only).
- * - microlearning → same chapters, durations × 0.4 (kept clickable).
- * - full_module / skip_after_validation → unchanged
+ * Skip cap: at most MAX_LENS_SKIPS foundational chapters are eligible to be
+ * skipped/covered by a single diagnostic or evidence signal. Remaining
+ * chapters always render normally — so doing one assessment never silently
+ * removes 8+ chapters of work.
  */
+const MAX_LENS_SKIPS = 3;
+
 function buildLensChapters(
   moduleCode: string,
   chapters: JourneyModule["chapters"],
@@ -272,9 +269,10 @@ function buildLensChapters(
   if (lens === "diagnostic_only") {
     const submitted = !!diag?.submitted;
     const reopened = diag?.reopened ?? new Set<string>();
+    const skipCount = Math.min(MAX_LENS_SKIPS, chapters.length);
     const synthetic: LensChapter = {
       code: `__diag::${moduleCode}`,
-      title: "Quick diagnostic — 3 questions",
+      title: `Quick diagnostic — 3 questions (skips up to ${skipCount} chapters)`,
       contentType: "diagnostic",
       minutes: 5,
       status: submitted ? ("completed" as any) : ("in_progress" as any),
@@ -288,15 +286,15 @@ function buildLensChapters(
           }
         : undefined,
     } as LensChapter;
-    const real: LensChapter[] = chapters.map((c) => {
+    const real: LensChapter[] = chapters.map((c, idx) => {
+      // Only the first N chapters are diagnostic-eligible. Remaining chapters
+      // always remain required — they render with their own status untouched.
+      const eligible = idx < skipCount;
+      if (!eligible) return { ...c };
       if (!submitted) {
-        // Predicted skip — keep original status (don't show amber until the
-        // diagnostic has actually been taken).
         return { ...c, lensState: "skipped_by_diagnostic", pendingSkip: true };
       }
       if (reopened.has(c.code)) {
-        // Reopened chapters always show as in_progress (needs work) — never green-tick,
-        // even if the underlying learner_progress row is still stale-completed.
         return { ...c, status: "in_progress" as any, lensState: "reopened_after_wrong" };
       }
       return { ...c, status: "skipped" as any, lensState: "skipped_by_diagnostic" };
@@ -306,18 +304,19 @@ function buildLensChapters(
 
   if (lens === "evidence_required") {
     const first = chapters[0];
+    const skipCount = Math.min(MAX_LENS_SKIPS, chapters.length);
     const synthetic: LensChapter = {
       ...first,
       code: `__evi::${moduleCode}`,
-      title: "Submit evidence — short written task",
+      title: `Submit evidence — covers the first ${skipCount} foundation chapters`,
       minutes: 15,
       contentType: "evidence",
       lensState: "synthetic_evidence",
     };
-    const real: LensChapter[] = chapters.map((c) => {
-      // Once evidence is submitted, applyEvidenceOutcome marks the underlying
-      // learner_progress rows as "skipped". Until then, keep the original
-      // status and flag as pendingSkip so the row renders a greyed-out icon.
+    const real: LensChapter[] = chapters.map((c, idx) => {
+      // Only the first N chapters are covered by the evidence task. The rest
+      // remain required reading regardless of evidence outcome.
+      if (idx >= skipCount) return { ...c };
       const committed = (c.status as any) === "skipped";
       if (committed) {
         return { ...c, lensState: "covered_by_evidence" };

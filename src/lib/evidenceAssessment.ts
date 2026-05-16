@@ -115,20 +115,32 @@ export async function applyEvidenceOutcome(args: {
     .in("module_code", otherCodes);
 
   if (outcome === "skip_remaining") {
-    // Get all chapters of those modules
-    const { data: chapters } = await supabase
+    // Realism cap: a single evidence task may only "skip ahead" into the
+    // FIRST follow-on module, and only the first 3 not-started chapters of
+    // it. Everything after that stays as required reading.
+    const FOLLOW_ON_SKIP_CAP = 3;
+    // Determine track order so we know which module is the immediate next.
+    const currentOrder = (trackModules ?? []).find((m) => m.module_code === moduleCode)?.display_order ?? 0;
+    const followOn = (trackModules ?? [])
+      .filter((m) => (m.display_order ?? 0) > currentOrder)
+      .sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0))[0];
+    if (!followOn) return { skippedModuleCodes: [] };
+
+    const { data: followChapters } = await supabase
       .from("catalog_chapters")
-      .select("module_code, chapter_code")
+      .select("module_code, chapter_code, display_order")
       .eq("account_id", accountId)
-      .in("module_code", otherCodes);
+      .eq("module_code", followOn.module_code)
+      .order("display_order", { ascending: true });
 
     const skippedCodes: string[] = [];
     const now = new Date().toISOString();
-    for (const ch of chapters ?? []) {
+    let appliedCount = 0;
+    for (const ch of followChapters ?? []) {
+      if (appliedCount >= FOLLOW_ON_SKIP_CAP) break;
       const existing = (existingProgress ?? []).find(
         (p) => p.module_code === ch.module_code && p.chapter_code === ch.chapter_code,
       );
-      // Only act on not-yet-completed chapters
       if (existing && (existing.status === "completed" || existing.status === "skipped")) continue;
       const meta = {
         ...((existing?.metadata as Record<string, unknown> | null) ?? {}),
@@ -151,6 +163,7 @@ export async function applyEvidenceOutcome(args: {
           metadata: meta,
         }]);
       }
+      appliedCount += 1;
       if (!skippedCodes.includes(ch.module_code)) skippedCodes.push(ch.module_code);
     }
     return { skippedModuleCodes: skippedCodes };

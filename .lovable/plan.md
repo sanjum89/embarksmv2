@@ -1,71 +1,66 @@
 ## Goal
 
-Make the three "How content adapts" tour steps (Condensed / Quick Diagnostic / Evidence Task) follow each persona's actual journey for Clara (`rb-l6`, mid__in_im) and Theo (`rb-l3`, early__in_im), instead of a fixed Condensed → Diagnostic → Evidence order that misses targets and falls back to a static card.
+Make Clara's and Theo's adaptation feel realistic and proportionate. Today a single 3-question Quick Diagnostic visually skips an entire 9-chapter module, and Evidence Tasks cover whole modules — so the journey looks like "do one thing, skip everything". Cap savings at ~30% per persona and surface chapters inside locked modules so learners can see what's coming.
 
 ## What's wrong today
 
-`tourSteps.ts` hardcodes three lens steps targeting the *first* `[data-tour="lens-*"]` in the document. With all modules expanded, the first lens pill in the DOM rarely matches the step the popover is describing — and for Clara the order doesn't match her journey at all:
+In `src/components/learnpath/JourneyModuleAccordion.tsx → buildLensChapters`:
 
-- Clara's first module `bk1.intro_wealth_rathbones` = **Quick Diagnostic** (not Condensed).
-- Clara's first Condensed module = `bk2.kyc_suitability`.
-- Clara's first Evidence module = `cps2.cisi_iad_bridge`.
-
-So step "Condensed" runs first, finds no `lens-condensed` near the top of Clara's view, and shows the centered fallback card. Theo has a different ordering again.
+- **`diagnostic_only`** prepends a synthetic Quick Diagnostic row and marks **every** chapter as `skipped`/`pendingSkip`. Screenshot shows bk1 (9 chapters) with all 9 skipped after a 3-question check — implausible.
+- **`evidence_required`** prepends a synthetic Evidence row and marks **every** chapter as `covered_by_evidence`. Same problem.
+- `evidenceAssessment.applyEvidenceOutcome` (with the `skip_remaining` outcome) goes further and marks all chapters in every *other* module in the same track as `skipped`. That's an even bigger cliff.
+- **Locked modules** render only a "Complete X to unlock" banner with no chapter list. The user wants the chapter list visible underneath (still read-only, with the locked banner preserved).
 
 ## Fix
 
-Generate the three lens steps **dynamically per user** from the actual rendered journey (which is already persona-driven via `persona_module_adaptations`). Each generated step:
+### 1. Cap per-module savings from a single signal
 
-- Targets a specific module's lens pill, not "the first lens pill on the page".
-- Appears in **journey order** (not a fixed lens order).
-- Names the module in the step title and body so it feels tailored ("Quick Diagnostic — *Introduction to Wealth at Rathbones*").
-- Scrolls only that module into view.
+`buildLensChapters`:
 
-Limit the dynamic tour to Clara and Theo, matching today's `useShowTourEntryPoints` gating.
+- **`diagnostic_only`** — only the **first 3 chapters** are considered "diagnostic candidates". The synthetic Quick Diagnostic row stays at the top. Pre-submission: those 3 show `pendingSkip` (subtle, no SKIPPED badge); chapters 4..N render as normal `available`/`locked` rows with no SKIPPED treatment. Post-submission: of the first 3, correctly-answered = `skipped`; wrong-answered = `reopened_after_wrong` (in-progress). Chapters 4..N are untouched. Synthetic row gets a small "skips up to 3 chapters" hint.
+- **`evidence_required`** — synthetic Evidence row plus the **first 3 chapters** as `covered_by_evidence` (pendingSkip pre-commit). Chapters 4..N render normally. The evidence card copy already mentions "the module's chapters are covered" — soften to "the foundation chapters are covered". 
+- **`microlearning`** — unchanged (timing × 0.4 across the whole module).
+- Helper constant `MAX_LENS_SKIPS = 3` centralises the cap.
 
-### Detailed steps
+### 2. Soften the cross-module evidence cascade
 
-1. **Expose module identity in the DOM** (`src/components/learnpath/JourneyModuleAccordion.tsx`)
-   - Add `data-module-code={m.code}` and `data-module-title={m.title}` to each `<AccordionItem>` so the tour can locate lens pills by module and read their titles.
+`src/lib/evidenceAssessment.ts → applyEvidenceOutcome` for `skip_remaining`:
 
-2. **Per-step accordion expansion** (same file)
-   - Replace the existing `embark:tour-expand-all-modules` handler with one that also accepts an opt-in detail payload `{ moduleCode?: string }`. When a single module code is passed, ensure that one module is open (in addition to whatever else is open); when no code is passed, fall back to expanding all (kept for the intro `adapt-intro` step).
+- Instead of skipping all not-started chapters across every other module in the track, skip only the **first 3 not-started chapters of the next not-completed module** (the immediate follow-on), and leave the rest of the track intact. Same metadata reason.
+- Update the result type so the caller still gets a `skippedModuleCodes` (now usually 1 module, partial). No UI changes required — the existing toast logic handles it.
 
-3. **Dynamic lens-step builder** (new `src/components/tour/buildLensSteps.ts`)
-   - Function `buildLensSteps(): TourStep[]` that:
-     - Dispatches `embark:tour-expand-all-modules` and waits ~400ms.
-     - Queries every `[data-module-code]` in document order.
-     - For each module, checks for `[data-tour="lens-condensed" | "lens-diagnostic" | "lens-evidence"]` inside it.
-     - Walks modules in order; the first time each lens type appears, emits one step with:
-       - `target: '[data-module-code="..."] [data-tour="lens-..."]'`
-       - `title` and `body` referencing the module title and the lens explanation.
-       - `prepare` that dispatches `embark:tour-expand-all-modules` with the matching `moduleCode` and scrolls the pill into view.
-     - Returns the steps ordered by the journey (so Clara gets Diagnostic → Condensed → Evidence; Theo gets Condensed → Diagnostic → Evidence — derived, not hardcoded).
-   - If a lens type genuinely doesn't appear for the user, that step is omitted (no more orphan fallback cards).
+### 3. Show chapters inside locked modules
 
-4. **Resolve the tour step list at start time** (`src/contexts/TourContext.tsx`, `src/components/tour/EmbarkTour.tsx`)
-   - `TourContext` keeps a `steps: TourStep[]` in state instead of importing `TOUR_STEPS` directly. `start()` accepts an optional `steps` override.
-   - In `EmbarkTour`, when the tour reaches the `adapt-intro` step (which still expands all modules), call `buildLensSteps()` once and splice the resulting steps in place of the current `adapt-condensed | adapt-diagnostic | adapt-evidence`. From then on the popover walks the new ordered list.
-   - The intro and "why each lens" wrap-up steps remain static.
+`JourneyModuleAccordion.tsx`:
 
-5. **Tour launch path** (`src/components/tour/TourLaunchButton.tsx`, `TourWelcomeBanner.tsx`)
-   - No API change; they still call `tour.start()`. The dynamic splice happens inside `EmbarkTour`.
+- Replace the early-return for `m.status === "locked"` with: render the existing "Complete X to unlock" banner **plus** the full chapter list below it.
+- Pass a `displayLocked` flag down to the row build so chapter rows render as read-only/muted: lens pills still visible (so users see "Quick Diagnostic" / "Evidence Task" badges on locked modules too), but row click is disabled and the status icon is the lock variant.
+- Adaptation badge on the module header continues to show (no change there).
 
-6. **Keep existing safety nets**
-   - The fallback hint banner stays in place for legitimately missing targets but should rarely trigger now.
-   - Pulse + spotlight + caret unchanged.
+### 4. Realism guard: cap total savings ~30% per persona
 
-### Out of scope
+After `buildLensChapters` runs across the journey, the natural ratio with cap-3 + softer cascade lands around:
 
-- Tour copy beyond the lens-step titles/bodies (which gain the module title).
-- Steps for non-`/` pages (Cohort, Action Centre, My 360, Role Play) — already targeted correctly.
-- Anything outside Clara/Theo (other personas don't see the tour today).
-- Adaptation engine, DB schema, persona logic.
+- **Clara (mid__in_im)** — diagnostic modules contribute ≤3 skip-eligible chapters each (currently 6 modules × full chapter counts → drops from ~45 to ≤18). Evidence modules drop from full to 3. Cross-module cascade drops from ~all-other-modules to one. Net savings move from ~60–70% to ~25–30%.
+- **Theo (early__in_im)** — same cap rules; he has fewer diagnostic modules, mostly microlearning (which only shortens timing, doesn't skip chapters), so his savings land around ~15–20%.
 
-### Files
+No DB change needed; this is purely client-side reshaping. The `persona_module_adaptations` rows stay as-is.
 
-- `src/components/tour/buildLensSteps.ts` *(new)*
-- `src/components/tour/tourSteps.ts` *(remove the three static lens steps; keep the intro and wrap step IDs so the splice point is well-defined)*
-- `src/contexts/TourContext.tsx` *(steps live in state; allow override)*
-- `src/components/tour/EmbarkTour.tsx` *(splice dynamic steps when entering `adapt-intro`)*
-- `src/components/learnpath/JourneyModuleAccordion.tsx` *(expose `data-module-code` / title; extend expand handler)*
+### 5. Light copy updates
+
+- `src/lib/embarkAdaptation.ts → adaptationExplanation("diagnostic_only" | "evidence_required")` — adjust strings to reflect "skips up to the first few chapters" rather than "skip those chapters" / "marks the module covered".
+- Synthetic Quick Diagnostic row body hint: "Answer 3 questions to skip up to 3 chapters."
+- Synthetic Evidence row body hint: "Submit a short task to cover the first few foundation chapters."
+
+## Files to touch
+
+- `src/components/learnpath/JourneyModuleAccordion.tsx` — cap lens reshapes to first 3 chapters; render chapters under locked modules.
+- `src/lib/evidenceAssessment.ts` — limit `skip_remaining` cross-module cascade to one follow-on module's first 3 not-started chapters.
+- `src/lib/embarkAdaptation.ts` — softened explanation strings.
+- `src/components/learnpath/LearnPathChapterRow.tsx` — accept a `disabled`/`displayLocked` prop and render rows non-interactive when set (or wrap at the call site; pick whichever is less invasive after a read).
+
+## Out of scope
+
+- Tour, login, persona DB rows, catalog content, chapter counts.
+- Reflection / mentor / role-play flows.
+- New badges or visual redesign of the chapter row beyond a muted/locked variant.

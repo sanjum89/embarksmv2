@@ -453,199 +453,230 @@ export default function LearnerChat() {
               </div>
             </motion.div>
           ) : (
-            /* ── Chat State ── */
+            /* ── Chat State (redesigned) ── */
             <motion.div
               key="chat"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex flex-col min-h-0 flex-1"
             >
-              {/* Pinned Agent One header card */}
-              <div className="shrink-0 px-4 pt-3 pb-2">
-                <div className="max-w-[720px] mx-auto">
-                  <motion.div
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                    className="flex items-center gap-3 rounded-xl bg-primary text-primary-foreground px-4 py-3 shadow-md"
-                  >
-                    <motion.div
-                      className="h-9 w-9 rounded-lg bg-white/15 backdrop-blur-sm flex items-center justify-center"
-                      animate={{ rotate: [0, 3, -3, 0] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              {/* Slim sticky Agent One strip */}
+              <div className="shrink-0 border-b border-border bg-card/60 backdrop-blur-sm">
+                <div className="mx-auto max-w-[1180px] px-4 lg:px-6 h-11 flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-md bg-primary/10 flex items-center justify-center">
+                    <Sparkles className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="text-[12px] font-semibold text-foreground">Agent One</span>
+                  <span className="rounded-full bg-primary/10 text-primary px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider">Live</span>
+                  <span className="relative flex h-1.5 w-1.5 ml-0.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400" />
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">Online</span>
+                  <div className="ml-auto flex items-center gap-1">
+                    <button
+                      onClick={async () => { await handleReset(); setChatActive(false); }}
+                      disabled={isStreaming || !hasMessages}
+                      className="h-7 w-7 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-30 transition-colors"
+                      title="Reset conversation"
                     >
-                      <Sparkles className="h-4 w-4" />
-                    </motion.div>
-                    <div className="flex-1 min-w-0 flex items-center gap-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-sm font-bold leading-tight">Agent One</h3>
-                          <span className="rounded-full bg-white/20 px-2 py-0.5 text-[0.6rem] font-semibold uppercase tracking-wider">Live</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="relative flex h-1.5 w-1.5">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-50" />
-                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-400" />
-                          </span>
-                          <p className="text-[0.65rem] text-primary-foreground/75">Online now</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={async () => { await handleReset(); setChatActive(false); }}
-                        disabled={isStreaming || !hasMessages}
-                        className="text-primary-foreground/60 hover:text-primary-foreground disabled:opacity-30 transition-colors"
-                        title="Reset conversation"
-                      >
-                        <RotateCcw className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                      <RotateCcw className="h-3.5 w-3.5" />
+                    </button>
                     <button
                       onClick={() => setChatActive(false)}
-                      className="text-[0.7rem] text-primary-foreground/60 hover:text-primary-foreground transition-colors px-2 py-1 rounded-md hover:bg-white/10 flex items-center gap-1"
+                      className="h-7 px-2 rounded-md flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors"
                     >
                       <Home className="h-3 w-3" />
                       Home
                     </button>
-                  </motion.div>
+                  </div>
                 </div>
               </div>
 
-              {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto min-h-0 relative" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
-                {/* Earlier messages pill */}
-                {openedFromCta.current && hasMessages && !isNearBottom.current && (
-                  <div className="sticky top-0 z-10 flex justify-center py-1.5">
-                    <button
-                      onClick={() => {
-                        messagesContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                      className="flex items-center gap-1 rounded-full bg-card border border-border shadow-sm px-3 py-1 text-[0.7rem] text-muted-foreground hover:text-foreground transition-colors"
+              {/* Body: two-column on lg+ */}
+              <div className="flex-1 overflow-hidden min-h-0">
+                <div className="h-full mx-auto max-w-[1180px] grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 px-4 lg:px-6">
+                  {/* Main message column */}
+                  <div className="flex flex-col min-h-0 overflow-hidden">
+                    <div
+                      className="flex-1 overflow-y-auto min-h-0 relative -mx-2 px-2"
+                      ref={messagesContainerRef}
+                      onScroll={handleMessagesScroll}
                     >
-                      <ChevronUp className="h-3 w-3" />
-                      Earlier messages
-                    </button>
-                  </div>
-                )}
-                <div className="max-w-[720px] mx-auto px-4 py-4 space-y-3">
-                  {!loaded && (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="flex gap-1">
-                        {[0, 0.2, 0.4].map((d) => (
-                          <motion.div key={d} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: d }} className="h-2 w-2 rounded-full bg-primary" />
-                        ))}
+                      {openedFromCta.current && hasMessages && !isNearBottom.current && (
+                        <div className="sticky top-0 z-10 flex justify-center py-1.5">
+                          <button
+                            onClick={() => messagesContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
+                            className="flex items-center gap-1 rounded-full bg-card border border-border shadow-sm px-3 py-1 text-[0.7rem] text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <ChevronUp className="h-3 w-3" />
+                            Earlier messages
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="max-w-[720px] mx-auto py-5 space-y-3">
+                        {!loaded && (
+                          <div className="flex items-center justify-center py-8">
+                            <div className="flex gap-1">
+                              {[0, 0.2, 0.4].map((d) => (
+                                <motion.div key={d} animate={{ opacity: [0.3, 1, 0.3] }} transition={{ duration: 1.2, repeat: Infinity, delay: d }} className="h-2 w-2 rounded-full bg-primary" />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <AnimatePresence>
+                          {messages
+                            .filter((m) => m.role !== "system")
+                            .map((msg, i, arr) => {
+                              const msgBlocks = richBlocksMap[i] || [];
+                              const isLastUserMsg = msg.role === "user" && !arr.slice(i + 1).some((m) => m.role === "user");
+                              const isLastAssistant = msg.role === "assistant" && i === arr.length - 1;
+                              const followUps = [
+                                "Tell me more about that",
+                                "How does this apply to me?",
+                                "What should I do next?",
+                                "Show me an example",
+                              ];
+                              const followUp = followUps[i % followUps.length];
+                              return (
+                                <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
+                                  {msg.role === "user" ? (
+                                    <div className="flex justify-end mb-1" ref={isLastUserMsg ? lastUserMsgRef : undefined}>
+                                      <div className="rounded-2xl bg-primary text-primary-foreground px-3 py-2 text-[0.78rem] max-w-[65%] shadow-sm">
+                                        {msg.content}
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-start gap-2">
+                                      <div className="shrink-0 h-7 w-7 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10 flex items-center justify-center mt-0.5">
+                                        <Sparkles className="h-3.5 w-3.5 text-primary" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="bg-secondary/40 border border-border/60 rounded-2xl px-4 py-3 shadow-sm">
+                                          <div className="prose prose-sm max-w-none text-foreground text-[0.82rem] leading-relaxed [&_p]:mb-1.5 [&_ul]:mb-1.5 [&_li]:mb-0.5">
+                                            <ReactMarkdown>{parseSuggestions(msg.content).clean}</ReactMarkdown>
+                                          </div>
+                                        </div>
+                                        {msgBlocks.map((block) =>
+                                          collapsedBlockIds.has(block.id) ? (
+                                            <CollapsedBlockCard key={block.id} block={block} onExpand={() => toggleBlockCollapse(block.id)} />
+                                          ) : (
+                                            <RichContentBlock key={block.id} block={block} onCollapse={() => toggleBlockCollapse(block.id)} />
+                                          )
+                                        )}
+                                        {/* Follow-up chip after non-final assistant turns */}
+                                        {!isLastAssistant && !isStreaming && (
+                                          <button
+                                            onClick={() => handleSend(followUp)}
+                                            className="mt-2 inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                                          >
+                                            <CornerDownRight className="h-3 w-3" />
+                                            {followUp}
+                                          </button>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </motion.div>
+                              );
+                            })}
+                        </AnimatePresence>
+
+                        {showInlineAssessment && !assessmentCompleted && (
+                          <InlineAssessment onComplete={handleInlineAssessmentComplete} />
+                        )}
+
+                        <AnimatePresence>
+                          {isStreaming && (
+                            <div>
+                              {ctaLabel && (
+                                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[0.7rem] italic text-muted-foreground mb-1 px-1">
+                                  {ctaLabel}
+                                </motion.div>
+                              )}
+                              <ThinkingIndicator />
+                            </div>
+                          )}
+                        </AnimatePresence>
+
+                        {(() => {
+                          const activePills = suggestions.length > 0 ? suggestions : contextualSuggestions;
+                          const visiblePills = activePills.slice(0, 4);
+                          const lastAssistantIdx = [...messages].reverse().findIndex((m) => m.role === "assistant");
+                          const followUpRotation = ["Tell me more", "Why does this matter?", "Show me how", "What's next?"];
+                          const followUp = followUpRotation[(messages.length - lastAssistantIdx) % followUpRotation.length];
+                          return !isStreaming && (visiblePills.length > 0 || hasMessages) ? (
+                            <motion.div initial={{ opacity: 0, y: 2 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-1.5 mt-2">
+                              {visiblePills.map((pill) => (
+                                <button
+                                  key={pill}
+                                  onClick={() => {
+                                    const action = resolvePillAction(pill, skillTargets);
+                                    if (action) navigate(action.navigate);
+                                    else handleSend(pill);
+                                  }}
+                                  className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-card px-2.5 py-1 text-[10px] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]"
+                                >
+                                  <Sparkles className="h-2.5 w-2.5 text-primary" />
+                                  {pill}
+                                </button>
+                              ))}
+                              {hasMessages && (
+                                <button
+                                  onClick={() => handleSend(followUp)}
+                                  className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 transition-colors"
+                                >
+                                  <CornerDownRight className="h-3 w-3" />
+                                  {followUp}
+                                </button>
+                              )}
+                            </motion.div>
+                          ) : null;
+                        })()}
+
+                        <div ref={chatEndRef} />
                       </div>
                     </div>
-                  )}
 
-                  <AnimatePresence>
-                    {messages
-                      .filter((m) => m.role !== "system")
-                      .map((msg, i, arr) => {
-                        const msgBlocks = richBlocksMap[i] || [];
-                        const isLastUserMsg = msg.role === "user" && !arr.slice(i + 1).some((m) => m.role === "user");
-                        return (
-                          <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-                            {msg.role === "user" ? (
-                              <div className="flex justify-end mb-1" ref={isLastUserMsg ? lastUserMsgRef : undefined}>
-                                <div className="rounded-2xl bg-primary text-primary-foreground px-3.5 py-2.5 text-[0.8rem] max-w-[75%] shadow-sm">
-                                  {msg.content}
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="flex items-start gap-2">
-                                <div className="shrink-0 h-6 w-6 rounded-lg bg-primary/10 flex items-center justify-center mt-0.5">
-                                  <Sparkles className="h-3 w-3 text-primary" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="bg-secondary/50 border border-border/50 rounded-2xl px-3.5 py-3 shadow-sm max-w-[90%]">
-                                    <div className="prose prose-sm max-w-none text-foreground text-[0.8rem] leading-relaxed [&_p]:mb-1.5 [&_ul]:mb-1.5 [&_li]:mb-0.5">
-                                      <ReactMarkdown>{parseSuggestions(msg.content).clean}</ReactMarkdown>
-                                    </div>
-                                  </div>
-                                  {msgBlocks.map((block) =>
-                                    collapsedBlockIds.has(block.id) ? (
-                                      <CollapsedBlockCard key={block.id} block={block} onExpand={() => toggleBlockCollapse(block.id)} />
-                                    ) : (
-                                      <RichContentBlock key={block.id} block={block} onCollapse={() => toggleBlockCollapse(block.id)} />
-                                    )
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </motion.div>
-                        );
-                      })}
-                  </AnimatePresence>
-
-                  {showInlineAssessment && !assessmentCompleted && (
-                    <InlineAssessment onComplete={handleInlineAssessmentComplete} />
-                  )}
-
-                  {/* CTA context label + thinking indicator */}
-                  <AnimatePresence>
-                    {isStreaming && (
-                      <div>
-                        {ctaLabel && (
-                          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[0.7rem] italic text-muted-foreground mb-1 px-1">
-                            {ctaLabel}
-                          </motion.div>
-                        )}
-                        <ThinkingIndicator />
+                    {/* Composer with voice mic */}
+                    <div className="shrink-0 max-w-[720px] mx-auto w-full pb-4 pt-2">
+                      <div className="relative w-full flex items-center gap-1.5 rounded-xl border border-border bg-card shadow-sm pl-3 pr-1.5 h-11 focus-within:ring-2 focus-within:ring-primary/30 transition-all">
+                        <Sparkles className="h-4 w-4 text-primary shrink-0 pointer-events-none" />
+                        <Input
+                          ref={inputRef}
+                          value={input}
+                          onChange={(e) => setInput(e.target.value)}
+                          onKeyDown={(e) => { if (e.key === "Enter" && input.trim()) handleSend(input); }}
+                          placeholder="Ask anything..."
+                          className="flex-1 h-full border-0 bg-transparent text-[0.8rem] shadow-none focus-visible:ring-0 px-0"
+                          disabled={isStreaming}
+                        />
+                        <VoiceDictateButton
+                          disabled={isStreaming}
+                          onTranscript={(text) => setInput((input ? input + " " : "") + text)}
+                        />
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className={cn(
+                            "h-8 w-8 rounded-lg transition-all",
+                            input.trim() && "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
+                          )}
+                          onClick={() => handleSend(input)}
+                          disabled={!input.trim() || isStreaming}
+                        >
+                          <Send className="h-4 w-4" />
+                        </Button>
                       </div>
-                    )}
-                  </AnimatePresence>
+                    </div>
+                  </div>
 
-                  {/* Suggestion Pills — right below last AI response */}
-                  {(() => {
-                    const activePills = suggestions.length > 0 ? suggestions : contextualSuggestions;
-                    const visiblePills = activePills.slice(0, 4);
-                    return visiblePills.length > 0 && !isStreaming ? (
-                      <motion.div initial={{ opacity: 0, y: 2 }} animate={{ opacity: 1, y: 0 }} className="flex flex-wrap gap-1.5 mt-2">
-                        {visiblePills.map((pill) => (
-                          <button
-                            key={pill}
-                            onClick={() => {
-                              const action = resolvePillAction(pill, skillTargets);
-                              if (action) { navigate(action.navigate); } else { handleSend(pill); }
-                            }}
-                            className="rounded-full border border-primary/20 bg-card px-3 py-1 text-[0.7rem] font-medium text-foreground hover:bg-primary/5 hover:border-primary/40 transition-all active:scale-[0.97]"
-                          >
-                            {pill}
-                          </button>
-                        ))}
-                      </motion.div>
-                    ) : null;
-                  })()}
-
-                  <div ref={chatEndRef} />
-                </div>
-              </div>
-
-              {/* Input Bar — Send inside input */}
-              <div className="shrink-0 max-w-[720px] mx-auto w-full px-4 pb-4 pt-2">
-                <div className="relative w-full">
-                  <Sparkles className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary pointer-events-none" />
-                  <Input
-                    ref={inputRef}
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") handleSend(input); }}
-                    placeholder="Ask anything..."
-                    className="h-11 rounded-xl border-border text-[0.8rem] focus-visible:ring-primary/30 pl-9 pr-11"
-                    disabled={isStreaming}
-                  />
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className={cn(
-                      "absolute right-1.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-lg transition-all",
-                      input.trim() && "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90"
-                    )}
-                    onClick={() => handleSend(input)}
-                    disabled={!input.trim() || isStreaming}
-                  >
-                    <Send className="h-4 w-4" />
-                  </Button>
+                  {/* Right context rail (hidden < lg) */}
+                  <aside className="hidden lg:block overflow-y-auto py-5">
+                    <ChatContextRail onTopic={(prompt) => handleSend(prompt)} />
+                  </aside>
                 </div>
               </div>
             </motion.div>

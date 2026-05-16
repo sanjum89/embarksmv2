@@ -53,6 +53,7 @@ export function TourWelcomeBanner() {
             </div>
           </div>
           <button
+            type="button"
             onClick={dismiss}
             aria-label="Dismiss"
             className="shrink-0 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -62,6 +63,7 @@ export function TourWelcomeBanner() {
         </div>
         <div className="mt-3 flex gap-2">
           <Button
+            type="button"
             size="sm"
             className="flex-1 gap-1"
             onClick={() => {
@@ -72,7 +74,7 @@ export function TourWelcomeBanner() {
             <Sparkles className="h-3.5 w-3.5" />
             Start tour
           </Button>
-          <Button variant="ghost" size="sm" onClick={dismiss}>
+          <Button type="button" variant="ghost" size="sm" onClick={dismiss}>
             Later
           </Button>
         </div>

@@ -116,6 +116,11 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
 
   const handleCategoryClick = useCallback(
     (card: CategoryCard) => {
+      if (audienceType === "learner" && card.category === "onboarding_progress") {
+        navigate("/");
+        return;
+      }
+
       const cta = card.primaryCta;
       // Use explicit prompt/path from the category card first
       if (cta.prompt) {
@@ -129,7 +134,7 @@ export function AgentOneNudgeStack({ onAgentClick, onChatAction }: AgentOneNudge
         else if (target.path) navigate(target.path);
       }
     },
-    [navigate, onChatAction]
+    [audienceType, navigate, onChatAction]
   );
 
   return (

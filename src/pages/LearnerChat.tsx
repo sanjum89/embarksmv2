@@ -84,12 +84,19 @@ const CardIllustration = ({ type }: { type: string }) => {
 };
 
 const suggestionCards = [
-  { label: "Grow My Skills", description: "Get recommendations for growing your skills.", prompt: "Show me recommendations for growing my skills", illustration: "skills" },
-  { label: "Required Skills", description: "Required skills for your job role.", prompt: "Show me the required skills for my role", illustration: "required" },
-  { label: "Explore Career Paths", description: "Discover potential career paths.", prompt: "Explore career paths based on my current skills", illustration: "career" },
-  { label: "View My Activities", description: "Track your recent activities.", prompt: "Show me my recent learning activities", illustration: "activities" },
-  { label: "Build Your Profile", description: "Upload resume to build your profile.", prompt: "Help me build my professional profile", illustration: "profile" },
-  { label: "Create a Reflection", description: "Reflect on your learning journey.", prompt: "Help me create a reflection on my recent learning", illustration: "reflection" },
+  { label: "Grow My Skills", description: "Get recommendations for growing your skills.", prompt: "Show me recommendations for growing my skills", illustration: "skills", icon: BarChart3 },
+  { label: "Required Skills", description: "Required skills for your job role.", prompt: "Show me the required skills for my role", illustration: "required", icon: Target },
+  { label: "Explore Career Paths", description: "Discover potential career paths.", prompt: "Explore career paths based on my current skills", illustration: "career", icon: Briefcase },
+  { label: "View My Activities", description: "Track your recent activities.", prompt: "Show me my recent learning activities", illustration: "activities", icon: Activity },
+  { label: "Build Your Profile", description: "Upload resume to build your profile.", prompt: "Help me build my professional profile", illustration: "profile", icon: UserCircle2 },
+  { label: "Create a Reflection", description: "Reflect on your learning journey.", prompt: "Help me create a reflection on my recent learning", illustration: "reflection", icon: ClipboardList },
+];
+
+const quickLinks = [
+  { label: "Embark AI", path: "/", icon: Compass, desc: "Your guided learning journey" },
+  { label: "My 360", path: "/my-360", icon: UserCircle2, desc: "Profile, skills, gaps" },
+  { label: "Action Centre", path: "/action-centre", icon: Inbox, desc: "Tasks and reflections" },
+  { label: "Cohort", path: "/cohort", icon: Users, desc: "Your group and peers" },
 ];
 
 function ThinkingIndicator() {

@@ -1,82 +1,54 @@
-## Goal
-Add a guided product tour for Clara (rb-l6) and Theo (rb-l3) that walks them through Embark, content adaptation, Cohort Hub, Action Centre, My 360, and Role Play. The tour is launchable from any page via a persistent "Take the tour" button, and is announced once on first login with a dismissible banner.
+## Problem
 
-## What "tour" means here
-A step-driven coach-mark overlay (separate from the existing `FirstLoginTour`, which is a full-screen onboarding wizard). Each step has:
-- A route to be on (the tour navigates the user there)
-- An optional target selector (`data-tour="…"`) on a real UI element — the overlay dims the page and spotlights that element with a popover
-- Title, body copy, and optional next/back/skip
+Clara is signed in via the profile switcher. Clicking the floating **Take the tour** button causes the page to reload in the background; on the next render the app shows the login form and (after re-submit) signs the user in as **admin**, not Clara.
 
-When a step has no target it renders as a centered modal card (used for intros and "how adaptation works" explainers).
+Two distinct bugs combine to cause this:
 
-## Tour outline (sections × steps)
+1. **The tour Button has no explicit `type`.** `shadcn/ui` `<Button>` is a native `<button>`, which defaults to `type="submit"`. When a button without `type="button"` is clicked, browsers walk up the DOM looking for an enclosing `<form>`; if one exists anywhere up the tree it submits, which in a SPA performs a full-page navigation/reload. The Embark page contains chat composer `<form>` elements (`AIChatPanel`, etc.) that the floating tour button can end up inside when re-parented under the `<main>` flex container.
+2. **`LoginPage.handleSubmit` defaults to admin.** After the reload, if the active account's persisted `signedInUsers_<accountId>` is empty, the LoginPage renders and its submit handler picks `availableUsers.find(u => u.role === "admin")` as the fallback — so Clara is silently replaced by admin.
 
-```text
-1. WELCOME (modal)
-   "Tour of Embark — 5 minutes. Skip anytime."
+The session replay confirms the sequence: click → "Retrieving your learning journey…" full reload → login form → Rathbones selected → "No Learning Journey Yet" (admin view, since admin has no learner journey).
 
-2. EMBARK PAGE  (route: /)
-   • Embark home & AI chat panel  → spotlight chat panel
-   • Cohort → Track → Module → Chapter (terminology, drop "Learning")
-       → spotlight cohort header on / and journey accordion
-   • Open a module accordion to show chapter rows
+## Fix
 
-3. CONTENT ADAPTATION  (still on /)
-   • Condensed lens          → spotlight a CONDENSED pill on a chapter row
-   • Quick Diagnostic        → spotlight QUICK DIAGNOSTIC row + explain reopen/skip
-   • Evidence Task           → spotlight EVIDENCE TASK row + explain submission
-   • Why it adapts           → modal: persona profile + 360 gaps drive lens choice
+### 1. Add `type="button"` to every tour control (primary fix)
 
-4. COHORT HUB  (route: /cohort)
-   • Members, milestones, progress strip — spotlight each
+Components to update:
 
-5. ACTION CENTRE  (route: /action-centre — confirm with code)
-   • Nudges, reflections, reminders — spotlight each card
+- `src/components/tour/TourLaunchButton.tsx` — the floating "Take the tour" button.
+- `src/components/tour/TourWelcomeBanner.tsx` — "Start tour", "Later", and the dismiss `<button>`.
+- `src/components/tour/EmbarkTour.tsx` — "Skip tour", "Back", "Next/Done", and the close `<button>`.
 
-6. MY 360  (route: /my-360)
-   • Competency radar, skills-gap matrix, career timeline — spotlight each
+This guarantees the click never accidentally submits an ancestor form (now or in future layouts).
 
-7. ROLE PLAY  (route: /role-play)
-   • Bank of role-plays, character persona, voice option — spotlight each
+### 2. Harden tour navigation so it never triggers a reload
 
-8. WRAP  (modal)
-   "You can replay this any time from the help button."
-```
+In `EmbarkTour.tsx`, the navigation effect should:
 
-Exact route names will be verified against `src/App.tsx` while implementing (e.g. `/action-centre` vs `/inbox`).
+- Only call `navigate(step.route)` when `pathname !== step.route` (already the case — keep it).
+- Use `navigate(step.route, { replace: false })` explicitly and never call `window.location.*`.
 
-## Components & files
+No code path currently calls `window.location.reload`, so this is just a guard against regressions.
 
-New:
-- `src/contexts/TourContext.tsx` — provider with `start(sectionId?)`, `next`, `back`, `skip`, `open` state, current step index. Persists "seen" to `localStorage` under `embark_tour_seen::<userId>`.
-- `src/components/tour/EmbarkTour.tsx` — the overlay renderer: dim layer, spotlight ring around the targeted element (computed via `getBoundingClientRect` + `ResizeObserver`), popover card with title/body/Next/Back/Skip, and centered modal variant when no target.
-- `src/components/tour/tourSteps.ts` — declarative step list (the outline above) with `{ route, target?, title, body, placement? }`.
-- `src/components/tour/TourLaunchButton.tsx` — small floating/help-corner button visible on every page (lives in `AppLayout`). Clicking starts/resumes the tour.
-- `src/components/tour/TourWelcomeBanner.tsx` — one-time toast/banner after sign-in for Clara/Theo, dismissible, with a "Take the tour" CTA.
+### 3. Make the LoginPage fallback safer
 
-Modified:
-- `src/components/layout/AppLayout.tsx` — wrap children in `<TourProvider>`, mount `<EmbarkTour />`, `<TourLaunchButton />`, and `<TourWelcomeBanner />`.
-- A handful of components get `data-tour="…"` attributes on the elements that get spotlighted (Embark chat panel, journey accordion, lens pills, Cohort Hub sections, Action Centre cards, My 360 sections, Role Play list). No logic changes — purely attribute additions.
+In `src/components/layout/LoginPage.tsx` `handleSubmit`, instead of silently picking the admin user when no user is selected, keep the existing "admin or first user" fallback but **remember the last-active user per account** so an accidental reload restores the same persona.
 
-## Persona gating
-- Show the launch button and the welcome banner **only when** the active user's employee id is `rb-l6` (Clara) or `rb-l3` (Theo). All other users see neither — this matches the existing demo-deterministic-flow pattern (see memory: Rathbones Demo Deterministic Flows).
-- The user can still trigger `start()` programmatically if needed (kept simple — gating is just on the entry points).
+- Read `lastActiveUser_<accountId>` from `localStorage` on submit; if present and valid, sign that user in instead of the admin fallback.
+- Write `lastActiveUser_<accountId>` from `UserContext` whenever `user` changes (small `useEffect` in `UserProvider`).
 
-## Navigation behaviour
-- Each step declares its route. Advancing to a step on a different route calls `navigate(step.route)` and waits one frame for the target element to mount before spotlighting (uses a small retry loop with `requestAnimationFrame`).
-- If a target selector can't be found within ~800 ms, fall back to centered-modal rendering for that step so the tour never dead-ends.
+This means even if a reload happens for some other reason, Clara stays Clara after re-entering the password.
 
-## Visual style
-- Dim layer: `bg-background/80 backdrop-blur-sm` with a CSS-clip cutout for the spotlight rect (4 px ring, 8 px radius, soft outer glow with `hsl(var(--accent))`).
-- Popover card: `rounded-xl border bg-card shadow-card p-4 max-w-sm` with header (step n/total + section name), body, and Skip/Back/Next button row using existing `<Button>` variants.
-- No new colour tokens; everything via semantic tokens already in the design system.
+### 4. Smoke test
+
+After the change:
+
+- Sign in as Clara on Rathbones → confirm `signedInUsers_<accountId>` and `lastActiveUser_<accountId>` are set.
+- Click the floating **Take the tour** button → tour overlay appears, no reload, no route change, no login form.
+- Step through the tour → routes change via `react-router` `navigate` only, session preserved throughout.
+- Hard-refresh the browser tab while signed in as Clara → after re-entering the password the app restores Clara, not admin.
 
 ## Out of scope
-- Persisting tour progress server-side (localStorage only).
-- Translating any step content.
-- Adapting the existing `FirstLoginTour` (kept as-is; it's a different artefact).
-- Auto-launching the tour without a click — we only show the dismissible banner on first sign-in.
 
-## Files touched (summary)
-- New: `TourContext.tsx`, `EmbarkTour.tsx`, `tourSteps.ts`, `TourLaunchButton.tsx`, `TourWelcomeBanner.tsx`
-- Edited: `AppLayout.tsx`, and ~6 page/component files to add `data-tour` attributes on spotlight targets (Embark journey, lens pills, Cohort Hub, Action Centre, My 360, Role Play Bank)
+- Any change to tour content, step ordering, or visuals.
+- Any change to `ProfileSwitcher` or `AccountContext`.

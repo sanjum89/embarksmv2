@@ -8,6 +8,10 @@ function storageKey(accountId: string) {
   return `signedInUsers_${accountId}`;
 }
 
+function lastActiveKey(accountId: string) {
+  return `lastActiveUser_${accountId}`;
+}
+
 interface UserContextType {
   user: User;
   setRole: (role: UserRole) => void;
@@ -156,6 +160,13 @@ export function UserProvider({ children }: { children: ReactNode }) {
       setUser(newUsers[0] || currentUser);
     }
   }, [activeAccountId, loading]);
+
+  // Persist the last-active user per account so accidental reloads can restore them
+  useEffect(() => {
+    if (!activeAccountId || !user?.id) return;
+    if (!signedInUserIds.includes(user.id)) return;
+    try { localStorage.setItem(lastActiveKey(activeAccountId), user.id); } catch {}
+  }, [activeAccountId, user?.id, signedInUserIds]);
 
   const setRole = (role: UserRole) => {
     setUser((prev) => ({ ...prev, role }));

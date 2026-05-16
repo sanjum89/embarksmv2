@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { resolvePillAction } from "@/lib/pillActionResolver";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Sparkles, Home, ArrowRight, X, ChevronUp, RotateCcw } from "lucide-react";
+import { Send, Sparkles, Home, ArrowRight, X, ChevronUp, RotateCcw, Compass, UserCircle2, Inbox, Users, BarChart3, Target, Briefcase, Activity, ClipboardList, MessageCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import { useUser } from "@/contexts/UserContext";
 import { useAgentOne, parseSuggestions } from "@/contexts/AgentOneContext";

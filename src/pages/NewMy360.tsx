@@ -11,6 +11,9 @@ import { CohortPreviewCard } from "@/components/my360-v2/CohortPreviewCard";
 import { CohortJourneyTab } from "@/components/my360-v2/CohortJourneyTab";
 import { GrowthPathTab } from "@/components/my360-v2/GrowthPathTab";
 import { Loader2 } from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 const allTabs = ["Profile", "Cohort Journey", "Growth Path"] as const;
 type Tab = (typeof allTabs)[number];

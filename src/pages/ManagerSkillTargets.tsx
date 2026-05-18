@@ -7,7 +7,9 @@ import { useAccount } from "@/contexts/AccountContext";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 const defaultCategories = [...new Set(defaultManagerSkillTargets.map((t) => t.category))];
 

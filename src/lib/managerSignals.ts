@@ -181,7 +181,7 @@ function buildPathChanges(bundle: DbBundle, modulesByCode: Map<string, string>, 
   const byModule = new Map<string, number>();
   for (const m of bundle.micros) {
     // Try to attribute the micro to a module via the originating assessment.
-    const assess = bundle.assessments.find((a) => a.id === (m as any).source_assessment_id);
+    const assess = bundle.assessments.find((a) => a.id === m.source_assessment_id);
     const moduleCode = assess?.module_code ?? "unknown";
     byModule.set(moduleCode, (byModule.get(moduleCode) ?? 0) + 1);
   }

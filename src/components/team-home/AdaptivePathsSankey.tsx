@@ -388,7 +388,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
                       return (
                         <CommandItem
                           key={l.employeeId}
-                          value={`${l.name} ${l.overlay.role_title ?? ""}`}
+                          value={l.name}
                           disabled={atCap}
                           onSelect={() => {
                             if (atCap) return;
@@ -401,9 +401,7 @@ export function AdaptivePathsSankey({ learners, modules, onOpenLearner, dense = 
                           </span>
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-[12px] font-medium">{l.name}</span>
-                            {l.overlay.role_title && (
-                              <span className="block truncate text-[10px] text-muted-foreground">{l.overlay.role_title}</span>
-                            )}
+                            <span className="block truncate text-[10px] text-muted-foreground">{l.overlay.headline}</span>
                           </span>
                           <StatusTag status={l.overlay.status} />
                         </CommandItem>

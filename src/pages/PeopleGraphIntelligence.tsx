@@ -186,7 +186,7 @@ export default function PeopleGraphIntelligence() {
       </section>
       </>
       )}
-    </div>
+      </PageBody>
     </div>
   );
 }

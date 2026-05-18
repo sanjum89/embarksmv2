@@ -295,6 +295,7 @@ export default function SkillTargetDetail() {
             <StepTimeline steps={target.steps} skillTargetId={target.id} />
           </motion.div>
       </div>
+      </div>
     </div>
   );
 }

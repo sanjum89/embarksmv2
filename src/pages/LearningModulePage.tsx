@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Eye, BookOpen, Headphones, Wrench, Layers } from "lucide-react";
+import { CheckCircle2, Eye, BookOpen, Headphones, Wrench, Layers } from "lucide-react";
 
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
@@ -9,6 +9,7 @@ import { resolveModule } from "@/lib/learnPathModuleResolver";
 import { useContentSubstitution } from "@/lib/contentSubstitution";
 import { EmbarkModuleContent } from "@/components/learnpath/LearnPathModuleContent";
 import type { LearningMode } from "@/contexts/LearnPathContext";
+import PageHeader from "@/components/layout/PageHeader";
 import { cn } from "@/lib/utils";
 
 const modeOptions: { value: LearningMode; icon: React.ElementType; label: string }[] = [

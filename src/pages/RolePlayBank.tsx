@@ -26,7 +26,7 @@ type DifficultyFilter = "all" | "beginner" | "intermediate" | "advanced";
 
 const difficultyColors = {
   beginner: "bg-success/15 text-success border border-success/20",
-  intermediate: "bg-[hsl(32_95%_44%)]/15 text-[hsl(28_92%_40%)] border border-[hsl(32_95%_44%)]/25 dark:bg-[hsl(38_95%_55%)]/15 dark:text-[hsl(40_98%_70%)] dark:border-[hsl(38_95%_55%)]/30",
+  intermediate: "bg-amber-500/15 text-amber-700 border border-amber-500/25 dark:text-amber-300",
   advanced: "bg-destructive/15 text-destructive border border-destructive/20",
 };
 

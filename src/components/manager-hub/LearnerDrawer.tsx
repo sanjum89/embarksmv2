@@ -137,7 +137,6 @@ export function LearnerDrawer({ open, onOpenChange, learner, overlay, modules, i
 
             <TabsContent value="story" className="space-y-4">
               <div>
-              <div>
                 <p className="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">Timeline</p>
                 <ol className="space-y-2">
                   {(overlay?.timeline ?? []).map((t, i) => (

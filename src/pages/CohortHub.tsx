@@ -15,6 +15,7 @@ import {
   Video, MapPin, FileText, Plus, ArrowRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import PageHeader from "@/components/layout/PageHeader";
 
 function initials(name: string) {
   return name.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();

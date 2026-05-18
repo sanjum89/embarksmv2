@@ -45,18 +45,22 @@ export default function ManagerCohortHub() {
 
   if (loading) {
     return (
-      <div className="flex-1 p-6">
-        <BackButton />
-        <p className="mt-6 text-sm text-muted-foreground">Loading cohort…</p>
+      <div className="flex-1 overflow-y-auto">
+        <PageHeader eyebrow={eyebrow} title="Cohort" back />
+        <PageBody>
+          <p className="text-sm text-muted-foreground">Loading cohort…</p>
+        </PageBody>
       </div>
     );
   }
 
   if (!cohort) {
     return (
-      <div className="flex-1 p-6">
-        <BackButton />
-        <p className="mt-6 text-sm text-muted-foreground">Cohort not found.</p>
+      <div className="flex-1 overflow-y-auto">
+        <PageHeader eyebrow={eyebrow} title="Cohort" back />
+        <PageBody>
+          <p className="text-sm text-muted-foreground">Cohort not found.</p>
+        </PageBody>
       </div>
     );
   }

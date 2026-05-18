@@ -105,14 +105,13 @@ export default function TeamInsights() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="p-6">
-        <BackButton />
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h3 className="font-display text-2xl font-bold text-foreground">Team Insights</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Competency profiles and skill gaps across your team members.
-          </p>
-        </motion.div>
+      <PageHeader
+        eyebrow={eyebrow}
+        title="Team Insights"
+        subtitle="Competency profiles and skill gaps across your team members."
+        back
+      />
+      <PageBody>
 
         {/* Team member selector */}
         <div className="flex items-center gap-2 mb-8 flex-wrap">

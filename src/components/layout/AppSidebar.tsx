@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Loader2, LogOut, LogIn, Paintbrush, GitGraph, Code, Type } from "lucide-react";
+import { Loader2, LogOut, LogIn, Paintbrush, GitGraph, Code, Type, Archive } from "lucide-react";
 import { AccessibilityPanel } from "@/components/layout/AccessibilityPanel";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -59,10 +59,17 @@ const meNavItems: NavItem[] = [
   { label: "Action Centre", path: "/my-inbox", icon: Inbox },
   { label: "Cohort Hub", path: "/cohort", icon: Users },
   { label: "My 360", path: "/my-360", icon: CircleUser },
-  // Moved into EOL Mode
-  { label: "Learning Spaces", path: "/dashboard", icon: LayoutDashboard, dev: true },
-  { label: "Skill Targets", path: "/dashboard", icon: Target, dev: true },
-  { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
+  {
+    label: "Legacy",
+    path: "#legacy-me",
+    icon: Archive,
+    dev: true,
+    children: [
+      { label: "Learning Spaces (Legacy)", path: "/dashboard", icon: LayoutDashboard, dev: true },
+      { label: "Skill Targets (Legacy)", path: "/dashboard", icon: Target, dev: true },
+      { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
+    ],
+  },
 ];
 
 const teamNavItems: NavItem[] = [
@@ -72,16 +79,23 @@ const teamNavItems: NavItem[] = [
   { label: "Deep Research", path: "/team/deep-research", icon: Microscope },
   { label: "Action Centre", path: "/action-centre", icon: Inbox },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
-  // Legacy / dev-only entries — kept reachable behind dev mode
-  { label: "Admin (legacy)", path: "/admin", icon: Shield, dev: true },
-  { label: "Skill Targets (legacy)", path: "/manager/skill-targets", icon: Target, dev: true },
-  { label: "Role Play Bank (legacy)", path: "/manager/role-play", icon: Drama, dev: true },
-  { label: "Program Context (legacy)", path: "/manager/programs", icon: Building2, dev: true },
-  { label: "Team Dashboard (legacy)", path: "/team-dashboard", icon: LayoutDashboard, dev: true },
-  { label: "Team Insights (legacy)", path: "/team-insights", icon: BarChart3, dev: true },
-  { label: "Manager View (legacy)", path: "/manager", icon: UsersRound, dev: true },
-  { label: "My 360 (legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
-  { label: "Dev Tools", path: "/dev-tools", icon: Code, dev: true },
+  {
+    label: "Legacy",
+    path: "#legacy-team",
+    icon: Archive,
+    dev: true,
+    children: [
+      { label: "Admin (Legacy)", path: "/admin", icon: Shield, dev: true },
+      { label: "Skill Targets (Legacy)", path: "/manager/skill-targets", icon: Target, dev: true },
+      { label: "Role Play Bank (Legacy)", path: "/manager/role-play", icon: Drama, dev: true },
+      { label: "Program Context (Legacy)", path: "/manager/programs", icon: Building2, dev: true },
+      { label: "Team Dashboard (Legacy)", path: "/team-dashboard", icon: LayoutDashboard, dev: true },
+      { label: "Team Insights (Legacy)", path: "/team-insights", icon: BarChart3, dev: true },
+      { label: "Manager View (Legacy)", path: "/manager", icon: UsersRound, dev: true },
+      { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
+      { label: "Dev Tools (Legacy)", path: "/dev-tools", icon: Code, dev: true },
+    ],
+  },
 ];
 
 export function AppSidebar() {
@@ -93,6 +107,15 @@ export function AppSidebar() {
   const location = useLocation();
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
   const [managerOpen, setManagerOpen] = useState(true);
+  const [legacyOpen, setLegacyOpen] = useState(false);
+
+  const getGroupOpen = (label: string) =>
+    label === "Learning Spaces" ? learningSpacesOpen : label === "Legacy" ? legacyOpen : managerOpen;
+  const toggleGroupByLabel = (label: string) => {
+    if (label === "Learning Spaces") setLearningSpacesOpen((v) => !v);
+    else if (label === "Legacy") setLegacyOpen((v) => !v);
+    else setManagerOpen((v) => !v);
+  };
   const [devMode, setDevMode] = useState(() => localStorage.getItem("dev-mode") === "true");
   
   // Store the user's original base role so team mode doesn't overwrite admin → manager
@@ -223,8 +246,8 @@ export function AppSidebar() {
             {filteredItems.map((item) => {
               if (item.children) {
                 const isLearningSpaces = item.label === "Learning Spaces";
-                const groupOpen = isLearningSpaces ? learningSpacesOpen : managerOpen;
-                const toggleGroup = () => isLearningSpaces ? setLearningSpacesOpen(!learningSpacesOpen) : setManagerOpen(!managerOpen);
+                const groupOpen = getGroupOpen(item.label);
+                const toggleGroup = () => toggleGroupByLabel(item.label);
 
                 if (expanded) {
                   return (
@@ -665,8 +688,8 @@ export function AppSidebar() {
         {filteredItems.map((item) => {
           if (item.children) {
             const isLearningSpaces = item.label === "Learning Spaces";
-            const groupOpen = isLearningSpaces ? learningSpacesOpen : managerOpen;
-            const toggleGroup = () => isLearningSpaces ? setLearningSpacesOpen(!learningSpacesOpen) : setManagerOpen(!managerOpen);
+            const groupOpen = getGroupOpen(item.label);
+            const toggleGroup = () => toggleGroupByLabel(item.label);
 
             if (expanded) {
               return (

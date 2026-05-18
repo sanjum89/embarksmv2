@@ -8,7 +8,8 @@ import {
   Hand, ClipboardCheck, Inbox, Wand2, Calendar, ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
-import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { getAllDemoOverlays, COHORT_MODULES_FALLBACK, type ActionItem } from "@/data/managerDemoOverlay";

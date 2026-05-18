@@ -165,7 +165,16 @@ export default function SkillTargetDetail() {
 
   // ── New UI layout (unchanged) ──
   return (
-    <div className="flex flex-1 min-h-0 h-full overflow-hidden">
+    <div className="flex flex-1 min-h-0 h-full overflow-hidden flex-col">
+      <PageHeader
+        title={substitute(target.title)}
+        subtitle={substitute(target.description)}
+        breadcrumbs={[
+          { label: "Skill Targets", to: "/manager/skill-targets" },
+          { label: substitute(target.title) },
+        ]}
+      />
+      <div className="flex flex-1 min-h-0 overflow-hidden">
       <div className="flex-1 overflow-y-auto p-6 min-h-0">
           {/* Preview banner */}
           {isPreview && (
@@ -175,13 +184,6 @@ export default function SkillTargetDetail() {
               <span className="text-sm text-muted-foreground">— Complete the prerequisite to start this skill target</span>
             </div>
           )}
-
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to Dashboard
-          </Link>
 
           {/* Header card — two-column */}
           <motion.div
@@ -210,11 +212,6 @@ export default function SkillTargetDetail() {
                     </span>
                   )}
                 </div>
-
-                <h1 className="font-display text-xl font-bold text-foreground mb-1.5">
-                  {substitute(target.title)}
-                </h1>
-                <p className="text-sm text-muted-foreground mb-4">{substitute(target.description)}</p>
 
                 <div className="flex items-center gap-3">
                   <Progress value={target.progress} className="h-2 flex-1" />

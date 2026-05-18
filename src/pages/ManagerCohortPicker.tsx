@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Layers, ChevronRight, Users, AlertCircle } from "lucide-react";
-import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 import { useAccountCohorts } from "@/hooks/useManagerCohortData";
 import { RATHBONES_COHORT_ID, getAllDemoOverlays } from "@/data/managerDemoOverlay";
 

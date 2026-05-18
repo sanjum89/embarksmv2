@@ -70,7 +70,6 @@ export function RosterRow({
           )}
           <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{entry.lastActivity}</span>
         </div>
-        <p className="mt-1.5 truncate text-xs text-foreground/70">{entry.overlay.headline}</p>
       </div>
 
       {/* Progress */}
@@ -87,14 +86,6 @@ export function RosterRow({
             style={{ width: `${Math.max(2, entry.progressPct)}%` }}
           />
         </div>
-        <span
-          className={cn(
-            "mt-2 inline-flex rounded-md border px-1.5 py-0.5 text-[10px] font-medium",
-            CPD_TONE[entry.cpdTone]
-          )}
-        >
-          CPD {entry.cpdHint}
-        </span>
       </div>
 
       <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />

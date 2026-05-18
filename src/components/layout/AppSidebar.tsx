@@ -98,13 +98,11 @@ export function AppSidebar() {
   const location = useLocation();
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
   const [managerOpen, setManagerOpen] = useState(true);
-  const [legacyOpen, setLegacyOpen] = useState(false);
 
   const getGroupOpen = (label: string) =>
-    label === "Learning Spaces" ? learningSpacesOpen : label === "Legacy" ? legacyOpen : managerOpen;
+    label === "Learning Spaces" ? learningSpacesOpen : managerOpen;
   const toggleGroupByLabel = (label: string) => {
     if (label === "Learning Spaces") setLearningSpacesOpen((v) => !v);
-    else if (label === "Legacy") setLegacyOpen((v) => !v);
     else setManagerOpen((v) => !v);
   };
   const [devMode, setDevMode] = useState(() => localStorage.getItem("dev-mode") === "true");

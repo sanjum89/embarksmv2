@@ -22,6 +22,7 @@ export default function NewMy360() {
   const data = useMy360Data();
   const { activeAccount } = useAccount();
   const [tab, setTab] = useState<Tab>("Profile");
+  const eyebrow = useModeEyebrow();
 
   const buckets = useMemo(
     () => bucketCapabilities(data.proficiency, data.requirements),

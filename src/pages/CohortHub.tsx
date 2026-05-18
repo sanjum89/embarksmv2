@@ -116,15 +116,17 @@ export default function CohortHub() {
       <div className="border-b border-border bg-card">
         <div className="mx-auto max-w-7xl px-6 py-[18px]">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{(activeAccount?.name || "").toUpperCase()} · EMBARK</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{(activeAccount?.name || "").toUpperCase()} · EMBARK</div>
+                <ToggleGroup type="single" value={view} onValueChange={(v) => v && setView(v as any)} className="bg-muted/40 rounded-md p-0.5">
+                  <ToggleGroupItem value="editorial" className="text-xs px-3 h-6">Editorial</ToggleGroupItem>
+                  <ToggleGroupItem value="cards" className="text-xs px-3 h-6">Cards</ToggleGroupItem>
+                </ToggleGroup>
+              </div>
               <h1 className="mt-1 font-display text-3xl font-bold text-foreground">Cohort Hub</h1>
               <p className="mt-1 text-sm text-muted-foreground">Learn with peers, mentors, and cohort sessions · {sub(c.title)}</p>
             </div>
-            <ToggleGroup type="single" value={view} onValueChange={(v) => v && setView(v as any)} className="bg-muted/40 rounded-md p-0.5">
-              <ToggleGroupItem value="editorial" className="text-xs px-3 h-7">Editorial</ToggleGroupItem>
-              <ToggleGroupItem value="cards" className="text-xs px-3 h-7">Cards</ToggleGroupItem>
-            </ToggleGroup>
           </div>
         </div>
       </div>

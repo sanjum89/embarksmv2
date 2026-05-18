@@ -5,7 +5,7 @@ import { ChevronRight, CalendarPlus, MessageSquarePlus, Inbox } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import PageHeader from "@/components/layout/PageHeader";
 import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
-import BackButton from "@/components/layout/BackButton";
+
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { useAccountCohorts } from "@/hooks/useManagerCohortData";

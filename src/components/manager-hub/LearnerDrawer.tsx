@@ -136,8 +136,7 @@ export function LearnerDrawer({ open, onOpenChange, learner, overlay, modules, i
             </TabsList>
 
             <TabsContent value="story" className="space-y-4">
-              <p className="text-sm text-foreground/90">{overlay?.story ?? "No deeper story available yet."}</p>
-              <Separator />
+              <div>
               <div>
                 <p className="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">Timeline</p>
                 <ol className="space-y-2">

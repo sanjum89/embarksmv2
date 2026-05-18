@@ -13,7 +13,7 @@ export function TourLaunchButton() {
   if (!show || tour.open) return null;
 
   return (
-    <div className="fixed bottom-5 right-5 z-[9000]">
+    <div className="fixed top-4 right-4 z-[9000]">
       <Button
         type="button"
         onClick={() => tour.start(0)}

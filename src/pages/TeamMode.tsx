@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, CalendarPlus, MessageSquarePlus, Inbox } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/layout/PageHeader";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 import BackButton from "@/components/layout/BackButton";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";

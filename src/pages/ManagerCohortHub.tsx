@@ -69,40 +69,44 @@ export default function ManagerCohortHub() {
     summary.adapted > 0 ? `; ${summary.adapted} AI adaptations active` : ""
   }${summary.pending > 0 ? `; ${summary.pending} awaiting your approval` : ""}.`;
 
-  return (
-    <div className="flex-1 overflow-y-auto p-6">
-      <BackButton />
+  const subtitleNode = (
+    <span className="flex flex-wrap items-center gap-2">
+      <span>{cohort.cohort_code}</span>
+      <Badge variant="outline" className="text-[11px]">{cohort.role_cohort_code}</Badge>
+      {cohort.start_date && <span>· Start {new Date(cohort.start_date).toLocaleDateString()}</span>}
+      {cohort.due_date && <span>· Due {new Date(cohort.due_date).toLocaleDateString()}</span>}
+    </span>
+  );
 
-      {/* Top bar */}
-      <div className="mb-6 mt-2">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="font-display text-2xl font-bold text-foreground">{cohort.cohort_title}</h1>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <span>{cohort.cohort_code}</span>
-              <Badge variant="outline" className="text-[11px]">{cohort.role_cohort_code}</Badge>
-              {cohort.start_date && <span>· Start {new Date(cohort.start_date).toLocaleDateString()}</span>}
-              {cohort.due_date && <span>· Due {new Date(cohort.due_date).toLocaleDateString()}</span>}
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="text-xs">{summary.pct}% complete</Badge>
-            {summary.atRisk > 0 ? (
-              <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-500/30 text-xs">
-                Needs attention · {summary.atRisk}
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 text-xs">
-                On track
-              </Badge>
-            )}
-          </div>
-        </div>
-        <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+  const headerActions = (
+    <>
+      <Badge variant="outline" className="text-xs">{summary.pct}% complete</Badge>
+      {summary.atRisk > 0 ? (
+        <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-500/30 text-xs">
+          Needs attention · {summary.atRisk}
+        </Badge>
+      ) : (
+        <Badge variant="outline" className="bg-emerald-500/10 text-emerald-700 border-emerald-500/30 text-xs">
+          On track
+        </Badge>
+      )}
+    </>
+  );
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+      <PageHeader
+        eyebrow={eyebrow}
+        title={cohort.cohort_title}
+        subtitle={subtitleNode}
+        back
+        actions={headerActions}
+      />
+      <PageBody>
+        <div className="flex items-start gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
           <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
           <p className="text-sm text-foreground/90">{aiSummary}</p>
         </div>
-      </div>
 
       <Tabs defaultValue="roster" className="w-full">
         <TabsList className="mb-4">

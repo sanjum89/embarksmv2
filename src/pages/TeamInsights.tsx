@@ -245,7 +245,7 @@ export default function TeamInsights() {
             No profile data available for this team member.
           </div>
         )}
-      </div>
+      </PageBody>
     </div>
   );
 }

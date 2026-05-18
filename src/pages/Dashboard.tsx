@@ -30,6 +30,7 @@ export default function Dashboard() {
   const { skillTargets: mockSkillTargets } = useSkillTargets();
   const { styleTheme } = useTheme();
   const navigate = useNavigate();
+  const eyebrow = useModeEyebrow();
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("cards");
   const [browseOpen, setBrowseOpen] = useState(false);

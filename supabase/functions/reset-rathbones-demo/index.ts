@@ -230,7 +230,7 @@ Deno.serve(async (req) => {
       enrolled_at: isoDaysAgo(70),
     }));
     // Upsert via delete-then-insert on the persona scope (table has no unique constraint to upsert on).
-    await supabase.from("cohort_enrollments").delete().match(wipeFilter).in("employee_id", PERSONA_IDS).eq("cohort_id", COHORT_ID);
+    await supabase.from("cohort_enrollments").delete().eq("account_id", ACCOUNT_ID).eq("cohort_id", COHORT_ID).in("employee_id", PERSONA_IDS);
     {
       const { error } = await supabase.from("cohort_enrollments").insert(enrollRows);
       if (error) throw error;

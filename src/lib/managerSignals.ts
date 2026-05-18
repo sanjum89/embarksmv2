@@ -27,7 +27,7 @@ interface DbBundle {
   progress: Array<{ module_code: string; chapter_code: string | null; status: string; completed_at: string | null }>;
   assessments: Array<{ id: string; module_code: string | null; score: number | null; attempt_number: number; completed_at: string | null; metadata: any; weak_topic_tags: string[] }>;
   locks: Array<{ module_code: string; chapter_code: string; reason: string | null; unlocked_at: string | null; created_at: string }>;
-  micros: Array<{ id: string; failed_question: string; status: string; created_at: string }>;
+  micros: Array<{ id: string; failed_question: string; status: string; created_at: string; source_assessment_id: string | null }>;
   analytics: { last_activity_at: string | null; total_assessment_attempts: number; total_retakes: number; total_micro_learnings: number } | null;
 }
 

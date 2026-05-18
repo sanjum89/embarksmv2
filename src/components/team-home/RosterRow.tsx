@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import { ChevronRight, Hand } from "lucide-react";
 import { TeamAvatar } from "./Avatar";
 import { LearnerStatusBadge } from "@/components/manager-hub/LearnerStatusBadge";
@@ -16,12 +15,6 @@ export interface RosterEntry {
   cpdTone: "emerald" | "amber" | "rose";
   lastActivity: string;
 }
-
-const CPD_TONE: Record<RosterEntry["cpdTone"], string> = {
-  emerald: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-  amber: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  rose: "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30",
-};
 
 export function RosterRow({
   entry,
@@ -77,7 +70,6 @@ export function RosterRow({
           )}
           <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{entry.lastActivity}</span>
         </div>
-        <p className="mt-1.5 truncate text-xs text-foreground/70">{entry.overlay.headline}</p>
       </div>
 
       {/* Progress */}
@@ -94,14 +86,6 @@ export function RosterRow({
             style={{ width: `${Math.max(2, entry.progressPct)}%` }}
           />
         </div>
-        <span
-          className={cn(
-            "mt-2 inline-flex rounded-md border px-1.5 py-0.5 text-[10px] font-medium",
-            CPD_TONE[entry.cpdTone]
-          )}
-        >
-          CPD {entry.cpdHint}
-        </span>
       </div>
 
       <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />

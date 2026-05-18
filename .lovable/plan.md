@@ -1,39 +1,82 @@
-# Fix: Deep Research starter needs two clicks to show output
+# Header consistency: drop eyebrow, breadcrumbs become the nav
 
-## Root cause
+## Answer to your UX question first
 
-When the user clicks a suggested research starter on an empty workspace, two threads get created and the answer is written to the wrong one.
+**Yes, breadcrumb-only navigation is a sound choice for this app.** The app is a hierarchical workspace (Team → Cohorts → a cohort → a learner) so a breadcrumb trail maps cleanly to the structure. Two safeguards keep it usable:
 
-Sequence in `src/pages/DeepResearch.tsx` `submit()`:
+- The **last crumb is the current page** (non-clickable, slightly bolder) — that's the implicit "you are here" marker, replacing the page-level back button.
+- All other crumbs are links — one click jumps any number of levels up. The browser back button is still always available as a free fallback.
 
-1. `dr.activeThreadId` is `null`, so the page calls `dr.newThread()` → returns `id1`, sets `activeThreadId = id1`.
-2. Page navigates to `/team/deep-research/id1`.
-3. Page `await dr.ask(prompt)`.
-4. Inside `ask` (in `src/hooks/useDeepResearch.ts`), the closure captured `activeThreadId = null` from the render before step 1. So `ask` calls `newThread()` **again**, producing `id2`, and appends the user message + assistant envelope to `id2`.
-5. The URL `useEffect` then sets `activeThreadId = id1`, which has zero messages → the centre pane stays empty even though the answer exists on `id2`.
+Where breadcrumbs fall short (very deep nesting, mobile widths) we already keep the sidebar visible, so users have a second route home.
 
-On the second click `activeThreadId` is already `id1`, so `ask` no longer creates a new thread and the message lands on the visible thread.
+## What's wrong today
+
+1. The eyebrow renders as `RATHBONES · TEAM` and then the first auto-breadcrumb is also `Team`, so you literally see **"RATHBONES · TEAM · TEAM"** (your screenshot).
+2. Some pages still pass a `back` prop and others render their own `<h1>`/back-button combos, so heights and font sizes drift (`text-lg` on LearningModule / RolePlaySession / LearnerChat vs the canonical `text-2xl` used by Team Dashboard).
+3. Auto-breadcrumb map is incomplete — Dashboard (`/`), Action Centre, My 360, AI Manager don't have entries and several team pages list "Team" as the first crumb instead of the actual section name.
 
 ## Fix
 
-Make thread creation single-sourced and pass an explicit target thread id into `ask`.
+### 1. `PageHeader.tsx` — eyebrow gone, breadcrumbs only
 
-### `src/hooks/useDeepResearch.ts`
+- Delete the `eyebrow` prop and the eyebrow `<span>`.
+- Delete the legacy `back` prop entirely (was already a no-op).
+- Row 1 of the header becomes just `<Breadcrumbs />` on the left, `actions` on the right.
+- Keep the canonical sizing exactly as Team Dashboard uses it: `py-3`, `text-2xl font-display font-bold`, optional `text-sm` subtitle, `max-w-7xl px-6`, `border-b border-border bg-card`. This becomes the single source of truth for header height — every page that uses `<PageHeader>` will visually match.
+- Render the last crumb as the current page (non-link, `text-foreground font-medium`); earlier crumbs stay muted + linked. `Breadcrumbs.tsx` already supports this via `to` being optional.
 
-- Change `ask` signature to `ask(prompt: string, opts?: { threadId?: string })`.
-- Inside `ask`, prefer `opts?.threadId ?? activeThreadId`. Only call `newThread()` if neither is provided.
-- Use the resolved `threadId` for every `setThreads(...map)` call (already the case, just sourced from the new value).
+### 2. `useModeEyebrow.ts` — rebuild the crumb map
 
-### `src/pages/DeepResearch.tsx`
+Drop `useModeEyebrow` (no longer used). Expand `useRouteCrumbs` to cover every top-level route with the **section name shown as the first crumb** (no generic "Team" prefix):
 
-- In `submit`, when `dr.activeThreadId` is falsy:
-  - `const id = dr.newThread();`
-  - `navigate(\`/team/deep-research/${id}\`, { replace: true });`
-  - `await dr.ask(prompt, { threadId: id });`
-- Otherwise call `await dr.ask(prompt, { threadId: dr.activeThreadId });`.
+```text
+/                          → [Dashboard]
+/action-centre             → [Action Centre]
+/role-plays                → [Role Play]
+/role-plays/:id            → [Role Play, <session title>]
+/my-360                    → [My 360]
+/people-graph              → [People Graph]
+/ai-manager                → [AI Manager]
+/learning/:moduleId        → [Learning, <module title>]
+/team                      → [Team Dashboard]
+/team/cohorts              → [Cohorts]
+/team/cohort/:id           → [Cohorts, <cohort name>]
+/team/skill-targets        → [Skill Targets]
+/team/skill-target/:id     → [Skill Targets, <target name>]
+/team/insights             → [Team Insights]
+/team/deep-research        → [Deep Research]
+/team/deep-research/:id    → [Deep Research, <thread title>]
+/admin                     → [Admin Dashboard]
+```
 
-This guarantees the user message + envelope are appended to the same thread the URL/UI is showing, so the answer appears on the first click.
+Pages with dynamic segments (cohort hub, skill target detail, role-play session, learning module, deep-research thread) pass their resolved title via the `breadcrumbs` prop so the trailing crumb is the actual entity name. **Adding any new route in the future = adding one line to this map**; the header picks it up automatically.
+
+### 3. Page sweep — remove `eyebrow={…}` and `back` everywhere
+
+Delete `const eyebrow = useModeEyebrow()` and the `eyebrow={eyebrow}` / `back` props from:
+
+- `Dashboard`, `ActionCentre`, `RolePlayBank`, `NewMy360`, `PeopleGraphIntelligence`, `TeamMode`, `TeamDashboard`, `TeamInsights`, `ManagerCohortPicker`, `ManagerCohortHub`, `ManagerSkillTargets`, `ManagerSkillTargetDetail`, `DeepResearch`, `AdminView`.
+
+For full-bleed reader/chat pages (`LearnerChat`, `LearningModulePage`, `RolePlaySession`, `AIManager`) that today render their own bespoke `<h1 className="text-lg">` blocks: swap them for `<PageHeader title={…} subtitle={…} actions={…} />` so they inherit the same height and `text-2xl` title as Team Dashboard. Their full-bleed body layout is unaffected.
+
+Also remove the inline `NewMy360.tsx` line that passes `eyebrow="At a glance"` to a section component — that's a sub-section heading, not a page header, and will be replaced with a plain section label.
+
+### 4. Visual acceptance
+
+After the change every page should show, at the top:
+
+```text
+┌────────────────────────────────────────────────────────────┐
+│ Cohorts › Associate IM Onboarding             [actions…]   │  ← row 1: crumbs only
+│ Associate IM Onboarding                                    │  ← row 2: text-2xl title
+│ 12 learners · 4 modules · started 8 May                    │  ← row 3: optional subtitle
+└────────────────────────────────────────────────────────────┘
+```
+
+Same height, same title font, same padding on every page that uses `<PageHeader>`. No "RATHBONES · TEAM" eyebrow anywhere. No in-page back buttons.
 
 ## Out of scope
 
-No visual changes, no envelope/format changes, no other pages touched.
+- No changes to sidebar, account switcher, or mode toggling.
+- No changes to page bodies beyond removing redundant title/back blocks on the reader/chat pages.
+- No new components — just `PageHeader`, `Breadcrumbs`, and the `useRouteCrumbs` map.

@@ -22,7 +22,7 @@ import { Schedule1on1Dialog } from "@/components/team-home/Schedule1on1Dialog";
 import { SendCheckInDialog } from "@/components/team-home/SendCheckInDialog";
 import { RosterHeatmap } from "@/components/manager-hub/RosterHeatmap";
 
-import { TeamHero } from "@/components/team-home/TeamHero";
+
 import { PulseStrip, type PulseTile } from "@/components/team-home/PulseStrip";
 import { TeamRoster } from "@/components/team-home/TeamRoster";
 import type { RosterEntry } from "@/components/team-home/RosterRow";

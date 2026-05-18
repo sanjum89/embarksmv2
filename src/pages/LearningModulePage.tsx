@@ -79,44 +79,28 @@ export default function LearningModulePage() {
   };
 
   return (
-    <div className="flex flex-1 min-h-0 h-full overflow-hidden">
+    <div className="flex flex-1 min-h-0 h-full overflow-hidden flex-col">
+      <PageHeader
+        title={substitute(module.title)}
+        subtitle={`${module.contentType === "video" ? "Video" : "Document"}${module.duration ? ` · ${module.duration}` : ""}`}
+        breadcrumbs={[
+          { label: "Skill Targets", to: "/manager/skill-targets" },
+          { label: skillTarget?.title ?? "Target", to: skillTargetId ? `/skill-target/${skillTargetId}` : undefined },
+          { label: substitute(module.title) },
+        ]}
+        actions={
+          !innerCompleted ? (
+            <button
+              onClick={handleMarkComplete}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity"
+            >
+              <CheckCircle2 className="h-4 w-4" /> Mark as Complete
+            </button>
+          ) : null
+        }
+      />
       <div className="flex-1 overflow-y-auto">
         <div className="p-6">
-          <Link
-            to={`/skill-target/${skillTargetId}`}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back to Skill Target
-          </Link>
-
-          {/* Module header — hidden once completion screen renders */}
-          {!innerCompleted && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="rounded-xl bg-card border border-border p-5 shadow-card mb-4"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
-                      <BookOpen className="h-3 w-3" /> {module.contentType === "video" ? "Video" : "Document"}
-                    </span>
-                    {module.duration && (
-                      <span className="text-xs text-muted-foreground">{module.duration}</span>
-                    )}
-                  </div>
-                  <h1 className="font-display text-lg font-bold text-foreground">{substitute(module.title)}</h1>
-                </div>
-                <button
-                  onClick={handleMarkComplete}
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 transition-opacity shrink-0 ml-4"
-                >
-                  <CheckCircle2 className="h-4 w-4" /> Mark as Complete
-                </button>
-              </div>
-            </motion.div>
-          )}
 
           {/* Learning Mode Selector — hidden once completion screen renders */}
           {!innerCompleted && (

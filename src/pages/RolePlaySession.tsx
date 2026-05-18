@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Send, Eye, EyeOff, Bot, User, Mic, MicOff, Volume2, VolumeX, MessageSquare, Phone, Loader2, Square, RotateCcw, CheckCircle2, Lightbulb, SmilePlus, TrendingUp, Frown, Meh, Smile, Shield, Zap } from "lucide-react";
+import { Send, Eye, EyeOff, Bot, User, Mic, MicOff, Volume2, VolumeX, MessageSquare, Phone, Loader2, Square, RotateCcw, CheckCircle2, Lightbulb, SmilePlus, TrendingUp, Frown, Meh, Smile, Shield, Zap } from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
 
 import { useRolePlays } from "@/contexts/RolePlayContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";

@@ -10,6 +10,7 @@ import {
   materializeOverlay,
   type LearnerOverlay,
 } from "@/data/managerDemoOverlay";
+import { loadEmployeeSignals, overlayFromSignals } from "@/lib/managerSignals";
 
 export interface CohortBasic {
   id: string;

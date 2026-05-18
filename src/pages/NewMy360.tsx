@@ -11,6 +11,9 @@ import { CohortPreviewCard } from "@/components/my360-v2/CohortPreviewCard";
 import { CohortJourneyTab } from "@/components/my360-v2/CohortJourneyTab";
 import { GrowthPathTab } from "@/components/my360-v2/GrowthPathTab";
 import { Loader2 } from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 const allTabs = ["Profile", "Cohort Journey", "Growth Path"] as const;
 type Tab = (typeof allTabs)[number];
@@ -19,6 +22,7 @@ export default function NewMy360() {
   const data = useMy360Data();
   const { activeAccount } = useAccount();
   const [tab, setTab] = useState<Tab>("Profile");
+  const eyebrow = useModeEyebrow();
 
   const buckets = useMemo(
     () => bucketCapabilities(data.proficiency, data.requirements),
@@ -51,7 +55,13 @@ export default function NewMy360() {
 
   return (
     <div className="flex-1 overflow-y-auto" data-tour="my360">
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      <PageHeader
+        eyebrow={eyebrow}
+        title="My 360"
+        subtitle="Your profile, competencies and growth path."
+        back
+      />
+      <PageBody>
       <ProfileHero employee={data.employee} managerName={managerName} />
 
       {/* Pill tab switcher */}
@@ -124,7 +134,7 @@ export default function NewMy360() {
           onRefresh={data.refresh}
         />
       )}
-      </div>
+      </PageBody>
     </div>
   );
 }

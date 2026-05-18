@@ -23,12 +23,15 @@ import { getDirectReports as getDirectReportsV2 } from "@/lib/accountSelectors";
 import { getDirectReports as getDirectReportsLegacy } from "@/lib/accountHierarchy";
 import { deriveRadarSkills } from "@/lib/skillUtils";
 import { cn } from "@/lib/utils";
-import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 export default function TeamInsights() {
   const { user } = useUser();
   const { activeAccount, normalizedAccount } = useAccount();
   const colors = useChartColors();
+  const eyebrow = useModeEyebrow();
 
   // Use normalized selectors when available, fallback to legacy
   const profileData = normalizedAccount?.profileData ?? activeAccount?.data?.profileData ?? {};
@@ -90,26 +93,25 @@ export default function TeamInsights() {
   if (teamMembers.length === 0) {
     return (
       <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          <h3 className="font-display text-2xl font-bold text-foreground">Team Insights</h3>
-          <p className="mt-4 text-sm text-muted-foreground">
+        <PageHeader eyebrow={eyebrow} title="Team Insights" back />
+        <PageBody>
+          <p className="text-sm text-muted-foreground">
             No direct reports found for {user.name}.
           </p>
-        </div>
+        </PageBody>
       </div>
     );
   }
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="p-6">
-        <BackButton />
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h3 className="font-display text-2xl font-bold text-foreground">Team Insights</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Competency profiles and skill gaps across your team members.
-          </p>
-        </motion.div>
+      <PageHeader
+        eyebrow={eyebrow}
+        title="Team Insights"
+        subtitle="Competency profiles and skill gaps across your team members."
+        back
+      />
+      <PageBody>
 
         {/* Team member selector */}
         <div className="flex items-center gap-2 mb-8 flex-wrap">
@@ -243,7 +245,7 @@ export default function TeamInsights() {
             No profile data available for this team member.
           </div>
         )}
-      </div>
+      </PageBody>
     </div>
   );
 }

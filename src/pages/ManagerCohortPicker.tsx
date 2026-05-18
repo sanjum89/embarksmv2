@@ -1,11 +1,14 @@
 import { Link } from "react-router-dom";
 import { Layers, ChevronRight, Users, AlertCircle } from "lucide-react";
-import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 import { useAccountCohorts } from "@/hooks/useManagerCohortData";
 import { RATHBONES_COHORT_ID, getAllDemoOverlays } from "@/data/managerDemoOverlay";
 
 export default function ManagerCohortPicker() {
   const { loading, cohorts } = useAccountCohorts();
+  const eyebrow = useModeEyebrow();
 
   const list = cohorts.length
     ? cohorts
@@ -41,17 +44,13 @@ export default function ManagerCohortPicker() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      <div className="mx-auto w-full max-w-[1400px] p-4 sm:p-6 lg:p-8">
-        <BackButton />
-
-        <div className="mb-8 mt-2">
-          <h1 className="font-display text-3xl font-bold tracking-tight text-foreground">
-            Cohorts
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Pick a cohort to open the manager hub — roster heatmap, AI changes, adaptive paths, and CPD.
-          </p>
-        </div>
+      <PageHeader
+        eyebrow={eyebrow}
+        title="Cohorts"
+        subtitle="Pick a cohort to open the manager hub — roster heatmap, AI changes, adaptive paths, and CPD."
+        back
+      />
+      <PageBody>
 
         {/* KPI tiles */}
         <div className="mb-10 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-6">
@@ -166,7 +165,7 @@ export default function ManagerCohortPicker() {
             );
           })}
         </div>
-      </div>
+      </PageBody>
     </div>
   );
 }

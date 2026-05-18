@@ -1,58 +1,61 @@
-## Problem
+## Tier 1 — UI/UX Standardisation Pass
 
-The previous role-play assignment set `assignedTo: ["u12","u13","u14"]` on 5 Rathbones role plays. Those IDs come from the legacy mock persona schema and **don't exist** in the live account.
+Zero behaviour change. Pure structural extraction + visual equalisation across 10 pages, based on the audit at `/mnt/documents/ux-audit.md`.
 
-The Rathbones account actually uses `rb-*` IDs. Clara is **`rb-l6` (Clara Wren)**, so the `RolePlayBank` filter `rp.assignedTo.includes(user.id)` never matches and "Assigned to Me" is empty.
+### 1. New shared layout components
 
-## Fix
+Create `src/components/layout/`:
 
-Run a DB migration to update `assignedTo` on the 5 role plays in **both** the `Rathbones` and `Pinnacle Capital` accounts (Pinnacle is a white-label clone — same IDs).
+- **`PageHeader.tsx`** — props: `eyebrow?`, `title`, `subtitle?`, `back?`, `actions?`. Renders the canonical bar:
+  ```
+  border-b border-border bg-card
+    └ max-w-7xl mx-auto px-6 py-[18px]
+        ├ BackButton (if back)
+        └ flex justify-between
+            ├ eyebrow (uppercase 11px tracking-wider muted) + h1 (font-display text-3xl bold) + subtitle (text-sm muted)
+            └ actions slot
+  ```
+  Honours the `py-[18px]` memory rule and locks title size to `text-3xl`.
 
-New assignment target set:
-- `rb-l6` — Clara Wren (primary, requested)
-- `rb-l3` — Theo Marchant (early career IM, paired persona)
-- `rb-l9` — Elliot Hayes (other onboarding learner)
+- **`PageBody.tsx`** — props: `width?: "data" | "reading" | "wide"` (default `data`). Wraps children in `mx-auto px-6 py-6 space-y-6` with `max-w-7xl` / `max-w-3xl` / no max.
 
-Role plays updated (unchanged from previous assignment):
+- **`useModeEyebrow.ts`** — small hook reading the current route + active account name, returning the right eyebrow string (`{ACCOUNT} · LEARNER` / `· TEAM` / `· ADMIN`). Used by all retrofitted pages so manager pages stop looking identical to learner pages.
 
-| ID | Title | Difficulty |
-|---|---|---|
-| `rp-rb1` | First Client Intro | Beginner |
-| `rp-rb-heritage` | Prospective Client Asks About Rathbones Heritage | Beginner |
-| `rp-rb-clear-communication` | Explaining Alternative Investments | Beginner |
-| `rp-rb-volatility` | Calming Anxious Client | Intermediate |
-| `rp-rb-integrity` | Navigating an Ethical Dilemma | Intermediate |
+### 2. Pages retrofitted (10)
 
-## SQL (executed via migration tool)
+For each, replace the existing `p-6 + h1` block with `<PageHeader>` + wrap the body in `<PageBody>`. No logic, data, or feature changes.
 
-```sql
-UPDATE accounts
-SET data = jsonb_set(
-  data,
-  '{rolePlays}',
-  (
-    SELECT jsonb_agg(
-      CASE
-        WHEN rp->>'id' IN (
-          'rp-rb1','rp-rb-heritage','rp-rb-clear-communication',
-          'rp-rb-volatility','rp-rb-integrity'
-        )
-        THEN jsonb_set(rp, '{assignedTo}', '["rb-l6","rb-l3","rb-l9"]'::jsonb)
-        ELSE rp
-      END
-    )
-    FROM jsonb_array_elements(data->'rolePlays') rp
-  )
-)
-WHERE name IN ('Rathbones','Pinnacle Capital');
-```
+| Page | File | Eyebrow | BackButton added? |
+|---|---|---|---|
+| Dashboard | `src/pages/Dashboard.tsx` | LEARNER | yes |
+| Role Play Bank | `src/pages/RolePlayBank.tsx` | LEARNER | already present |
+| Action Centre | `src/pages/ActionCentre.tsx` | LEARNER | already present |
+| My 360 | `src/pages/NewMy360.tsx` | LEARNER | yes |
+| Team Dashboard | `src/pages/TeamDashboard.tsx` | TEAM | already present |
+| Team Insights | `src/pages/TeamInsights.tsx` | TEAM | already present |
+| Manager Cohort Hub | `src/pages/ManagerCohortHub.tsx` | TEAM | already present |
+| Manager Cohort Picker | `src/pages/ManagerCohortPicker.tsx` | TEAM | already present |
+| Manager Skill Targets | `src/pages/ManagerSkillTargets.tsx` | TEAM | already present |
+| Admin View | `src/pages/AdminView.tsx` | ADMIN | yes |
+| People Graph Intelligence | `src/pages/PeopleGraphIntelligence.tsx` | LEARNER | yes |
 
-## Verification
+Exempt (chat / reader / bespoke split-pane layouts): `LearnerChat (/)`, `SkillTargetDetail`, `LearningModule`, `DeepResearch`, `AIManager`, `CohortHub` (already compliant).
 
-After applying:
-1. `SELECT` from `accounts` to confirm the 5 role plays now have `["rb-l6","rb-l3","rb-l9"]`.
-2. Sign in as Clara Wren → open Role Play Bank → "Assigned to Me" should show 5 cards (3 Beginner, 2 Intermediate).
+### 3. Cohort Hub cleanup
 
-## Out of scope
+Remove the dead `view` state + Editorial/Cards `ToggleGroup` from `CohortHub.tsx` (it changes nothing today). If you'd rather keep the control as a placeholder, tell me and I'll skip this step.
 
-No code/UI changes — this is a pure data fix. The filter logic in `RolePlayBank.tsx` is correct.
+### 4. Out of scope (lands in Tier 2/3)
+
+- Replacing custom pill tabs with shadcn `<Tabs>` (RolePlayBank, NewMy360)
+- Shared `<FilterBar>`, `<StatStrip>`, `<PageSkeleton>`, `<EmptyState>`
+- One unified `<EmbarkCard>` primitive
+- Mode-aware route shell
+
+### Acceptance
+
+- All 10 retrofitted pages share the same header bar height, title size, eyebrow placement, and back-button position.
+- No regressions in navigation, data, or feature behaviour.
+- Build passes; no new semantic-token violations.
+
+Confirm and I'll implement.

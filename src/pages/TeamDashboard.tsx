@@ -8,11 +8,14 @@ import LearningSkillsPanel from "@/components/admin/LearningSkillsPanel";
 import WorkSignalsPanel from "@/components/admin/WorkSignalsPanel";
 import ReflectionsPanel from "@/components/admin/ReflectionsPanel";
 import { getScopedAccount } from "@/lib/accountSelectors";
-import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 export default function TeamDashboard() {
   const { normalizedAccount } = useAccount();
   const { user } = useUser();
+  const eyebrow = useModeEyebrow();
 
   const scopedAccount = useMemo(() => {
     if (!normalizedAccount) return null;
@@ -32,14 +35,14 @@ export default function TeamDashboard() {
   const memberCount = Object.keys(scopedAccount.employeesById).length;
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
-      <BackButton />
-      <div className="mb-6">
-        <h1 className="font-display text-2xl font-bold text-foreground">Team Dashboard</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {user.name}'s Team — {memberCount} member{memberCount !== 1 ? "s" : ""}
-        </p>
-      </div>
+    <div className="flex-1 overflow-y-auto">
+      <PageHeader
+        eyebrow={eyebrow}
+        title="Team Dashboard"
+        subtitle={`${user.name}'s Team — ${memberCount} member${memberCount !== 1 ? "s" : ""}`}
+        back
+      />
+      <PageBody>
 
       <Tabs defaultValue="overview" className="w-full">
         <TabsList className="mb-6 flex-wrap h-auto gap-1">
@@ -70,6 +73,7 @@ export default function TeamDashboard() {
           <ReflectionsPanel account={scopedAccount} />
         </TabsContent>
       </Tabs>
+      </PageBody>
     </div>
   );
 }

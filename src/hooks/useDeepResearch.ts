@@ -99,8 +99,8 @@ export function useDeepResearch(args: { accountId: string; accountName?: string 
   }, [accountId, ownerId]);
 
   const ask = useCallback(
-    async (prompt: string) => {
-      let threadId = activeThreadId;
+    async (prompt: string, opts?: { threadId?: string }) => {
+      let threadId = opts?.threadId ?? activeThreadId;
       if (!threadId) threadId = newThread();
 
       const userMsg: DeepResearchMessage = {

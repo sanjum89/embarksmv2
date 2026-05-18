@@ -41,6 +41,7 @@ export default function RolePlayBank() {
   const { user } = useUser();
   const { normalizedAccount, activeAccount } = useAccount();
   const isManager = user.role === "manager";
+  const eyebrow = useModeEyebrow();
 
   const mockNewHires = Array.isArray(normalizedAccount?.newHires) ? normalizedAccount.newHires
     : Array.isArray(activeAccount?.data?.newHires) ? activeAccount.data.newHires

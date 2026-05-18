@@ -235,8 +235,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     if (accountId === activeAccountId) {
       setSignedInUserIds(userIds);
       if (userIds.length > 0) {
-        const found = users.find((u) => u.id === userIds[0]);
-        if (found) setUser(found);
+        const preferred = pickPersistedActiveUser(users, accountId, userIds);
+        if (preferred) setUser(preferred);
       }
     }
   }, [activeAccountId, users]);

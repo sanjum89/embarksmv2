@@ -42,11 +42,12 @@ export default function DeepResearch() {
     const prompt = (text ?? input).trim();
     if (!prompt || dr.isStreaming) return;
     setInput("");
-    if (!dr.activeThreadId) {
-      const id = dr.newThread();
-      navigate(`/team/deep-research/${id}`, { replace: true });
+    let threadId = dr.activeThreadId;
+    if (!threadId) {
+      threadId = dr.newThread();
+      navigate(`/team/deep-research/${threadId}`, { replace: true });
     }
-    await dr.ask(prompt);
+    await dr.ask(prompt, { threadId });
   };
 
   const scopeLabel = useMemo(() => {

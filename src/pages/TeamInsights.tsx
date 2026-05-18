@@ -23,7 +23,9 @@ import { getDirectReports as getDirectReportsV2 } from "@/lib/accountSelectors";
 import { getDirectReports as getDirectReportsLegacy } from "@/lib/accountHierarchy";
 import { deriveRadarSkills } from "@/lib/skillUtils";
 import { cn } from "@/lib/utils";
-import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 export default function TeamInsights() {
   const { user } = useUser();

@@ -23,6 +23,7 @@ const difficultyColor: Record<string, string> = {
 export default function ManagerSkillTargets() {
   const navigate = useNavigate();
   const { normalizedAccount } = useAccount();
+  const eyebrow = useModeEyebrow();
   // Use account skill targets if available, otherwise fall back to default
   const managerSkillTargets = (normalizedAccount?.skillTargets?.length ? normalizedAccount.skillTargets.map(st => ({
     ...st,

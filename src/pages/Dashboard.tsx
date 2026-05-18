@@ -12,6 +12,8 @@ import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
+import PageHeader from "@/components/layout/PageHeader";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 type Filter = "all" | "in_progress" | "completed" | "not_started";
 type ViewMode = "cards" | "list";

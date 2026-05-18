@@ -8,7 +8,8 @@ import {
   Hand, ClipboardCheck, Inbox, Wand2, Calendar, ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
-import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { getAllDemoOverlays, COHORT_MODULES_FALLBACK, type ActionItem } from "@/data/managerDemoOverlay";
@@ -105,34 +106,29 @@ export default function ActionCentre() {
   const handleApprove = (id: string) => { recordDecision(id, "approved", user.name); toast.success("Approved"); };
   const handleReject = (id: string) => { recordDecision(id, "rejected", user.name); toast.success("Rejected"); };
 
+  const eyebrow = useModeEyebrow();
+
   return (
     <div className="flex-1 overflow-y-auto" data-tour="action-centre">
-      {/* Header band */}
-      <div className="border-b border-border/60 bg-gradient-to-br from-primary/5 via-background to-accent/5">
-        <div className="px-6 pt-4 pb-6">
-          <BackButton />
-          <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="font-display text-3xl font-bold text-foreground tracking-tight">Action Centre</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                What needs you today — sorted by urgency, with AI's reasoning a click away.
-              </p>
-            </div>
-          </div>
+      <PageHeader
+        eyebrow={eyebrow}
+        title="Action Centre"
+        subtitle="What needs you today — sorted by urgency, with AI's reasoning a click away."
+      />
 
-          {/* KPI strip */}
-          <div className="mt-5 grid gap-3 grid-cols-2 md:grid-cols-4">
-            <KpiTile
-              label="Pressing now"
-              value={kpiHigh}
-              icon={AlertTriangle}
-              hero
-              hint={kpiHigh === 0 ? "All clear" : "High severity, unresolved"}
-            />
-            <KpiTile label="Raised hands" value={kpiHands} icon={Hand} hint="Awaiting your reply" />
-            <KpiTile label="Pending approvals" value={kpiApprovals} icon={ClipboardCheck} hint="Skips, microlearnings, evidence" />
-            <KpiTile label="AI path changes" value={kpiAdaptations} icon={Sparkles} hint="In the last 14 days" />
-          </div>
+      <div className="px-6 pt-6">
+        {/* KPI strip */}
+        <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
+          <KpiTile
+            label="Pressing now"
+            value={kpiHigh}
+            icon={AlertTriangle}
+            hero
+            hint={kpiHigh === 0 ? "All clear" : "High severity, unresolved"}
+          />
+          <KpiTile label="Raised hands" value={kpiHands} icon={Hand} hint="Awaiting your reply" />
+          <KpiTile label="Pending approvals" value={kpiApprovals} icon={ClipboardCheck} hint="Skips, microlearnings, evidence" />
+          <KpiTile label="AI path changes" value={kpiAdaptations} icon={Sparkles} hint="In the last 14 days" />
         </div>
       </div>
 

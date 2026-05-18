@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
-import BackButton from "@/components/layout/BackButton";
+import { ChevronRight, CalendarPlus, MessageSquarePlus, Inbox } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import PageHeader from "@/components/layout/PageHeader";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
+
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { useAccountCohorts } from "@/hooks/useManagerCohortData";
@@ -19,7 +22,7 @@ import { Schedule1on1Dialog } from "@/components/team-home/Schedule1on1Dialog";
 import { SendCheckInDialog } from "@/components/team-home/SendCheckInDialog";
 import { RosterHeatmap } from "@/components/manager-hub/RosterHeatmap";
 
-import { TeamHero } from "@/components/team-home/TeamHero";
+
 import { PulseStrip, type PulseTile } from "@/components/team-home/PulseStrip";
 import { TeamRoster } from "@/components/team-home/TeamRoster";
 import type { RosterEntry } from "@/components/team-home/RosterRow";
@@ -51,6 +54,8 @@ export default function TeamMode() {
   const [handAction, setHandAction] = useState<ActionItem | null>(null);
   const [scheduleId, setScheduleId] = useState<string | null>(null);
   const [checkInId, setCheckInId] = useState<string | null>(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [checkInOpen, setCheckInOpen] = useState(false);
   const selected = overlays.find((o) => o.employeeId === openId) ?? null;
 
   const openRaisedHand = (employeeId: string, actionId?: string) => {
@@ -180,16 +185,33 @@ export default function TeamMode() {
 
   const summary = `${kpis.learners} associates · ${kpis.stars} rising stars · ${kpis.needsAttn} need attention · ${kpis.pendingActions} actions queued`;
 
+  const eyebrow = useModeEyebrow();
+  const managerName = user?.name ?? "Manager";
+  const managerTitle = (user as any)?.title ?? "Team Lead";
+
   return (
     <div className="flex-1 overflow-y-auto">
+      <PageHeader
+        eyebrow={eyebrow}
+        title={managerName}
+        subtitle={`${managerTitle} · ${summary}`}
+        actions={
+          <>
+            <Button size="sm" variant="outline" onClick={() => setScheduleOpen(true)}>
+              <CalendarPlus className="mr-1.5 h-3.5 w-3.5" /> Schedule 1:1
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setCheckInOpen(true)}>
+              <MessageSquarePlus className="mr-1.5 h-3.5 w-3.5" /> Check-in
+            </Button>
+            <Button size="sm" asChild>
+              <Link to="/action-centre">
+                <Inbox className="mr-1.5 h-3.5 w-3.5" /> Action Centre
+              </Link>
+            </Button>
+          </>
+        }
+      />
       <div className="mx-auto w-full max-w-[1400px] p-4 sm:p-6 lg:p-8">
-        <BackButton />
-
-        <TeamHero
-          managerName={user?.name ?? "Manager"}
-          managerTitle={(user as any)?.title ?? "Team Lead"}
-          summary={summary}
-        />
 
         <PulseStrip tiles={tiles} />
 
@@ -286,14 +308,14 @@ export default function TeamMode() {
       />
 
       <Schedule1on1Dialog
-        open={!!scheduleId}
-        onOpenChange={(o) => !o && setScheduleId(null)}
-        defaultLearnerId={scheduleId}
+        open={!!scheduleId || scheduleOpen}
+        onOpenChange={(o) => { if (!o) { setScheduleId(null); setScheduleOpen(false); } }}
+        defaultLearnerId={scheduleId ?? undefined}
       />
       <SendCheckInDialog
-        open={!!checkInId}
-        onOpenChange={(o) => !o && setCheckInId(null)}
-        defaultLearnerId={checkInId}
+        open={!!checkInId || checkInOpen}
+        onOpenChange={(o) => { if (!o) { setCheckInId(null); setCheckInOpen(false); } }}
+        defaultLearnerId={checkInId ?? undefined}
       />
     </div>
   );

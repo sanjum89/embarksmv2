@@ -12,6 +12,8 @@ import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
+import PageHeader from "@/components/layout/PageHeader";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 type Filter = "all" | "in_progress" | "completed" | "not_started";
 type ViewMode = "cards" | "list";
@@ -28,6 +30,7 @@ export default function Dashboard() {
   const { skillTargets: mockSkillTargets } = useSkillTargets();
   const { styleTheme } = useTheme();
   const navigate = useNavigate();
+  const eyebrow = useModeEyebrow();
   const [activeFilter, setActiveFilter] = useState<Filter>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("cards");
   const [browseOpen, setBrowseOpen] = useState(false);
@@ -144,23 +147,16 @@ export default function Dashboard() {
   /* ── New UI layout ── */
   return (
     <>
+      <PageHeader
+        eyebrow={eyebrow}
+        title={`Welcome back, ${user.name.split(" ")[0]}`}
+        subtitle={
+          stats.inProgress > 0
+            ? `${stats.inProgress} skill target${stats.inProgress > 1 ? "s" : ""} in progress · ${stats.total - stats.inProgress - stats.completed} awaiting`
+            : `${stats.total} skill targets assigned. Let's get started.`
+        }
+      />
       <div className="flex-1 overflow-y-auto p-6">
-        {/* Welcome */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35 }}
-          className="mb-8"
-        >
-          <h3 className="font-display text-2xl font-bold text-foreground">
-            Welcome back, {user.name.split(" ")[0]} 👋
-          </h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {stats.inProgress > 0
-              ? `You have ${stats.inProgress} skill target${stats.inProgress > 1 ? "s" : ""} in progress and ${stats.total - stats.inProgress - stats.completed} awaiting.`
-              : `You have ${stats.total} skill targets assigned. Let's get started!`}
-          </p>
-        </motion.div>
 
         {/* Stats row */}
         <motion.div

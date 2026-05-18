@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Microscope, Plus, Send, Loader2, Pin, Trash2, MessageSquare, ChevronDown, ChevronRight } from "lucide-react";
 import type { PinnedAnswer } from "@/lib/deepResearch/envelope";
 import { ThinkingPanel } from "@/components/deep-research/ThinkingPanel";
+import PageHeader from "@/components/layout/PageHeader";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 export default function DeepResearch() {
   const { user } = useUser();
@@ -52,34 +54,31 @@ export default function DeepResearch() {
     return `Team scope · ${activeAccount?.name ?? "—"}`;
   }, [user.canManage, activeAccount?.name]);
 
+  const eyebrow = useModeEyebrow();
+
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Header */}
-      <div className="border-b border-border/60 px-6 py-[18px] flex items-center justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-primary/10 p-2 text-primary">
-            <Microscope className="h-4 w-4" />
-          </div>
-          <div>
-            <h1 className="text-base font-semibold leading-tight">Deep Research</h1>
-            <p className="text-xs text-muted-foreground">BI-style conversational workspace for managers and cohort leaders</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-[10px]">{scopeLabel}</Badge>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              const id = dr.newThread();
-              navigate(`/team/deep-research/${id}`);
-            }}
-          >
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            New thread
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        eyebrow={eyebrow}
+        title="Deep Research"
+        subtitle="BI-style conversational workspace for managers and cohort leaders"
+        actions={
+          <>
+            <Badge variant="secondary" className="text-[10px]">{scopeLabel}</Badge>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                const id = dr.newThread();
+                navigate(`/team/deep-research/${id}`);
+              }}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              New thread
+            </Button>
+          </>
+        }
+      />
 
       {/* Body — 3 columns */}
       <div className="flex-1 grid grid-cols-[280px_1fr_320px] min-h-0">

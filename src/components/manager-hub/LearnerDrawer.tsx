@@ -16,11 +16,26 @@ import {
 import { toast } from "sonner";
 import { useUser } from "@/contexts/UserContext";
 import { LearnerStatusBadge } from "./LearnerStatusBadge";
+import { TeamAvatar } from "@/components/team-home/Avatar";
 import { AIExplainPopover } from "./AIExplainPopover";
 import { useManagerActions } from "@/store/useManagerActions";
-import { COHORT_MODULES_FALLBACK, type LearnerOverlay } from "@/data/managerDemoOverlay";
+import { COHORT_MODULES_FALLBACK, type LearnerOverlay, type LearnerStatus } from "@/data/managerDemoOverlay";
 import type { CohortModuleCol } from "@/hooks/useManagerCohortData";
 import { cn } from "@/lib/utils";
+
+const STATUS_EYEBROW: Record<LearnerStatus, string> = {
+  at_risk: "Why they're at risk",
+  needs_check_in: "Why they need a check-in",
+  rising_star: "Why they're a rising star",
+  on_track: "Why they're on track",
+};
+
+const STATUS_ACCENT: Record<LearnerStatus, string> = {
+  at_risk: "bg-rose-500",
+  needs_check_in: "bg-amber-500",
+  rising_star: "bg-emerald-500",
+  on_track: "bg-sky-500",
+};
 
 interface Props {
   open: boolean;

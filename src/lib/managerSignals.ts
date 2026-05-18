@@ -74,7 +74,7 @@ export async function loadEmployeeSignals(
       .eq("employee_id", employeeId),
     supabase
       .from("micro_learnings")
-      .select("id, failed_question, status, created_at")
+      .select("id, failed_question, status, created_at, source_assessment_id")
       .eq("account_id", accountId)
       .eq("cohort_id", cohortId)
       .eq("employee_id", employeeId),

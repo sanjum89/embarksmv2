@@ -2,13 +2,12 @@ import { Link } from "react-router-dom";
 import { Layers, ChevronRight, Users, AlertCircle } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import PageBody from "@/components/layout/PageBody";
-import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 import { useAccountCohorts } from "@/hooks/useManagerCohortData";
 import { RATHBONES_COHORT_ID, getAllDemoOverlays } from "@/data/managerDemoOverlay";
+import { roleCohortLabel } from "@/lib/roleCohortLabel";
 
 export default function ManagerCohortPicker() {
   const { loading, cohorts } = useAccountCohorts();
-  const eyebrow = useModeEyebrow();
 
   const list = cohorts.length
     ? cohorts
@@ -45,10 +44,8 @@ export default function ManagerCohortPicker() {
   return (
     <div className="flex-1 overflow-y-auto">
       <PageHeader
-        eyebrow={eyebrow}
         title="Cohorts"
         subtitle="Pick a cohort to open the manager hub — roster heatmap, AI changes, adaptive paths, and CPD."
-        back
       />
       <PageBody>
 
@@ -120,7 +117,7 @@ export default function ManagerCohortPicker() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <span className="inline-block rounded-full bg-accent/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-foreground">
-                        {c.role_cohort_code}
+                        {roleCohortLabel(c.role_cohort_code)}
                       </span>
                       <h3 className="mt-3 font-display text-lg font-bold leading-snug text-foreground transition-colors group-hover:text-primary">
                         {c.cohort_title}

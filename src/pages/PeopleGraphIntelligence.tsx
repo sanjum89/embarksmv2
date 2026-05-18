@@ -87,18 +87,14 @@ export default function PeopleGraphIntelligence() {
 
   return (
     <div className="h-full overflow-y-auto">
-    <div className="max-w-7xl mx-auto px-4 py-6 space-y-8">
-      {/* Header */}
+      <PageHeader
+        eyebrow={eyebrow}
+        title="People Graph Intelligence"
+        subtitle="Understanding the signals behind your team"
+        back
+      />
+      <PageBody>
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center gap-3 mb-1">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-teal-500 to-purple-600 flex items-center justify-center">
-            <Database className="h-5 w-5 text-white" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">People Graph Intelligence</h1>
-            <p className="text-sm text-muted-foreground">Understanding the signals behind your team</p>
-          </div>
-        </div>
 
         {/* View toggle */}
         <div className="flex gap-1 mt-3 bg-muted rounded-lg p-1 w-fit">

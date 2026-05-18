@@ -308,14 +308,14 @@ export default function TeamMode() {
       />
 
       <Schedule1on1Dialog
-        open={!!scheduleId}
-        onOpenChange={(o) => !o && setScheduleId(null)}
-        defaultLearnerId={scheduleId}
+        open={!!scheduleId || scheduleOpen}
+        onOpenChange={(o) => { if (!o) { setScheduleId(null); setScheduleOpen(false); } }}
+        defaultLearnerId={scheduleId ?? undefined}
       />
       <SendCheckInDialog
-        open={!!checkInId}
-        onOpenChange={(o) => !o && setCheckInId(null)}
-        defaultLearnerId={checkInId}
+        open={!!checkInId || checkInOpen}
+        onOpenChange={(o) => { if (!o) { setCheckInId(null); setCheckInOpen(false); } }}
+        defaultLearnerId={checkInId ?? undefined}
       />
     </div>
   );

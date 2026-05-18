@@ -25,9 +25,9 @@ import {
 type DifficultyFilter = "all" | "beginner" | "intermediate" | "advanced";
 
 const difficultyColors = {
-  beginner: "bg-success/10 text-success",
-  intermediate: "bg-warning/10 text-warning",
-  advanced: "bg-destructive/10 text-destructive",
+  beginner: "bg-success/15 text-success border border-success/20",
+  intermediate: "bg-[hsl(32_95%_44%)]/15 text-[hsl(28_92%_40%)] border border-[hsl(32_95%_44%)]/25 dark:bg-[hsl(38_95%_55%)]/15 dark:text-[hsl(40_98%_70%)] dark:border-[hsl(38_95%_55%)]/30",
+  advanced: "bg-destructive/15 text-destructive border border-destructive/20",
 };
 
 export default function RolePlayBank() {

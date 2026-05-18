@@ -8,6 +8,7 @@ import { RATHBONES_COHORT_ID, getAllDemoOverlays } from "@/data/managerDemoOverl
 
 export default function ManagerCohortPicker() {
   const { loading, cohorts } = useAccountCohorts();
+  const eyebrow = useModeEyebrow();
 
   const list = cohorts.length
     ? cohorts

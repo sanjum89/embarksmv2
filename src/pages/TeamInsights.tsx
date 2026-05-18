@@ -31,6 +31,7 @@ export default function TeamInsights() {
   const { user } = useUser();
   const { activeAccount, normalizedAccount } = useAccount();
   const colors = useChartColors();
+  const eyebrow = useModeEyebrow();
 
   // Use normalized selectors when available, fallback to legacy
   const profileData = normalizedAccount?.profileData ?? activeAccount?.data?.profileData ?? {};

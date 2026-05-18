@@ -1,38 +1,22 @@
 ## Goal
-Group the `dev: true` items in the sidebar (Me + Team lists) under a single collapsible **Legacy** parent, and normalize their labels so each one ends with `(Legacy)`.
+Two small sidebar changes in `src/components/layout/AppSidebar.tsx`:
 
-## Scope
-File: `src/components/layout/AppSidebar.tsx` only. No route changes, no other components.
+1. Move the **Legacy** group out of the main nav lists and render it in the bottom utility section, **just below the Branding button** (above the Dev/EOL Mode toggle).
+2. Rename the **EOL Mode** toggle to **Dev Mode**, and remove the `(Legacy)` suffix from Dev-Mode-related items (Dev Tools stays a Dev Mode tool, not Legacy).
 
 ## Changes
 
-### 1. Restructure `meNavItems`
-Keep top-level entries (Embark AI, Embark AI v2, New Chat, Role Play, Action Centre, Cohort Hub, My 360). Move the three `dev:true` items into a new `Legacy` group:
-
-```ts
-{
-  label: "Legacy",
-  path: "#legacy-me",
-  icon: Archive, // or History
-  dev: true,
-  children: [
-    { label: "Learning Spaces (Legacy)", path: "/dashboard", icon: LayoutDashboard, dev: true },
-    { label: "Skill Targets (Legacy)",   path: "/dashboard", icon: Target, dev: true },
-    { label: "My 360 (Legacy)",          path: "/my-360-legacy", icon: CircleUser, dev: true },
-  ],
-}
-```
-
-### 2. Restructure `teamNavItems`
-Keep the non-dev entries at the top level. Move all `dev:true` entries (Admin, Skill Targets, Role Play Bank, Program Context, Team Dashboard, Team Insights, Manager View, My 360, Dev Tools) into the Legacy group, normalizing each label to end with `(Legacy)` (capital L, consistent casing — current labels use mixed `(legacy)` / `(Legacy)`):
-
-```ts
-{
-  label: "Legacy",
-  path: "#legacy-team",
-  icon: Archive,
-  dev: true,
-  children: [
+### 1. Pull Legacy out of `meNavItems` / `teamNavItems`
+- Remove the `Legacy` entries (currently the last item in both `meNavItems` and `teamNavItems`).
+- Drop **Dev Tools (Legacy)** from the team Legacy list entirely — it belongs with Dev Mode, not Legacy.
+- Define two module-level arrays the bottom panel can render:
+  ```ts
+  const legacyMeItems = [
+    { label: "Learning Spaces (Legacy)", path: "/dashboard", icon: LayoutDashboard },
+    { label: "Skill Targets (Legacy)",   path: "/dashboard", icon: Target },
+    { label: "My 360 (Legacy)",          path: "/my-360-legacy", icon: CircleUser },
+  ];
+  const legacyTeamItems = [
     { label: "Admin (Legacy)",           path: "/admin", icon: Shield },
     { label: "Skill Targets (Legacy)",   path: "/manager/skill-targets", icon: Target },
     { label: "Role Play Bank (Legacy)",  path: "/manager/role-play", icon: Drama },
@@ -41,23 +25,32 @@ Keep the non-dev entries at the top level. Move all `dev:true` entries (Admin, S
     { label: "Team Insights (Legacy)",   path: "/team-insights", icon: BarChart3 },
     { label: "Manager View (Legacy)",    path: "/manager", icon: UsersRound },
     { label: "My 360 (Legacy)",          path: "/my-360-legacy", icon: CircleUser },
-    { label: "Dev Tools (Legacy)",       path: "/dev-tools", icon: Code },
-  ],
-}
-```
+  ];
+  ```
+- The active legacy list comes from `viewMode === "me" ? legacyMeItems : legacyTeamItems`.
 
-Dev Tools — confirmed: include it in Legacy per "items now in the menu".
+### 2. Render a Legacy entry below Branding
+In both theme blocks (traditional ~line 439, standard ~line 817), insert a new bottom-section element directly after the Branding button and before the Dev/EOL toggle. Gate it on `devMode` so it only appears when Dev Mode is on.
 
-### 3. Wire the new group into existing collapsible logic
-The sidebar already supports `children` via `learningSpacesOpen` / `managerOpen` state. Add a `legacyOpen` state (default **collapsed** so legacy items don't dominate the nav). Extend the `isLearningSpaces ? ... : ...` toggle branch to handle `Legacy` as a third group (use a small `getGroupState(label)` helper rather than nested ternaries). Apply this in both the traditional theme block and the standard theme block.
+- **Expanded sidebar**: render a collapsible button labeled **Legacy** with the `Archive` icon and a chevron, using existing `legacyOpen` state. When open, render the corresponding `legacyMeItems` / `legacyTeamItems` as indented `NavLink`s, mirroring the styling already used for nested children in the nav area.
+- **Collapsed sidebar**: render a single icon button (Archive) inside a Tooltip + Popover that lists the legacy items, matching how Branding/Theme already handle the collapsed state.
 
-### 4. Visibility
-Keep `dev: true` on the Legacy parent so the whole group only appears when Dev Mode is enabled — matches prior behavior and preserves the EOL Mode core rule. (If the user instead wants Legacy visible to all users, that's a one-line change — flagging as an open question.)
+Remove the now-unused `Legacy` branch from the in-nav `children` rendering path. Keep `legacyOpen` state; drop the `getGroupOpen` / `toggleGroupByLabel` `"Legacy"` branches since Legacy no longer flows through `filteredItems.map`.
 
-## Open question
-Should the **Legacy** group be visible only in Dev/EOL Mode (current behavior of these items), or always visible to everyone? Default in the plan: Dev Mode only.
+### 3. Rename EOL Mode → Dev Mode
+Replace all four user-facing strings:
+- Traditional block (~lines 467, 480): `EOL Mode` → `Dev Mode`, tooltip `EOL Mode on/off` → `Dev Mode on/off`.
+- Standard block (~lines 842, 855): same replacements.
+
+Internal state name `devMode` and storage key `"dev-mode"` already match — no logic change.
+
+### 4. `Dev Tools` item
+Currently lives only inside the Legacy group with the `(Legacy)` suffix. Remove it from the Legacy list (per point 1). Dev Tools remains reachable via its route `/dev-tools` (already a `dev: true` page). If you also want a sidebar entry for it under Dev Mode, that is a separate question (see open question).
 
 ## Out of scope
-- Renaming routes or moving pages
-- Changing the dev-mode toggle behavior
-- Touching `mem://style/eol-mode-rename` semantics
+- Route changes, page renames
+- Touching the underlying `dev-mode` localStorage key
+- Memory doc `mem://style/eol-mode-rename` (will need a follow-up update once approved, but no code rule depends on the old name)
+
+## Open question
+Do you want a visible **Dev Tools** entry rendered in the sidebar when Dev Mode is on (e.g., right below the Legacy section), or is keeping it accessible only by URL fine?

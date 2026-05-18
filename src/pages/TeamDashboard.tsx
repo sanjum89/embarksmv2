@@ -73,6 +73,7 @@ export default function TeamDashboard() {
           <ReflectionsPanel account={scopedAccount} />
         </TabsContent>
       </Tabs>
+      </PageBody>
     </div>
   );
 }

@@ -183,16 +183,33 @@ export default function TeamMode() {
 
   const summary = `${kpis.learners} associates · ${kpis.stars} rising stars · ${kpis.needsAttn} need attention · ${kpis.pendingActions} actions queued`;
 
+  const eyebrow = useModeEyebrow();
+  const managerName = user?.name ?? "Manager";
+  const managerTitle = (user as any)?.title ?? "Team Lead";
+
   return (
     <div className="flex-1 overflow-y-auto">
+      <PageHeader
+        eyebrow={eyebrow}
+        title={managerName}
+        subtitle={`${managerTitle} · ${summary}`}
+        actions={
+          <>
+            <Button size="sm" variant="outline" onClick={() => setScheduleId("__open__")}>
+              <CalendarPlus className="mr-1.5 h-3.5 w-3.5" /> Schedule 1:1
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setCheckInId("__open__")}>
+              <MessageSquarePlus className="mr-1.5 h-3.5 w-3.5" /> Check-in
+            </Button>
+            <Button size="sm" asChild>
+              <Link to="/action-centre">
+                <Inbox className="mr-1.5 h-3.5 w-3.5" /> Action Centre
+              </Link>
+            </Button>
+          </>
+        }
+      />
       <div className="mx-auto w-full max-w-[1400px] p-4 sm:p-6 lg:p-8">
-        <BackButton />
-
-        <TeamHero
-          managerName={user?.name ?? "Manager"}
-          managerTitle={(user as any)?.title ?? "Team Lead"}
-          summary={summary}
-        />
 
         <PulseStrip tiles={tiles} />
 

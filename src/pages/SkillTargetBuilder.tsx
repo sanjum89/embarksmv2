@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import BackButton from "@/components/layout/BackButton";
+
 import {
   ArrowLeft,
   Send,

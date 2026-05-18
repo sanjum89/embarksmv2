@@ -1,36 +1,58 @@
-## What’s causing the “page shows, then reloads again” feeling
+## Problem
 
-I found two likely sources:
+The previous role-play assignment set `assignedTo: ["u12","u13","u14"]` on 5 Rathbones role plays. Those IDs come from the legacy mock persona schema and **don't exist** in the live account.
 
-1. **The preview server is actually reconnecting/restarting**
-   - Your console has: `[vite] server connection lost. Polling for restart...`
-   - That is a real dev-preview reload, not React Router navigation.
-   - When that happens, the app remounts from scratch and re-fetches all account/user data.
+The Rathbones account actually uses `rb-*` IDs. Clara is **`rb-l6` (Clara Wren)**, so the `RolePlayBank` filter `rp.assignedTo.includes(user.id)` never matches and "Assigned to Me" is empty.
 
-2. **App boot does too much work on every remount**
-   - `AccountContext` bootstraps/seeds Agent One notifications for every account on load.
-   - `AgentOneProvider` immediately loads chat state and may auto-send/init messages.
-   - This creates lots of network calls and visible loading after any remount, making normal menu navigation feel like a second refresh.
+## Fix
 
-## Fix plan
+Run a DB migration to update `assignedTo` on the 5 role plays in **both** the `Rathbones` and `Pinnacle Capital` accounts (Pinnacle is a white-label clone — same IDs).
 
-1. **Make sidebar navigation purely client-side and deterministic**
-   - Keep normal menu items as `NavLink` routes.
-   - Remove remaining outdated `/chat` redirects from Me/Team toggles and profile switching.
-   - Route learner mode to `/`, team mode to `/team`, without forcing Agent One chat unless the user explicitly clicks New Chat.
+New assignment target set:
+- `rb-l6` — Clara Wren (primary, requested)
+- `rb-l3` — Theo Marchant (early career IM, paired persona)
+- `rb-l9` — Elliot Hayes (other onboarding learner)
 
-2. **Stop bootstrapping demo Agent One cards on every app load**
-   - Add a per-account in-memory/local session guard so notification seeding runs once per browser session per account, not every reload/remount.
-   - Keep idempotency, but avoid repeated fetch storms during route changes and dev reconnects.
+Role plays updated (unchanged from previous assignment):
 
-3. **Stabilize user restoration during real reloads**
-   - Keep the recent `lastActiveUser_<accountId>` restore behavior.
-   - Also ensure `setInitialSignedInUsers` does not silently switch back to the first/admin user when a last-active learner exists.
+| ID | Title | Difficulty |
+|---|---|---|
+| `rp-rb1` | First Client Intro | Beginner |
+| `rp-rb-heritage` | Prospective Client Asks About Rathbones Heritage | Beginner |
+| `rp-rb-clear-communication` | Explaining Alternative Investments | Beginner |
+| `rp-rb-volatility` | Calming Anxious Client | Intermediate |
+| `rp-rb-integrity` | Navigating an Ethical Dilemma | Intermediate |
 
-4. **Reduce visible “refresh” overlays**
-   - Shorten/remove artificial 1–1.5s switching delays where they are only cosmetic.
-   - Keep account/profile changes immediate, with state preserved, so clicks don’t look like full reloads.
+## SQL (executed via migration tool)
 
-5. **Verify the behavior**
-   - Use the browser preview to click menu items such as Role Play, Action Centre, Embark AI, and Cohort Hub.
-   - Confirm URL changes happen without a second document navigation, without login/admin fallback, and without repeated Agent One bootstrap logs.
+```sql
+UPDATE accounts
+SET data = jsonb_set(
+  data,
+  '{rolePlays}',
+  (
+    SELECT jsonb_agg(
+      CASE
+        WHEN rp->>'id' IN (
+          'rp-rb1','rp-rb-heritage','rp-rb-clear-communication',
+          'rp-rb-volatility','rp-rb-integrity'
+        )
+        THEN jsonb_set(rp, '{assignedTo}', '["rb-l6","rb-l3","rb-l9"]'::jsonb)
+        ELSE rp
+      END
+    )
+    FROM jsonb_array_elements(data->'rolePlays') rp
+  )
+)
+WHERE name IN ('Rathbones','Pinnacle Capital');
+```
+
+## Verification
+
+After applying:
+1. `SELECT` from `accounts` to confirm the 5 role plays now have `["rb-l6","rb-l3","rb-l9"]`.
+2. Sign in as Clara Wren → open Role Play Bank → "Assigned to Me" should show 5 cards (3 Beginner, 2 Intermediate).
+
+## Out of scope
+
+No code/UI changes — this is a pure data fix. The filter logic in `RolePlayBank.tsx` is correct.

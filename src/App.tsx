@@ -98,6 +98,7 @@ const App = () => (
               <Route path="/cohort" element={<CohortHub />} />
               <Route path="/action-centre" element={<ActionCentre />} />
               <Route path="/admin" element={<AdminView />} />
+              <Route path="/dev-tools" element={<DevTools />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

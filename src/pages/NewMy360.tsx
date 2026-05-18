@@ -55,7 +55,13 @@ export default function NewMy360() {
 
   return (
     <div className="flex-1 overflow-y-auto" data-tour="my360">
-      <div className="max-w-6xl mx-auto px-6 py-8 space-y-8">
+      <PageHeader
+        eyebrow={eyebrow}
+        title="My 360"
+        subtitle="Your profile, competencies and growth path."
+        back
+      />
+      <PageBody>
       <ProfileHero employee={data.employee} managerName={managerName} />
 
       {/* Pill tab switcher */}

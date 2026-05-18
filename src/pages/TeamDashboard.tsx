@@ -8,7 +8,9 @@ import LearningSkillsPanel from "@/components/admin/LearningSkillsPanel";
 import WorkSignalsPanel from "@/components/admin/WorkSignalsPanel";
 import ReflectionsPanel from "@/components/admin/ReflectionsPanel";
 import { getScopedAccount } from "@/lib/accountSelectors";
-import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 export default function TeamDashboard() {
   const { normalizedAccount } = useAccount();

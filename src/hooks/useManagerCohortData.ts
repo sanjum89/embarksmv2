@@ -10,6 +10,7 @@ import {
   materializeOverlay,
   type LearnerOverlay,
 } from "@/data/managerDemoOverlay";
+import { loadEmployeeSignals, overlayFromSignals } from "@/lib/managerSignals";
 
 export interface CohortBasic {
   id: string;
@@ -111,18 +112,40 @@ export function useManagerCohortData(cohortId: string | null): ManagerCohortData
         {}
       );
 
-      const learners: CohortLearner[] = Array.from(ids).map((id) => {
-        const base = getDemoOverlay(id);
-        // Project the persona's progression pattern onto the LIVE module list
-        // so Roster and Adaptive Paths share the same spine.
-        const overlay = base ? materializeOverlay(base, liveModules) : null;
-        return {
-          employeeId: id,
-          name: employees[id]?.name ?? id,
-          title: employees[id]?.title,
-          overlay,
-        };
-      });
+      // For each enrolled employee, prefer real DB signals when present;
+      // fall back to the hand-authored demo overlay for personas with no rows.
+      // Pre-fetch chapter counts per module so we know what "completed module"
+      // means at this point in time.
+      const chsRes = await supabase
+        .from("catalog_chapters")
+        .select("module_code")
+        .eq("account_id", accountId);
+      const chaptersByModule: Record<string, number> = {};
+      for (const c of (((chsRes as any).data ?? []) as any[])) {
+        chaptersByModule[c.module_code] = (chaptersByModule[c.module_code] ?? 0) + 1;
+      }
+
+      const learners: CohortLearner[] = await Promise.all(
+        Array.from(ids).map(async (id) => {
+          let overlay: LearnerOverlay | null = null;
+          try {
+            const bundle = await loadEmployeeSignals(accountId, cohortId, id, liveModules);
+            overlay = overlayFromSignals(id, bundle, liveModules, chaptersByModule);
+          } catch {
+            overlay = null;
+          }
+          if (!overlay) {
+            const base = getDemoOverlay(id);
+            overlay = base ? materializeOverlay(base, liveModules) : null;
+          }
+          return {
+            employeeId: id,
+            name: employees[id]?.name ?? id,
+            title: employees[id]?.title,
+            overlay,
+          };
+        })
+      );
 
       // Order: rising stars first, then at-risk, then on track
       const rank = (s?: string) =>

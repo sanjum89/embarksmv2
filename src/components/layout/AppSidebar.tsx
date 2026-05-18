@@ -140,6 +140,7 @@ export function AppSidebar() {
 
   const baseItems = viewMode === "me" ? meNavItems : teamNavItems;
   const filteredItems = devMode ? baseItems : baseItems.filter((item) => !item.dev);
+  const legacyItems = viewMode === "me" ? legacyMeItems : legacyTeamItems;
 
   const toggleDevMode = useCallback(() => {
     setDevMode((prev) => {

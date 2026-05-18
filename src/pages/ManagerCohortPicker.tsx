@@ -165,7 +165,7 @@ export default function ManagerCohortPicker() {
             );
           })}
         </div>
-      </div>
+      </PageBody>
     </div>
   );
 }

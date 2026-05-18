@@ -14,6 +14,9 @@ import {
   investmentManagementSystems,
 } from "@/data/peopleGraphSystems";
 import type { SkillGapEntry } from "@/types/account-v2";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
+import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 export default function PeopleGraphIntelligence() {
   const { normalizedAccount } = useAccount();

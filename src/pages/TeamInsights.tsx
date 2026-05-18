@@ -93,12 +93,12 @@ export default function TeamInsights() {
   if (teamMembers.length === 0) {
     return (
       <div className="flex-1 overflow-y-auto">
-        <div className="p-6">
-          <h3 className="font-display text-2xl font-bold text-foreground">Team Insights</h3>
-          <p className="mt-4 text-sm text-muted-foreground">
+        <PageHeader eyebrow={eyebrow} title="Team Insights" back />
+        <PageBody>
+          <p className="text-sm text-muted-foreground">
             No direct reports found for {user.name}.
           </p>
-        </div>
+        </PageBody>
       </div>
     );
   }

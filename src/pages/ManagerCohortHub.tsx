@@ -161,6 +161,7 @@ export default function ManagerCohortHub() {
         modules={modules}
         initialTab={drawerTab}
       />
+      </PageBody>
     </div>
   );
 }

@@ -129,7 +129,7 @@ export default function ManagerSkillTargets() {
             </div>
           </div>
         ))}
-      </div>
+      </PageBody>
     </div>
   );
 }

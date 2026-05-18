@@ -246,8 +246,8 @@ export function AppSidebar() {
             {filteredItems.map((item) => {
               if (item.children) {
                 const isLearningSpaces = item.label === "Learning Spaces";
-                const groupOpen = isLearningSpaces ? learningSpacesOpen : managerOpen;
-                const toggleGroup = () => isLearningSpaces ? setLearningSpacesOpen(!learningSpacesOpen) : setManagerOpen(!managerOpen);
+                const groupOpen = getGroupOpen(item.label);
+                const toggleGroup = () => toggleGroupByLabel(item.label);
 
                 if (expanded) {
                   return (

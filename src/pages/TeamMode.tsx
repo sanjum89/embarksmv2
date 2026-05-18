@@ -54,6 +54,8 @@ export default function TeamMode() {
   const [handAction, setHandAction] = useState<ActionItem | null>(null);
   const [scheduleId, setScheduleId] = useState<string | null>(null);
   const [checkInId, setCheckInId] = useState<string | null>(null);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [checkInOpen, setCheckInOpen] = useState(false);
   const selected = overlays.find((o) => o.employeeId === openId) ?? null;
 
   const openRaisedHand = (employeeId: string, actionId?: string) => {

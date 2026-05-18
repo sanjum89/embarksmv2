@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useParams } from "react-router-dom";
+
 import { CheckCircle2, Eye, BookOpen, Headphones, Wrench, Layers } from "lucide-react";
 
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";

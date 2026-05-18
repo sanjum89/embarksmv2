@@ -81,6 +81,7 @@ const teamNavItems: NavItem[] = [
   { label: "Team Insights (legacy)", path: "/team-insights", icon: BarChart3, dev: true },
   { label: "Manager View (legacy)", path: "/manager", icon: UsersRound, dev: true },
   { label: "My 360 (legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
+  { label: "Dev Tools", path: "/dev-tools", icon: Code, dev: true },
 ];
 
 export function AppSidebar() {

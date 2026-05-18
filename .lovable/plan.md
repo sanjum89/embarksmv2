@@ -1,56 +1,76 @@
-# Fix Cohort headers + replace raw codes with human labels
+# Adaptive Paths Sankey — Track focus + learner picker overhaul
 
-## What's wrong today
+Scope: `src/components/team-home/AdaptivePathsSankey.tsx` (single file; consumed only by `ManagerCohortHub`).
 
-**Headers (inconsistency with the new standard):**
-- `ManagerCohortPicker` (`/manager/cohorts`) still passes `eyebrow` and `back` to `<PageHeader>` — pre-standardization style.
-- `ManagerCohortHub` (`/manager/cohort/:cohortId`) does the same and never passes `breadcrumbs`, so the trailing crumb defaults to the generic label "Cohort" instead of the cohort title.
+## 1. Track focus (stages as tabs)
 
-**Confusing strings on the inner cohort page:**
-- `cohort.assoc_im.2026_01` is the internal `cohort_code` (system slug = role · intake).
-- The pill `assoc IM` is `role_cohort_code` (`assoc_im` = Associate Investment Manager) shown raw with an underscore.
+Replace the static stage band row with a clickable **track selector** above the SVG:
 
-Neither is meaningful to a user — they're database identifiers leaking into the UI.
-
-## Changes
-
-### 1. `src/pages/ManagerCohortPicker.tsx`
-- Remove `eyebrow` and `back` props from `<PageHeader>` (auto-breadcrumbs from `CRUMB_MAP["/manager/cohorts"]` = "Cohorts" will take over).
-- Card pill: replace raw `c.role_cohort_code` with human label via a `roleCohortLabel()` helper (e.g. `assoc_im` → "Associate Investment Manager", `senior_im` → "Senior Investment Manager", etc.). Fallback: title-case the slug.
-- Drop the `cohort.assoc_im.2026_01` code from the card UI (it adds no value); keep `cohort_title` as the primary line.
-
-### 2. `src/pages/ManagerCohortHub.tsx`
-- Remove `eyebrow` and `back` from all three `<PageHeader>` instances.
-- Pass explicit `breadcrumbs={[{ label: "Cohorts", to: "/manager/cohorts" }, { label: cohort.cohort_title }]}` so the trailing crumb is the cohort's friendly title.
-- Rebuild `subtitleNode`:
-  - Drop the raw `cohort.cohort_code` token.
-  - Replace the raw `role_cohort_code` badge with the human label from `roleCohortLabel()`.
-  - Keep start/due dates.
-- Loading / not-found states use the same breadcrumbs (with `{ label: "…" }` as the trailing crumb while loading).
-
-### 3. New helper `src/lib/roleCohortLabel.ts`
-Single source of truth mapping role-cohort slugs to display labels. Used by both pages above and available for future cohort surfaces.
-
-```ts
-const MAP: Record<string, string> = {
-  assoc_im: "Associate Investment Manager",
-  senior_im: "Senior Investment Manager",
-  inv_dir:   "Investment Director",
-  // …extend as needed
-};
-export function roleCohortLabel(code?: string | null): string {
-  if (!code) return "";
-  return MAP[code] ?? code.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
-}
+```
+[ All tracks ]  [ Foundations · 5 ]  [ Core · 12 ]  [ Advanced · 8 ]  [ Mastery · 3 ]
 ```
 
-### 4. Sweep verification (no edits expected)
-Spot-checked other inner pages reachable from Cohorts/Team:
-- `DeepResearch`, `TeamMode`, `ManagerSkillTargets`, `CohortHub` — already on the new `<PageHeader>` pattern without `eyebrow`/`back`.
-- `LearnerDrawer` is a side sheet, not a page — out of scope.
+- Derived from existing `stageGroups` (no data change). Order = first appearance in the module spine.
+- "All tracks" is the default and renders today's full path.
+- Selecting a track filters `spineModules` to that stage's modules only, so the diagram zooms into a much wider column-per-module view (~easier read of each adaptation).
+- The in-SVG stage band stays as a subtle title for the active track; when "All" is selected, all bands render as today and each band is **also clickable** (clicking a band switches to that track tab — same state).
+- Per-track summary chip shown next to the tab name: `e.g. Foundations · 5 mod · 3 skips`. Counts are computed across currently-selected learners so the user sees where adaptation is actually happening.
 
-If during implementation any other inner page is found still using `eyebrow`/`back`, it will be migrated the same way (remove props, add explicit `breadcrumbs` with the resolved entity title).
+## 2. Remove "Side-by-side"
+
+Compare modes collapse to **Stack** (default) and **vs Baseline**. Drop the `"side"` branch from `CompareMode`, the toolbar button, and the `rows.slice(0, 2)` slicing. Stack now always honors the full selection.
+
+## 3. New learner picker
+
+Replace the inline pill bar with a single **searchable multi-select dropdown** (shadcn `Popover` + `Command`):
+
+- Trigger: `[ + Add learners (3 / 7) ]` with the selected learners shown as removable chips next to it.
+- Dropdown lists every learner with: avatar dot · name · job title · **status tag** (color-coded).
+  - `rising_star` → emerald "Rising star"
+  - `on_track` → blue "On track"
+  - `needs_check_in` → amber "Needs check-in"
+  - `at_risk` → red "At risk"
+- Max 7 selected (`MAX_SELECTED = 7`). Selecting an 8th disables further options until one is removed.
+- Search filters by name + title.
+- Selected chips show `Clara — Rising star` style: name + small status tag in the same chip, plus an × to remove.
+- Inside the diagram, the **left learner label** also gets a status tag pill next to the name (same color tokens).
+
+A small helper:
+```ts
+const STATUS_META: Record<LearnerStatus, { label: string; cls: string }> = {
+  rising_star:     { label: "Rising star",     cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30" },
+  on_track:        { label: "On track",        cls: "bg-blue-500/15    text-blue-700    border-blue-500/30" },
+  needs_check_in:  { label: "Needs check-in",  cls: "bg-amber-500/15   text-amber-700   border-amber-500/30" },
+  at_risk:         { label: "At risk",         cls: "bg-red-500/15     text-red-700     border-red-500/30" },
+};
+```
+(Status read from `overlay.status` — already present on `LearnerOverlay`.)
+
+## 4. Default selection
+
+Unchanged: top 3 by `adaptationCount(overlay)` (already implemented). With max bumped to 7, users can add more.
+
+## 5. Toolbar layout after changes
+
+```
+Row 1:  Learners  [chips…]  [+ Add (3/7)]                          [ Stack | vs Baseline ]
+Row 2:  Track   [All]  [Foundations·5·3 skips]  [Core·12·1 micro]  …    [ All | Skips | Micro | Reorders ]
+```
+
+The adaptation-kind filter (All/Skips/Micro/Reorders) stays as-is.
+
+## 6. Empty state
+
+If selection drops to 0, render a centered placeholder ("Add learners to see how the AI tailored their path") inside the SVG area instead of a broken-looking diagram.
 
 ## Out of scope
-- No data-model changes. `cohort_code` / `role_cohort_code` remain in the DB and types untouched; only their UI presentation changes.
-- No new routes.
+
+- No changes to `managerDemoOverlay` data, `AdaptivePathDrawer`, or other tabs in the cohort hub.
+- Geometry constants (`COL_W`, `ROW_H`, node glyphs, ribbons) stay the same; only the input `spineModules` changes when a track is selected.
+- No new routes, no backend touches.
+
+## Files
+
+- **edit** `src/components/team-home/AdaptivePathsSankey.tsx` — track tabs, picker dropdown, status tags, remove side-by-side, support 7 learners.
+
+That's the whole change.

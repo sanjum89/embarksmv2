@@ -326,40 +326,49 @@ export default function RolePlaySession() {
   return (
     <div>
       <div className="flex h-screen flex-col">
-        {/* Top bar */}
-        <div className="border-b border-border px-6 py-3 flex items-center justify-between">
-          <Link
-            to={skillTargetId ? `/skill-target/${skillTargetId}` : "/role-play-bank"}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-4 w-4" /> Back
-          </Link>
-          <div className="flex items-center gap-3">
-            {started && (
-              <span className={cn(
-                "rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
-                mode === "voice" ? "bg-accent/10 text-accent" : "bg-secondary text-muted-foreground"
-              )}>
-                {mode === "voice" ? "🎙 Voice" : "💬 Chat"}
-              </span>
-            )}
-            <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium capitalize", difficultyColors[rolePlay.difficulty])}>
-              {rolePlay.difficulty}
-            </span>
-            <button
-              onClick={() => setIsPrivate(!isPrivate)}
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
-                isPrivate
-                  ? "bg-warning/10 text-warning border border-warning/30"
-                  : "bg-secondary text-muted-foreground hover:text-foreground"
+        <PageHeader
+          title={rolePlay.title}
+          subtitle={rolePlay.scenario}
+          breadcrumbs={
+            skillTargetId
+              ? [
+                  { label: "Skill Targets", to: "/manager/skill-targets" },
+                  { label: "Target", to: `/skill-target/${skillTargetId}` },
+                  { label: rolePlay.title },
+                ]
+              : [
+                  { label: "Role Play", to: "/role-play-bank" },
+                  { label: rolePlay.title },
+                ]
+          }
+          actions={
+            <div className="flex items-center gap-3">
+              {started && (
+                <span className={cn(
+                  "rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
+                  mode === "voice" ? "bg-accent/10 text-accent" : "bg-secondary text-muted-foreground"
+                )}>
+                  {mode === "voice" ? "🎙 Voice" : "💬 Chat"}
+                </span>
               )}
-            >
-              {isPrivate ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-              {isPrivate ? "Private Mode" : "Visible"}
-            </button>
-          </div>
-        </div>
+              <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium capitalize", difficultyColors[rolePlay.difficulty])}>
+                {rolePlay.difficulty}
+              </span>
+              <button
+                onClick={() => setIsPrivate(!isPrivate)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all",
+                  isPrivate
+                    ? "bg-warning/10 text-warning border border-warning/30"
+                    : "bg-secondary text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {isPrivate ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                {isPrivate ? "Private Mode" : "Visible"}
+              </button>
+            </div>
+          }
+        />
 
         {!started ? (
           /* Pre-session briefing with mode selection */

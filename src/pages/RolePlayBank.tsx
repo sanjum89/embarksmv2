@@ -171,29 +171,24 @@ export default function RolePlayBank() {
 
   return (
     <div className="flex-1 overflow-y-auto" data-tour="role-play-bank">
-      <div className="p-6">
-        <BackButton />
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-display text-2xl font-bold text-foreground">
-                {isManager ? "Manage Role Plays" : "Role Play Bank"}
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {isManager
-                  ? "Create, edit, and assign role play scenarios to your team members."
-                  : "Browse and practice AI-powered role play scenarios to sharpen your skills."}
-              </p>
-            </div>
-            {isManager && (
-              <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm" className="gap-2">
-                    <Plus className="h-4 w-4" />
-                    New Role Play
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
+      <PageHeader
+        eyebrow={eyebrow}
+        title={isManager ? "Manage Role Plays" : "Role Play Bank"}
+        subtitle={
+          isManager
+            ? "Create, edit, and assign role play scenarios to your team members."
+            : "Practise client conversations with AI personas to sharpen your skills."
+        }
+        actions={
+          isManager && (
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  New Role Play
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
                   <DialogHeader>
                     <DialogTitle>Create New Role Play</DialogTitle>
                   </DialogHeader>

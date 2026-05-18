@@ -326,10 +326,16 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     setNormalizedCache(cache);
     setAccounts(accts);
 
-    // Bootstrap initial-state notifications for all accounts, then seed demo extras
+    // Bootstrap initial-state notifications for all accounts, then seed demo extras.
+    // Guard with a per-session flag so dev HMR / remounts don't refire the network storm.
+    const bootstrappedFlag = "_agentOneBootstrapped";
+    const globalFlag = (window as any)[bootstrappedFlag] || new Set<string>();
+    (window as any)[bootstrappedFlag] = globalFlag;
     for (const acct of accts) {
+      if (globalFlag.has(acct.id)) continue;
       const norm = cache[acct.id];
       if (norm) {
+        globalFlag.add(acct.id);
         bootstrapInitialNotifications(acct.id, norm).catch((err) =>
           console.error("[AgentOne] Bootstrap error:", err)
         );
@@ -362,7 +368,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("activeAccountId", id);
       setSwitching(false);
       switchTimerRef.current = null;
-    }, 1500);
+    }, 250);
   }, [activeAccountId]);
 
   const addAccount = useCallback(async (

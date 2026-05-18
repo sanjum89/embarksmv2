@@ -11,10 +11,8 @@ function modeForPath(pathname: string): Mode {
 }
 
 /**
- * Returns a standardised eyebrow string identifying the active account + mode
- * (LEARNER / TEAM / ADMIN), based on the current route prefix. Used by
- * <PageHeader> so manager/admin pages are visually distinguishable from learner
- * pages at a glance.
+ * @deprecated The eyebrow has been removed from <PageHeader>. Kept only so
+ * existing import sites compile during the standardisation sweep.
  */
 export function useModeEyebrow(featureLabel?: string): string {
   const { pathname } = useLocation();
@@ -25,18 +23,27 @@ export function useModeEyebrow(featureLabel?: string): string {
   return account ? `${account} · ${suffix}` : suffix;
 }
 
+/**
+ * Canonical map: route → breadcrumb trail. The first crumb is the section
+ * name as it appears in the sidebar (no generic "Team" prefix). Dynamic
+ * routes are handled by the prefix matches below; pages with entity titles
+ * (cohort name, skill target name, …) should pass their own breadcrumbs.
+ *
+ * Adding a new route in the future = add one line here.
+ */
 const CRUMB_MAP: Record<string, Crumb[]> = {
-  "/": [],
-  "/role-plays": [{ label: "Role Play" }],
+  "/": [{ label: "Dashboard" }],
   "/action-centre": [{ label: "Action Centre" }],
+  "/role-plays": [{ label: "Role Play" }],
   "/my-360": [{ label: "My 360" }],
   "/people-graph": [{ label: "People Graph" }],
-  "/team": [{ label: "Team" }],
-  "/team/cohorts": [{ label: "Team", to: "/team" }, { label: "Cohorts" }],
-  "/team/skill-targets": [{ label: "Team", to: "/team" }, { label: "Skill Targets" }],
-  "/team/insights": [{ label: "Team", to: "/team" }, { label: "Insights" }],
-  "/team/deep-research": [{ label: "Team", to: "/team" }, { label: "Deep Research" }],
-  "/admin": [{ label: "Admin" }],
+  "/ai-manager": [{ label: "AI Manager" }],
+  "/team": [{ label: "Team Dashboard" }],
+  "/team/cohorts": [{ label: "Cohorts" }],
+  "/team/skill-targets": [{ label: "Skill Targets" }],
+  "/team/insights": [{ label: "Team Insights" }],
+  "/team/deep-research": [{ label: "Deep Research" }],
+  "/admin": [{ label: "Admin Dashboard" }],
 };
 
 /**
@@ -46,20 +53,24 @@ const CRUMB_MAP: Record<string, Crumb[]> = {
 export function useRouteCrumbs(): Crumb[] {
   const { pathname } = useLocation();
   if (CRUMB_MAP[pathname]) return CRUMB_MAP[pathname];
-  // Best-effort prefix match for nested team routes
+  // Best-effort prefix matches for nested routes
   if (pathname.startsWith("/team/cohort/")) {
-    return [
-      { label: "Team", to: "/team" },
-      { label: "Cohorts", to: "/team/cohorts" },
-      { label: "Cohort" },
-    ];
+    return [{ label: "Cohorts", to: "/team/cohorts" }, { label: "Cohort" }];
   }
   if (pathname.startsWith("/team/skill-target/")) {
     return [
-      { label: "Team", to: "/team" },
       { label: "Skill Targets", to: "/team/skill-targets" },
       { label: "Detail" },
     ];
+  }
+  if (pathname.startsWith("/team/deep-research/")) {
+    return [{ label: "Deep Research", to: "/team/deep-research" }, { label: "Thread" }];
+  }
+  if (pathname.startsWith("/role-plays/")) {
+    return [{ label: "Role Play", to: "/role-plays" }, { label: "Session" }];
+  }
+  if (pathname.startsWith("/learning/")) {
+    return [{ label: "Learning" }, { label: "Module" }];
   }
   return [];
 }

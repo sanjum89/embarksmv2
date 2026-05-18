@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Loader2, LogOut, LogIn, Paintbrush, GitGraph, Code, Type } from "lucide-react";
+import { Loader2, LogOut, LogIn, Paintbrush, GitGraph, Code, Type, Archive } from "lucide-react";
 import { AccessibilityPanel } from "@/components/layout/AccessibilityPanel";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {

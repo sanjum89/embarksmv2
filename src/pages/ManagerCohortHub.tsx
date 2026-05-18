@@ -15,6 +15,7 @@ import { AdaptivePathsSankey } from "@/components/team-home/AdaptivePathsSankey"
 
 export default function ManagerCohortHub() {
   const { cohortId } = useParams<{ cohortId: string }>();
+  const eyebrow = useModeEyebrow();
   const { loading, cohort, learners, modules } = useManagerCohortData(cohortId ?? null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerLearner, setDrawerLearner] = useState<string | null>(null);

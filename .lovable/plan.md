@@ -1,76 +1,57 @@
-# Adaptive Paths Sankey — Track focus + learner picker overhaul
+## 1. Roster row (`src/components/team-home/RosterRow.tsx`)
 
-Scope: `src/components/team-home/AdaptivePathsSankey.tsx` (single file; consumed only by `ManagerCohortHub`).
+Remove the noisy bits, keep the row scannable.
 
-## 1. Track focus (stages as tabs)
+- **Drop** the `entry.overlay.headline` line ("Failed Bond Pricing twice…").
+- **Drop** the `CPD x/35h` pill (and the `CPD_TONE` map).
+- **Keep** Avatar · Name · Title · Status pill · Hand-raised pill · "Active today" timestamp · Progress (`25%` + `2/8 modules` + bar).
+- Tighten the middle column now that the headline subtitle is gone — status pill / hand-raised / activity collapse onto a single line aligned with the identity block.
 
-Replace the static stage band row with a clickable **track selector** above the SVG:
+No data-model or prop changes; `RosterEntry.cpdHint` / `cpdTone` simply stop being rendered (left in the type so other consumers don't break).
 
-```
-[ All tracks ]  [ Foundations · 5 ]  [ Core · 12 ]  [ Advanced · 8 ]  [ Mastery · 3 ]
-```
+## 2. Learner profile drawer (`src/components/manager-hub/LearnerDrawer.tsx`)
 
-- Derived from existing `stageGroups` (no data change). Order = first appearance in the module spine.
-- "All tracks" is the default and renders today's full path.
-- Selecting a track filters `spineModules` to that stage's modules only, so the diagram zooms into a much wider column-per-module view (~easier read of each adaptation).
-- The in-SVG stage band stays as a subtle title for the active track; when "All" is selected, all bands render as today and each band is **also clickable** (clicking a band switches to that track tab — same state).
-- Per-track summary chip shown next to the tab name: `e.g. Foundations · 5 mod · 3 skips`. Counts are computed across currently-selected learners so the user sees where adaptation is actually happening.
+Replace the current flat header with a hero + "Why this status" card. The story text becomes the primary thing a manager reads.
 
-## 2. Remove "Side-by-side"
+### New hero (replaces lines 69–81)
 
-Compare modes collapse to **Stack** (default) and **vs Baseline**. Drop the `"side"` branch from `CompareMode`, the toolbar button, and the `rows.slice(0, 2)` slicing. Stack now always honors the full selection.
-
-## 3. New learner picker
-
-Replace the inline pill bar with a single **searchable multi-select dropdown** (shadcn `Popover` + `Command`):
-
-- Trigger: `[ + Add learners (3 / 7) ]` with the selected learners shown as removable chips next to it.
-- Dropdown lists every learner with: avatar dot · name · job title · **status tag** (color-coded).
-  - `rising_star` → emerald "Rising star"
-  - `on_track` → blue "On track"
-  - `needs_check_in` → amber "Needs check-in"
-  - `at_risk` → red "At risk"
-- Max 7 selected (`MAX_SELECTED = 7`). Selecting an 8th disables further options until one is removed.
-- Search filters by name + title.
-- Selected chips show `Clara — Rising star` style: name + small status tag in the same chip, plus an × to remove.
-- Inside the diagram, the **left learner label** also gets a status tag pill next to the name (same color tokens).
-
-A small helper:
-```ts
-const STATUS_META: Record<LearnerStatus, { label: string; cls: string }> = {
-  rising_star:     { label: "Rising star",     cls: "bg-emerald-500/15 text-emerald-700 border-emerald-500/30" },
-  on_track:        { label: "On track",        cls: "bg-blue-500/15    text-blue-700    border-blue-500/30" },
-  needs_check_in:  { label: "Needs check-in",  cls: "bg-amber-500/15   text-amber-700   border-amber-500/30" },
-  at_risk:         { label: "At risk",         cls: "bg-red-500/15     text-red-700     border-red-500/30" },
-};
-```
-(Status read from `overlay.status` — already present on `LearnerOverlay`.)
-
-## 4. Default selection
-
-Unchanged: top 3 by `adaptationCount(overlay)` (already implemented). With max bumped to 7, users can add more.
-
-## 5. Toolbar layout after changes
-
-```
-Row 1:  Learners  [chips…]  [+ Add (3/7)]                          [ Stack | vs Baseline ]
-Row 2:  Track   [All]  [Foundations·5·3 skips]  [Core·12·1 micro]  …    [ All | Skips | Micro | Reorders ]
+```text
+┌────────────────────────────────────────────────────────────┐
+│ [Avatar 56]  Theo Marchant            [At risk ●]          │
+│              Associate Investment Manager · CPD 6/35h      │
+│                                                             │
+│  ┌──────────────────────────────────────────────────────┐  │
+│  │ WHY HE'S AT RISK                                      │  │
+│  │ Theo has IM internship background but is repeatedly  │  │
+│  │ failing the Bond Pricing module (54%, 61%). AI       │  │
+│  │ generated a targeted microlearning on yield curves   │  │
+│  │ and recommends a 1:1 before he attempts the          │  │
+│  │ readiness gate.                                       │  │
+│  │                                                       │  │
+│  │ [2/8 modules · 25%]  [2 failed attempts]  [CPD 6/35] │  │
+│  └──────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────┘
 ```
 
-The adaptation-kind filter (All/Skips/Micro/Reorders) stays as-is.
+Details:
+- **Avatar** via `TeamAvatar` (size 56) on the left of the name row.
+- **Name** uses `font-display text-2xl`.
+- **Status pill** (`LearnerStatusBadge`) sits on the same line, right-aligned, larger size.
+- Subtitle keeps `title · CPD x/yh`.
+- **"Why this status" card** — a tinted panel (`bg-muted/40 border`) with:
+  - A small uppercase eyebrow that adapts to status: `Why he's at risk` / `Why she's on track` / `Why she's a rising star` / `Why he needs a check-in`. Built from a `STATUS_REASON_LABEL` map + name pronoun fallback (`"Why ${firstName} is ${statusLabel}"` when pronoun unknown).
+  - The `overlay.story` text as the body (`text-sm text-foreground/90 leading-relaxed`).
+  - A horizontal **stat chip strip** below the body: `Progress`, `Failed attempts` (count of cells with `score != null && score < pass_threshold` — fall back to "Recent activity" when 0), `CPD`. Each chip = small rounded-md border with label above value.
 
-## 6. Empty state
+### Tabs stay the same
+`Story · Path · Assessments · Role Plays · Reflections · Notes` keep working. The `Story` tab's old story paragraph is now redundant — replace it with just the Timeline section (the hero already shows the reasoning), so we don't duplicate text.
 
-If selection drops to 0, render a centered placeholder ("Add learners to see how the AI tailored their path") inside the SVG area instead of a broken-looking diagram.
+### Visual polish
+- Header gets subtle status-tinted top border accent (1px) to reinforce the pill colour without becoming heavy.
+- Increase header padding to `px-6 py-5`.
+- Use semantic tokens only (`bg-muted`, `border-border`, `text-foreground`, etc.).
 
 ## Out of scope
-
-- No changes to `managerDemoOverlay` data, `AdaptivePathDrawer`, or other tabs in the cohort hub.
-- Geometry constants (`COL_W`, `ROW_H`, node glyphs, ribbons) stay the same; only the input `spineModules` changes when a track is selected.
-- No new routes, no backend touches.
-
-## Files
-
-- **edit** `src/components/team-home/AdaptivePathsSankey.tsx` — track tabs, picker dropdown, status tags, remove side-by-side, support 7 learners.
-
-That's the whole change.
+- No data-shape changes.
+- No changes to action buttons in the footer.
+- No changes to other roster consumers or the Sankey work from the previous turn.

@@ -5,17 +5,16 @@ import { Badge } from "@/components/ui/badge";
 import { Sparkles, Plug } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import PageBody from "@/components/layout/PageBody";
-import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 import { useManagerCohortData } from "@/hooks/useManagerCohortData";
 import { RosterHeatmap } from "@/components/manager-hub/RosterHeatmap";
 import { AIChangesFeed } from "@/components/manager-hub/AIChangesFeed";
 import { IntegrationsTab } from "@/components/manager-hub/IntegrationsTab";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";
 import { AdaptivePathsSankey } from "@/components/team-home/AdaptivePathsSankey";
+import { roleCohortLabel } from "@/lib/roleCohortLabel";
 
 export default function ManagerCohortHub() {
   const { cohortId } = useParams<{ cohortId: string }>();
-  const eyebrow = useModeEyebrow();
   const { loading, cohort, learners, modules } = useManagerCohortData(cohortId ?? null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerLearner, setDrawerLearner] = useState<string | null>(null);
@@ -43,10 +42,15 @@ export default function ManagerCohortHub() {
     setDrawerOpen(true);
   };
 
+  const cohortsCrumb = { label: "Cohorts", to: "/manager/cohorts" };
+
   if (loading) {
     return (
       <div className="flex-1 overflow-y-auto">
-        <PageHeader eyebrow={eyebrow} title="Cohort" back />
+        <PageHeader
+          title="Cohort"
+          breadcrumbs={[cohortsCrumb, { label: "…" }]}
+        />
         <PageBody>
           <p className="text-sm text-muted-foreground">Loading cohort…</p>
         </PageBody>
@@ -57,7 +61,10 @@ export default function ManagerCohortHub() {
   if (!cohort) {
     return (
       <div className="flex-1 overflow-y-auto">
-        <PageHeader eyebrow={eyebrow} title="Cohort" back />
+        <PageHeader
+          title="Cohort"
+          breadcrumbs={[cohortsCrumb, { label: "Not found" }]}
+        />
         <PageBody>
           <p className="text-sm text-muted-foreground">Cohort not found.</p>
         </PageBody>
@@ -71,9 +78,8 @@ export default function ManagerCohortHub() {
 
   const subtitleNode = (
     <span className="flex flex-wrap items-center gap-2">
-      <span>{cohort.cohort_code}</span>
-      <Badge variant="outline" className="text-[11px]">{cohort.role_cohort_code}</Badge>
-      {cohort.start_date && <span>· Start {new Date(cohort.start_date).toLocaleDateString()}</span>}
+      <Badge variant="outline" className="text-[11px]">{roleCohortLabel(cohort.role_cohort_code)}</Badge>
+      {cohort.start_date && <span>Start {new Date(cohort.start_date).toLocaleDateString()}</span>}
       {cohort.due_date && <span>· Due {new Date(cohort.due_date).toLocaleDateString()}</span>}
     </span>
   );
@@ -96,10 +102,9 @@ export default function ManagerCohortHub() {
   return (
     <div className="flex-1 overflow-y-auto">
       <PageHeader
-        eyebrow={eyebrow}
         title={cohort.cohort_title}
         subtitle={subtitleNode}
-        back
+        breadcrumbs={[cohortsCrumb, { label: cohort.cohort_title }]}
         actions={headerActions}
       />
       <PageBody>

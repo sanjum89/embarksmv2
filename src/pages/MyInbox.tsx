@@ -251,7 +251,7 @@ export default function MyInbox() {
             )}
           </TabsContent>
         </Tabs>
-      </div>
+      </PageBody>
     </div>
   );
 }

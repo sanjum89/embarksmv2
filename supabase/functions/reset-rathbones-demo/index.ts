@@ -373,6 +373,7 @@ Deno.serve(async (req) => {
               totalAttempts += 1;
               totalRetakes += 1;
               assessmentRows.push({
+                id: crypto.randomUUID(),
                 account_id: ACCOUNT_ID,
                 cohort_id: COHORT_ID,
                 employee_id: spec.employee_id,

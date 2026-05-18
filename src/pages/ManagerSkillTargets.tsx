@@ -53,14 +53,14 @@ export default function ManagerSkillTargets() {
   }, [filtered]);
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
-      <div className="max-w-5xl mx-auto space-y-6">
-        <BackButton />
-        {/* Header */}
-        <div>
-          <h1 className="font-display text-2xl font-bold text-foreground">Skill Targets</h1>
-          <p className="text-sm text-muted-foreground mt-1">50 skill targets available for team assignment</p>
-        </div>
+    <div className="flex-1 overflow-y-auto">
+      <PageHeader
+        eyebrow={eyebrow}
+        title="Skill Targets"
+        subtitle="50 skill targets available for team assignment"
+        back
+      />
+      <PageBody>
 
         {/* Search + filter */}
         <div className="flex items-center gap-3 flex-wrap">

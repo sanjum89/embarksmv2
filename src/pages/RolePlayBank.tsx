@@ -235,9 +235,10 @@ export default function RolePlayBank() {
                   </div>
                 </DialogContent>
               </Dialog>
-            )}
-          </div>
-        </motion.div>
+            )
+        }
+      />
+      <div className="mx-auto max-w-7xl px-6 py-6">
 
         {/* Tab bar */}
         <div className="mb-4">

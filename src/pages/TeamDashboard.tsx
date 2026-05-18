@@ -15,6 +15,7 @@ import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 export default function TeamDashboard() {
   const { normalizedAccount } = useAccount();
   const { user } = useUser();
+  const eyebrow = useModeEyebrow();
 
   const scopedAccount = useMemo(() => {
     if (!normalizedAccount) return null;

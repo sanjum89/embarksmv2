@@ -865,6 +865,56 @@ export function AppSidebar() {
         />
       </div>
 
+      {/* Legacy (Dev Mode only) */}
+      {devMode && (
+        <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
+          <Popover>
+            {expanded ? (
+              <PopoverTrigger asChild>
+                <button
+                  className={cn(
+                    "flex items-center rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground h-9 gap-3 w-full px-3"
+                  )}
+                >
+                  <Archive className="h-4 w-4 shrink-0" />
+                  <span className="text-sm font-medium">Legacy</span>
+                  <ChevronRight className="h-3.5 w-3.5 ml-auto shrink-0" />
+                </button>
+              </PopoverTrigger>
+            ) : (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <PopoverTrigger asChild>
+                    <button className="flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors">
+                      <Archive className="h-4 w-4" />
+                    </button>
+                  </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>Legacy</TooltipContent>
+              </Tooltip>
+            )}
+            <PopoverContent side="right" align="end" sideOffset={8} className="w-60 p-1">
+              <p className="text-xs font-medium text-muted-foreground px-2 py-1.5">Legacy</p>
+              {legacyItems.map((item) => (
+                <NavLink
+                  key={`${item.label}-${item.path}`}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2.5 w-full px-2 py-1.5 rounded-md text-sm transition-colors",
+                      isActive ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )
+                  }
+                >
+                  <item.icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{item.label}</span>
+                </NavLink>
+              ))}
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
+
       {/* Dev mode toggle */}
       <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
         {expanded ? (
@@ -873,7 +923,7 @@ export function AppSidebar() {
             className={cn("flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium", devMode ? "text-sidebar-accent-foreground bg-sidebar-accent" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground")}
           >
             <Code className="h-4 w-4 shrink-0" />
-            <span>EOL Mode</span>
+            <span>Dev Mode</span>
             {devMode && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
           </button>
         ) : (
@@ -886,7 +936,7 @@ export function AppSidebar() {
                 <Code className="h-4 w-4" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}>EOL Mode {devMode ? "on" : "off"}</TooltipContent>
+            <TooltipContent side="right" sideOffset={8}>Dev Mode {devMode ? "on" : "off"}</TooltipContent>
           </Tooltip>
         )}
       </div>

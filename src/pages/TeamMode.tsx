@@ -197,10 +197,10 @@ export default function TeamMode() {
         subtitle={`${managerTitle} · ${summary}`}
         actions={
           <>
-            <Button size="sm" variant="outline" onClick={() => setScheduleId("__open__")}>
+            <Button size="sm" variant="outline" onClick={() => setScheduleOpen(true)}>
               <CalendarPlus className="mr-1.5 h-3.5 w-3.5" /> Schedule 1:1
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setCheckInId("__open__")}>
+            <Button size="sm" variant="outline" onClick={() => setCheckInOpen(true)}>
               <MessageSquarePlus className="mr-1.5 h-3.5 w-3.5" /> Check-in
             </Button>
             <Button size="sm" asChild>

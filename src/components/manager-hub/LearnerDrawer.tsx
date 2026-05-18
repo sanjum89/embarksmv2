@@ -89,7 +89,7 @@ export function LearnerDrawer({ open, onOpenChange, learner, overlay, modules, i
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-[720px] p-0 flex flex-col">
-        <SheetHeader className="border-b px-6 py-5">
+        <SheetHeader className="relative border-b px-6 py-5">
           <div className={cn("absolute inset-x-0 top-0 h-0.5", accent)} />
           <div className="flex items-start gap-4">
             <TeamAvatar name={learner.name} size={56} />

@@ -1058,6 +1058,13 @@ const RATHBONES_EMPLOYEES: Array<{
  */
 export function buildRathbonesNormalized(id: string): NormalizedAccount {
   const base: NormalizedAccount = JSON.parse(JSON.stringify(buildDefaultNormalized(id)));
+  const claraAssignedRolePlayIds = new Set([
+    "rp-rb1",
+    "rp-rb-heritage",
+    "rp-rb-clear-communication",
+    "rp-rb-volatility",
+    "rp-rb-integrity",
+  ]);
 
   const usersById: Record<string, AccountUser> = {};
   const employeesById: Record<string, import("@/types/account-v2").AccountEmployee> = {};
@@ -1108,6 +1115,11 @@ export function buildRathbonesNormalized(id: string): NormalizedAccount {
     employeesById,
     hierarchyMap,
     teamMembers,
+    rolePlays: base.rolePlays.map((rolePlay) =>
+      claraAssignedRolePlayIds.has(rolePlay.id)
+        ? { ...rolePlay, assignedTo: ["rb-l6"] }
+        : rolePlay
+    ),
     namedEmployees: [],
     profileData,
     demoScenarios: {

@@ -78,21 +78,50 @@ export function LearnerDrawer({ open, onOpenChange, learner, overlay, modules, i
     toast.success(msg);
   };
 
+  const completed = overlay?.cells.filter((c) => c.status === "completed").length ?? 0;
+  const total = overlay?.cells.length ?? 0;
+  const progressPct = total ? Math.round((completed / total) * 100) : 0;
+  const failedAttempts = overlay?.cells.filter((c) => c.score != null && (c.score as number) < 70).length ?? 0;
+  const status = overlay?.status;
+  const eyebrow = status ? STATUS_EYEBROW[status] : "Profile summary";
+  const accent = status ? STATUS_ACCENT[status] : "bg-muted-foreground";
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:max-w-[720px] p-0 flex flex-col">
-        <SheetHeader className="border-b px-6 py-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <SheetTitle className="font-display text-xl">{learner.name}</SheetTitle>
-              <p className="mt-0.5 text-sm text-muted-foreground">
+        <SheetHeader className="border-b px-6 py-5">
+          <div className={cn("absolute inset-x-0 top-0 h-0.5", accent)} />
+          <div className="flex items-start gap-4">
+            <TeamAvatar name={learner.name} size={56} />
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-3">
+                <SheetTitle className="font-display text-2xl leading-tight">{learner.name}</SheetTitle>
+                <LearnerStatusBadge status={status} className="text-xs px-2.5 py-0.5" />
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
                 {learner.title ?? "Associate Investment Manager"}
                 {overlay?.cpd ? <> · CPD {overlay.cpd.hours_logged}/{overlay.cpd.hours_required}h</> : null}
               </p>
             </div>
-            <LearnerStatusBadge status={overlay?.status} />
           </div>
-          {overlay?.headline && <p className="mt-2 text-sm text-foreground/80">{overlay.headline}</p>}
+
+          {overlay?.story && (
+            <div className="mt-4 rounded-lg border border-border bg-muted/40 p-4">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                {eyebrow}
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/90">{overlay.story}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <StatChip label="Progress" value={`${progressPct}% · ${completed}/${total}`} />
+                {failedAttempts > 0 && (
+                  <StatChip label="Failed attempts" value={`${failedAttempts}`} tone="rose" />
+                )}
+                {overlay?.cpd && (
+                  <StatChip label="CPD" value={`${overlay.cpd.hours_logged}/${overlay.cpd.hours_required}h`} />
+                )}
+              </div>
+            </div>
+          )}
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto px-6 py-4">

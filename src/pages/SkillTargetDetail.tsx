@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Target, CalendarDays, BookOpen, ClipboardCheck, Drama, Lock, Eye } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";

@@ -4,33 +4,31 @@ import { useRouteCrumbs } from "./useModeEyebrow";
 import { cn } from "@/lib/utils";
 
 interface PageHeaderProps {
-  eyebrow?: string;
   /** Optional breadcrumb trail. If omitted, derived from the current route. */
   breadcrumbs?: Crumb[];
   title: string;
   subtitle?: ReactNode;
-  /**
-   * Legacy prop — superseded by breadcrumbs. Kept as a no-op so existing call
-   * sites do not break during the standardisation rollout.
-   */
-  back?: boolean;
   actions?: ReactNode;
   className?: string;
+  /** @deprecated no-op — retained so legacy call sites compile during sweep. */
+  eyebrow?: string;
+  /** @deprecated no-op — breadcrumbs replace the back button. */
+  back?: boolean;
 }
 
 /**
  * Canonical compact page header used across learner / manager / admin pages.
  *
- * Anatomy:
- *   Row 1: eyebrow (RATHBONES · TEAM) › breadcrumb trail        [actions]
- *   Row 2: H1 title (text-2xl font-display bold)
+ * Anatomy (single source of truth — matches Team Dashboard):
+ *   Row 1: breadcrumb trail (auto-derived from route) | [actions]
+ *   Row 2: H1 title — text-2xl font-display bold
  *   Row 3: optional one-line subtitle (text-sm muted)
  *
  * Height target: ~56px without subtitle, ~72px with subtitle.
- * Mode signalling is text-only via the eyebrow — no coloured rules or tints.
+ * No eyebrow, no in-page back button. Mode/section is conveyed by the first
+ * breadcrumb (Team Dashboard, Cohorts, People Graph, …).
  */
 export default function PageHeader({
-  eyebrow,
   breadcrumbs,
   title,
   subtitle,
@@ -43,17 +41,9 @@ export default function PageHeader({
   return (
     <div className={cn("border-b border-border bg-card", className)}>
       <div className="mx-auto max-w-7xl px-6 py-3">
-        {(eyebrow || crumbs.length > 0 || actions) && (
+        {(crumbs.length > 0 || actions) && (
           <div className="flex items-center justify-between gap-4 min-h-[18px]">
             <div className="flex items-center gap-2 min-w-0 flex-1">
-              {eyebrow && (
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap">
-                  {eyebrow}
-                </span>
-              )}
-              {eyebrow && crumbs.length > 0 && (
-                <span className="text-muted-foreground/40 text-[11px]">·</span>
-              )}
               {crumbs.length > 0 && <Breadcrumbs items={crumbs} />}
             </div>
             {actions && (

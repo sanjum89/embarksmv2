@@ -333,3 +333,19 @@ export function LearnerDrawer({ open, onOpenChange, learner, overlay, modules, i
     </Sheet>
   );
 }
+
+function StatChip({ label, value, tone = "default" }: { label: string; value: string; tone?: "default" | "rose" }) {
+  return (
+    <div
+      className={cn(
+        "rounded-md border px-2.5 py-1.5",
+        tone === "rose"
+          ? "border-rose-500/30 bg-rose-500/5"
+          : "border-border bg-background"
+      )}
+    >
+      <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className={cn("text-sm font-semibold", tone === "rose" ? "text-rose-700 dark:text-rose-300" : "text-foreground")}>{value}</p>
+    </div>
+  );
+}

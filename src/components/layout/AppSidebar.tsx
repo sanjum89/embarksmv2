@@ -111,14 +111,14 @@ export function AppSidebar() {
         const loginTeamRole = u.role === "admin" ? "admin" : "manager";
         setRole(loginTeamRole);
         setViewMode("team");
-        navigate("/chat");
+        navigate("/team");
       } else {
         setRole("learner");
         setViewMode("me");
         navigate("/");
       }
       setSwitchingProfile(false);
-    }, 1000);
+    }, 200);
   };
 
   const handleLogout = (userId: string) => {
@@ -167,7 +167,7 @@ export function AppSidebar() {
               <div className="px-4 pt-4 pb-2">
                 <div className="flex bg-muted rounded-full p-0.5">
                   <button
-                    onClick={() => { setViewMode("me"); setRole("learner"); navigate("/chat"); }}
+                    onClick={() => { setViewMode("me"); setRole("learner"); navigate("/"); }}
                     className={cn(
                       "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
                       viewMode === "me"
@@ -179,7 +179,7 @@ export function AppSidebar() {
                     Me
                   </button>
                   <button
-                    onClick={() => { setViewMode("team"); setRole(teamRole); navigate("/chat"); }}
+                    onClick={() => { setViewMode("team"); setRole(teamRole); navigate("/team"); }}
                     className={cn(
                       "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
                       viewMode === "team"
@@ -198,8 +198,8 @@ export function AppSidebar() {
                   <TooltipTrigger asChild>
                     <button
                       onClick={() => {
-                        if (viewMode === "me") { setViewMode("team"); setRole(teamRole); navigate("/chat"); }
-                        else { setViewMode("me"); setRole("learner"); navigate("/chat"); }
+                        if (viewMode === "me") { setViewMode("team"); setRole(teamRole); navigate("/team"); }
+                        else { setViewMode("me"); setRole("learner"); navigate("/"); }
                       }}
                       className={cn(
                         "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
@@ -492,7 +492,7 @@ export function AppSidebar() {
                           if (u.canManage && viewMode === "team") { const switchTeamRole = u.role === "admin" ? "admin" : "manager"; setRole(switchTeamRole); navigate("/team"); }
                           else { setRole("learner"); setViewMode("me"); navigate("/"); }
                           setSwitchingProfile(false);
-                        }, 1000);
+                        }, 200);
                       }}
                       className={cn(
                         "flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm transition-colors text-left",
@@ -611,7 +611,7 @@ export function AppSidebar() {
           {expanded ? (
             <div className="flex bg-sidebar-accent/50 rounded-full p-0.5">
               <button
-                onClick={() => { setViewMode("me"); setRole("learner"); navigate("/chat"); }}
+                onClick={() => { setViewMode("me"); setRole("learner"); navigate("/"); }}
                 className={cn(
                   "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
                   viewMode === "me"
@@ -623,7 +623,7 @@ export function AppSidebar() {
                 Me
               </button>
               <button
-                onClick={() => { setViewMode("team"); setRole(teamRole); navigate("/chat"); }}
+                onClick={() => { setViewMode("team"); setRole(teamRole); navigate("/team"); }}
                 className={cn(
                   "flex items-center justify-center gap-1.5 flex-1 rounded-full py-1.5 text-xs font-medium transition-all",
                   viewMode === "team"
@@ -640,8 +640,8 @@ export function AppSidebar() {
               <TooltipTrigger asChild>
                 <button
                   onClick={() => {
-                    if (viewMode === "me") { setViewMode("team"); setRole(teamRole); navigate("/chat"); }
-                    else { setViewMode("me"); setRole("learner"); navigate("/chat"); }
+                    if (viewMode === "me") { setViewMode("team"); setRole(teamRole); navigate("/team"); }
+                    else { setViewMode("me"); setRole("learner"); navigate("/"); }
                   }}
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-full transition-colors",
@@ -867,7 +867,7 @@ export function AppSidebar() {
                       if (u.canManage && viewMode === "team") { const switchTeamRole = u.role === "admin" ? "admin" : "manager"; setRole(switchTeamRole); navigate("/team"); }
                       else { setRole("learner"); setViewMode("me"); navigate("/"); }
                       setSwitchingProfile(false);
-                    }, 1000);
+                    }, 200);
                   }}
                   className={cn(
                     "flex items-center gap-2.5 w-full rounded-md px-2 py-2 text-sm transition-colors text-left",

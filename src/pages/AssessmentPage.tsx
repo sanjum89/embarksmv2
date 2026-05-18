@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, CheckCircle2, XCircle, RotateCcw } from "lucide-react";
+import { CheckCircle2, XCircle, RotateCcw } from "lucide-react";
+import PageHeader from "@/components/layout/PageHeader";
 
 import { cn } from "@/lib/utils";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
@@ -94,47 +95,28 @@ export default function AssessmentPage() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      
+      <PageHeader
+        title={assessment.title}
+        subtitle={`${assessment.type === "pre" ? "Pre-Assessment" : "Post-Assessment"} · Passing ${assessment.passingScore}%`}
+        breadcrumbs={[
+          { label: "Skill Targets", to: "/manager/skill-targets" },
+          { label: "Target", to: skillTargetId ? `/skill-target/${skillTargetId}` : undefined },
+          { label: assessment.title },
+        ]}
+      />
       <div className="mx-auto max-w-2xl p-6">
-        <Link
-          to={`/skill-target/${skillTargetId}`}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-5"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Skill Target
-        </Link>
-
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl bg-card border border-border p-5 shadow-card mb-6"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className={cn(
-              "rounded-full px-2.5 py-0.5 text-xs font-medium",
-              assessment.type === "pre" ? "bg-info/10 text-info" : "bg-accent/10 text-accent"
-            )}>
-              {assessment.type === "pre" ? "Pre-Assessment" : "Post-Assessment"}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              Passing: {assessment.passingScore}%
-            </span>
+        {/* Progress */}
+        <div className="mb-6 flex items-center gap-3">
+          <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+            <div
+              className="h-full rounded-full gradient-accent transition-all duration-300"
+              style={{ width: `${(answered / totalQuestions) * 100}%` }}
+            />
           </div>
-          <h1 className="font-display text-lg font-bold text-foreground">{assessment.title}</h1>
-
-          {/* Progress bar */}
-          <div className="mt-3 flex items-center gap-3">
-            <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
-              <div
-                className="h-full rounded-full gradient-accent transition-all duration-300"
-                style={{ width: `${(answered / totalQuestions) * 100}%` }}
-              />
-            </div>
-            <span className="text-xs text-muted-foreground">
-              {answered}/{totalQuestions}
-            </span>
-          </div>
-        </motion.div>
+          <span className="text-xs text-muted-foreground">
+            {answered}/{totalQuestions}
+          </span>
+        </div>
 
         {/* Results */}
         {showResults ? (

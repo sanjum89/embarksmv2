@@ -6,7 +6,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   AlertTriangle, Inbox, Mail, MailOpen, CheckCheck, ArrowRight, Sparkles,
 } from "lucide-react";
-import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
 import {
   inboxNotifications as initialNotifications,
   notificationTypeStyles,
@@ -70,41 +71,32 @@ export default function MyInbox() {
 
   return (
     <div className="flex-1 overflow-y-auto">
-      {/* Header band */}
-      <div className="border-b border-border/60 bg-gradient-to-br from-primary/5 via-background to-accent/5">
-        <div className="px-6 pt-4 pb-6">
-          <BackButton />
-          <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <h1 className="font-display text-3xl font-bold text-foreground tracking-tight">Action Centre</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Your notifications, tasks and messages — sorted by urgency.
-              </p>
-            </div>
-            {unreadCount > 0 && (
-              <Button variant="outline" size="sm" onClick={markAllRead} className="gap-1.5">
-                <CheckCheck className="h-4 w-4" /> Mark all read
-              </Button>
-            )}
-          </div>
-
-          {/* KPI strip */}
-          <div className="mt-5 grid gap-3 grid-cols-2 md:grid-cols-4">
-            <KpiTile
-              label="Pressing now"
-              value={kpiHigh}
-              icon={AlertTriangle}
-              hero
-              hint={kpiHigh === 0 ? "All clear" : "High priority, unread"}
-            />
-            <KpiTile label="Unread" value={unreadCount} icon={Mail} hint="In your inbox" />
-            <KpiTile label="Action required" value={kpiActions} icon={Sparkles} hint="Tasks awaiting you" />
-            <KpiTile label="Total" value={notifications.length} icon={Inbox} hint="All notifications" />
-          </div>
+      <PageHeader
+        title="Action Centre"
+        subtitle="Your notifications, tasks and messages — sorted by urgency."
+        actions={
+          unreadCount > 0 ? (
+            <Button variant="outline" size="sm" onClick={markAllRead} className="gap-1.5">
+              <CheckCheck className="h-4 w-4" /> Mark all read
+            </Button>
+          ) : null
+        }
+      />
+      <PageBody>
+        {/* KPI strip */}
+        <div className="mb-6 grid gap-3 grid-cols-2 md:grid-cols-4">
+          <KpiTile
+            label="Pressing now"
+            value={kpiHigh}
+            icon={AlertTriangle}
+            hero
+            hint={kpiHigh === 0 ? "All clear" : "High priority, unread"}
+          />
+          <KpiTile label="Unread" value={unreadCount} icon={Mail} hint="In your inbox" />
+          <KpiTile label="Action required" value={kpiActions} icon={Sparkles} hint="Tasks awaiting you" />
+          <KpiTile label="Total" value={notifications.length} icon={Inbox} hint="All notifications" />
         </div>
-      </div>
 
-      <div className="px-6 py-6">
         <Tabs defaultValue="inbox" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="inbox" className="gap-2">
@@ -259,7 +251,7 @@ export default function MyInbox() {
             )}
           </TabsContent>
         </Tabs>
-      </div>
+      </PageBody>
     </div>
   );
 }

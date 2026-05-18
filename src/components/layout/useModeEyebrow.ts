@@ -32,45 +32,71 @@ export function useModeEyebrow(featureLabel?: string): string {
  * Adding a new route in the future = add one line here.
  */
 const CRUMB_MAP: Record<string, Crumb[]> = {
-  "/": [{ label: "Dashboard" }],
+  // Me mode (learner + manager)
+  "/dashboard": [{ label: "Dashboard" }],
+  "/chat": [{ label: "Embark Chat" }],
   "/action-centre": [{ label: "Action Centre" }],
-  "/role-plays": [{ label: "Role Play" }],
+  "/my-inbox": [{ label: "Action Centre" }],
   "/my-360": [{ label: "My 360" }],
-  "/people-graph": [{ label: "People Graph" }],
-  "/ai-manager": [{ label: "AI Manager" }],
+  "/role-play-bank": [{ label: "Role Play" }],
+  "/create-skill-target": [
+    { label: "Skill Targets", to: "/manager/skill-targets" },
+    { label: "New" },
+  ],
+  "/cohort": [{ label: "Cohort Hub" }],
+  // Team mode
   "/team": [{ label: "Team Dashboard" }],
-  "/team/cohorts": [{ label: "Cohorts" }],
-  "/team/skill-targets": [{ label: "Skill Targets" }],
-  "/team/insights": [{ label: "Team Insights" }],
+  "/team-dashboard": [{ label: "Team Dashboard" }],
+  "/team-insights": [{ label: "Team Insights" }],
   "/team/deep-research": [{ label: "Deep Research" }],
+  // Manager-scoped
+  "/manager": [{ label: "Manager" }],
+  "/manager/people-graph": [{ label: "People Graph" }],
+  "/manager/cohorts": [{ label: "Cohorts" }],
+  "/manager/skill-targets": [{ label: "Skill Targets" }],
+  "/manager/role-play": [{ label: "Role Play" }],
+  "/manager/programs": [{ label: "Programs" }],
+  // Admin
   "/admin": [{ label: "Admin Dashboard" }],
 };
 
 /**
  * Returns breadcrumb items for the current route. Falls back to empty array.
- * Pages with dynamic segments should pass their own breadcrumbs to <PageHeader>.
+ * Pages with dynamic segments should pass their own breadcrumbs to <PageHeader>
+ * so the trailing crumb shows the resolved entity title.
  */
 export function useRouteCrumbs(): Crumb[] {
   const { pathname } = useLocation();
   if (CRUMB_MAP[pathname]) return CRUMB_MAP[pathname];
-  // Best-effort prefix matches for nested routes
-  if (pathname.startsWith("/team/cohort/")) {
-    return [{ label: "Cohorts", to: "/team/cohorts" }, { label: "Cohort" }];
+
+  // Nested role-play session (from Role Play bank)
+  if (pathname.startsWith("/role-play-bank/")) {
+    return [{ label: "Role Play", to: "/role-play-bank" }, { label: "Session" }];
   }
-  if (pathname.startsWith("/team/skill-target/")) {
-    return [
-      { label: "Skill Targets", to: "/team/skill-targets" },
-      { label: "Detail" },
+  // Skill target detail + nested module/role-play/assessment
+  if (pathname.startsWith("/skill-target/")) {
+    const base: Crumb[] = [
+      { label: "Skill Targets", to: "/manager/skill-targets" },
+      { label: "Target" },
     ];
+    if (pathname.includes("/module/")) return [...base, { label: "Module" }];
+    if (pathname.includes("/role-play/")) return [...base, { label: "Role Play" }];
+    if (pathname.includes("/assessment/")) return [...base, { label: "Assessment" }];
+    return base;
   }
+  // Team — deep research thread
   if (pathname.startsWith("/team/deep-research/")) {
     return [{ label: "Deep Research", to: "/team/deep-research" }, { label: "Thread" }];
   }
-  if (pathname.startsWith("/role-plays/")) {
-    return [{ label: "Role Play", to: "/role-plays" }, { label: "Session" }];
+  // Manager — cohort / skill target detail
+  if (pathname.startsWith("/manager/cohort/")) {
+    return [{ label: "Cohorts", to: "/manager/cohorts" }, { label: "Cohort" }];
   }
-  if (pathname.startsWith("/learning/")) {
-    return [{ label: "Learning" }, { label: "Module" }];
+  if (pathname.startsWith("/manager/skill-target/")) {
+    return [
+      { label: "Skill Targets", to: "/manager/skill-targets" },
+      { label: "Detail" },
+    ];
   }
   return [];
 }

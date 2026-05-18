@@ -6,7 +6,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   AlertTriangle, Inbox, Mail, MailOpen, CheckCheck, ArrowRight, Sparkles,
 } from "lucide-react";
-import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
+import PageBody from "@/components/layout/PageBody";
 import {
   inboxNotifications as initialNotifications,
   notificationTypeStyles,

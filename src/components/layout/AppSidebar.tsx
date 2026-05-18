@@ -59,17 +59,6 @@ const meNavItems: NavItem[] = [
   { label: "Action Centre", path: "/my-inbox", icon: Inbox },
   { label: "Cohort Hub", path: "/cohort", icon: Users },
   { label: "My 360", path: "/my-360", icon: CircleUser },
-  {
-    label: "Legacy",
-    path: "#legacy-me",
-    icon: Archive,
-    dev: true,
-    children: [
-      { label: "Learning Spaces (Legacy)", path: "/dashboard", icon: LayoutDashboard, dev: true },
-      { label: "Skill Targets (Legacy)", path: "/dashboard", icon: Target, dev: true },
-      { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
-    ],
-  },
 ];
 
 const teamNavItems: NavItem[] = [
@@ -79,23 +68,25 @@ const teamNavItems: NavItem[] = [
   { label: "Deep Research", path: "/team/deep-research", icon: Microscope },
   { label: "Action Centre", path: "/action-centre", icon: Inbox },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
-  {
-    label: "Legacy",
-    path: "#legacy-team",
-    icon: Archive,
-    dev: true,
-    children: [
-      { label: "Admin (Legacy)", path: "/admin", icon: Shield, dev: true },
-      { label: "Skill Targets (Legacy)", path: "/manager/skill-targets", icon: Target, dev: true },
-      { label: "Role Play Bank (Legacy)", path: "/manager/role-play", icon: Drama, dev: true },
-      { label: "Program Context (Legacy)", path: "/manager/programs", icon: Building2, dev: true },
-      { label: "Team Dashboard (Legacy)", path: "/team-dashboard", icon: LayoutDashboard, dev: true },
-      { label: "Team Insights (Legacy)", path: "/team-insights", icon: BarChart3, dev: true },
-      { label: "Manager View (Legacy)", path: "/manager", icon: UsersRound, dev: true },
-      { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser, dev: true },
-      { label: "Dev Tools (Legacy)", path: "/dev-tools", icon: Code, dev: true },
-    ],
-  },
+];
+
+type LegacyItem = { label: string; path: string; icon: React.ElementType };
+
+const legacyMeItems: LegacyItem[] = [
+  { label: "Learning Spaces (Legacy)", path: "/dashboard", icon: LayoutDashboard },
+  { label: "Skill Targets (Legacy)", path: "/dashboard", icon: Target },
+  { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser },
+];
+
+const legacyTeamItems: LegacyItem[] = [
+  { label: "Admin (Legacy)", path: "/admin", icon: Shield },
+  { label: "Skill Targets (Legacy)", path: "/manager/skill-targets", icon: Target },
+  { label: "Role Play Bank (Legacy)", path: "/manager/role-play", icon: Drama },
+  { label: "Program Context (Legacy)", path: "/manager/programs", icon: Building2 },
+  { label: "Team Dashboard (Legacy)", path: "/team-dashboard", icon: LayoutDashboard },
+  { label: "Team Insights (Legacy)", path: "/team-insights", icon: BarChart3 },
+  { label: "Manager View (Legacy)", path: "/manager", icon: UsersRound },
+  { label: "My 360 (Legacy)", path: "/my-360-legacy", icon: CircleUser },
 ];
 
 export function AppSidebar() {

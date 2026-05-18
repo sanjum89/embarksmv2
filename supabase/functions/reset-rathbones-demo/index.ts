@@ -216,12 +216,10 @@ Deno.serve(async (req) => {
     }
 
     // Wipe prior demo state for the 9 personas.
-    const wipeFilter = { account_id: ACCOUNT_ID };
-    await supabase.from("micro_learnings").delete().match(wipeFilter).in("employee_id", PERSONA_IDS);
-    await supabase.from("chapter_lock_events").delete().match(wipeFilter).in("employee_id", PERSONA_IDS);
-    await supabase.from("assessment_instances").delete().match(wipeFilter).in("employee_id", PERSONA_IDS);
-    await supabase.from("learner_progress").delete().match(wipeFilter).in("employee_id", PERSONA_IDS);
-    await supabase.from("learner_analytics").delete().match(wipeFilter).in("employee_id", PERSONA_IDS);
+    for (const tbl of ["micro_learnings", "chapter_lock_events", "assessment_instances", "learner_progress", "learner_analytics"]) {
+      const { error } = await supabase.from(tbl).delete().eq("account_id", ACCOUNT_ID).in("employee_id", PERSONA_IDS);
+      if (error) throw new Error(`wipe ${tbl}: ${error.message}`);
+    }
 
     // Ensure all 9 are enrolled in the cohort.
     const enrollRows = PERSONA_IDS.map((employee_id) => ({

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import PageHeader from "@/components/layout/PageHeader";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUser } from "@/contexts/UserContext";
+import { useAccount } from "@/contexts/AccountContext";
 import { useAgentOne } from "@/contexts/AgentOneContext";
 import { BrandingPanelContent } from "@/components/account/BrandingPanel";
 import { supabase } from "@/integrations/supabase/client";

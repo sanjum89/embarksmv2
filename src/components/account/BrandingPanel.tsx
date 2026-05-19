@@ -15,6 +15,10 @@ interface BrandingPanelProps {
   trigger: React.ReactNode;
 }
 
+interface BrandingPanelContentProps {
+  embedded?: boolean;
+}
+
 function LogoUploadSlot({
   label,
   hint,

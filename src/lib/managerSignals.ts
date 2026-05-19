@@ -283,7 +283,7 @@ export function overlayFromSignals(
 
   const modulesByCode = new Map(modules.map((m) => [m.module_code, m.module_title]));
   const pathChanges = buildPathChanges(bundle, modulesByCode, employeeId);
-  const timeline = buildTimeline(bundle);
+  const timeline = buildTimeline(bundle, modulesByCode);
 
   const completed = cells.filter((c) => c.status === "completed").length;
   const total = cells.length;

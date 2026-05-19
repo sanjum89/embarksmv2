@@ -116,7 +116,7 @@ export default function CohortHub() {
       <PageHeader
         title="Cohort Hub"
         subtitle={`Learn with peers, mentors, and cohort sessions · ${sub(c.title)}`}
-        actions={
+        titleAside={
           <ToggleGroup
             type="single"
             value={view}

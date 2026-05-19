@@ -18,7 +18,7 @@ export default function AdminView() {
   if (!normalizedAccount) {
     return (
       <div className="flex-1 overflow-y-auto">
-        <PageHeader eyebrow={eyebrow} title="Admin Dashboard" back />
+        <PageHeader title="Admin Dashboard" />
         <PageBody>
           <div className="flex items-center justify-center py-20">
             <p className="text-sm text-muted-foreground">No account loaded.</p>
@@ -31,10 +31,8 @@ export default function AdminView() {
   return (
     <div className="flex-1 overflow-y-auto">
       <PageHeader
-        eyebrow={eyebrow}
         title="Admin Dashboard"
         subtitle={`${normalizedAccount.branding.name} — Organisation overview and analytics`}
-        back
       />
       <PageBody>
         <Tabs defaultValue="overview" className="w-full">

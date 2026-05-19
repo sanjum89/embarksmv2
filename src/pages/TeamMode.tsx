@@ -192,7 +192,6 @@ export default function TeamMode() {
   return (
     <div className="flex-1 overflow-y-auto">
       <PageHeader
-        eyebrow={eyebrow}
         title={managerName}
         subtitle={`${managerTitle} · ${summary}`}
         actions={

@@ -74,13 +74,6 @@ export default function MyInbox() {
       <PageHeader
         title="Action Centre"
         subtitle="Your notifications, tasks and messages — sorted by urgency."
-        actions={
-          unreadCount > 0 ? (
-            <Button variant="outline" size="sm" onClick={markAllRead} className="gap-1.5">
-              <CheckCheck className="h-4 w-4" /> Mark all read
-            </Button>
-          ) : null
-        }
       />
       <PageBody>
         {/* KPI strip */}
@@ -120,6 +113,19 @@ export default function MyInbox() {
                   {k === "all" ? "All" : k === "high" ? "High priority" : "Unread"}
                 </button>
               ))}
+              {unreadCount > 0 && (
+                <>
+                  <span aria-hidden className="mx-1 h-4 w-px bg-border" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={markAllRead}
+                    className="h-7 gap-1.5 rounded-full px-3 text-xs"
+                  >
+                    <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+                  </Button>
+                </>
+              )}
               <span className="ml-auto text-xs text-muted-foreground">
                 {visible.length} item{visible.length === 1 ? "" : "s"} · sorted by urgency
               </span>

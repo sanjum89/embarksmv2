@@ -56,10 +56,8 @@ export default function NewMy360() {
   return (
     <div className="flex-1 overflow-y-auto" data-tour="my360">
       <PageHeader
-        eyebrow={eyebrow}
         title="My 360"
         subtitle="Your profile, competencies and growth path."
-        back
       />
       <PageBody>
       <ProfileHero employee={data.employee} managerName={managerName} />

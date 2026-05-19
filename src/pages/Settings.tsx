@@ -184,10 +184,7 @@ function AppearanceSection() {
 }
 
 function WorkspaceSection() {
-  const { showLegacyModules, setShowLegacyModules } = useTheme();
-  const agent = (() => {
-    try { return useAgentOne(); } catch { return null as any; }
-  })();
+  const agent = useAgentOne();
 
   const [confirming, setConfirming] = useState(false);
 

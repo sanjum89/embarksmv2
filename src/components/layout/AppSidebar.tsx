@@ -108,8 +108,7 @@ export function AppSidebar() {
     if (label === "Learning Spaces") setLearningSpacesOpen((v) => !v);
     else setManagerOpen((v) => !v);
   };
-  const [devMode, setDevMode] = useState(() => localStorage.getItem("dev-mode") === "true");
-  
+
   // Store the user's original base role so team mode doesn't overwrite admin → manager
   const baseRole = availableUsers.find((u) => u.id === user.id)?.role ?? user.role;
   const teamRole = baseRole === "admin" ? "admin" : "manager";
@@ -142,16 +141,9 @@ export function AppSidebar() {
   };
 
   const baseItems = viewMode === "me" ? meNavItems : teamNavItems;
-  const filteredItems = devMode ? baseItems : baseItems.filter((item) => !item.dev);
+  const filteredItems = baseItems.filter((item) => !item.dev);
   const legacyItems = viewMode === "me" ? legacyMeItems : legacyTeamItems;
 
-  const toggleDevMode = useCallback(() => {
-    setDevMode((prev) => {
-      const next = !prev;
-      localStorage.setItem("dev-mode", String(next));
-      return next;
-    });
-  }, []);
 
   const isTraditional = styleTheme === "traditional";
 

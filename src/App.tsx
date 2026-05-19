@@ -44,6 +44,7 @@ import ManagerCohortPicker from "./pages/ManagerCohortPicker";
 import DeepResearch from "./pages/DeepResearch";
 import CohortHub from "./pages/CohortHub";
 import DevTools from "./pages/DevTools";
+import Settings from "./pages/Settings";
 import { SupportiveToastBridge } from "@/components/SupportiveToastBridge";
 
 

@@ -560,10 +560,12 @@ export const RATHBONES_MANAGER_ID = "rb-mgr";
 export const RATHBONES_COHORT_ID = COHORT_ID;
 export const RATHBONES_COHORT_CODE = COHORT_CODE;
 
+/** @deprecated Prefer `useRathbonesPersonaOverlays`. Kept as a fallback for un-seeded accounts. */
 export function getDemoOverlay(employeeId: string): LearnerOverlay | null {
   return OVERLAY[employeeId] ?? null;
 }
 
+/** @deprecated Prefer `useRathbonesPersonaOverlays`. Kept as a fallback for un-seeded accounts. */
 export function getAllDemoOverlays(): LearnerOverlay[] {
   return RATHBONES_PERSONA_IDS.map((id) => OVERLAY[id]).filter(Boolean);
 }

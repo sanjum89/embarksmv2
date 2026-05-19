@@ -1,56 +1,58 @@
-## Goal
-Two small sidebar changes in `src/components/layout/AppSidebar.tsx`:
+## Root cause
 
-1. Move the **Legacy** group out of the main nav lists and render it in the bottom utility section, **just below the Branding button** (above the Dev/EOL Mode toggle).
-2. Rename the **EOL Mode** toggle to **Dev Mode**, and remove the `(Legacy)` suffix from Dev-Mode-related items (Dev Tools stays a Dev Mode tool, not Legacy).
+The reset edge function seeds the DB correctly, and `useManagerCohortData` reads it back (that's why Clara's own learner view + the cohort drill-down look right). The screens that are *still* showing old data — Julian's **Team Dashboard** (`/team`) and the **Action Centre** — never query the DB. They synchronously call `getAllDemoOverlays()` from `src/data/managerDemoOverlay.ts`, which returns the module-level `OVERLAY` object built once at import time from hand-authored persona stories.
 
-## Changes
+Callers still on the legacy synchronous overlay:
 
-### 1. Pull Legacy out of `meNavItems` / `teamNavItems`
-- Remove the `Legacy` entries (currently the last item in both `meNavItems` and `teamNavItems`).
-- Drop **Dev Tools (Legacy)** from the team Legacy list entirely — it belongs with Dev Mode, not Legacy.
-- Define two module-level arrays the bottom panel can render:
-  ```ts
-  const legacyMeItems = [
-    { label: "Learning Spaces (Legacy)", path: "/dashboard", icon: LayoutDashboard },
-    { label: "Skill Targets (Legacy)",   path: "/dashboard", icon: Target },
-    { label: "My 360 (Legacy)",          path: "/my-360-legacy", icon: CircleUser },
-  ];
-  const legacyTeamItems = [
-    { label: "Admin (Legacy)",           path: "/admin", icon: Shield },
-    { label: "Skill Targets (Legacy)",   path: "/manager/skill-targets", icon: Target },
-    { label: "Role Play Bank (Legacy)",  path: "/manager/role-play", icon: Drama },
-    { label: "Program Context (Legacy)", path: "/manager/programs", icon: Building2 },
-    { label: "Team Dashboard (Legacy)",  path: "/team-dashboard", icon: LayoutDashboard },
-    { label: "Team Insights (Legacy)",   path: "/team-insights", icon: BarChart3 },
-    { label: "Manager View (Legacy)",    path: "/manager", icon: UsersRound },
-    { label: "My 360 (Legacy)",          path: "/my-360-legacy", icon: CircleUser },
-  ];
-  ```
-- The active legacy list comes from `viewMode === "me" ? legacyMeItems : legacyTeamItems`.
+- `src/pages/TeamMode.tsx` — Julian's `/team` landing (roster, KPI strip, action queue, schedule cards)
+- `src/pages/ActionCentre.tsx` — `/action-centre` (admin / manager Action Centre)
+- `src/pages/ManagerCohortPicker.tsx` — `/manager/cohorts` KPI tiles
+- `src/components/team-home/SendCheckInDialog.tsx`
+- `src/components/team-home/Schedule1on1Dialog.tsx`
+- `src/components/people-graph/EmployeeSignalExplorer.tsx`
 
-### 2. Render a Legacy entry below Branding
-In both theme blocks (traditional ~line 439, standard ~line 817), insert a new bottom-section element directly after the Branding button and before the Dev/EOL toggle. Gate it on `devMode` so it only appears when Dev Mode is on.
+The DB-backed overlay logic only lives inside `useManagerCohortData`. Everywhere else still reads the baked-in data.
 
-- **Expanded sidebar**: render a collapsible button labeled **Legacy** with the `Archive` icon and a chevron, using existing `legacyOpen` state. When open, render the corresponding `legacyMeItems` / `legacyTeamItems` as indented `NavLink`s, mirroring the styling already used for nested children in the nav area.
-- **Collapsed sidebar**: render a single icon button (Archive) inside a Tooltip + Popover that lists the legacy items, matching how Branding/Theme already handle the collapsed state.
+## Fix
 
-Remove the now-unused `Legacy` branch from the in-nav `children` rendering path. Keep `legacyOpen` state; drop the `getGroupOpen` / `toggleGroupByLabel` `"Legacy"` branches since Legacy no longer flows through `filteredItems.map`.
+### 1. Extract a shared hook — `useRathbonesPersonaOverlays`
+New file `src/hooks/useRathbonesPersonaOverlays.ts` that returns the same overlay shape `useManagerCohortData` already produces, but for the *standard Rathbones cohort* without the cohort-page chrome.
 
-### 3. Rename EOL Mode → Dev Mode
-Replace all four user-facing strings:
-- Traditional block (~lines 467, 480): `EOL Mode` → `Dev Mode`, tooltip `EOL Mode on/off` → `Dev Mode on/off`.
-- Standard block (~lines 842, 855): same replacements.
+- Resolves `accountId` from `useAccount` and defaults `cohortId` to `RATHBONES_COHORT_ID` (override accepted).
+- Loads `cohorts` + `catalog_modules` (filtered by `role_cohort_code`) + `catalog_chapters` chapter counts + `cohort_enrollments` once.
+- For each persona in `RATHBONES_PERSONA_IDS` ∪ live enrollments, runs `loadEmployeeSignals` + `overlayFromSignals` exactly like `useManagerCohortData` does today.
+- Falls back to `getDemoOverlay(id)` only when the DB returned zero rows for that employee (safety net for fresh / un-seeded accounts).
+- Returns `{ loading, overlays, byId, modules }`.
 
-Internal state name `devMode` and storage key `"dev-mode"` already match — no logic change.
+Refactor `useManagerCohortData` to delegate its per-employee loop to this shared hook so the two cannot drift apart.
 
-### 4. `Dev Tools` item
-Currently lives only inside the Legacy group with the `(Legacy)` suffix. Remove it from the Legacy list (per point 1). Dev Tools remains reachable via its route `/dev-tools` (already a `dev: true` page). If you also want a sidebar entry for it under Dev Mode, that is a separate question (see open question).
+### 2. Account-agnostic — works for Pinnacle (white-label) too
+Pinnacle Capital is a deep clone of Rathbones with the same `RATHBONES_COHORT_ID` and the same `rb-l*` employee IDs (per the `useContentSubstitution` core rule). The new hook keys off `activeAccount.id` for the DB filter and the persona IDs are shared, so swapping the account in the switcher transparently flips Pinnacle's manager/admin screens to its own seeded DB rows. No Pinnacle-specific branch is required — confirm by:
+- Reset → switch account to Pinnacle → log in as Julian (or Pinnacle's equivalent manager) → `/team` and `/action-centre` reflect the seeded state, with `useContentSubstitution` already rewriting "Rathbones" → "Pinnacle Capital" in any narrative strings.
+
+### 3. Migrate the six callers
+Drop the synchronous `getAllDemoOverlays()` / `getDemoOverlay(id)` calls and read from the hook instead:
+
+- `TeamMode.tsx` — replace `const overlays = getAllDemoOverlays()` with `useRathbonesPersonaOverlays()`. Gate the existing `useMemo` blocks on `loading`. Show the same lightweight skeleton pattern used by `ManagerCohortHub`.
+- `ActionCentre.tsx` — same swap. Pending counts will now flow from real `micro_learnings` / `chapter_lock_events` rows.
+- `ManagerCohortPicker.tsx` — use `overlays` for the KPI tiles ("Active learners", "Needs attention") and per-tile progress %.
+- `SendCheckInDialog.tsx`, `Schedule1on1Dialog.tsx` — dialogs only mount when opened; safe to call the hook unconditionally.
+- `EmployeeSignalExplorer.tsx` — read `byId[employee.id]` instead of `getDemoOverlay(employee.id)`.
+
+### 4. Mark legacy paths fallback-only
+Add a one-line JSDoc to `getAllDemoOverlays` / `getDemoOverlay` in `src/data/managerDemoOverlay.ts`:
+`@deprecated Use useRathbonesPersonaOverlays. Kept as fallback for un-seeded accounts.`
+Bodies unchanged.
+
+## Verify (manual repro after build)
+1. **Dev Tools → Reset Rathbones demo** (the just-fixed edge function).
+2. Active account = Rathbones, log in as Julian (`rb-mgr`):
+   - `/team` shows Clara as the only `rising_star`, Theo as `needs_check_in`, the other 7 personas on the `baselineSpec(...)` baseline.
+   - `/action-centre` pending items reflect only Clara / Theo (other personas have no pending micros per the reset spec).
+3. Switch active account → Pinnacle Capital, log in as the equivalent manager → same screens reflect Pinnacle's seeded state with white-labeled copy.
+4. `/manager/cohort/{id}` drill-down (already DB-backed) and Julian's `/team` now show the same status for the same employee.
 
 ## Out of scope
-- Route changes, page renames
-- Touching the underlying `dev-mode` localStorage key
-- Memory doc `mem://style/eol-mode-rename` (will need a follow-up update once approved, but no code rule depends on the old name)
-
-## Open question
-Do you want a visible **Dev Tools** entry rendered in the sidebar when Dev Mode is on (e.g., right below the Legacy section), or is keeping it accessible only by URL fine?
+- The reset edge function itself (it already produces the correct DB state).
+- Clara / Theo narrative overrides in `rathbonesNarrative.ts` (already applied inside `overlayFromSignals`).
+- Other screens importing only *types* from `managerDemoOverlay` (no behavior change needed).

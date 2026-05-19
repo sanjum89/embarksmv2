@@ -12,7 +12,8 @@ import PageHeader from "@/components/layout/PageHeader";
 import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
-import { getAllDemoOverlays, COHORT_MODULES_FALLBACK, type ActionItem } from "@/data/managerDemoOverlay";
+import { COHORT_MODULES_FALLBACK, type ActionItem } from "@/data/managerDemoOverlay";
+import { useRathbonesPersonaOverlays } from "@/hooks/useRathbonesPersonaOverlays";
 import { useManagerActions } from "@/store/useManagerActions";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";
 import { RaisedHandDrawer } from "@/components/manager-hub/RaisedHandDrawer";
@@ -49,7 +50,7 @@ const sevBadge = (s: string) =>
 type FilterKey = "all" | "high" | "awaiting";
 
 export default function ActionCentre() {
-  const overlays = getAllDemoOverlays();
+  const { overlays } = useRathbonesPersonaOverlays();
   const { user } = useUser();
   const { normalizedAccount } = useAccount();
   const employeesById = normalizedAccount?.employeesById ?? {};

@@ -10,12 +10,12 @@ import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
 import { useAccountCohorts } from "@/hooks/useManagerCohortData";
 import {
-  getAllDemoOverlays,
   RATHBONES_COHORT_ID,
   COHORT_MODULES_FALLBACK,
   type LearnerOverlay,
   type ActionItem,
 } from "@/data/managerDemoOverlay";
+import { useRathbonesPersonaOverlays } from "@/hooks/useRathbonesPersonaOverlays";
 import { LearnerDrawer } from "@/components/manager-hub/LearnerDrawer";
 import { RaisedHandDrawer } from "@/components/manager-hub/RaisedHandDrawer";
 import { Schedule1on1Dialog } from "@/components/team-home/Schedule1on1Dialog";
@@ -49,7 +49,7 @@ export default function TeamMode() {
   const { normalizedAccount } = useAccount();
   const { user } = useUser();
   const { cohorts } = useAccountCohorts();
-  const overlays = getAllDemoOverlays();
+  const { overlays } = useRathbonesPersonaOverlays();
   const [openId, setOpenId] = useState<string | null>(null);
   const [handAction, setHandAction] = useState<ActionItem | null>(null);
   const [scheduleId, setScheduleId] = useState<string | null>(null);

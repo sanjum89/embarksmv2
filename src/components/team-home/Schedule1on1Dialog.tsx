@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { TeamAvatar } from "@/components/team-home/Avatar";
 import { TeamsBadge } from "@/components/team-home/TeamsBadge";
 import { useAccount } from "@/contexts/AccountContext";
-import { getAllDemoOverlays } from "@/data/managerDemoOverlay";
+import { useRathbonesPersonaOverlays } from "@/hooks/useRathbonesPersonaOverlays";
 import { getAvailability, type Slot } from "@/data/teamsAvailability";
 
 interface Props {
@@ -25,7 +25,7 @@ type Step = "learner" | "time" | "confirm";
 export function Schedule1on1Dialog({ open, onOpenChange, defaultLearnerId }: Props) {
   const { normalizedAccount } = useAccount();
   const employeesById = normalizedAccount?.employeesById ?? {};
-  const overlays = useMemo(() => getAllDemoOverlays(), []);
+  const { overlays } = useRathbonesPersonaOverlays();
 
   const cohort = useMemo(
     () =>

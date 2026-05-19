@@ -231,8 +231,10 @@ export function EmbarkTour() {
 
   const onRoute = pathname === step.route;
   const showSpotlight = onRoute && !!rect;
-  const placement: Placement = step.placement ?? "bottom";
+  const rawPlacement: Placement = step.placement ?? "bottom";
+  const placement: Placement = shouldCenter(showSpotlight ? rect : null, rawPlacement) ? "center" : rawPlacement;
   const cardStyle = placeCard(showSpotlight ? rect : null, placement);
+
   const isFirst = tour.stepIndex === 0;
   const isLast = tour.stepIndex === tour.steps.length - 1;
   const hasTarget = !!step.target;

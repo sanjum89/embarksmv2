@@ -197,7 +197,7 @@ function WorkspaceSection() {
       Object.keys(localStorage)
         .filter((k) => k.startsWith("agent-one-") || k.includes("chat-history"))
         .forEach((k) => localStorage.removeItem(k));
-      agent?.handleReset?.();
+      agent.handleReset();
       toast({ title: "Chat history cleared", description: "Agent One will start fresh next time." });
     } catch (e: any) {
       toast({ title: "Couldn't clear chat", description: String(e?.message ?? e), variant: "destructive" });

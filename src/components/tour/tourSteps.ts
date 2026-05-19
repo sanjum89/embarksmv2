@@ -106,7 +106,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: "adapt-why",
     section: "How content adapts",
     route: "/",
-    target: '[data-tour="embark-journey"]',
+    target: '[data-tour="embark-modules"]',
     title: "Why each lens?",
     body: "Your role, prior projects, and skill gaps from My 360 determine which lens fits each Module. The goal: less filler, more of what moves you forward.",
     placement: "left",
@@ -118,6 +118,7 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="cohort-hub"]',
     title: "Your Cohort Hub",
     body: "See who's in your cohort, where everyone is in the journey, and what's coming up. Use it to compare notes and stay aligned.",
+    placement: "center",
   },
   {
     id: "action-centre",
@@ -126,6 +127,7 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="action-centre"]',
     title: "Action Centre",
     body: "Nudges from your manager, reflections to complete, and reminders for your next steps — all in one inbox.",
+    placement: "center",
   },
   {
     id: "my360",
@@ -134,6 +136,7 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="my360"]',
     title: "My 360",
     body: "Your professional profile: competency radar, skills-gap matrix, and career timeline. This is what drives the adaptation in Embark.",
+    placement: "center",
   },
   {
     id: "role-play",
@@ -142,7 +145,9 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="role-play-bank"]',
     title: "Role Play",
     body: "Practise real conversations with AI characters — review a client meeting, rehearse a tricky message, or try a voice scenario. Manager-set or self-chosen.",
+    placement: "center",
   },
+
   {
     id: "wrap",
     section: "All set",

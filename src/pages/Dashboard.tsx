@@ -148,7 +148,7 @@ export default function Dashboard() {
   return (
     <>
       <PageHeader
-        eyebrow={eyebrow}
+        
         title={`Welcome back, ${user.name.split(" ")[0]}`}
         subtitle={
           stats.inProgress > 0

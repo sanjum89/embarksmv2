@@ -172,7 +172,7 @@ export default function RolePlayBank() {
   return (
     <div className="flex-1 overflow-y-auto" data-tour="role-play-bank">
       <PageHeader
-        eyebrow={eyebrow}
+        
         title={isManager ? "Manage Role Plays" : "Role Play Bank"}
         subtitle={
           isManager

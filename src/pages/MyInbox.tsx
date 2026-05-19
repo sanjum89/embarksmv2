@@ -130,10 +130,6 @@ export default function MyInbox() {
                 {visible.length} item{visible.length === 1 ? "" : "s"} · sorted by urgency
               </span>
             </div>
-              <span className="ml-auto text-xs text-muted-foreground">
-                {visible.length} item{visible.length === 1 ? "" : "s"} · sorted by urgency
-              </span>
-            </div>
 
             {/* Most pressing */}
             {pressing.length > 0 && (

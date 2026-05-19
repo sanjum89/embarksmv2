@@ -248,6 +248,61 @@ export function useLearnerJourney(
           lockSet.add(`${l.module_code}::${l.chapter_code ?? ""}`)
         );
 
+        // 7c. Latest assessment attempt per chapter + passing thresholds.
+        // Surface the score and pass/fail on the chapter row so learners
+        // (and managers reviewing the journey) can always see the result,
+        // even if the chapter is still in_progress or locked.
+        const assessmentByChapter = new Map<
+          string,
+          { score: number; passed: boolean; passingScore: number }
+        >();
+        if (moduleCodes.length) {
+          const [{ data: instances }, { data: blueprints }] = await Promise.all([
+            supabase
+              .from("assessment_instances")
+              .select("chapter_code, module_code, score, completed_at, started_at, status")
+              .eq("account_id", accountId)
+              .eq("employee_id", employeeId)
+              .eq("cohort_id", cohortId)
+              .in("module_code", moduleCodes)
+              .not("chapter_code", "is", null),
+            supabase
+              .from("catalog_assessment_blueprints")
+              .select("chapter_code, passing_score")
+              .eq("account_id", accountId)
+              .in("module_code", moduleCodes)
+              .not("chapter_code", "is", null),
+          ]);
+
+          const passingByChapter = new Map<string, number>();
+          (blueprints ?? []).forEach((b) => {
+            if (b.chapter_code) passingByChapter.set(b.chapter_code, b.passing_score ?? 70);
+          });
+
+          // Keep the most recent attempt per chapter (prefer completed_at, fall back to started_at).
+          const byChapter = new Map<
+            string,
+            { score: number | null; ts: string; status: string }
+          >();
+          (instances ?? []).forEach((i) => {
+            if (!i.chapter_code) return;
+            const ts = i.completed_at ?? i.started_at;
+            const prev = byChapter.get(i.chapter_code);
+            if (!prev || (ts && ts > prev.ts)) {
+              byChapter.set(i.chapter_code, { score: i.score, ts: ts ?? "", status: i.status });
+            }
+          });
+          byChapter.forEach((v, chapterCode) => {
+            if (v.score == null) return;
+            const passing = passingByChapter.get(chapterCode) ?? 70;
+            assessmentByChapter.set(chapterCode, {
+              score: v.score,
+              passed: v.score >= passing,
+              passingScore: passing,
+            });
+          });
+        }
+
         // Group chapters by module
         const chaptersByModule = new Map<string, JourneyChapter[]>();
         (chapters ?? []).forEach((c) => {
@@ -255,6 +310,7 @@ export function useLearnerJourney(
           const rawStatus = (progressMap.get(key) ?? "not_started") as ChapterStatus;
           const status: ChapterStatus = lockSet.has(key) ? "locked" : rawStatus;
           const list = chaptersByModule.get(c.module_code) ?? [];
+          const assessment = assessmentByChapter.get(c.chapter_code);
           list.push({
             code: c.chapter_code,
             title: c.chapter_title,
@@ -262,9 +318,13 @@ export function useLearnerJourney(
             minutes: c.estimated_time_minutes ?? 0,
             status,
             displayOrder: c.display_order ?? 0,
+            assessmentScore: assessment?.score,
+            assessmentPassed: assessment?.passed,
+            assessmentPassingScore: assessment?.passingScore,
           });
           chaptersByModule.set(c.module_code, list);
         });
+
 
         // Build modules
         const moduleByCode = new Map<string, JourneyModule>();

@@ -8,7 +8,7 @@ export interface TourStep {
   target?: string;
   title: string;
   body: string;
-  placement?: "top" | "bottom" | "left" | "right";
+  placement?: "top" | "bottom" | "left" | "right" | "center";
   /** Optional hook fired before searching for the target. Use this to expand
    * accordions, switch tabs, etc., so the target is in the DOM. */
   prepare?: () => void | Promise<void>;

@@ -30,17 +30,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("theme") as Theme | null;
       if (stored) return stored;
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
     }
     return "light";
   });
 
   const [styleTheme, setStyleThemeRaw] = useState<StyleTheme>(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("styleTheme") as StyleTheme) || "traditional";
+      return (localStorage.getItem("styleTheme") as StyleTheme) || "new";
     }
-    return "traditional";
+    return "new";
   });
+
 
   const [superLight, setSuperLightRaw] = useState<boolean>(() => {
     if (typeof window !== "undefined") {

@@ -13,7 +13,6 @@ import {
   ChevronDown,
   ChevronRight,
   Check,
-  Palette,
   Moon,
   Sun,
   Building2,

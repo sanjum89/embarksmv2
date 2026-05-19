@@ -87,10 +87,21 @@ function useTargetRect(
   return rect;
 }
 
-type Placement = "top" | "bottom" | "left" | "right";
+type Placement = "top" | "bottom" | "left" | "right" | "center";
+
+/** When the spotlit element covers most of the viewport, anchoring to an
+ * edge pushes the popover off-screen at higher zoom. Auto-promote those to
+ * a centred card instead. */
+function shouldCenter(rect: Rect | null, placement: Placement): boolean {
+  if (placement === "center") return true;
+  if (!rect) return false;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  return rect.width > vw * 0.6 && rect.height > vh * 0.6;
+}
 
 function placeCard(rect: Rect | null, placement: Placement = "bottom") {
-  if (!rect) {
+  if (!rect || placement === "center") {
     return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" } as const;
   }
   const vw = window.innerWidth;
@@ -117,6 +128,7 @@ function placeCard(rect: Rect | null, placement: Placement = "bottom") {
   top = Math.max(12, Math.min(top, vh - estH - 12));
   return { top, left, transform: "none" } as const;
 }
+
 
 function caretStyle(rect: Rect, placement: Placement): React.CSSProperties | null {
   // Position the caret on the side of the card that faces the target.

@@ -92,6 +92,18 @@ export const TOUR_STEPS: TourStep[] = [
     fallbackHint: "Look for the Quick Diagnostic badge on a chapter row.",
   },
   {
+    id: "adapt-microlearning",
+    section: "How content adapts",
+    route: "/",
+    target: '[data-tour="lens-microlearning"]',
+    title: "Microlearning",
+    body: "Some chapters are delivered as short, high-signal segments — roughly 40% of the usual time — so you can learn in the flow of work without losing the essentials.",
+    placement: "left",
+    prepare: expandAllModules,
+    fallbackHint: "Look for the Microlearning badge on a module.",
+  },
+
+  {
     id: "adapt-evidence",
     section: "How content adapts",
     route: "/",

@@ -342,7 +342,7 @@ export function AppSidebar() {
           </nav>
 
           {/* Bottom section */}
-          <div className={cn("w-full pb-3", expanded ? "px-3" : "flex flex-col items-center gap-1")}>
+          <div className={cn("w-full pb-3", expanded ? "px-3" : "flex flex-col items-center gap-1 px-0")}>
             {/* Dark mode toggle */}
             {expanded ? (
               <button
@@ -698,7 +698,7 @@ export function AppSidebar() {
       </nav>
 
       {/* Dark mode toggle */}
-      <div className={cn("w-full", expanded ? "px-3" : "flex flex-col items-center gap-1")}>
+      <div className={cn("w-full flex", expanded ? "px-3" : "justify-center py-0.5")}>
         {expanded ? (
           <button
             onClick={toggleTheme}
@@ -725,7 +725,7 @@ export function AppSidebar() {
       </div>
 
       {/* Accessibility */}
-      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
+      <div className={cn("w-full flex", expanded ? "px-3" : "justify-center py-0.5")}>
         <AccessibilityPanel
           expanded={expanded}
           trigger={
@@ -743,7 +743,7 @@ export function AppSidebar() {
       </div>
 
       {/* Settings */}
-      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
+      <div className={cn("w-full flex", expanded ? "px-3" : "justify-center py-0.5")}>
         {expanded ? (
           <NavLink
             to="/settings"
@@ -776,6 +776,7 @@ export function AppSidebar() {
           </Tooltip>
         )}
       </div>
+
 
 
       {/* Legacy (gated by Settings → Workspace toggle) */}

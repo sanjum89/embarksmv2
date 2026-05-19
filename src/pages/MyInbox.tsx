@@ -74,13 +74,6 @@ export default function MyInbox() {
       <PageHeader
         title="Action Centre"
         subtitle="Your notifications, tasks and messages — sorted by urgency."
-        actions={
-          unreadCount > 0 ? (
-            <Button variant="outline" size="sm" onClick={markAllRead} className="gap-1.5">
-              <CheckCheck className="h-4 w-4" /> Mark all read
-            </Button>
-          ) : null
-        }
       />
       <PageBody>
         {/* KPI strip */}

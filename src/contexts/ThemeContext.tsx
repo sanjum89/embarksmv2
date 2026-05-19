@@ -51,6 +51,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return true;
   });
 
+  const [showLegacyModules, setShowLegacyModulesRaw] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("showLegacyModules") === "true";
+    }
+    return false;
+  });
+
+  const setShowLegacyModules = (v: boolean) => {
+    setShowLegacyModulesRaw(v);
+    if (typeof window !== "undefined") localStorage.setItem("showLegacyModules", String(v));
+  };
+
   const setStyleTheme = (t: StyleTheme) => {
     setStyleThemeRaw(t);
     if (t === "new") {

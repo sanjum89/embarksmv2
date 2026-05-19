@@ -9,6 +9,8 @@ interface PageHeaderProps {
   title: string;
   subtitle?: ReactNode;
   actions?: ReactNode;
+  /** Optional content rendered inline next to the title (e.g. a view toggle). */
+  titleAside?: ReactNode;
   className?: string;
   /** @deprecated no-op — retained so legacy call sites compile during sweep. */
   eyebrow?: string;

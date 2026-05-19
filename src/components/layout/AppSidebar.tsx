@@ -94,7 +94,7 @@ export function AppSidebar() {
   const { user, switchUser, setRole, availableUsers, signedInUserIds, loginUser, logoutUser } = useUser();
   const { activeAccount } = useAccount();
   const { expanded, toggle } = useSidebarState();
-  const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight, showLegacyModules } = useTheme();
+  const { theme, toggleTheme, styleTheme, showLegacyModules } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);

@@ -367,41 +367,6 @@ export function AppSidebar() {
               </Tooltip>
             )}
 
-            {/* Theme style switcher */}
-            <Popover>
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <PopoverTrigger asChild>
-                    <button className={cn(
-                      "flex items-center rounded-lg transition-all duration-200 text-muted-foreground hover:bg-white/50 hover:text-foreground",
-                      expanded ? "h-9 gap-3 w-full px-3" : "h-9 w-9 justify-center rounded-full"
-                    )}>
-                      <Palette className="h-4 w-4 shrink-0" />
-                      {expanded && <span className="text-sm font-medium">Theme</span>}
-                    </button>
-                  </PopoverTrigger>
-                </TooltipTrigger>
-                {!expanded && <TooltipContent side="right" sideOffset={8}>Theme</TooltipContent>}
-              </Tooltip>
-              <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-48 p-2">
-                <p className="text-xs font-medium text-muted-foreground px-2 pb-1.5">UI Style</p>
-                <button
-                  onClick={() => setStyleTheme("new")}
-                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", !isTraditional ? "bg-primary/10 font-medium" : "hover:bg-secondary")}
-                >
-                  <span className="flex-1 text-left">New UI</span>
-                  {!isTraditional && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                </button>
-                <button
-                  onClick={() => setStyleTheme("traditional")}
-                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", isTraditional ? "bg-primary/10 font-medium" : "hover:bg-secondary")}
-                >
-                  <span className="flex-1 text-left">Traditional UI</span>
-                  {isTraditional && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                </button>
-              </PopoverContent>
-            </Popover>
-
             {/* Accessibility */}
             <AccessibilityPanel
               expanded={expanded}
@@ -418,6 +383,36 @@ export function AppSidebar() {
                 )
               }
             />
+
+            {/* Settings */}
+            {expanded ? (
+              <NavLink
+                to="/settings"
+                className={({ isActive }) => cn(
+                  "flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium",
+                  isActive ? "bg-white/60 text-foreground" : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
+                )}
+              >
+                <SettingsIcon className="h-4 w-4 shrink-0" />
+                <span>Settings</span>
+              </NavLink>
+            ) : (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <NavLink
+                    to="/settings"
+                    className={({ isActive }) => cn(
+                      "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+                      isActive ? "bg-white/60 text-foreground" : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
+                    )}
+                  >
+                    <SettingsIcon className="h-4 w-4" />
+                  </NavLink>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>Settings</TooltipContent>
+              </Tooltip>
+            )}
+
 
             {/* Legacy (gated by Settings → Workspace toggle) */}
             {showLegacyModules && (

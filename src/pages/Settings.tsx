@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import PageHeader from "@/components/layout/PageHeader";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUser } from "@/contexts/UserContext";
+import { useAccount } from "@/contexts/AccountContext";
 import { useAgentOne } from "@/contexts/AgentOneContext";
 import { BrandingPanelContent } from "@/components/account/BrandingPanel";
 import { supabase } from "@/integrations/supabase/client";
@@ -300,7 +301,35 @@ function DeveloperSection() {
 
 function AboutSection() {
   const { user, signedInUserIds, availableUsers, logoutUser } = useUser();
-  const signed = availableUsers.filter((u) => signedInUserIds.includes(u.id));
+  const { normalizedAccount } = useAccount();
+
+  const allowedEmployeeIds = useMemo(() => {
+    const allowed = new Set<string>();
+    const meEmpId = (user as any).linkedEmployeeId || user.id;
+    allowed.add(meEmpId);
+    const hierarchy = normalizedAccount?.hierarchyMap || {};
+    const walk = (id: string) => {
+      const reports = hierarchy[id] || [];
+      for (const r of reports) {
+        if (!allowed.has(r)) {
+          allowed.add(r);
+          walk(r);
+        }
+      }
+    };
+    walk(meEmpId);
+    return allowed;
+  }, [user, normalizedAccount]);
+
+  const signed = availableUsers.filter((u) => {
+    if (!signedInUserIds.includes(u.id)) return false;
+    if (u.id === user.id) return true;
+    const empId = (u as any).linkedEmployeeId || u.id;
+    return allowedEmployeeIds.has(empId);
+  });
+
+  const sessionsLabel = signed.length <= 1 ? "Your session" : "Active sessions";
+
   return (
     <Card>
       <CardHeader>
@@ -314,7 +343,7 @@ function AboutSection() {
         </div>
         <Separator />
         <div>
-          <Label className="text-xs text-muted-foreground">Active sessions</Label>
+          <Label className="text-xs text-muted-foreground">{sessionsLabel}</Label>
           <ul className="mt-1 space-y-1">
             {signed.map((u) => (
               <li key={u.id} className="flex items-center justify-between">
@@ -328,3 +357,4 @@ function AboutSection() {
     </Card>
   );
 }
+

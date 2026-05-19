@@ -13,7 +13,6 @@ import {
   ChevronDown,
   ChevronRight,
   Check,
-  Palette,
   Moon,
   Sun,
   Building2,
@@ -59,7 +58,6 @@ const meNavItems: NavItem[] = [
   { label: "Action Centre", path: "/my-inbox", icon: Inbox },
   { label: "Cohort Hub", path: "/cohort", icon: Users },
   { label: "My 360", path: "/my-360", icon: CircleUser },
-  { label: "Settings", path: "/settings", icon: SettingsIcon },
 ];
 
 const teamNavItems: NavItem[] = [
@@ -69,7 +67,6 @@ const teamNavItems: NavItem[] = [
   { label: "Deep Research", path: "/team/deep-research", icon: Microscope },
   { label: "Action Centre", path: "/action-centre", icon: Inbox },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
-  { label: "Settings", path: "/settings", icon: SettingsIcon },
 ];
 
 
@@ -96,7 +93,7 @@ export function AppSidebar() {
   const { user, switchUser, setRole, availableUsers, signedInUserIds, loginUser, logoutUser } = useUser();
   const { activeAccount } = useAccount();
   const { expanded, toggle } = useSidebarState();
-  const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight, showLegacyModules } = useTheme();
+  const { theme, toggleTheme, styleTheme, showLegacyModules } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
@@ -369,41 +366,6 @@ export function AppSidebar() {
               </Tooltip>
             )}
 
-            {/* Theme style switcher */}
-            <Popover>
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <PopoverTrigger asChild>
-                    <button className={cn(
-                      "flex items-center rounded-lg transition-all duration-200 text-muted-foreground hover:bg-white/50 hover:text-foreground",
-                      expanded ? "h-9 gap-3 w-full px-3" : "h-9 w-9 justify-center rounded-full"
-                    )}>
-                      <Palette className="h-4 w-4 shrink-0" />
-                      {expanded && <span className="text-sm font-medium">Theme</span>}
-                    </button>
-                  </PopoverTrigger>
-                </TooltipTrigger>
-                {!expanded && <TooltipContent side="right" sideOffset={8}>Theme</TooltipContent>}
-              </Tooltip>
-              <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-48 p-2">
-                <p className="text-xs font-medium text-muted-foreground px-2 pb-1.5">UI Style</p>
-                <button
-                  onClick={() => setStyleTheme("new")}
-                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", !isTraditional ? "bg-primary/10 font-medium" : "hover:bg-secondary")}
-                >
-                  <span className="flex-1 text-left">New UI</span>
-                  {!isTraditional && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                </button>
-                <button
-                  onClick={() => setStyleTheme("traditional")}
-                  className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", isTraditional ? "bg-primary/10 font-medium" : "hover:bg-secondary")}
-                >
-                  <span className="flex-1 text-left">Traditional UI</span>
-                  {isTraditional && <Check className="h-3.5 w-3.5 text-primary shrink-0" />}
-                </button>
-              </PopoverContent>
-            </Popover>
-
             {/* Accessibility */}
             <AccessibilityPanel
               expanded={expanded}
@@ -420,6 +382,36 @@ export function AppSidebar() {
                 )
               }
             />
+
+            {/* Settings */}
+            {expanded ? (
+              <NavLink
+                to="/settings"
+                className={({ isActive }) => cn(
+                  "flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium",
+                  isActive ? "bg-white/60 text-foreground" : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
+                )}
+              >
+                <SettingsIcon className="h-4 w-4 shrink-0" />
+                <span>Settings</span>
+              </NavLink>
+            ) : (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <NavLink
+                    to="/settings"
+                    className={({ isActive }) => cn(
+                      "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+                      isActive ? "bg-white/60 text-foreground" : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
+                    )}
+                  >
+                    <SettingsIcon className="h-4 w-4" />
+                  </NavLink>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>Settings</TooltipContent>
+              </Tooltip>
+            )}
+
 
             {/* Legacy (gated by Settings → Workspace toggle) */}
             {showLegacyModules && (
@@ -705,80 +697,31 @@ export function AppSidebar() {
         })}
       </nav>
 
-      {/* Mode toggle — Super Light / Light / Dark */}
+      {/* Dark mode toggle */}
       <div className={cn("w-full", expanded ? "px-3" : "flex flex-col items-center gap-1")}>
         {expanded ? (
           <button
-            onClick={() => {
-              // Cycle: Super Light → Light → Dark → Super Light
-              if (theme !== "dark" && superLight) { setSuperLight(false); }
-              else if (theme !== "dark" && !superLight) { toggleTheme(); }
-              else { toggleTheme(); setSuperLight(true); }
-            }}
+            onClick={toggleTheme}
             className="flex items-center gap-2 w-full px-3 h-9 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors text-sm font-medium mb-1"
           >
             {theme === "dark" ? <Moon className="h-4 w-4 shrink-0" /> : <Sun className="h-4 w-4 shrink-0" />}
-            <span>{theme === "dark" ? "Dark mode" : superLight ? "Super Light" : "Light mode"}</span>
+            <span>{theme === "dark" ? "Dark mode" : "Light mode"}</span>
           </button>
         ) : (
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <button
-                onClick={() => {
-                  // Cycle: Super Light → Light → Dark → Super Light
-                  if (theme !== "dark" && superLight) { setSuperLight(false); }
-                  else if (theme !== "dark" && !superLight) { toggleTheme(); }
-                  else { toggleTheme(); setSuperLight(true); }
-                }}
+                onClick={toggleTheme}
                 className="flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors"
               >
                 {theme === "dark" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" sideOffset={8}>
-              {theme === "dark" ? "Dark mode" : superLight ? "Super Light mode" : "Light mode"}
+              {theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             </TooltipContent>
           </Tooltip>
         )}
-      </div>
-
-      {/* Theme style switcher (UI only) */}
-      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
-        <Popover>
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <PopoverTrigger asChild>
-                <button
-                  className={cn(
-                    "flex items-center rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-                    expanded ? "h-9 gap-3 w-full px-3" : "h-10 w-10 justify-center"
-                  )}
-                >
-                  <Palette className="h-4 w-4 shrink-0" />
-                  {expanded && <span className="text-sm font-medium">Theme</span>}
-                </button>
-              </PopoverTrigger>
-            </TooltipTrigger>
-            {!expanded && <TooltipContent side="right" sideOffset={8}>Theme</TooltipContent>}
-          </Tooltip>
-          <PopoverContent side={expanded ? "top" : "right"} align="start" sideOffset={8} className="w-48 p-2">
-            <p className="text-xs font-medium text-muted-foreground px-2 pb-1.5">UI Style</p>
-            <button
-              onClick={() => setStyleTheme("new")}
-              className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", !isTraditional ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
-            >
-              <span className="flex-1 text-left">New UI</span>
-              {!isTraditional && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
-            </button>
-            <button
-              onClick={() => setStyleTheme("traditional")}
-              className={cn("flex items-center gap-2 w-full rounded-md px-2 py-1.5 text-sm transition-colors", isTraditional ? "bg-accent/10 font-medium" : "hover:bg-secondary")}
-            >
-              <span className="flex-1 text-left">Traditional UI</span>
-              {isTraditional && <Check className="h-3.5 w-3.5 text-accent shrink-0" />}
-            </button>
-          </PopoverContent>
-        </Popover>
       </div>
 
       {/* Accessibility */}
@@ -798,6 +741,42 @@ export function AppSidebar() {
           }
         />
       </div>
+
+      {/* Settings */}
+      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
+        {expanded ? (
+          <NavLink
+            to="/settings"
+            className={({ isActive }) => cn(
+              "flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium",
+              isActive
+                ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+            )}
+          >
+            <SettingsIcon className="h-4 w-4 shrink-0" />
+            <span>Settings</span>
+          </NavLink>
+        ) : (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <NavLink
+                to="/settings"
+                className={({ isActive }) => cn(
+                  "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+                  isActive
+                    ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                )}
+              >
+                <SettingsIcon className="h-4 w-4" />
+              </NavLink>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>Settings</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+
 
       {/* Legacy (gated by Settings → Workspace toggle) */}
       {showLegacyModules && (

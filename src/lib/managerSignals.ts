@@ -171,21 +171,40 @@ function deriveStatus(bundle: DbBundle, cells: ModuleCellOverlay[]): LearnerStat
   return "on_track";
 }
 
-function buildTimeline(bundle: DbBundle): { date: string; label: string }[] {
+function buildTimeline(
+  bundle: DbBundle,
+  modulesByCode: Map<string, string>,
+): { date: string; label: string }[] {
   const items: { date: string; label: string; ts: number }[] = [];
+  const scopeLabel = (scope: string): string => {
+    switch (scope) {
+      case "module_post": return "post";
+      case "module_pre": return "pre";
+      case "midpoint": return "midpoint";
+      case "chapter_diagnostic": return "diagnostic";
+      default: return scope.replace(/_/g, " ");
+    }
+  };
+  const reasonLabel = (reason: string | null | undefined): string => {
+    if (!reason) return "remediation";
+    return reason.replace(/_/g, " ");
+  };
   for (const a of bundle.assessments.slice(0, 6)) {
     if (!a.completed_at) continue;
     const scope = (a.metadata?.scope as string) ?? "module_post";
+    const moduleTitle = (a.module_code && modulesByCode.get(a.module_code)) || a.module_code || "module";
     items.push({
       date: a.completed_at.slice(0, 10),
-      label: `Assessment · ${a.module_code ?? ""} · ${a.score ?? "?"}% (${scope}, attempt ${a.attempt_number})`,
+      label: `Assessment · ${moduleTitle} · ${a.score ?? "?"}% (${scopeLabel(scope)}, attempt ${a.attempt_number})`,
       ts: new Date(a.completed_at).getTime(),
     });
   }
   for (const l of bundle.locks.slice(0, 6)) {
+    const chapterTitle = bundle.chapterTitles[l.chapter_code] ?? l.chapter_code;
+    const moduleTitle = modulesByCode.get(l.module_code) ?? l.module_code;
     items.push({
       date: l.created_at.slice(0, 10),
-      label: `Chapter re-opened · ${l.chapter_code} (${l.reason ?? "remediation"})`,
+      label: `Chapter re-opened · ${chapterTitle} (${moduleTitle}) — ${reasonLabel(l.reason)}`,
       ts: new Date(l.created_at).getTime(),
     });
   }

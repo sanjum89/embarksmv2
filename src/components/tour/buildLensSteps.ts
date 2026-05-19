@@ -1,8 +1,18 @@
 import type { TourStep } from "./tourSteps";
 
-type LensKind = "condensed" | "diagnostic" | "evidence";
+type LensKind = "condensed" | "diagnostic" | "microlearning" | "evidence";
 
-const LENS_CONFIG: Record<LensKind, { tour: string; label: string; title: (m: string) => string; body: (m: string) => string }> = {
+const LENS_CONFIG: Record<
+  LensKind,
+  { tour: string; label: string; title: (m: string) => string; body: (m: string) => string }
+> = {
+  condensed: {
+    tour: "lens-condensed",
+    label: "Condensed",
+    title: (m) => `Condensed — ${m}`,
+    body: (m) =>
+      `Because your profile already evidences related skills, ${m} is shortened to the essentials so you spend less time on what you mostly know.`,
+  },
   diagnostic: {
     tour: "lens-diagnostic",
     label: "Quick Diagnostic",
@@ -10,12 +20,12 @@ const LENS_CONFIG: Record<LensKind, { tour: string; label: string; title: (m: st
     body: (m) =>
       `For ${m}, you'll see a 3-question check across the module's chapters. Get them right and we skip those chapters. Get one wrong and just that chapter reopens for you.`,
   },
-  condensed: {
-    tour: "lens-condensed",
-    label: "Condensed",
-    title: (m) => `Condensed — ${m}`,
+  microlearning: {
+    tour: "lens-microlearning",
+    label: "Microlearning",
+    title: (m) => `Microlearning — ${m}`,
     body: (m) =>
-      `Because your profile already evidences related skills, ${m} is shortened to the essentials so you spend less time on what you mostly know.`,
+      `For ${m}, chapters are delivered as short, high-signal segments — roughly 40% of the usual time — so you can learn in the flow of work without losing the essentials.`,
   },
   evidence: {
     tour: "lens-evidence",
@@ -25,6 +35,8 @@ const LENS_CONFIG: Record<LensKind, { tour: string; label: string; title: (m: st
       `For ${m}, you can show you've done this in the real world: submit a short written task. Once accepted, the module's chapters are marked covered.`,
   },
 };
+
+const LENS_ORDER: LensKind[] = ["condensed", "diagnostic", "microlearning", "evidence"];
 
 const SECTION = "How content adapts";
 
@@ -43,10 +55,10 @@ function fireExpandOne(moduleCode: string) {
 }
 
 /**
- * Scan the rendered journey for lens pills and produce one tour step per lens
- * type that the user actually has — in journey (document) order. Each step
- * targets the specific module's pill so highlighting always lands on the
- * module described in the popover.
+ * Always emit one tour step per lens kind so learners get the full
+ * adaptation vocabulary. When a concrete pill exists in the rendered
+ * journey, anchor to it; otherwise fall back to the modules panel so the
+ * step still has somewhere to land.
  */
 export async function buildLensSteps(): Promise<TourStep[]> {
   // Make sure every module is open so we can see all pills.
@@ -57,42 +69,55 @@ export async function buildLensSteps(): Promise<TourStep[]> {
     document.querySelectorAll<HTMLElement>("[data-module-code]"),
   );
 
-  const seen: Partial<Record<LensKind, { moduleCode: string; moduleTitle: string }>> = {};
-  const order: LensKind[] = [];
-
+  const found: Partial<Record<LensKind, { moduleCode: string; moduleTitle: string }>> = {};
   for (const mod of modules) {
     const moduleCode = mod.getAttribute("data-module-code") ?? "";
-    const moduleTitle =
-      mod.getAttribute("data-module-title") ?? moduleCode;
+    const moduleTitle = mod.getAttribute("data-module-title") ?? moduleCode;
     if (!moduleCode) continue;
 
-    (Object.keys(LENS_CONFIG) as LensKind[]).forEach((kind) => {
-      if (seen[kind]) return;
+    LENS_ORDER.forEach((kind) => {
+      if (found[kind]) return;
       const sel = `[data-tour="${LENS_CONFIG[kind].tour}"]`;
       if (mod.querySelector(sel)) {
-        seen[kind] = { moduleCode, moduleTitle };
-        order.push(kind);
+        found[kind] = { moduleCode, moduleTitle };
       }
     });
   }
 
-  return order.map<TourStep>((kind) => {
-    const { moduleCode, moduleTitle } = seen[kind]!;
+  return LENS_ORDER.map<TourStep>((kind) => {
+    const hit = found[kind];
     const cfg = LENS_CONFIG[kind];
-    const target = `[data-module-code="${CSS.escape(moduleCode)}"] [data-tour="${cfg.tour}"]`;
+    if (hit) {
+      const target = `[data-module-code="${CSS.escape(hit.moduleCode)}"] [data-tour="${cfg.tour}"]`;
+      return {
+        id: `adapt-${kind}-${hit.moduleCode}`,
+        section: SECTION,
+        route: "/",
+        target,
+        title: cfg.title(hit.moduleTitle),
+        body: cfg.body(hit.moduleTitle),
+        placement: "left",
+        prepare: async () => {
+          fireExpandOne(hit.moduleCode);
+          await waitMs(280);
+        },
+        fallbackHint: `Look for the ${cfg.label} badge on ${hit.moduleTitle}.`,
+      };
+    }
+    // Fallback: no concrete badge in this journey — anchor to the modules
+    // panel and explain the lens generically so the learner still sees it.
     return {
-      id: `adapt-${kind}-${moduleCode}`,
+      id: `adapt-${kind}-generic`,
       section: SECTION,
       route: "/",
-      target,
-      title: cfg.title(moduleTitle),
-      body: cfg.body(moduleTitle),
+      target: '[data-tour="embark-modules"]',
+      title: `${cfg.label}`,
+      body: cfg
+        .body("a module")
+        .replace(/^For a module, /, "When this lens applies, ")
+        .replace(/^Because your profile already evidences/, "When your profile already evidences"),
       placement: "left",
-      prepare: async () => {
-        fireExpandOne(moduleCode);
-        await waitMs(280);
-      },
-      fallbackHint: `Look for the ${cfg.label} badge on ${moduleTitle}.`,
+      fallbackHint: `${cfg.label} pills appear on chapter rows when this lens fits a module for you.`,
     };
   });
 }

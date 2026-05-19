@@ -10,6 +10,8 @@ interface ThemeContextType {
   setStyleTheme: (t: StyleTheme) => void;
   superLight: boolean;
   setSuperLight: (v: boolean) => void;
+  showLegacyModules: boolean;
+  setShowLegacyModules: (v: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
@@ -19,6 +21,8 @@ const ThemeContext = createContext<ThemeContextType>({
   setStyleTheme: () => {},
   superLight: true,
   setSuperLight: () => {},
+  showLegacyModules: false,
+  setShowLegacyModules: () => {},
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

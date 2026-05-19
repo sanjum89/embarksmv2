@@ -869,8 +869,9 @@ export function AppSidebar() {
         />
       </div>
 
-      {/* Legacy (Dev Mode only) */}
-      {devMode && (
+      {/* Legacy (always visible) */}
+      {(
+
         <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
           <Popover>
             {expanded ? (

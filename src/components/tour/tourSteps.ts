@@ -8,7 +8,7 @@ export interface TourStep {
   target?: string;
   title: string;
   body: string;
-  placement?: "top" | "bottom" | "left" | "right";
+  placement?: "top" | "bottom" | "left" | "right" | "center";
   /** Optional hook fired before searching for the target. Use this to expand
    * accordions, switch tabs, etc., so the target is in the DOM. */
   prepare?: () => void | Promise<void>;
@@ -37,6 +37,7 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="embark-page"]',
     title: "This is Embark",
     body: "Your AI-guided learning surface. Everything you need to learn is here: a conversational coach on one side, your journey on the other.",
+    placement: "center",
   },
   {
     id: "embark-chat",
@@ -51,21 +52,23 @@ export const TOUR_STEPS: TourStep[] = [
     id: "embark-journey",
     section: "Embark",
     route: "/",
-    target: '[data-tour="embark-journey"]',
+    target: '[data-tour="embark-cohort-header"]',
     title: "Cohort → Track → Module → Chapter",
-    body: "Your Cohort is the program you're in. It contains Tracks. Each Track has Modules, and each Module has Chapters. Open one to see the chapter list.",
-    placement: "left",
+    body: "Your Cohort is the program you're in. It contains Tracks shown above. Each Track has Modules, and each Module has Chapters. Open one below to see the chapter list.",
+    placement: "bottom",
+    fallbackHint: "Look for the cohort header and track tabs at the top of your journey.",
   },
   {
     id: "adapt-intro",
     section: "How content adapts",
     route: "/",
-    target: '[data-tour="embark-journey"]',
+    target: '[data-tour="embark-modules"]',
     title: "Content adapts to you",
-    body: "Embark reshapes each Module for you based on your profile and your 360 gaps. You'll see three lenses on chapter rows: Condensed, Quick Diagnostic, and Evidence Task.",
+    body: "Embark reshapes each Module for you based on your profile and your 360 gaps. You'll see four lenses on chapter rows: Condensed, Quick Diagnostic, Microlearning, and Evidence Task.",
     placement: "left",
     prepare: expandAllModules,
   },
+
   {
     id: "adapt-condensed",
     section: "How content adapts",
@@ -89,6 +92,18 @@ export const TOUR_STEPS: TourStep[] = [
     fallbackHint: "Look for the Quick Diagnostic badge on a chapter row.",
   },
   {
+    id: "adapt-microlearning",
+    section: "How content adapts",
+    route: "/",
+    target: '[data-tour="lens-microlearning"]',
+    title: "Microlearning",
+    body: "Some chapters are delivered as short, high-signal segments — roughly 40% of the usual time — so you can learn in the flow of work without losing the essentials.",
+    placement: "left",
+    prepare: expandAllModules,
+    fallbackHint: "Look for the Microlearning badge on a module.",
+  },
+
+  {
     id: "adapt-evidence",
     section: "How content adapts",
     route: "/",
@@ -103,7 +118,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: "adapt-why",
     section: "How content adapts",
     route: "/",
-    target: '[data-tour="embark-journey"]',
+    target: '[data-tour="embark-modules"]',
     title: "Why each lens?",
     body: "Your role, prior projects, and skill gaps from My 360 determine which lens fits each Module. The goal: less filler, more of what moves you forward.",
     placement: "left",
@@ -115,6 +130,7 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="cohort-hub"]',
     title: "Your Cohort Hub",
     body: "See who's in your cohort, where everyone is in the journey, and what's coming up. Use it to compare notes and stay aligned.",
+    placement: "center",
   },
   {
     id: "action-centre",
@@ -123,6 +139,7 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="action-centre"]',
     title: "Action Centre",
     body: "Nudges from your manager, reflections to complete, and reminders for your next steps — all in one inbox.",
+    placement: "center",
   },
   {
     id: "my360",
@@ -131,6 +148,7 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="my360"]',
     title: "My 360",
     body: "Your professional profile: competency radar, skills-gap matrix, and career timeline. This is what drives the adaptation in Embark.",
+    placement: "center",
   },
   {
     id: "role-play",
@@ -139,7 +157,9 @@ export const TOUR_STEPS: TourStep[] = [
     target: '[data-tour="role-play-bank"]',
     title: "Role Play",
     body: "Practise real conversations with AI characters — review a client meeting, rehearse a tricky message, or try a voice scenario. Manager-set or self-chosen.",
+    placement: "center",
   },
+
   {
     id: "wrap",
     section: "All set",

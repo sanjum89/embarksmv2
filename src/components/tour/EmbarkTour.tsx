@@ -87,10 +87,21 @@ function useTargetRect(
   return rect;
 }
 
-type Placement = "top" | "bottom" | "left" | "right";
+type Placement = "top" | "bottom" | "left" | "right" | "center";
+
+/** When the spotlit element covers most of the viewport, anchoring to an
+ * edge pushes the popover off-screen at higher zoom. Auto-promote those to
+ * a centred card instead. */
+function shouldCenter(rect: Rect | null, placement: Placement): boolean {
+  if (placement === "center") return true;
+  if (!rect) return false;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  return rect.width > vw * 0.6 && rect.height > vh * 0.6;
+}
 
 function placeCard(rect: Rect | null, placement: Placement = "bottom") {
-  if (!rect) {
+  if (!rect || placement === "center") {
     return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" } as const;
   }
   const vw = window.innerWidth;
@@ -118,7 +129,9 @@ function placeCard(rect: Rect | null, placement: Placement = "bottom") {
   return { top, left, transform: "none" } as const;
 }
 
+
 function caretStyle(rect: Rect, placement: Placement): React.CSSProperties | null {
+  if (placement === "center") return null;
   // Position the caret on the side of the card that faces the target.
   const half = CARET / 2;
   const base: React.CSSProperties = {
@@ -128,6 +141,7 @@ function caretStyle(rect: Rect, placement: Placement): React.CSSProperties | nul
     background: "hsl(var(--card))",
     transform: "rotate(45deg)",
   };
+
   if (placement === "left") {
     return {
       ...base,
@@ -182,7 +196,7 @@ export function EmbarkTour() {
       try {
         const dynamic = await buildLensSteps();
         if (cancelled || dynamic.length === 0) return;
-        tour.spliceSteps(["adapt-condensed", "adapt-diagnostic", "adapt-evidence"], dynamic);
+        tour.spliceSteps(["adapt-condensed", "adapt-diagnostic", "adapt-microlearning", "adapt-evidence"], dynamic);
       } catch {}
     })();
     return () => { cancelled = true; };
@@ -217,8 +231,10 @@ export function EmbarkTour() {
 
   const onRoute = pathname === step.route;
   const showSpotlight = onRoute && !!rect;
-  const placement: Placement = step.placement ?? "bottom";
+  const rawPlacement: Placement = step.placement ?? "bottom";
+  const placement: Placement = shouldCenter(showSpotlight ? rect : null, rawPlacement) ? "center" : rawPlacement;
   const cardStyle = placeCard(showSpotlight ? rect : null, placement);
+
   const isFirst = tour.stepIndex === 0;
   const isLast = tour.stepIndex === tour.steps.length - 1;
   const hasTarget = !!step.target;

@@ -113,15 +113,17 @@ function JourneyBody({
 
   return (
     <div className="space-y-4">
-      <JourneyHeaderCard cohort={cohort} />
+      <div data-tour="embark-cohort-header" className="space-y-4">
+        <JourneyHeaderCard cohort={cohort} />
 
-      {tracks.length > 0 && (
-        <JourneyTrackTabs
-          tracks={tracks}
-          activeCode={activeTrack}
-          onSelect={setActiveTrack}
-        />
-      )}
+        {tracks.length > 0 && (
+          <JourneyTrackTabs
+            tracks={tracks}
+            activeCode={activeTrack}
+            onSelect={setActiveTrack}
+          />
+        )}
+      </div>
 
       {selected && (
         <div className="flex items-center justify-end gap-2 flex-wrap">
@@ -147,15 +149,18 @@ function JourneyBody({
           No modules in this view.
         </p>
       ) : filteredTrack ? (
-        <JourneyModuleAccordion
-          track={filteredTrack}
-          cohortId={cohort.id}
-          activeChapterCode={activeChapterId}
-        />
+        <div data-tour="embark-modules">
+          <JourneyModuleAccordion
+            track={filteredTrack}
+            cohortId={cohort.id}
+            activeChapterCode={activeChapterId}
+          />
+        </div>
       ) : null}
     </div>
   );
 }
+
 
 function ViewShell({
   title,

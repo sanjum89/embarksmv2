@@ -176,10 +176,14 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                     const recorded = diagState[m.code];
                     const displayChapters = buildLensChapters(m.code, m.chapters, lensType, recorded);
                     return displayChapters.map((c, sIdx) => {
+                      const isAssessment =
+                        c.contentType === "assessment" ||
+                        c.contentType === "diagnostic" ||
+                        (c as any).assessmentScore != null;
                       const step: UnifiedStep & { lensState?: string } = {
                         stepId: c.code,
                         moduleId: c.code,
-                        type: "module" as StepType,
+                        type: (isAssessment ? "assessment" : "module") as StepType,
                         title: c.title,
                         description: "",
                         duration: c.minutes ? `${c.minutes} min` : undefined,
@@ -192,6 +196,9 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                         lensState: (c as any).lensState,
                         pendingSkip: (c as any).pendingSkip,
                         diagResult: (c as any).diagResult,
+                        assessmentScore: (c as any).assessmentScore,
+                        assessmentPassed: (c as any).assessmentPassed,
+                        assessmentPassingScore: (c as any).assessmentPassingScore,
                       };
                       return (
                         <EmbarkChapterRow
@@ -203,6 +210,7 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                         />
                       );
                     });
+
                   })()}
                 </div>
             </AccordionContent>
@@ -354,6 +362,7 @@ function AdaptationBadge({ adaptation }: { adaptation: ModuleAdaptation }) {
         <button
           type="button"
           onClick={(e) => e.stopPropagation()}
+          data-tour={adaptation.adaptationType === "microlearning" ? "lens-microlearning" : undefined}
           className={cn(
             "h-5 px-1.5 text-[0.65rem] rounded-md border inline-flex items-center gap-1 hover:opacity-80 transition-opacity",
             tone[adaptation.adaptationType]
@@ -364,6 +373,7 @@ function AdaptationBadge({ adaptation }: { adaptation: ModuleAdaptation }) {
           <Info className="h-2.5 w-2.5" />
         </button>
       </PopoverTrigger>
+
       <PopoverContent
         className="w-80 text-xs space-y-2"
         side="top"

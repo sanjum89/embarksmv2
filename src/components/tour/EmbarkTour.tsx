@@ -196,7 +196,7 @@ export function EmbarkTour() {
       try {
         const dynamic = await buildLensSteps();
         if (cancelled || dynamic.length === 0) return;
-        tour.spliceSteps(["adapt-condensed", "adapt-diagnostic", "adapt-evidence"], dynamic);
+        tour.spliceSteps(["adapt-condensed", "adapt-diagnostic", "adapt-microlearning", "adapt-evidence"], dynamic);
       } catch {}
     })();
     return () => { cancelled = true; };

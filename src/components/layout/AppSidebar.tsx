@@ -342,7 +342,7 @@ export function AppSidebar() {
           </nav>
 
           {/* Bottom section */}
-          <div className={cn("w-full pb-3", expanded ? "px-3" : "flex flex-col items-center gap-1")}>
+          <div className={cn("w-full pb-3", expanded ? "px-3" : "flex flex-col items-center gap-1 px-0")}>
             {/* Dark mode toggle */}
             {expanded ? (
               <button

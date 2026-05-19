@@ -107,9 +107,17 @@ export function LearnerDrawer({ open, onOpenChange, learner, overlay, modules, i
 
           {overlay?.story && (
             <div className="mt-4 rounded-lg border border-border bg-muted/40 p-4">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {eyebrow}
-              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  {eyebrow}
+                </p>
+                <Badge
+                  variant="outline"
+                  className="gap-1 border-border/60 px-1.5 py-0 text-[10px] font-medium text-muted-foreground"
+                >
+                  <Sparkles className="h-3 w-3" /> Embark AI
+                </Badge>
+              </div>
               <p className="mt-2 text-sm leading-relaxed text-foreground/90">{overlay.story}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <StatChip label="Progress" value={`${progressPct}% · ${completed}/${total}`} />

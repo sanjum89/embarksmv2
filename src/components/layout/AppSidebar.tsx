@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { Loader2, LogOut, LogIn, Paintbrush, GitGraph, Code, Type, Archive } from "lucide-react";
+import { useState } from "react";
+import { Loader2, LogOut, LogIn, GitGraph, Type, Archive, Settings as SettingsIcon } from "lucide-react";
 import { AccessibilityPanel } from "@/components/layout/AccessibilityPanel";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -39,7 +39,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Separator } from "@/components/ui/separator";
 import { AccountSwitcher } from "@/components/account/AccountSwitcher";
 import { LoginDialog } from "@/components/layout/LoginDialog";
-import { BrandingPanel } from "@/components/account/BrandingPanel";
+
 
 import learningSpacesIcon from "@/assets/learning-spaces.svg";
 
@@ -59,7 +59,7 @@ const meNavItems: NavItem[] = [
   { label: "Action Centre", path: "/my-inbox", icon: Inbox },
   { label: "Cohort Hub", path: "/cohort", icon: Users },
   { label: "My 360", path: "/my-360", icon: CircleUser },
-  { label: "Dev Tools", path: "/dev-tools", icon: Code, dev: true },
+  { label: "Settings", path: "/settings", icon: SettingsIcon },
 ];
 
 const teamNavItems: NavItem[] = [
@@ -69,7 +69,7 @@ const teamNavItems: NavItem[] = [
   { label: "Deep Research", path: "/team/deep-research", icon: Microscope },
   { label: "Action Centre", path: "/action-centre", icon: Inbox },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
-  { label: "Dev Tools", path: "/dev-tools", icon: Code, dev: true },
+  { label: "Settings", path: "/settings", icon: SettingsIcon },
 ];
 
 
@@ -96,7 +96,7 @@ export function AppSidebar() {
   const { user, switchUser, setRole, availableUsers, signedInUserIds, loginUser, logoutUser } = useUser();
   const { activeAccount } = useAccount();
   const { expanded, toggle } = useSidebarState();
-  const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight } = useTheme();
+  const { theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight, showLegacyModules } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
@@ -108,8 +108,7 @@ export function AppSidebar() {
     if (label === "Learning Spaces") setLearningSpacesOpen((v) => !v);
     else setManagerOpen((v) => !v);
   };
-  const [devMode, setDevMode] = useState(() => localStorage.getItem("dev-mode") === "true");
-  
+
   // Store the user's original base role so team mode doesn't overwrite admin → manager
   const baseRole = availableUsers.find((u) => u.id === user.id)?.role ?? user.role;
   const teamRole = baseRole === "admin" ? "admin" : "manager";
@@ -142,16 +141,9 @@ export function AppSidebar() {
   };
 
   const baseItems = viewMode === "me" ? meNavItems : teamNavItems;
-  const filteredItems = devMode ? baseItems : baseItems.filter((item) => !item.dev);
+  const filteredItems = baseItems.filter((item) => !item.dev);
   const legacyItems = viewMode === "me" ? legacyMeItems : legacyTeamItems;
 
-  const toggleDevMode = useCallback(() => {
-    setDevMode((prev) => {
-      const next = !prev;
-      localStorage.setItem("dev-mode", String(next));
-      return next;
-    });
-  }, []);
 
   const isTraditional = styleTheme === "traditional";
 
@@ -429,29 +421,8 @@ export function AppSidebar() {
               }
             />
 
-            {/* Branding */}
-            <BrandingPanel
-              trigger={
-                expanded ? (
-                  <button className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors text-sm font-medium">
-                    <Paintbrush className="h-4 w-4 shrink-0" />
-                    <span>Branding</span>
-                  </button>
-                ) : (
-                  <Tooltip delayDuration={0}>
-                    <TooltipTrigger asChild>
-                      <button className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors">
-                        <Paintbrush className="h-4 w-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="right" sideOffset={8}>Branding</TooltipContent>
-                  </Tooltip>
-                )
-              }
-            />
-
-            {/* Legacy (always visible) */}
-            {(
+            {/* Legacy (gated by Settings → Workspace toggle) */}
+            {showLegacyModules && (
 
               <Popover>
                 {expanded ? (
@@ -493,30 +464,6 @@ export function AppSidebar() {
                   ))}
                 </PopoverContent>
               </Popover>
-            )}
-
-            {/* Dev mode toggle */}
-            {expanded ? (
-              <button
-                onClick={toggleDevMode}
-                className={cn("flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium", devMode ? "text-foreground bg-white/50" : "text-muted-foreground hover:bg-white/50 hover:text-foreground")}
-              >
-                <Code className="h-4 w-4 shrink-0" />
-                <span>Dev Mode</span>
-                {devMode && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
-              </button>
-            ) : (
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={toggleDevMode}
-                    className={cn("flex h-9 w-9 items-center justify-center rounded-full transition-colors", devMode ? "text-foreground bg-white/50" : "text-muted-foreground hover:bg-white/50 hover:text-foreground")}
-                  >
-                    <Code className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>Dev Mode {devMode ? "on" : "off"}</TooltipContent>
-              </Tooltip>
             )}
           </div>
 
@@ -852,25 +799,8 @@ export function AppSidebar() {
         />
       </div>
 
-      {/* Branding */}
-      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
-        <BrandingPanel
-          trigger={
-            <button
-              className={cn(
-                "flex items-center rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-                expanded ? "h-9 gap-3 w-full px-3" : "h-10 w-10 justify-center"
-              )}
-            >
-              <Paintbrush className="h-4 w-4 shrink-0" />
-              {expanded && <span className="text-sm font-medium">Branding</span>}
-            </button>
-          }
-        />
-      </div>
-
-      {/* Legacy (always visible) */}
-      {(
+      {/* Legacy (gated by Settings → Workspace toggle) */}
+      {showLegacyModules && (
 
         <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
           <Popover>
@@ -920,31 +850,6 @@ export function AppSidebar() {
         </div>
       )}
 
-      {/* Dev mode toggle */}
-      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
-        {expanded ? (
-          <button
-            onClick={toggleDevMode}
-            className={cn("flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium", devMode ? "text-sidebar-accent-foreground bg-sidebar-accent" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground")}
-          >
-            <Code className="h-4 w-4 shrink-0" />
-            <span>Dev Mode</span>
-            {devMode && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
-          </button>
-        ) : (
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={toggleDevMode}
-                className={cn("flex h-10 w-10 items-center justify-center rounded-lg transition-colors", devMode ? "text-sidebar-accent-foreground bg-sidebar-accent" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground")}
-              >
-                <Code className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}>Dev Mode {devMode ? "on" : "off"}</TooltipContent>
-          </Tooltip>
-        )}
-      </div>
 
       {/* User info */}
       <div className={cn("border-t border-sidebar-border py-4 w-full", expanded ? "px-3" : "flex justify-center")}>

@@ -10,6 +10,8 @@ interface ThemeContextType {
   setStyleTheme: (t: StyleTheme) => void;
   superLight: boolean;
   setSuperLight: (v: boolean) => void;
+  showLegacyModules: boolean;
+  setShowLegacyModules: (v: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
@@ -19,6 +21,8 @@ const ThemeContext = createContext<ThemeContextType>({
   setStyleTheme: () => {},
   superLight: true,
   setSuperLight: () => {},
+  showLegacyModules: false,
+  setShowLegacyModules: () => {},
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
@@ -46,6 +50,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
     return true;
   });
+
+  const [showLegacyModules, setShowLegacyModulesRaw] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("showLegacyModules") === "true";
+    }
+    return false;
+  });
+
+  const setShowLegacyModules = (v: boolean) => {
+    setShowLegacyModulesRaw(v);
+    if (typeof window !== "undefined") localStorage.setItem("showLegacyModules", String(v));
+  };
 
   const setStyleTheme = (t: StyleTheme) => {
     setStyleThemeRaw(t);
@@ -77,7 +93,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight, showLegacyModules, setShowLegacyModules }}>
       {children}
     </ThemeContext.Provider>
   );

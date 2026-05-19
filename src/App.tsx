@@ -44,6 +44,7 @@ import ManagerCohortPicker from "./pages/ManagerCohortPicker";
 import DeepResearch from "./pages/DeepResearch";
 import CohortHub from "./pages/CohortHub";
 import DevTools from "./pages/DevTools";
+import Settings from "./pages/Settings";
 import { SupportiveToastBridge } from "@/components/SupportiveToastBridge";
 
 
@@ -99,6 +100,7 @@ const App = () => (
               <Route path="/action-centre" element={<ActionCentre />} />
               <Route path="/admin" element={<AdminView />} />
               <Route path="/dev-tools" element={<DevTools />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

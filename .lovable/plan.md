@@ -1,58 +1,84 @@
-## Root cause
+## Goal
 
-The reset edge function seeds the DB correctly, and `useManagerCohortData` reads it back (that's why Clara's own learner view + the cohort drill-down look right). The screens that are *still* showing old data — Julian's **Team Dashboard** (`/team`) and the **Action Centre** — never query the DB. They synchronously call `getAllDemoOverlays()` from `src/data/managerDemoOverlay.ts`, which returns the module-level `OVERLAY` object built once at import time from hand-authored persona stories.
+Add a dedicated **`/settings`** route consolidating Branding, Legacy toggle, Dev Mode, and chat/session controls. Keep the **Accessibility** panel exactly where it is today (sidebar footer), unchanged.
 
-Callers still on the legacy synchronous overlay:
+## Information architecture
 
-- `src/pages/TeamMode.tsx` — Julian's `/team` landing (roster, KPI strip, action queue, schedule cards)
-- `src/pages/ActionCentre.tsx` — `/action-centre` (admin / manager Action Centre)
-- `src/pages/ManagerCohortPicker.tsx` — `/manager/cohorts` KPI tiles
-- `src/components/team-home/SendCheckInDialog.tsx`
-- `src/components/team-home/Schedule1on1Dialog.tsx`
-- `src/components/people-graph/EmployeeSignalExplorer.tsx`
+```text
+/settings
+├── Appearance   — theme (light/dark/super light), interface version
+├── Workspace    — chat reset, legacy modules toggle, sidebar default
+├── Branding     — logos, color presets, custom colors
+├── Developer    — admin-only: reset Rathbones, debug utilities
+└── About        — version, active account, sign out
+```
 
-The DB-backed overlay logic only lives inside `useManagerCohortData`. Everywhere else still reads the baked-in data.
+Accessibility stays in its current sidebar slot — not moved into Settings.
 
-## Fix
+### Appearance
+- Light / Dark / Super Light (radio cards)
+- Interface version: New vs Traditional (moved out of the Accessibility panel)
 
-### 1. Extract a shared hook — `useRathbonesPersonaOverlays`
-New file `src/hooks/useRathbonesPersonaOverlays.ts` that returns the same overlay shape `useManagerCohortData` already produces, but for the *standard Rathbones cohort* without the cohort-page chrome.
+### Workspace
+- Show legacy modules in sidebar (toggle, default OFF). Replaces today's standalone Legacy sidebar section.
+- Reset Agent One chat history (action button, confirm dialog).
+- Sidebar expanded by default (persisted).
 
-- Resolves `accountId` from `useAccount` and defaults `cohortId` to `RATHBONES_COHORT_ID` (override accepted).
-- Loads `cohorts` + `catalog_modules` (filtered by `role_cohort_code`) + `catalog_chapters` chapter counts + `cohort_enrollments` once.
-- For each persona in `RATHBONES_PERSONA_IDS` ∪ live enrollments, runs `loadEmployeeSignals` + `overlayFromSignals` exactly like `useManagerCohortData` does today.
-- Falls back to `getDemoOverlay(id)` only when the DB returned zero rows for that employee (safety net for fresh / un-seeded accounts).
-- Returns `{ loading, overlays, byId, modules }`.
+### Branding
+- Full body of today's `BrandingPanel` rendered inline: logo slots, Rathbones presets, generic palettes, custom color picker, reset.
 
-Refactor `useManagerCohortData` to delegate its per-employee loop to this shared hook so the two cannot drift apart.
+### Developer (admin-only)
+- Visible only when active user has admin role. Hidden otherwise; route returns 404 for non-admins.
+- "Reset Rathbones learner state" card — ported verbatim from `DevTools.tsx`.
 
-### 2. Account-agnostic — works for Pinnacle (white-label) too
-Pinnacle Capital is a deep clone of Rathbones with the same `RATHBONES_COHORT_ID` and the same `rb-l*` employee IDs (per the `useContentSubstitution` core rule). The new hook keys off `activeAccount.id` for the DB filter and the persona IDs are shared, so swapping the account in the switcher transparently flips Pinnacle's manager/admin screens to its own seeded DB rows. No Pinnacle-specific branch is required — confirm by:
-- Reset → switch account to Pinnacle → log in as Julian (or Pinnacle's equivalent manager) → `/team` and `/action-centre` reflect the seeded state, with `useContentSubstitution` already rewriting "Rathbones" → "Pinnacle Capital" in any narrative strings.
+### About
+- App version, active account name, signed-in personas, sign-out.
 
-### 3. Migrate the six callers
-Drop the synchronous `getAllDemoOverlays()` / `getDemoOverlay(id)` calls and read from the hook instead:
+## Sidebar changes
 
-- `TeamMode.tsx` — replace `const overlays = getAllDemoOverlays()` with `useRathbonesPersonaOverlays()`. Gate the existing `useMemo` blocks on `loading`. Show the same lightweight skeleton pattern used by `ManagerCohortHub`.
-- `ActionCentre.tsx` — same swap. Pending counts will now flow from real `micro_learnings` / `chapter_lock_events` rows.
-- `ManagerCohortPicker.tsx` — use `overlays` for the KPI tiles ("Active learners", "Needs attention") and per-tile progress %.
-- `SendCheckInDialog.tsx`, `Schedule1on1Dialog.tsx` — dialogs only mount when opened; safe to call the hook unconditionally.
-- `EmployeeSignalExplorer.tsx` — read `byId[employee.id]` instead of `getDemoOverlay(employee.id)`.
+- **Remove**: Branding dialog trigger, Legacy section, EOL/Dev Mode toggle.
+- **Keep untouched**: Accessibility panel trigger.
+- **Add**: single **Settings** (gear) item in sidebar footer → `/settings`.
+- Legacy items still render in sidebar when the new Workspace toggle is ON, driven by a `showLegacyModules` flag in `ThemeContext` persisted to `localStorage`.
 
-### 4. Mark legacy paths fallback-only
-Add a one-line JSDoc to `getAllDemoOverlays` / `getDemoOverlay` in `src/data/managerDemoOverlay.ts`:
-`@deprecated Use useRathbonesPersonaOverlays. Kept as fallback for un-seeded accounts.`
-Bodies unchanged.
+## Page layout
 
-## Verify (manual repro after build)
-1. **Dev Tools → Reset Rathbones demo** (the just-fixed edge function).
-2. Active account = Rathbones, log in as Julian (`rb-mgr`):
-   - `/team` shows Clara as the only `rising_star`, Theo as `needs_check_in`, the other 7 personas on the `baselineSpec(...)` baseline.
-   - `/action-centre` pending items reflect only Clara / Theo (other personas have no pending micros per the reset spec).
-3. Switch active account → Pinnacle Capital, log in as the equivalent manager → same screens reflect Pinnacle's seeded state with white-labeled copy.
-4. `/manager/cohort/{id}` drill-down (already DB-backed) and Julian's `/team` now show the same status for the same employee.
+Two-column shell. Left rail = section list (sticky). Right pane = active section. Section state in URL via `?section=branding` for deep links. Mobile: section list collapses to horizontal pill scroller.
+
+```text
+┌─────────────────────────────────────────────────┐
+│  Settings                                       │
+├──────────────┬──────────────────────────────────┤
+│ Appearance ● │  Theme                           │
+│ Workspace    │  ○ Light  ● Dark  ○ Super Light  │
+│ Branding     │                                  │
+│ Developer    │  Interface version               │
+│ About        │  ○ New   ● Traditional           │
+└──────────────┴──────────────────────────────────┘
+```
+
+Uses existing `PageHeader` (breadcrumb: Settings › <section>), `Card` for grouped controls, `Separator` between sub-sections.
+
+## Technical notes
+
+- New file: `src/pages/Settings.tsx` — section router + layout.
+- New folder: `src/components/settings/` — `AppearanceSection.tsx`, `WorkspaceSection.tsx`, `BrandingSection.tsx`, `DeveloperSection.tsx`, `AboutSection.tsx`.
+- `BrandingSection` = refactor of `BrandingPanel` (extract inner content into a reusable component; existing dialog trigger removed from sidebar).
+- `DeveloperSection` = port of `DevTools.tsx` content.
+- `ThemeContext` gains `showLegacyModules: boolean` + setter, persisted to `localStorage`. `AppSidebar` reads it to gate Legacy item rendering.
+- `AppSidebar.tsx` cleanup:
+  - Remove `Dev Tools` entries from `meNavItems`/`teamNavItems`.
+  - Remove EOL/Dev Mode toggle.
+  - Remove Branding dialog trigger.
+  - **Leave Accessibility trigger exactly where it is.**
+  - Gate Legacy items on `showLegacyModules`.
+  - Add Settings gear entry in footer.
+- Route registration in `src/App.tsx`: `<Route path="/settings" element={<Settings/>}/>`. Redirect `/dev-tools` → `/settings?section=developer`.
+- Admin gating: Developer tab hidden in section list when `!isAdmin`; direct access returns 404.
+- No backend changes. No edge-function changes.
 
 ## Out of scope
-- The reset edge function itself (it already produces the correct DB state).
-- Clara / Theo narrative overrides in `rathbonesNarrative.ts` (already applied inside `overlayFromSignals`).
-- Other screens importing only *types* from `managerDemoOverlay` (no behavior change needed).
+
+- Touching the Accessibility panel or its sidebar position.
+- Reorganizing the reset function itself.
+- Persisting preferences to the DB (still `localStorage`).

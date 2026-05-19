@@ -35,6 +35,7 @@ export default function PageHeader({
   title,
   subtitle,
   actions,
+  titleAside,
   className,
 }: PageHeaderProps) {
   const autoCrumbs = useRouteCrumbs();
@@ -57,6 +58,7 @@ export default function PageHeader({
           <h1 className="font-display text-2xl font-bold text-foreground tracking-tight truncate">
             {title}
           </h1>
+          {titleAside && <div className="flex-shrink-0 flex items-center gap-2">{titleAside}</div>}
         </div>
         {subtitle && (
           <p className="mt-0.5 text-sm text-muted-foreground truncate">{subtitle}</p>

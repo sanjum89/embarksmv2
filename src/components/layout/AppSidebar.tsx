@@ -450,8 +450,9 @@ export function AppSidebar() {
               }
             />
 
-            {/* Legacy (Dev Mode only) */}
-            {devMode && (
+            {/* Legacy (always visible) */}
+            {(
+
               <Popover>
                 {expanded ? (
                   <PopoverTrigger asChild>

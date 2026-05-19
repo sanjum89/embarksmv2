@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
-import { PageHeader } from "@/components/layout/PageHeader";
+import PageHeader from "@/components/layout/PageHeader";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUser } from "@/contexts/UserContext";
 import { useAgentOne } from "@/contexts/AgentOneContext";

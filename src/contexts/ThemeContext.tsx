@@ -93,7 +93,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const toggleTheme = () => setTheme((t) => (t === "light" ? "dark" : "light"));
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, styleTheme, setStyleTheme, superLight, setSuperLight, showLegacyModules, setShowLegacyModules }}>
       {children}
     </ThemeContext.Provider>
   );

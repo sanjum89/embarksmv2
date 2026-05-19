@@ -60,6 +60,7 @@ export default function Settings() {
   return (
     <div className="flex flex-col min-h-screen">
       <PageHeader
+        title="Settings"
         breadcrumbs={[
           { label: "Settings" },
           { label: visibleSections.find((s) => s.key === active)?.label ?? "" },

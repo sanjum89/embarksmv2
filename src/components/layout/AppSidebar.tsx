@@ -429,29 +429,8 @@ export function AppSidebar() {
               }
             />
 
-            {/* Branding */}
-            <BrandingPanel
-              trigger={
-                expanded ? (
-                  <button className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors text-sm font-medium">
-                    <Paintbrush className="h-4 w-4 shrink-0" />
-                    <span>Branding</span>
-                  </button>
-                ) : (
-                  <Tooltip delayDuration={0}>
-                    <TooltipTrigger asChild>
-                      <button className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors">
-                        <Paintbrush className="h-4 w-4" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="right" sideOffset={8}>Branding</TooltipContent>
-                  </Tooltip>
-                )
-              }
-            />
-
-            {/* Legacy (always visible) */}
-            {(
+            {/* Legacy (gated by Settings → Workspace toggle) */}
+            {showLegacyModules && (
 
               <Popover>
                 {expanded ? (
@@ -493,30 +472,6 @@ export function AppSidebar() {
                   ))}
                 </PopoverContent>
               </Popover>
-            )}
-
-            {/* Dev mode toggle */}
-            {expanded ? (
-              <button
-                onClick={toggleDevMode}
-                className={cn("flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium", devMode ? "text-foreground bg-white/50" : "text-muted-foreground hover:bg-white/50 hover:text-foreground")}
-              >
-                <Code className="h-4 w-4 shrink-0" />
-                <span>Dev Mode</span>
-                {devMode && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
-              </button>
-            ) : (
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={toggleDevMode}
-                    className={cn("flex h-9 w-9 items-center justify-center rounded-full transition-colors", devMode ? "text-foreground bg-white/50" : "text-muted-foreground hover:bg-white/50 hover:text-foreground")}
-                  >
-                    <Code className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>Dev Mode {devMode ? "on" : "off"}</TooltipContent>
-              </Tooltip>
             )}
           </div>
 

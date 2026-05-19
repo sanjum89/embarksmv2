@@ -29,6 +29,8 @@ interface DbBundle {
   locks: Array<{ module_code: string; chapter_code: string; reason: string | null; unlocked_at: string | null; created_at: string }>;
   micros: Array<{ id: string; failed_question: string; status: string; created_at: string; source_assessment_id: string | null }>;
   analytics: { last_activity_at: string | null; total_assessment_attempts: number; total_retakes: number; total_micro_learnings: number } | null;
+  /** chapter_code → readable chapter_title. Populated by loadEmployeeSignals. */
+  chapterTitles: Record<string, string>;
 }
 
 function daysSince(iso: string | null | undefined): number | null {

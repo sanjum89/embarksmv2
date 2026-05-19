@@ -29,6 +29,8 @@ interface DbBundle {
   locks: Array<{ module_code: string; chapter_code: string; reason: string | null; unlocked_at: string | null; created_at: string }>;
   micros: Array<{ id: string; failed_question: string; status: string; created_at: string; source_assessment_id: string | null }>;
   analytics: { last_activity_at: string | null; total_assessment_attempts: number; total_retakes: number; total_micro_learnings: number } | null;
+  /** chapter_code → readable chapter_title. Populated by loadEmployeeSignals. */
+  chapterTitles: Record<string, string>;
 }
 
 function daysSince(iso: string | null | undefined): number | null {
@@ -87,12 +89,34 @@ export async function loadEmployeeSignals(
       .maybeSingle(),
   ]);
 
+  // Resolve chapter titles for any chapter referenced in locks (and progress).
+  const chapterCodes = Array.from(
+    new Set(
+      [
+        ...((locks.data ?? []) as any[]).map((l) => l.chapter_code),
+        ...((progress.data ?? []) as any[]).map((p) => p.chapter_code).filter(Boolean),
+      ],
+    ),
+  );
+  const chapterTitles: Record<string, string> = {};
+  if (chapterCodes.length > 0) {
+    const { data: chapterRows } = await supabase
+      .from("catalog_chapters")
+      .select("chapter_code, chapter_title")
+      .eq("account_id", accountId)
+      .in("chapter_code", chapterCodes);
+    for (const row of (chapterRows ?? []) as any[]) {
+      chapterTitles[row.chapter_code] = row.chapter_title;
+    }
+  }
+
   return {
     progress: (progress.data ?? []) as any,
     assessments: (assessments.data ?? []) as any,
     locks: (locks.data ?? []) as any,
     micros: (micros.data ?? []) as any,
     analytics: (analytics.data ?? null) as any,
+    chapterTitles,
   };
 }
 
@@ -147,21 +171,40 @@ function deriveStatus(bundle: DbBundle, cells: ModuleCellOverlay[]): LearnerStat
   return "on_track";
 }
 
-function buildTimeline(bundle: DbBundle): { date: string; label: string }[] {
+function buildTimeline(
+  bundle: DbBundle,
+  modulesByCode: Map<string, string>,
+): { date: string; label: string }[] {
   const items: { date: string; label: string; ts: number }[] = [];
+  const scopeLabel = (scope: string): string => {
+    switch (scope) {
+      case "module_post": return "post";
+      case "module_pre": return "pre";
+      case "midpoint": return "midpoint";
+      case "chapter_diagnostic": return "diagnostic";
+      default: return scope.replace(/_/g, " ");
+    }
+  };
+  const reasonLabel = (reason: string | null | undefined): string => {
+    if (!reason) return "remediation";
+    return reason.replace(/_/g, " ");
+  };
   for (const a of bundle.assessments.slice(0, 6)) {
     if (!a.completed_at) continue;
     const scope = (a.metadata?.scope as string) ?? "module_post";
+    const moduleTitle = (a.module_code && modulesByCode.get(a.module_code)) || a.module_code || "module";
     items.push({
       date: a.completed_at.slice(0, 10),
-      label: `Assessment · ${a.module_code ?? ""} · ${a.score ?? "?"}% (${scope}, attempt ${a.attempt_number})`,
+      label: `Assessment · ${moduleTitle} · ${a.score ?? "?"}% (${scopeLabel(scope)}, attempt ${a.attempt_number})`,
       ts: new Date(a.completed_at).getTime(),
     });
   }
   for (const l of bundle.locks.slice(0, 6)) {
+    const chapterTitle = bundle.chapterTitles[l.chapter_code] ?? l.chapter_code;
+    const moduleTitle = modulesByCode.get(l.module_code) ?? l.module_code;
     items.push({
       date: l.created_at.slice(0, 10),
-      label: `Chapter re-opened · ${l.chapter_code} (${l.reason ?? "remediation"})`,
+      label: `Chapter re-opened · ${chapterTitle} (${moduleTitle}) — ${reasonLabel(l.reason)}`,
       ts: new Date(l.created_at).getTime(),
     });
   }
@@ -240,7 +283,7 @@ export function overlayFromSignals(
 
   const modulesByCode = new Map(modules.map((m) => [m.module_code, m.module_title]));
   const pathChanges = buildPathChanges(bundle, modulesByCode, employeeId);
-  const timeline = buildTimeline(bundle);
+  const timeline = buildTimeline(bundle, modulesByCode);
 
   const completed = cells.filter((c) => c.status === "completed").length;
   const total = cells.length;

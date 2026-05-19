@@ -230,6 +230,26 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
                     </Badge>
                   );
                 })()}
+                {step.assessmentScore != null && (() => {
+                  const passed = !!step.assessmentPassed;
+                  const tone = passed
+                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                    : "bg-destructive/10 text-destructive border-destructive/30";
+                  return (
+                    <Badge
+                      variant="outline"
+                      className={cn("h-5 px-1.5 text-[0.65rem] border font-medium", tone)}
+                      title={
+                        step.assessmentPassingScore != null
+                          ? `Pass mark ${step.assessmentPassingScore}%`
+                          : undefined
+                      }
+                    >
+                      {passed ? "Passed" : "Failed"} · {Math.round(step.assessmentScore)}%
+                    </Badge>
+                  );
+                })()}
+
               </div>
 
               <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground flex-wrap">

@@ -89,12 +89,34 @@ export async function loadEmployeeSignals(
       .maybeSingle(),
   ]);
 
+  // Resolve chapter titles for any chapter referenced in locks (and progress).
+  const chapterCodes = Array.from(
+    new Set(
+      [
+        ...((locks.data ?? []) as any[]).map((l) => l.chapter_code),
+        ...((progress.data ?? []) as any[]).map((p) => p.chapter_code).filter(Boolean),
+      ],
+    ),
+  );
+  const chapterTitles: Record<string, string> = {};
+  if (chapterCodes.length > 0) {
+    const { data: chapterRows } = await supabase
+      .from("catalog_chapters")
+      .select("chapter_code, chapter_title")
+      .eq("account_id", accountId)
+      .in("chapter_code", chapterCodes);
+    for (const row of (chapterRows ?? []) as any[]) {
+      chapterTitles[row.chapter_code] = row.chapter_title;
+    }
+  }
+
   return {
     progress: (progress.data ?? []) as any,
     assessments: (assessments.data ?? []) as any,
     locks: (locks.data ?? []) as any,
     micros: (micros.data ?? []) as any,
     analytics: (analytics.data ?? null) as any,
+    chapterTitles,
   };
 }
 

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { Loader2, LogOut, LogIn, GitGraph, Type, Archive, Settings as SettingsIcon } from "lucide-react";
 import { AccessibilityPanel } from "@/components/layout/AccessibilityPanel";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";

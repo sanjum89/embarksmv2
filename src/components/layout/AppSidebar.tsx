@@ -59,6 +59,7 @@ const meNavItems: NavItem[] = [
   { label: "Action Centre", path: "/my-inbox", icon: Inbox },
   { label: "Cohort Hub", path: "/cohort", icon: Users },
   { label: "My 360", path: "/my-360", icon: CircleUser },
+  { label: "Settings", path: "/settings", icon: SettingsIcon },
 ];
 
 const teamNavItems: NavItem[] = [
@@ -68,6 +69,7 @@ const teamNavItems: NavItem[] = [
   { label: "Deep Research", path: "/team/deep-research", icon: Microscope },
   { label: "Action Centre", path: "/action-centre", icon: Inbox },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
+  { label: "Settings", path: "/settings", icon: SettingsIcon },
 ];
 
 

@@ -131,6 +131,7 @@ function placeCard(rect: Rect | null, placement: Placement = "bottom") {
 
 
 function caretStyle(rect: Rect, placement: Placement): React.CSSProperties | null {
+  if (placement === "center") return null;
   // Position the caret on the side of the card that faces the target.
   const half = CARET / 2;
   const base: React.CSSProperties = {
@@ -140,6 +141,7 @@ function caretStyle(rect: Rect, placement: Placement): React.CSSProperties | nul
     background: "hsl(var(--card))",
     transform: "rotate(45deg)",
   };
+
   if (placement === "left") {
     return {
       ...base,

@@ -47,7 +47,13 @@ export interface UnifiedStep {
   /** Set on the synthetic Quick Diagnostic row once submitted, so the row can
    *  show a compact score pill alongside the existing QUICK DIAGNOSTIC pill. */
   diagResult?: { correct: number; total: number; reopenedCount: number };
+  /** Latest assessment attempt, surfaced on chapter rows so learners always
+   *  see the score and pass/fail outcome. */
+  assessmentScore?: number;
+  assessmentPassed?: boolean;
+  assessmentPassingScore?: number;
 }
+
 
 export function EmbarkContent() {
   const { contentView, activeModuleId, assessmentModuleId, showModuleGrid, openModule, openAssessment, notifyModuleCompleted, canGoBack, goBack } = useEmbark();

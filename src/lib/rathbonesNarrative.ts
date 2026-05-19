@@ -30,6 +30,14 @@ export interface PersonaNarrative {
   aiRationale?: string;
   /** Override status if narrative diverges from rule-derived status (e.g. emerging stars). */
   statusOverride?: LearnerStatus;
+  /**
+   * Status the curated `story`/`headline` were written for. Used by the
+   * narrative-vs-DB drift guard in managerSignals.overlayFromSignals: if the
+   * DB-derived status disagrees with this value, we fall back to an
+   * auto-generated paragraph so the badge, metric tiles, and prose stay
+   * consistent for the manager.
+   */
+  expectedStatus: LearnerStatus;
 }
 
 /** First name expected to appear in NARRATIVES[id].story. Drift guard. */

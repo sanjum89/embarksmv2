@@ -59,6 +59,7 @@ const meNavItems: NavItem[] = [
   { label: "Action Centre", path: "/my-inbox", icon: Inbox },
   { label: "Cohort Hub", path: "/cohort", icon: Users },
   { label: "My 360", path: "/my-360", icon: CircleUser },
+  { label: "Dev Tools", path: "/dev-tools", icon: Code, dev: true },
 ];
 
 const teamNavItems: NavItem[] = [
@@ -68,7 +69,9 @@ const teamNavItems: NavItem[] = [
   { label: "Deep Research", path: "/team/deep-research", icon: Microscope },
   { label: "Action Centre", path: "/action-centre", icon: Inbox },
   { label: "New Chat", path: "/chat", icon: MessageSquare },
+  { label: "Dev Tools", path: "/dev-tools", icon: Code, dev: true },
 ];
+
 
 type LegacyItem = { label: string; path: string; icon: React.ElementType };
 
@@ -447,8 +450,9 @@ export function AppSidebar() {
               }
             />
 
-            {/* Legacy (Dev Mode only) */}
-            {devMode && (
+            {/* Legacy (always visible) */}
+            {(
+
               <Popover>
                 {expanded ? (
                   <PopoverTrigger asChild>
@@ -865,8 +869,9 @@ export function AppSidebar() {
         />
       </div>
 
-      {/* Legacy (Dev Mode only) */}
-      {devMode && (
+      {/* Legacy (always visible) */}
+      {(
+
         <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
           <Popover>
             {expanded ? (

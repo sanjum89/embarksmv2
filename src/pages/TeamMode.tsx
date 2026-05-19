@@ -49,7 +49,7 @@ export default function TeamMode() {
   const { normalizedAccount } = useAccount();
   const { user } = useUser();
   const { cohorts } = useAccountCohorts();
-  const overlays = getAllDemoOverlays();
+  const { overlays } = useRathbonesPersonaOverlays();
   const [openId, setOpenId] = useState<string | null>(null);
   const [handAction, setHandAction] = useState<ActionItem | null>(null);
   const [scheduleId, setScheduleId] = useState<string | null>(null);

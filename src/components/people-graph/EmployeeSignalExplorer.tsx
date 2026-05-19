@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import type { AccountEmployee, AccountRole, AccountProject, SkillGapEntry } from "@/types/account-v2";
 import type { EmployeeLabelReasoning } from "@/data/peopleGraphSystems";
 import { getEmployeeLabelReasoning } from "@/data/peopleGraphSystems";
-import { getDemoOverlay } from "@/data/managerDemoOverlay";
+import { useRathbonesPersonaOverlays } from "@/hooks/useRathbonesPersonaOverlays";
 import { buildOverlayLabels, buildOverlayReflections } from "@/data/peopleGraphFromOverlay";
 import { ReflectionsAnalysis } from "./ReflectionsAnalysis";
 import { ComputationDetails } from "./ComputationDetails";
@@ -43,8 +43,9 @@ export function EmployeeSignalExplorer({ employees, rolesById, projectsById, get
   const [selectedId, setSelectedId] = useState<string>("");
   const [expandedLabel, setExpandedLabel] = useState<string | null>(null);
 
+  const { byId } = useRathbonesPersonaOverlays();
   const employee = employees.find(e => e.id === selectedId);
-  const overlay = employee ? getDemoOverlay(employee.id) : null;
+  const overlay = employee ? (byId[employee.id] ?? null) : null;
   const labels = employee
     ? overlay
       ? buildOverlayLabels(overlay)

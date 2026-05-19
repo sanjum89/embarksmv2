@@ -3,7 +3,8 @@ import { Layers, ChevronRight, Users, AlertCircle } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import PageBody from "@/components/layout/PageBody";
 import { useAccountCohorts } from "@/hooks/useManagerCohortData";
-import { RATHBONES_COHORT_ID, getAllDemoOverlays } from "@/data/managerDemoOverlay";
+import { RATHBONES_COHORT_ID } from "@/data/managerDemoOverlay";
+import { useRathbonesPersonaOverlays } from "@/hooks/useRathbonesPersonaOverlays";
 import { roleCohortLabel } from "@/lib/roleCohortLabel";
 
 export default function ManagerCohortPicker() {
@@ -20,7 +21,7 @@ export default function ManagerCohortPicker() {
         },
       ];
 
-  const overlays = getAllDemoOverlays();
+  const { overlays } = useRathbonesPersonaOverlays();
   const learnerCount = overlays.length;
   const needsAttn = overlays.filter(
     (o) => o.status === "at_risk" || o.status === "needs_check_in"

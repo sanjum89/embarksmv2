@@ -267,6 +267,50 @@ function buildPathChanges(bundle: DbBundle, modulesByCode: Map<string, string>, 
   return out;
 }
 
+/** First name from the curated narrative map, fallback to "This learner". */
+function narrativeFirstName(employeeId: string, narrative: ReturnType<typeof getRathbonesNarrative>): string {
+  if (!narrative) return "This learner";
+  // story always starts with first name (drift-guarded); cheaply extract it.
+  const first = narrative.story.split(/\s+/, 1)[0] ?? "This learner";
+  return first.replace(/[^a-zA-Z'-]/g, "") || "This learner";
+}
+
+function autoHeadline(status: LearnerStatus, completed: number, total: number, failed: number, pendingMicros: number, idleDays: number): string {
+  const pct = total ? Math.round((completed / total) * 100) : 0;
+  switch (status) {
+    case "at_risk":
+      return `At risk — ${failed} failed assessment${failed === 1 ? "" : "s"}${idleDays > 7 ? `, ${idleDays}d idle` : ""}.`;
+    case "needs_check_in":
+      return `Needs check-in — ${pendingMicros} pending micro-learning${pendingMicros === 1 ? "" : "s"}.`;
+    case "rising_star":
+      return `Rising star — ${pct}% complete, zero fails.`;
+    default:
+      return `On track — ${pct}% complete (${completed}/${total} modules).`;
+  }
+}
+
+function autoStory(
+  name: string,
+  status: LearnerStatus,
+  completed: number,
+  total: number,
+  failed: number,
+  pendingMicros: number,
+  lastActivity: string | undefined,
+): string {
+  const lastBit = lastActivity ? ` Last active ${lastActivity}.` : "";
+  switch (status) {
+    case "at_risk":
+      return `${name} has ${failed} failed assessment${failed === 1 ? "" : "s"} and ${pendingMicros} pending micro-learning${pendingMicros === 1 ? "" : "s"} across ${completed}/${total} modules completed.${lastBit} Worth a 1:1 before the next assessment window.`;
+    case "needs_check_in":
+      return `${name} is at ${completed}/${total} modules with ${pendingMicros} pending micro-learning${pendingMicros === 1 ? "" : "s"} outstanding.${lastBit} No failed attempts yet — a short check-in should keep momentum.`;
+    case "rising_star":
+      return `${name} is pacing ahead at ${completed}/${total} modules with zero failed attempts and no pending micro-learnings.${lastBit} Consider stretch content.`;
+    default:
+      return `${name} is at ${completed}/${total} modules complete with ${failed} failed attempt${failed === 1 ? "" : "s"} and ${pendingMicros} pending micro-learning${pendingMicros === 1 ? "" : "s"}.${lastBit}`;
+  }
+}
+
 /** Build a complete LearnerOverlay from DB bundle + narrative. Returns null if no DB rows. */
 export function overlayFromSignals(
   employeeId: string,
@@ -287,10 +331,34 @@ export function overlayFromSignals(
 
   const completed = cells.filter((c) => c.status === "completed").length;
   const total = cells.length;
-  const headline = narrative?.headline ?? `${completed}/${total} modules complete · ${status.replace(/_/g, " ")}.`;
-  const story =
-    narrative?.story ??
-    `${completed} of ${total} modules complete. ${bundle.micros.filter((m) => m.status === "pending").length} pending micro-learnings. Last active ${humanRelative(bundle.analytics?.last_activity_at) ?? "recently"}.`;
+  const failed = bundle.assessments.filter((a) => a.score != null && Number(a.score) < 70).length;
+  const pendingMicros = bundle.micros.filter((m) => m.status === "pending").length;
+  const idleDays = daysSince(bundle.analytics?.last_activity_at) ?? 99;
+  const lastActivity = humanRelative(bundle.analytics?.last_activity_at);
+
+  // Drift guard: only use curated prose when DB-derived status matches what the
+  // narrative was written for. Otherwise auto-generate so badge/tiles/story agree.
+  const narrativeMatches = narrative != null && narrative.expectedStatus === derivedStatus;
+
+  if (narrative && !narrativeMatches && import.meta.env?.DEV) {
+    // eslint-disable-next-line no-console
+    console.warn("[managerSignals] narrative drift", {
+      employeeId,
+      expected: narrative.expectedStatus,
+      derived: derivedStatus,
+      failed,
+      idleDays,
+      pendingMicros,
+    });
+  }
+
+  const name = narrativeFirstName(employeeId, narrative);
+  const headline = narrativeMatches
+    ? narrative!.headline
+    : autoHeadline(status, completed, total, failed, pendingMicros, idleDays);
+  const story = narrativeMatches
+    ? narrative!.story
+    : autoStory(name, status, completed, total, failed, pendingMicros, lastActivity);
 
   return {
     employeeId,
@@ -307,3 +375,4 @@ export function overlayFromSignals(
     timeline,
   };
 }
+

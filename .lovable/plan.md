@@ -1,42 +1,82 @@
-## Sidebar + Settings cleanup
+## Bug
 
-### 1. Remove "Super Light" and "Theme" entries from the sidebar
+In the learner drawer (Maya, Theo, Priya, Clara…), the **status badge + metric tiles** are computed from live DB signals while the **"WHY THEY'RE …" paragraph** comes from hand-written copy in `src/lib/rathbonesNarrative.ts`. When the DB drifts from what the prose was written against, you get contradictions like:
 
-Both now live in Settings, so the duplicates at the bottom of the sidebar are noise.
+- Badge says **At risk** + **Failed attempts: 2**, paragraph says "scoring 82–86, clear pass, no idle gaps" (Maya).
+- Eyebrow flips to "Why they're at risk" but pastes in on-track copy.
 
-- In `src/components/layout/AppSidebar.tsx`:
-  - **New sidebar block (~lines 372–405):** delete the entire "Theme style switcher" Popover. Keep the existing dark/light `toggleTheme` button above it — the user only asked to remove "Super light" and "Theme", and the new sidebar has no Super Light cycle.
-  - **Traditional sidebar block (~lines 708–743):** replace the Super-Light/Light/Dark cycle button with a simple dark↔light toggle that mirrors the new sidebar (no `superLight` / `setSuperLight` references).
-  - **Traditional sidebar block (~lines 745–782):** delete the "Theme style switcher" Popover wholesale.
-  - Drop unused imports/destructures (`superLight`, `setSuperLight`, `setStyleTheme`, `isTraditional`, `Palette`) if they are no longer referenced anywhere else in the file.
+Root cause is in `src/lib/managerSignals.ts` → `overlayFromSignals`: it unconditionally uses `narrative.story` / `narrative.headline` even when `derivedStatus` disagrees with the persona's intended status.
 
-### 2. Move "Settings" below "Accessibility"
+## Fix — Hybrid: narrative + status guard
 
-- In `src/components/layout/AppSidebar.tsx`:
-  - Remove `{ label: "Settings", path: "/settings", icon: SettingsIcon }` from both `meNavItems` and `teamNavItems` (they currently appear in the top nav alongside Embark AI / Role Play / etc.).
-  - Add a Settings link in the bottom section of **both** sidebar layouts, rendered immediately after the Accessibility entry. Use the same button styling as Accessibility (full row when expanded, round icon when collapsed, tooltip on hover when collapsed). Active route highlighting matches the other bottom-section entries.
+Each curated persona declares the status its prose was written for. The drawer shows the curated story **only when DB agrees**; otherwise it falls back to an auto-generated paragraph that reflects the actual signals.
 
-### 3. Filter "Active sessions" in Settings to current user + their direct reports
+### 1. Extend the narrative type
 
-Today `AboutSection` shows every signed-in user globally. That leaks an Admin session (e.g. Rathbones Admin) into a learner's Settings page, which is what Julian is seeing.
+In `src/lib/rathbonesNarrative.ts`:
 
-- In `src/pages/Settings.tsx` `AboutSection`:
-  - Read `normalizedAccount` from `useAccount()` to get `hierarchyMap` and `usersById`.
-  - Build the set of allowed employee IDs:
-    - Always include the current user's `linkedEmployeeId` (fallback to `user.id`).
-    - Walk `hierarchyMap` starting from that employee ID to collect **all descendants** (direct reports + their reports, recursively). This matches how Manager scopes are already defined elsewhere in the app and keeps the behaviour correct for multi-level managers, while still collapsing to "self only" for a pure learner like Julian.
-  - For each signed-in user, resolve their `linkedEmployeeId` via `usersById` and keep them only if that ID is in the allowed set. Always keep the current user themselves even if their account record is missing.
-  - Render the filtered list. If the only result is the current user, label the section "Your session" (singular) instead of "Active sessions" to make the empty-team case feel intentional.
+- Add a required-when-curated field `expectedStatus: LearnerStatus` to `PersonaNarrative`. This is the status the `story` was written for.
+- Fill it in for all 9 personas based on the existing prose:
+  - rb-l1 Sophie → `on_track`
+  - rb-l2 Maya → `on_track`
+  - rb-l3 Theo → `at_risk`
+  - rb-l4 Owen → `on_track`
+  - rb-l5 Priya → `needs_check_in`
+  - rb-l6 Clara → `rising_star`
+  - rb-l7 Rosa → `needs_check_in`
+  - rb-l8 Felix → `on_track`
+  - rb-l9 Elliot → match current copy
 
-Result: Julian (learner) sees only his own session; a manager sees themselves plus signed-in reports; an Admin still sees everyone in their subtree.
+`statusOverride` stays optional (only used when we explicitly want the badge to ignore the rule engine — e.g. rising stars). The new field is purely an integrity check on the prose.
 
-### Files to touch
+### 2. Add the status guard in `overlayFromSignals`
 
-- `src/components/layout/AppSidebar.tsx`
-- `src/pages/Settings.tsx`
+In `src/lib/managerSignals.ts`:
 
-### Out of scope
+```text
+const derived = deriveStatus(bundle, cells);
+const status  = narrative?.statusOverride ?? derived;
 
-- Touching `ThemeContext` (Super Light state stays available for the Settings UI to drive).
-- Reworking the Settings page structure beyond the Active Sessions filter.
-- Changing Admin-side session visibility (Admins continue to see their full reporting subtree, which already excludes other tenants).
+const narrativeMatches =
+  narrative != null && narrative.expectedStatus === derived;
+
+const headline = narrativeMatches
+  ? narrative.headline
+  : autoHeadline(status, cells, bundle);
+
+const story = narrativeMatches
+  ? narrative.story
+  : autoStory(status, cells, bundle);
+```
+
+`autoHeadline` / `autoStory` are small helpers built from the existing fallback strings already in the file (failed N, pending micros, idle X days, last activity humanRelative). They name the learner so the paragraph still reads naturally.
+
+### 3. Keep the drawer eyebrow in sync
+
+`src/components/manager-hub/LearnerDrawer.tsx` already derives the eyebrow from `overlay.status`. No change needed — once `story` is auto-generated it will match the eyebrow.
+
+### 4. Dev-only console warning
+
+When `narrative` exists but `narrative.expectedStatus !== derived`, log a single `console.warn` in dev with `{employeeId, expected, derived, failed, idleDays, pendingMicros}` so future drift is visible immediately during seed work.
+
+### 5. Test guard
+
+Update `src/lib/rathbonesNarrative.test.ts` (or add if missing) to assert every entry in `NARRATIVES` has an `expectedStatus`. This locks the contract.
+
+## Files touched
+
+- `src/lib/rathbonesNarrative.ts` — new field + values for all 9 personas
+- `src/lib/managerSignals.ts` — status guard + `autoHeadline` / `autoStory` helpers + dev warning
+- `src/lib/rathbonesNarrative.test.ts` — assert `expectedStatus` present
+
+## Out of scope
+
+- Re-seeding the DB so Maya actually matches her on-track prose (separate data task).
+- Touching `tk2 bloomberg` style raw IDs in the profile view — that's a different earlier ticket.
+- Any change to `managerDemoOverlay.ts` static fallback (still used when DB has zero rows).
+
+## Result
+
+- Maya: DB says at_risk → curated on-track prose is suppressed; drawer shows a generated paragraph like *"Maya has 2 failed assessments and N pending micro-learnings. Last active X days ago."* Badge, tiles, and story now agree.
+- Theo / Clara / Priya: DB matches their `expectedStatus` → curated prose continues to render exactly as before.
+- Any future drift between seed data and curated copy is caught by a dev-console warning instead of being shipped to managers.

@@ -807,25 +807,8 @@ export function AppSidebar() {
         />
       </div>
 
-      {/* Branding */}
-      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
-        <BrandingPanel
-          trigger={
-            <button
-              className={cn(
-                "flex items-center rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-                expanded ? "h-9 gap-3 w-full px-3" : "h-10 w-10 justify-center"
-              )}
-            >
-              <Paintbrush className="h-4 w-4 shrink-0" />
-              {expanded && <span className="text-sm font-medium">Branding</span>}
-            </button>
-          }
-        />
-      </div>
-
-      {/* Legacy (always visible) */}
-      {(
+      {/* Legacy (gated by Settings → Workspace toggle) */}
+      {showLegacyModules && (
 
         <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
           <Popover>
@@ -875,31 +858,6 @@ export function AppSidebar() {
         </div>
       )}
 
-      {/* Dev mode toggle */}
-      <div className={cn("w-full", expanded ? "px-3" : "flex justify-center")}>
-        {expanded ? (
-          <button
-            onClick={toggleDevMode}
-            className={cn("flex items-center gap-3 w-full px-3 h-9 rounded-lg transition-colors text-sm font-medium", devMode ? "text-sidebar-accent-foreground bg-sidebar-accent" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground")}
-          >
-            <Code className="h-4 w-4 shrink-0" />
-            <span>Dev Mode</span>
-            {devMode && <Check className="h-3.5 w-3.5 ml-auto shrink-0" />}
-          </button>
-        ) : (
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={toggleDevMode}
-                className={cn("flex h-10 w-10 items-center justify-center rounded-lg transition-colors", devMode ? "text-sidebar-accent-foreground bg-sidebar-accent" : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground")}
-              >
-                <Code className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}>Dev Mode {devMode ? "on" : "off"}</TooltipContent>
-          </Tooltip>
-        )}
-      </div>
 
       {/* User info */}
       <div className={cn("border-t border-sidebar-border py-4 w-full", expanded ? "px-3" : "flex justify-center")}>

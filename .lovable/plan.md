@@ -1,60 +1,42 @@
-## Tour fixes — re-presented for approval
+## Sidebar + Settings cleanup
 
-Four issues from the screenshots, plus the "always show assessment result" request.
+### 1. Remove "Super Light" and "Theme" entries from the sidebar
 
-### 1. Tour card overflows on wide-pane steps (Image 1)
+Both now live in Settings, so the duplicates at the bottom of the sidebar are noise.
 
-When the target rect covers most of the viewport (Embark home, My 360, Role Play, Action Centre, Cohort Hub), Floating UI tries to anchor the card to an edge and pushes it off-screen at higher zoom.
+- In `src/components/layout/AppSidebar.tsx`:
+  - **New sidebar block (~lines 372–405):** delete the entire "Theme style switcher" Popover. Keep the existing dark/light `toggleTheme` button above it — the user only asked to remove "Super light" and "Theme", and the new sidebar has no Super Light cycle.
+  - **Traditional sidebar block (~lines 708–743):** replace the Super-Light/Light/Dark cycle button with a simple dark↔light toggle that mirrors the new sidebar (no `superLight` / `setSuperLight` references).
+  - **Traditional sidebar block (~lines 745–782):** delete the "Theme style switcher" Popover wholesale.
+  - Drop unused imports/destructures (`superLight`, `setSuperLight`, `setStyleTheme`, `isTraditional`, `Palette`) if they are no longer referenced anywhere else in the file.
 
-- In `src/components/onboarding/EmbarkTour.tsx`, add support for `placement: "center"`.
-- Auto-promote a step to centre placement when the target rect covers >60% of the viewport in both axes.
-- `caretStyle()` returns `null` for centre placement (no pointer caret).
-- In `src/components/onboarding/tourSteps.ts`, explicitly set `placement: "center"` on the steps that talk about the whole pane: `embark-home`, `my360`, `role-play`, `action-centre`, `cohort-hub`. Audit every other route's tour file the same way.
+### 2. Move "Settings" below "Accessibility"
 
-### 2. "Cohort → Track" step should point to the top header (Image 2)
+- In `src/components/layout/AppSidebar.tsx`:
+  - Remove `{ label: "Settings", path: "/settings", icon: SettingsIcon }` from both `meNavItems` and `teamNavItems` (they currently appear in the top nav alongside Embark AI / Role Play / etc.).
+  - Add a Settings link in the bottom section of **both** sidebar layouts, rendered immediately after the Accessibility entry. Use the same button styling as Accessibility (full row when expanded, round icon when collapsed, tooltip on hover when collapsed). Active route highlighting matches the other bottom-section entries.
 
-The step currently anchors to the modules list. The copy is about cohort + tracks, which live in the header card above.
+### 3. Filter "Active sessions" in Settings to current user + their direct reports
 
-- In `src/pages/EmbarkJourneyView.tsx`, wrap `<JourneyHeaderCard>` + `<JourneyTrackTabs>` in a `<div data-tour="embark-cohort-header">`.
-- Update the `embark-journey` step in `tourSteps.ts` to target `[data-tour="embark-cohort-header"]` with `placement: "bottom"` (or `"left"` if it sits inside a wide pane).
+Today `AboutSection` shows every signed-in user globally. That leaks an Admin session (e.g. Rathbones Admin) into a learner's Settings page, which is what Julian is seeing.
 
-### 3. "Content adapts to you" should highlight only the modules section (Image 3)
+- In `src/pages/Settings.tsx` `AboutSection`:
+  - Read `normalizedAccount` from `useAccount()` to get `hierarchyMap` and `usersById`.
+  - Build the set of allowed employee IDs:
+    - Always include the current user's `linkedEmployeeId` (fallback to `user.id`).
+    - Walk `hierarchyMap` starting from that employee ID to collect **all descendants** (direct reports + their reports, recursively). This matches how Manager scopes are already defined elsewhere in the app and keeps the behaviour correct for multi-level managers, while still collapsing to "self only" for a pure learner like Julian.
+  - For each signed-in user, resolve their `linkedEmployeeId` via `usersById` and keep them only if that ID is in the allowed set. Always keep the current user themselves even if their account record is missing.
+  - Render the filtered list. If the only result is the current user, label the section "Your session" (singular) instead of "Active sessions" to make the empty-team case feel intentional.
 
-Currently highlights the whole page.
-
-- In `src/pages/EmbarkJourneyView.tsx`, wrap `<JourneyModuleAccordion>` in a `<div data-tour="embark-modules">`.
-- Update both `adapt-intro` and `adapt-why` steps in `tourSteps.ts` to target `[data-tour="embark-modules"]` with `placement: "left"`.
-
-### 4. Full lens explainer set (always 4)
-
-`buildLensSteps.ts` currently emits 1–3 lens steps depending on which adaptations the persona has. The user wants a complete walkthrough — Condensed → Quick Diagnostic → Microlearning → Evidence Task — so learners always understand the whole adaptation vocabulary.
-
-- In `src/components/onboarding/buildLensSteps.ts`, always emit all 4 lens steps regardless of persona.
-- Add a `microlearning` entry to `LENS_CONFIG` with generic fallback copy when no concrete microlearning is found in the page.
-- In `src/components/cohort/JourneyModuleAccordion.tsx`, add `data-tour="lens-microlearning"` to the `AdaptationBadge` rendered when `adaptation.adaptationType === "microlearning"`. Falls back to the page-level target when none exists, so the step still has somewhere to anchor.
-
-### 5. Always show assessment score + pass/fail on chapter rows
-
-Today, the score pill only appears after the learner has completed the chapter. The user wants score + pass/fail visible on any chapter that has an assessment, including midpoints already attempted.
-
-- Extend `JourneyChapter` in `src/hooks/useLearnerJourney.ts` with optional fields: `assessmentScore`, `assessmentPassed`, `assessmentPassingScore`.
-- After loading chapters, run one extra `assessment_instances` query filtered by `learner_id` + `chapter_code IN (...)` and merge the most recent attempt per chapter into the chapter rows.
-- In `src/components/cohort/JourneyModuleAccordion.tsx`, when a chapter has `content_type === "assessment"` (or chapter_code matches the assessment pattern), set `type: "assessment"` and pass the score fields through.
-- In `src/components/cohort/LearnPathChapterRow.tsx`, render a coloured pill under the title for assessment rows whenever score is present: green `"Passed · 86%"` or red `"Failed · 58%"`. Shows even when the chapter status is `in_progress` or `locked` (because the result already exists).
-
-### Out of scope
-
-- Reworking other tour copy.
-- Showing pass/fail anywhere outside the journey accordion.
-- Persisting changes to tour progress.
+Result: Julian (learner) sees only his own session; a manager sees themselves plus signed-in reports; an Admin still sees everyone in their subtree.
 
 ### Files to touch
 
-- `src/components/onboarding/EmbarkTour.tsx`
-- `src/components/onboarding/tourSteps.ts` (and any other per-route tour-steps files surfaced during audit)
-- `src/components/onboarding/buildLensSteps.ts`
-- `src/pages/EmbarkJourneyView.tsx`
-- `src/components/cohort/JourneyModuleAccordion.tsx`
-- `src/components/cohort/LearnPathChapterRow.tsx`
-- `src/hooks/useLearnerJourney.ts`
-- `src/pages/JourneyContent.tsx` (only if a wrapping `data-tour` attribute is needed here too)
+- `src/components/layout/AppSidebar.tsx`
+- `src/pages/Settings.tsx`
+
+### Out of scope
+
+- Touching `ThemeContext` (Super Light state stays available for the Settings UI to drive).
+- Reworking the Settings page structure beyond the Active Sessions filter.
+- Changing Admin-side session visibility (Admins continue to see their full reporting subtree, which already excludes other tenants).

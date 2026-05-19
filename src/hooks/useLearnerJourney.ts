@@ -13,7 +13,12 @@ export interface JourneyChapter {
   minutes: number;
   status: ChapterStatus;
   displayOrder: number;
+  /** Latest assessment attempt for this chapter, if any. */
+  assessmentScore?: number;
+  assessmentPassed?: boolean;
+  assessmentPassingScore?: number;
 }
+
 
 export interface JourneyModule {
   code: string;

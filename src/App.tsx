@@ -100,6 +100,7 @@ const App = () => (
               <Route path="/action-centre" element={<ActionCentre />} />
               <Route path="/admin" element={<AdminView />} />
               <Route path="/dev-tools" element={<DevTools />} />
+              <Route path="/settings" element={<Settings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

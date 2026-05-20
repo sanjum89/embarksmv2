@@ -28,6 +28,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useTour } from "@/contexts/TourContext";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,

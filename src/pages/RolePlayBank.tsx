@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { StaggerList, StaggerItem } from "@/components/motion/Motion";
 import { MessageSquare, Search, Bot, Plus, Trash2, UserPlus, Pencil, Check, Mic, X } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
@@ -317,17 +317,13 @@ export default function RolePlayBank() {
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <AnimatePresence>
+        <StaggerList className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {filtered.map((rp, i) => {
               const rpAssignments = assignments[rp.id] || [];
               return (
-                <motion.div
+                <StaggerItem
                   key={rp.id}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ delay: i * 0.06, duration: 0.35 }}
+                  index={i}
                   className="group relative rounded-xl bg-card border border-border p-5 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition-all duration-300 min-w-0"
                 >
                   <Link
@@ -479,11 +475,10 @@ export default function RolePlayBank() {
                       </>
                     )}
                   </div>
-                </motion.div>
+                </StaggerItem>
               );
             })}
-          </AnimatePresence>
-        </div>
+        </StaggerList>
 
         {filtered.length === 0 && (
           <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">

@@ -1,114 +1,62 @@
-# Cohort Hub — Reorganisation + Adapted Learning Path tab
+# Standardize subtle animations across the product
 
-## Goal
-Cut clutter, surface decisions above the fold, group like with like, and add a dedicated **Adapted Learning Path** tab that makes the system's personalisation visible to the learner.
+Match the Role Play Bank entrance (fade + 12px rise, 0.35s, staggered by 0.06s) on every page, list, grid, section, tab and modal — for learners, managers and admins.
 
-## New page layout
+## What ships
 
-```text
-┌──────────────────────────────────────────────────────────────┐
-│ PageHeader                                                   │
-│ Tabs:  Overview · Adapted path                               │
-├──────────────────────────────────────────┬───────────────────┤
-│ STATUS BANNER (deterministic, full-w)    │                   │
-├──────────────────────────────────┬───────┤   RIGHT RAIL      │
-│ KPI tiles (4)                    │ RECO  │   (sticky on lg)  │
-│  progress · time · now · next    │ NEXT  │   ── Pinned ──    │
-│                                  │ acts  │   Announcements   │
-├──────────────────────────────────┴───────┤   ── Live ──      │
-│ Cohort vs you · progress by module       │   Recent activity │
-├──────────────────────────────────────────┤                   │
-│ Achievements                             │                   │
-├──────────────────────────────────────────┤                   │
-│ CO-LEARNING TIMELINE (unified)           │                   │
-├──────────────────────────────────────────┤                   │
-│ People to connect with (unified)         │                   │
-├──────────────────────────────────────────┤                   │
-│ Leaderboard · Mentor · Evidence          │                   │
-└──────────────────────────────────────────┴───────────────────┘
-```
+### 1. Motion primitives (shared, framer-motion based)
+New file `src/components/motion/Motion.tsx` exporting:
+- `<PageTransition>` — wraps page content. `initial {opacity:0, y:8}` → `animate {opacity:1, y:0}`, 0.3s easeOut.
+- `<StaggerList>` + `<StaggerItem>` — for grids/lists. Item: `initial {opacity:0, y:12}` → `animate {opacity:1, y:0}`, delay = `index * 0.06`, duration 0.35s. Includes `AnimatePresence` so removed items fade.
+- `<SectionReveal>` — for inner sections/tabs/modals. Same as PageTransition with optional `delay` prop.
+- All primitives short-circuit to a plain `<div>` when `prefers-reduced-motion` is on **or** the user toggled "Reduce motion" off in Accessibility settings.
 
-`lg+`: 2-column `grid-cols-[2fr_1fr]`, rail `sticky top-20`. `<lg`: rail collapses below main.
+### 2. CSS utilities (lightweight, for static blocks)
+Add to `src/index.css`:
+- `.anim-page` → `animate-fade-in` (already exists, 0.3s).
+- `.anim-stagger > *` → each child gets `animation-delay: calc(var(--i,0) * 60ms)`.
+- Wrap all keyframes in `@media (prefers-reduced-motion: no-preference)` and an `html:not(.no-motion)` guard so the toggle disables them globally.
 
-## Section changes (Overview tab)
+### 3. Accessibility setting: "Reduce motion"
+- Add `reduceMotion: boolean` to `A11ySettings` in `src/contexts/AccessibilityContext.tsx`. Default `false` (animations on).
+- Initial value: if `localStorage` has no preference, read `window.matchMedia('(prefers-reduced-motion: reduce)').matches` as the default; otherwise honour the stored value.
+- When `true`, add `no-motion` class to `<html>` (disables CSS keyframes) and expose via `useReducedMotion()` hook for the Motion primitives.
+- Surface the toggle in `src/components/layout/AccessibilityPanel.tsx` as a new `Switch` row beneath the existing toggles, labelled **"Reduce motion"** with helper text "Turn off subtle page and list animations."
 
-1. **Above the fold** — status banner full-width, then a row with 4 KPI tiles (`col-span-2`) + Recommended actions (`col-span-1`).
-2. **Co-learning timeline** — merges Open sessions + Classroom/offline + Study groups into one chronological list grouped by "This week / Next week / Earlier", each row with a type chip (`LIVE` / `CLASSROOM` / `STUDY GROUP`). Optional filter chips: `All · Live · Classroom · Study groups`.
-3. **People to connect with** — merges People learning similar topics + Peer matches into one deduped list (by `employeeId`), each row carries a reason chip (`Similar topic: MiFID II` / `Suggested match: complementary skills`).
-4. **Right rail** — Cohort announcements (top) + Recent activity (below, capped at 6 + View all), `sticky` on `lg+`.
-5. Leaderboard / Mentor / Evidence kept as one 3-up row at the bottom of main col.
+### 4. Apply standard pattern everywhere
+**Layout-level (covers every route in one shot):**
+- Wrap the `<Outlet />` in `src/components/layout/AppLayout.tsx` with `<PageTransition>` keyed by `location.pathname` so each route navigation re-plays the fade-in. This alone covers ~90% of pages with zero per-page edits.
 
-## New: Adapted Learning Path tab
+**Per-page list/grid retrofits (where stagger helps):**
+Replace ad-hoc fade/motion with `<StaggerList>` + `<StaggerItem>` on these card/grid surfaces (keep current data + classNames, only swap the wrapper):
+- `src/pages/Dashboard.tsx` (recommended targets row, KPI tiles)
+- `src/pages/CohortHub.tsx` (KPI tiles, co-learning timeline, people list, recommended actions)
+- `src/pages/RolePlayBank.tsx` (already stagger — just migrate to the shared component for consistency)
+- `src/pages/ManagerRolePlay.tsx`, `src/pages/ManagerSkillTargets.tsx`, `src/pages/ManagerSkillTargetDetail.tsx`, `src/pages/ManagerView.tsx`
+- `src/pages/SkillTargetDetail.tsx`, `src/pages/SkillTargetBuilder.tsx`, `src/pages/AssessmentPage.tsx`
+- `src/pages/My360.tsx`, `src/pages/NewMy360.tsx`, `src/pages/TeamInsights.tsx`, `src/pages/PeopleGraphIntelligence.tsx`, `src/pages/DeepResearch.tsx`, `src/pages/Settings.tsx`, `src/pages/DevTools.tsx`, `src/pages/AIManager.tsx`, `src/pages/ProgramContextPage.tsx`
+- `src/components/admin/*` panels and `src/components/manager/*` panels (NewHires, Progress, ProgramContext, TrainingAssign, PeopleGraph, EmployeeDetail)
 
-A top-level tab inside Cohort Hub (Radix `Tabs`, default `overview`) called **"Adapted path"**. It tells the learner *how* the system has tailored their journey for them — not just where they are.
+**Modals / tabs / popovers:** leave shadcn Dialog / Tabs / Popover defaults intact — they already animate consistently via Radix. No changes.
 
-### Layout
-
-```text
-HEADER STRIP  ── one-line AI-style summary
-  e.g. "Your path is condensed by 3 modules and adds a portfolio role play
-        in week 4. 2 baseline diagnostics, 4 chapter checks, 1 final
-        assessment ahead."
-
-LEGEND CHIPS  Condensed · Micro-learning · Skip-after-validation · Added · Standard
-              Baseline · Diagnostic · Adhoc check · Role play · Final
-
-PATH RAIL (vertical timeline per track)
-  Track: Business Knowledge
-    ●─── Module: Intro to Wealth                     [STANDARD]   45 min
-    ●─── Module: Compliance                          [CONDENSED]  reason chip
-         ▸ Baseline diagnostic (5 Q, 8 min)         skipped — already validated
-         ▸ Chapter check (3 Q)
-    ●─── Role play: Suitability conversation        [ADDED]      manager note
-    ●─── Module: MiFID II                            [MICRO]      condensed reason
-         ▸ Final assessment (CISI L4 mock)
-  Track: Behavioural Skills
-    ...
-```
-
-Each node renders:
-- icon by content kind (module / role play / assessment)
-- adaptation badge + reason text (`reason` from `persona_module_adaptations`)
-- assessment-type chip when present (`Baseline` / `Diagnostic` / `Chapter check` / `Adhoc` / `Final`)
-- duration estimate
-- "Why this?" popover showing competency name, your current level, required level, validation-needed flag, manager note
-
-### Data sources (all already exist)
-
-- `useLearnerJourney(accountId, employeeId)` — returns tracks → modules → chapters, each module already carries `adaptation: ModuleAdaptation { adaptationType, reason, visibleToLearner, managerNote, competencyName, currentLevel, requiredLevel, validationNeeded, riskCritical }`.
-- `assessmentScore`, `assessmentPassed`, `assessmentPassingScore` already on `JourneyChapter` for outcome chips.
-- Assessment **type** (baseline / diagnostic / chapter / adhoc / final) inferred from `catalog_chapters.content_type` + position in module (first → baseline, mid → chapter check, last & module-summative → final). Add a small helper `classifyAssessment(chapter, module)` in `src/lib/adaptedPath.ts` returning `"baseline" | "diagnostic" | "chapter" | "adhoc" | "final"`.
-- `adaptationType` mapped to legend chip:
-  - `condense` → Condensed
-  - `micro` → Micro-learning
-  - `skip_after_validation` → Skip-after-validation
-  - `add_practice` → Added
-  - (none) → Standard
-
-### Header summary
-
-Compute locally from journey: count of `condense` + `micro` + `skip_after_validation` modules, count of added role plays, count of upcoming assessments by type. One line, no LLM call.
-
-### Files
-
-- `src/pages/CohortHub.tsx` — wrap body in `<Tabs>` with `overview` and `adapted-path` triggers; restructure Overview as above.
-- **New** `src/components/cohort/CoLearningTimeline.tsx` — normalises `{ upcomingSessions, classroomSessions, studyGroups }` into `TimelineItem[]`, sorts by date, groups by week bucket.
-- **New** `src/components/cohort/PeopleToConnect.tsx` — merges `peopleSimilar` + `peerMatches`, dedupes by `employeeId`, renders reason chips.
-- **New** `src/components/cohort/CohortRightRail.tsx` — sticky wrapper for announcements + activity.
-- **New** `src/components/cohort/AdaptedPathTab.tsx` — consumes `useLearnerJourney`, renders header summary + legend + per-track vertical timeline.
-- **New** `src/lib/adaptedPath.ts` — `classifyAssessment(chapter, module)`, `summariseAdaptations(journey)`.
-- No changes to `useCohortHub`, `useLearnerJourney`, DB, or edge functions.
-
-## Technical notes
-
-- Tabs persist selection in URL (`?tab=adapted-path`) via `useSearchParams` for shareable deep links.
-- All colors via semantic tokens. Adaptation chips reuse `Badge` variants; assessment-type chips use `outline` + small dot color (semantic only).
-- Right rail uses `lg:sticky lg:top-20 lg:self-start`; on mobile it stacks below main.
-- Adapted path vertical timeline reuses the visual pattern from `src/components/skill-target/StepTimeline.tsx` (left rail dot + connector line).
-- Empty states: if a learner has no adaptations, Adapted path renders "Your path is the cohort standard — no personalisations yet." plus the same timeline with all nodes labelled `Standard`.
+### 5. Cleanup
+Remove now-redundant inline `motion.div initial/animate` blocks on the pages above so all animation timing lives in one place. Hand-rolled `animate-pulse` / `animate-spin` loading states stay untouched.
 
 ## Out of scope
-- Status banner logic (kept as-is from `cohortHubStatus.ts`).
-- Module progress, Achievements, Mentor card content.
-- Any backend, schema, or analytics changes.
-- No LLM calls; the summary line is computed from journey counts.
+- No new framer-motion install (already a dep).
+- No backend, schema, or analytics changes.
+- No changes to chat-stream typewriter or loading spinners.
+- No changes to the existing First-Login guided tour overlay.
+
+## Technical notes
+- Centralised timing constants in `Motion.tsx`: `DURATION = 0.35`, `STAGGER = 0.06`, `RISE = 12`, `EASE = [0.22, 1, 0.36, 1]`.
+- `<PageTransition>` uses `mode="wait"` inside `AnimatePresence` so outgoing route fades before incoming rises (~150ms overlap).
+- Reduced-motion gate is a single `useReducedMotion()` hook reading `AccessibilityContext.reduceMotion || mediaQuery.matches`.
+- ASCII map of the dependency graph:
+```text
+AccessibilityContext ──► useReducedMotion ──► <PageTransition>
+                                          └─► <StaggerList/Item>
+AppLayout (Outlet) ──► <PageTransition keyed by pathname>
+Pages/grids       ──► <StaggerList>{items.map(<StaggerItem>)}
+index.css (.no-motion guard) disables CSS keyframes globally
+```

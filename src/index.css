@@ -358,3 +358,29 @@
   scrollbar-color: hsl(var(--muted-foreground) / 0.3) hsl(var(--background));
   scrollbar-width: thin;
 }
+
+/* ============================================================
+   Global reduced-motion guard. Toggled by AccessibilityContext
+   (writes .no-motion on <html>). Also honours OS preference.
+   ============================================================ */
+html.no-motion *,
+html.no-motion *::before,
+html.no-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Lightweight stagger utility for static blocks that don't need framer-motion.
+   Usage: <div class="anim-stagger"><div style="--i:0">…</div><div style="--i:1">…</div></div>
+*/
+@media (prefers-reduced-motion: no-preference) {
+  .anim-stagger > * {
+    animation: fade-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--i, 0) * 60ms);
+  }
+}
+html.no-motion .anim-stagger > * {
+  animation: none !important;
+}

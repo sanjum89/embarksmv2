@@ -17,6 +17,7 @@ export interface A11ySettings {
   wideLetters: boolean;
   dyslexiaFriendly: boolean;
   underlineLinks: boolean;
+  reduceMotion: boolean;
 }
 
 const DEFAULTS: A11ySettings = {
@@ -25,6 +26,7 @@ const DEFAULTS: A11ySettings = {
   wideLetters: false,
   dyslexiaFriendly: false,
   underlineLinks: false,
+  reduceMotion: false,
 };
 
 const STORAGE_KEY = "a11y-settings";
@@ -50,6 +52,7 @@ interface AccessibilityContextType extends A11ySettings {
   setWideLetters: (v: boolean) => void;
   setDyslexiaFriendly: (v: boolean) => void;
   setUnderlineLinks: (v: boolean) => void;
+  setReduceMotion: (v: boolean) => void;
   reset: () => void;
   cycleScale: (direction: 1 | -1) => void;
 }
@@ -61,6 +64,7 @@ const AccessibilityContext = createContext<AccessibilityContextType>({
   setWideLetters: () => {},
   setDyslexiaFriendly: () => {},
   setUnderlineLinks: () => {},
+  setReduceMotion: () => {},
   reset: () => {},
   cycleScale: () => {},
 });
@@ -83,6 +87,7 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
     root.classList.toggle("a11y-wide", settings.wideLetters);
     root.classList.toggle("a11y-dyslexic", settings.dyslexiaFriendly);
     root.classList.toggle("a11y-underline", settings.underlineLinks);
+    root.classList.toggle("no-motion", settings.reduceMotion);
   }, [settings]);
 
   // Lazily load dyslexia-friendly font when needed
@@ -132,6 +137,7 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
     setWideLetters: (wideLetters) => setSettings((s) => ({ ...s, wideLetters })),
     setDyslexiaFriendly: (dyslexiaFriendly) => setSettings((s) => ({ ...s, dyslexiaFriendly })),
     setUnderlineLinks: (underlineLinks) => setSettings((s) => ({ ...s, underlineLinks })),
+    setReduceMotion: (reduceMotion) => setSettings((s) => ({ ...s, reduceMotion })),
     reset: () => setSettings(DEFAULTS),
     cycleScale,
   };

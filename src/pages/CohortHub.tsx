@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { JoinModal } from "@/components/cohort-hub/JoinModal";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
 import {
   Users, Calendar, ChevronRight, Sparkles, Pin, Trophy, Award, MessageCircle,
   Video, MapPin, FileText, Plus, ArrowRight,
@@ -46,7 +46,7 @@ export default function CohortHub() {
   const employeeId = user?.id ?? null;
   const employeesById = (normalizedAccount?.employeesById ?? {}) as any;
   const data = useCohortHub({ accountId, employeeId, employeesById });
-  const [view, setView] = useState<"editorial" | "cards">("editorial");
+  
   const [modal, setModal] = useState<null | { title: string; description?: string; meta?: any[]; teamsLink?: string; primaryLabel?: string }>(null);
 
   const sub = substitute;
@@ -116,17 +116,6 @@ export default function CohortHub() {
       <PageHeader
         title="Cohort Hub"
         subtitle={`Learn with peers, mentors, and cohort sessions · ${sub(c.title)}`}
-        titleAside={
-          <ToggleGroup
-            type="single"
-            value={view}
-            onValueChange={(v) => v && setView(v as any)}
-            className="bg-muted/40 rounded-md p-0.5"
-          >
-            <ToggleGroupItem value="editorial" className="text-xs px-3 h-6">Editorial</ToggleGroupItem>
-            <ToggleGroupItem value="cards" className="text-xs px-3 h-6">Cards</ToggleGroupItem>
-          </ToggleGroup>
-        }
       />
 
       <div className="mx-auto max-w-7xl space-y-6 p-6">

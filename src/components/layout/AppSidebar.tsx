@@ -38,6 +38,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { AccountSwitcher } from "@/components/account/AccountSwitcher";
+import { TourSidebarHint } from "@/components/tour/TourSidebarHint";
 import { LoginDialog } from "@/components/layout/LoginDialog";
 
 

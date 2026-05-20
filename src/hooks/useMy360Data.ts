@@ -325,6 +325,18 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
           : Promise.resolve({ data: [] } as any),
       ]);
 
+      const personaContent = personaCode
+        ? await Promise.all([
+            supabase.from("persona_profile_basics").select("data").eq("account_id", accountId).eq("persona_code", personaCode).maybeSingle(),
+            supabase.from("persona_career_here").select("data").eq("account_id", accountId).eq("persona_code", personaCode).maybeSingle(),
+            supabase.from("persona_aspiration").select("data").eq("account_id", accountId).eq("persona_code", personaCode).maybeSingle(),
+            supabase.from("persona_succession_notes").select("data").eq("account_id", accountId).eq("persona_code", personaCode).maybeSingle(),
+            supabase.from("persona_manager_feedback").select("feedback_at,author_label,sentiment,body").eq("account_id", accountId).eq("persona_code", personaCode).order("display_order"),
+            supabase.from("persona_stretch_tasks").select("title,detail,status").eq("account_id", accountId).eq("persona_code", personaCode).order("display_order"),
+            supabase.from("persona_potential_roles").select("role_title,fit_percent,horizon_months,rationale").eq("account_id", accountId).eq("persona_code", personaCode).order("display_order"),
+          ])
+        : null;
+
       if (cancelled) return;
       setState({
         loading: false,
@@ -341,7 +353,15 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
         modules: ((modulesRes as any).data ?? []) as ModuleRow[],
         adaptations: ((adaptRes as any).data ?? []) as AdaptationRow[],
         progress: ((progressRes as any).data ?? []) as LearnerProgressRow[],
+        basics: (personaContent?.[0] as any)?.data?.data ?? undefined,
+        careerHere: (personaContent?.[1] as any)?.data?.data ?? undefined,
+        aspiration: (personaContent?.[2] as any)?.data?.data ?? undefined,
+        succession: (personaContent?.[3] as any)?.data?.data ?? undefined,
+        managerFeedback: ((personaContent?.[4] as any)?.data ?? []) as PersonaFeedbackRow[],
+        stretchTasks: ((personaContent?.[5] as any)?.data ?? []) as PersonaStretchRow[],
+        potentialRoles: ((personaContent?.[6] as any)?.data ?? []) as PersonaRoleRow[],
       });
+
     })();
 
     return () => {

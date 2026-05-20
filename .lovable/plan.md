@@ -1,62 +1,92 @@
-# Standardize subtle animations across the product
+## Goal
 
-Match the Role Play Bank entrance (fade + 12px rise, 0.35s, staggered by 0.06s) on every page, list, grid, section, tab and modal — for learners, managers and admins.
+Replace the patchy `seeded`-only proficiency data with a defensible, persona-aware set covering all 14 archetypes and all 10 Rathbones employees, surfacing 16 catalog competencies + supporting sub-skills, with a realistic source mix that powers the My 360 KPI tiles.
 
-## What ships
+## Inputs available (already in DB)
 
-### 1. Motion primitives (shared, framer-motion based)
-New file `src/components/motion/Motion.tsx` exporting:
-- `<PageTransition>` — wraps page content. `initial {opacity:0, y:8}` → `animate {opacity:1, y:0}`, 0.3s easeOut.
-- `<StaggerList>` + `<StaggerItem>` — for grids/lists. Item: `initial {opacity:0, y:12}` → `animate {opacity:1, y:0}`, delay = `index * 0.06`, duration 0.35s. Includes `AnimatePresence` so removed items fade.
-- `<SectionReveal>` — for inner sections/tabs/modals. Same as PageTransition with optional `delay` prop.
-- All primitives short-circuit to a plain `<div>` when `prefers-reduced-motion` is on **or** the user toggled "Reduce motion" off in Accessibility settings.
+- `competency_catalog` — 16 competencies, 5 tracks, each with `supporting_skills[]` (the source of the "67-row" expansion).
+- `employee_personas` — 14 archetypes across career stage × domain.
+- `employee_persona_assignments` — `rb-l1…rb-l9` mapped to the 9-cell matrix, `rb-mgr` → `senior_leader`.
+- `module_competency_tags` — module → primary + secondary competency mapping.
+- `learner_progress` — per-employee `completed / in_progress / not_started` per module.
 
-### 2. CSS utilities (lightweight, for static blocks)
-Add to `src/index.css`:
-- `.anim-page` → `animate-fade-in` (already exists, 0.3s).
-- `.anim-stagger > *` → each child gets `animation-delay: calc(var(--i,0) * 60ms)`.
-- Wrap all keyframes in `@media (prefers-reduced-motion: no-preference)` and an `html:not(.no-motion)` guard so the toggle disables them globally.
+No extra data needed from you.
 
-### 3. Accessibility setting: "Reduce motion"
-- Add `reduceMotion: boolean` to `A11ySettings` in `src/contexts/AccessibilityContext.tsx`. Default `false` (animations on).
-- Initial value: if `localStorage` has no preference, read `window.matchMedia('(prefers-reduced-motion: reduce)').matches` as the default; otherwise honour the stored value.
-- When `true`, add `no-motion` class to `<html>` (disables CSS keyframes) and expose via `useReducedMotion()` hook for the Motion primitives.
-- Surface the toggle in `src/components/layout/AccessibilityPanel.tsx` as a new `Switch` row beneath the existing toggles, labelled **"Reduce motion"** with helper text "Turn off subtle page and list animations."
+## Level model
 
-### 4. Apply standard pattern everywhere
-**Layout-level (covers every route in one shot):**
-- Wrap the `<Outlet />` in `src/components/layout/AppLayout.tsx` with `<PageTransition>` keyed by `location.pathname` so each route navigation re-plays the fade-in. This alone covers ~90% of pages with zero per-page edits.
+```text
+base_level = career_baseline[stage] + domain_modifier[domain] + risk_critical_bonus
+final_level = clamp(round(base_level + progress_lift), 1, 5)
 
-**Per-page list/grid retrofits (where stagger helps):**
-Replace ad-hoc fade/motion with `<StaggerList>` + `<StaggerItem>` on these card/grid surfaces (keep current data + classNames, only swap the wrapper):
-- `src/pages/Dashboard.tsx` (recommended targets row, KPI tiles)
-- `src/pages/CohortHub.tsx` (KPI tiles, co-learning timeline, people list, recommended actions)
-- `src/pages/RolePlayBank.tsx` (already stagger — just migrate to the shared component for consistency)
-- `src/pages/ManagerRolePlay.tsx`, `src/pages/ManagerSkillTargets.tsx`, `src/pages/ManagerSkillTargetDetail.tsx`, `src/pages/ManagerView.tsx`
-- `src/pages/SkillTargetDetail.tsx`, `src/pages/SkillTargetBuilder.tsx`, `src/pages/AssessmentPage.tsx`
-- `src/pages/My360.tsx`, `src/pages/NewMy360.tsx`, `src/pages/TeamInsights.tsx`, `src/pages/PeopleGraphIntelligence.tsx`, `src/pages/DeepResearch.tsx`, `src/pages/Settings.tsx`, `src/pages/DevTools.tsx`, `src/pages/AIManager.tsx`, `src/pages/ProgramContextPage.tsx`
-- `src/components/admin/*` panels and `src/components/manager/*` panels (NewHires, Progress, ProgramContext, TrainingAssign, PeopleGraph, EmployeeDetail)
+progress_lift  = +1 if ≥70% of modules tagged to this competency are completed
+                +0.5 if 30–69%
+                 0   otherwise
 
-**Modals / tabs / popovers:** leave shadcn Dialog / Tabs / Popover defaults intact — they already animate consistently via Radix. No changes.
+career_baseline: early=1.6, mid=3.0, exp=3.6, senior=4.6
+domain_modifier per track:
+  business_knowledge   in_im +0.4 | fs_non_im +0.1 | outside_fs -0.4
+  technical_knowledge  in_im +0.5 | fs_non_im  0.0 | outside_fs -0.6
+  behavioural_skills   in_im  0.0 | fs_non_im  0.0 | outside_fs +0.1
+  certification        in_im +0.3 | fs_non_im  0.0 | outside_fs -0.3
+  other_enablers       all 0.0
+risk_critical_bonus: +0.2 if competency.risk_critical AND stage∈{mid,exp,senior}
+```
 
-### 5. Cleanup
-Remove now-redundant inline `motion.div initial/animate` blocks on the pages above so all animation timing lives in one place. Hand-rolled `animate-pulse` / `animate-spin` loading states stay untouched.
+Sub-skills get the parent's level ±1 with deterministic jitter seeded on `(employee_id, sub_skill)` so the same persona always renders identically.
+
+## Source mix (powers the 4 KPI tiles)
+
+Allocated per persona over its visible competency rows:
+
+| Stage | validated | self_claimed | pending | ai_inferred |
+|---|---|---|---|---|
+| early | 0 | 8 | 4 | 4 |
+| mid | 3 | 7 | 3 | 3 |
+| exp | 5 | 6 | 2 | 3 |
+| senior | 7 | 6 | 0 | 3 |
+
+Rules: `risk_critical` + high progress → `validated` first; low-progress tagged competencies → `pending`; competencies with no progress signal at all → `ai_inferred`; everything else → `self_claimed`. Sub-skills inherit the parent's source.
+
+## Scope of write
+
+### 1. `persona_competency_profiles` — all 14 archetypes
+- Delete existing 3 rows × 16 cols, re-insert all 14 × 16 = 224 rows with the formula above (no progress signal, so just baseline + domain).
+
+### 2. `employee_capability_proficiency` — 10 Rathbones employees
+- Delete the 3 × 67 existing rows for `rb-l3`, `rb-l6`, `rb-mgr`.
+- Insert fresh rows for all 10 employees: **16 competency rows + ~3 supporting sub-skill rows each** (≈ 76 per employee × 10 = ~760 rows).
+- `capability_code` schema:
+  - Top-level competency → `capability_code = competency_id` (e.g. `tk.investment_expertise`).
+  - Sub-skill → `capability_code = "{competency_id}::{slug(sub_skill)}"`. This lets My 360 group sub-rows under their parent without a new column.
+- `source`, `current_level`, `confidence` (`high` for validated, `medium` for self_claimed, `low` for pending/ai_inferred), `validation_needed` (true for pending), and a `short_rationale` like *"≥70% of tagged modules completed — promoted to validated"*.
+- `metadata.parent_competency_id` set on sub-skill rows for clean UI grouping.
+
+### 3. Manager (`rb-mgr`)
+- Senior baseline (4.6) + leadership tilt: +0.3 on `bs.collab_leadership`, `oe.mentoring_coaching`, `oe.cultural_perf`. No `pending` rows.
+
+### 4. Coherence checks before commit (in the seed script)
+- Theo (`early__in_im`) avg < Clara (`mid__in_im`) avg < rb-mgr avg.
+- Sophie (`rb-l1`, `early__outside_fs`) avg < Theo avg on technical/business tracks, ~equal on behavioural.
+- Every employee has ≥1 validated (except early-stage who have 0), ≥1 ai_inferred.
+- No level outside 1–5, no duplicate `(employee_id, capability_code)`.
+
+## Implementation
+
+One TypeScript seed script, `scripts/seed-persona-skills.ts`, that:
+1. Loads catalog, personas, assignments, module tags, learner_progress.
+2. Computes rows in memory using the formula.
+3. Runs the coherence checks.
+4. Emits two SQL files: `persona_competency_profiles.sql` and `employee_capability_proficiency.sql`.
+
+The two SQL files are then run via the data-insert tool (two `DELETE` + `INSERT … SELECT` blocks, account-scoped to the Rathbones account).
 
 ## Out of scope
-- No new framer-motion install (already a dep).
-- No backend, schema, or analytics changes.
-- No changes to chat-stream typewriter or loading spinners.
-- No changes to the existing First-Login guided tour overlay.
 
-## Technical notes
-- Centralised timing constants in `Motion.tsx`: `DURATION = 0.35`, `STAGGER = 0.06`, `RISE = 12`, `EASE = [0.22, 1, 0.36, 1]`.
-- `<PageTransition>` uses `mode="wait"` inside `AnimatePresence` so outgoing route fades before incoming rises (~150ms overlap).
-- Reduced-motion gate is a single `useReducedMotion()` hook reading `AccessibilityContext.reduceMotion || mediaQuery.matches`.
-- ASCII map of the dependency graph:
-```text
-AccessibilityContext ──► useReducedMotion ──► <PageTransition>
-                                          └─► <StaggerList/Item>
-AppLayout (Outlet) ──► <PageTransition keyed by pathname>
-Pages/grids       ──► <StaggerList>{items.map(<StaggerItem>)}
-index.css (.no-motion guard) disables CSS keyframes globally
-```
+- No UI changes — this only seeds data. My 360 KPI tiles will start showing real counts as soon as the rows land.
+- No new tables.
+- No changes to `competency_catalog` or `module_competency_tags`.
+- Pinnacle Capital white-label is **not** re-seeded in this pass (call out if you want it included — same script, different `account_id`).
+
+## What I need from you
+
+Nothing — green-light the plan and I'll run the seed.

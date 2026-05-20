@@ -138,9 +138,9 @@ export function CoLearningTimeline({ upcomingSessions, classroomSessions, studyG
                       <Badge
                         variant="outline"
                         className={`text-[9px] uppercase tracking-wide ${
-                          it.kind === "live" ? "border-primary/30 text-primary"
-                          : it.kind === "classroom" ? "border-accent/40 text-accent-foreground"
-                          : "border-border text-muted-foreground"
+                          it.kind === "live" ? "border-primary/30 text-primary bg-primary/5"
+                          : it.kind === "classroom" ? "border-accent/50 text-accent bg-accent/10"
+                          : "border-border text-muted-foreground bg-muted/40"
                         }`}
                       >
                         {KIND_LABEL[it.kind]}

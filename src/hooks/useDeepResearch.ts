@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { findShowcaseMatch, isShowcaseAccount } from "@/data/deepResearchShowcase";
+import { findLearnerShowcaseMatch } from "@/data/learnerDeepResearchShowcase";
 import type {
   DeepResearchMessage,
   DeepResearchThread,
@@ -7,45 +8,59 @@ import type {
   ResponseEnvelope,
 } from "@/lib/deepResearch/envelope";
 
-const THREADS_KEY = "deep-research-threads";
-const PINS_KEY = "deep-research-pins-v2";
+export type DeepResearchScope = "personal" | "team";
+
+const threadsKey = (scope: DeepResearchScope) =>
+  scope === "personal" ? "deep-research-threads-personal" : "deep-research-threads";
+const pinsKey = (scope: DeepResearchScope) =>
+  scope === "personal" ? "deep-research-pins-personal-v2" : "deep-research-pins-v2";
 
 const newId = () => `dr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-function loadThreads(accountId: string): DeepResearchThread[] {
+function loadThreads(accountId: string, scope: DeepResearchScope, ownerId?: string): DeepResearchThread[] {
   try {
-    const all: DeepResearchThread[] = JSON.parse(localStorage.getItem(THREADS_KEY) ?? "[]");
-    return all.filter((t) => t.accountId === accountId);
+    const all: DeepResearchThread[] = JSON.parse(localStorage.getItem(threadsKey(scope)) ?? "[]");
+    return all.filter(
+      (t) => t.accountId === accountId && (scope === "team" || !ownerId || t.ownerId === ownerId)
+    );
   } catch {
     return [];
   }
 }
 
-function saveThreads(threads: DeepResearchThread[]) {
+function saveThreads(threads: DeepResearchThread[], scope: DeepResearchScope) {
   try {
-    const all: DeepResearchThread[] = JSON.parse(localStorage.getItem(THREADS_KEY) ?? "[]");
+    const all: DeepResearchThread[] = JSON.parse(localStorage.getItem(threadsKey(scope)) ?? "[]");
     const otherAccount = all.filter((t) => !threads.find((x) => x.id === t.id));
-    localStorage.setItem(THREADS_KEY, JSON.stringify([...otherAccount, ...threads]));
+    localStorage.setItem(threadsKey(scope), JSON.stringify([...otherAccount, ...threads]));
   } catch {
     // ignore
   }
 }
 
-function loadPins(accountId: string): PinnedAnswer[] {
+function loadPins(accountId: string, scope: DeepResearchScope, ownerId?: string): PinnedAnswer[] {
   try {
-    const all: (PinnedAnswer & { accountId: string })[] = JSON.parse(localStorage.getItem(PINS_KEY) ?? "[]");
-    return all.filter((p) => p.accountId === accountId);
+    const all: (PinnedAnswer & { accountId: string; ownerId?: string })[] = JSON.parse(
+      localStorage.getItem(pinsKey(scope)) ?? "[]"
+    );
+    return all.filter(
+      (p) => p.accountId === accountId && (scope === "team" || !ownerId || p.ownerId === ownerId)
+    );
   } catch {
     return [];
   }
 }
 
-function savePins(accountId: string, pins: PinnedAnswer[]) {
+function savePins(accountId: string, scope: DeepResearchScope, ownerId: string, pins: PinnedAnswer[]) {
   try {
-    const all: (PinnedAnswer & { accountId: string })[] = JSON.parse(localStorage.getItem(PINS_KEY) ?? "[]");
-    const others = all.filter((p) => p.accountId !== accountId);
-    const next = [...others, ...pins.map((p) => ({ ...p, accountId }))];
-    localStorage.setItem(PINS_KEY, JSON.stringify(next));
+    const all: (PinnedAnswer & { accountId: string; ownerId?: string })[] = JSON.parse(
+      localStorage.getItem(pinsKey(scope)) ?? "[]"
+    );
+    const others = all.filter(
+      (p) => p.accountId !== accountId || (scope === "personal" && p.ownerId !== ownerId)
+    );
+    const next = [...others, ...pins.map((p) => ({ ...p, accountId, ownerId }))];
+    localStorage.setItem(pinsKey(scope), JSON.stringify(next));
   } catch {
     // ignore
   }

@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
 import PageHeader from "@/components/layout/PageHeader";
 import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
+import { StaggerList, StaggerItem } from "@/components/motion/Motion";
 
 type Filter = "all" | "in_progress" | "completed" | "not_started";
 type ViewMode = "cards" | "list";

@@ -23,6 +23,7 @@ import { CoLearningTimeline } from "@/components/cohort/CoLearningTimeline";
 import { PeopleToConnect } from "@/components/cohort/PeopleToConnect";
 import { CohortRightRail } from "@/components/cohort/CohortRightRail";
 import { AdaptedPathTab } from "@/components/cohort/AdaptedPathTab";
+import { StaggerList, StaggerItem } from "@/components/motion/Motion";
 
 function initials(name: string) {
   return name.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();

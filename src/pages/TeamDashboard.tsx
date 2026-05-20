@@ -10,12 +10,10 @@ import ReflectionsPanel from "@/components/admin/ReflectionsPanel";
 import { getScopedAccount } from "@/lib/accountSelectors";
 import PageHeader from "@/components/layout/PageHeader";
 import PageBody from "@/components/layout/PageBody";
-import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
 
 export default function TeamDashboard() {
   const { normalizedAccount } = useAccount();
   const { user } = useUser();
-  const eyebrow = useModeEyebrow();
 
   const scopedAccount = useMemo(() => {
     if (!normalizedAccount) return null;
@@ -37,10 +35,8 @@ export default function TeamDashboard() {
   return (
     <div className="flex-1 overflow-y-auto">
       <PageHeader
-        eyebrow={eyebrow}
         title="Team Dashboard"
         subtitle={`${user.name}'s Team — ${memberCount} member${memberCount !== 1 ? "s" : ""}`}
-        back
       />
       <PageBody>
 

@@ -21,6 +21,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
 import { TeamAvatar } from "@/components/team-home/Avatar";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -82,19 +83,32 @@ export default function ProgramContextPage() {
   const selectedCohort = cohorts.find((c) => c.id === selectedCohortId) ?? null;
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <BackButton />
-      <AnimatePresence mode="wait">
-        {view === "list" && (
-          <CohortList key="list" cohorts={cohorts} onCreate={() => setView("create")} onSelect={openDetail} />
-        )}
-        {view === "create" && (
-          <CreateCohort key="create" onBack={goList} onSubmit={addCohort} />
-        )}
-        {view === "detail" && selectedCohort && (
-          <CohortDetail key="detail" cohort={selectedCohort} onBack={goList} />
-        )}
-      </AnimatePresence>
+    <div className="flex-1 overflow-y-auto">
+      {view === "list" && (
+        <PageHeader
+          title="Cohorts"
+          subtitle="Programmes and learner progress"
+          actions={
+            <Button size="sm" onClick={() => setView("create")} className="gap-1.5">
+              <Plus className="h-3.5 w-3.5" /> New cohort
+            </Button>
+          }
+        />
+      )}
+      <div className={view === "list" ? "p-6 max-w-5xl mx-auto" : "p-6 max-w-3xl mx-auto"}>
+        {view !== "list" && <BackButton />}
+        <AnimatePresence mode="wait">
+          {view === "list" && (
+            <CohortList key="list" cohorts={cohorts} onCreate={() => setView("create")} onSelect={openDetail} />
+          )}
+          {view === "create" && (
+            <CreateCohort key="create" onBack={goList} onSubmit={addCohort} />
+          )}
+          {view === "detail" && selectedCohort && (
+            <CohortDetail key="detail" cohort={selectedCohort} onBack={goList} />
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
@@ -165,16 +179,6 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-      {/* Compact header (Program Context style) */}
-      <div className="flex items-start justify-between gap-3 mb-1">
-        <div className="flex items-center gap-2">
-          <Layers className="h-4 w-4 text-primary" />
-          <h1 className="font-display text-lg font-bold text-foreground">Cohorts</h1>
-        </div>
-        <Button size="sm" onClick={onCreate} className="gap-1.5 h-8">
-          <Plus className="h-3.5 w-3.5" /> New cohort
-        </Button>
-      </div>
       <p className="text-sm text-muted-foreground mb-5">
         {stats.total} {stats.total === 1 ? "cohort" : "cohorts"} · {stats.activeLearners} active learner{stats.activeLearners === 1 ? "" : "s"} · {stats.avg}% avg progress
         {stats.attention > 0 && (

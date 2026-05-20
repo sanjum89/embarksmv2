@@ -4,20 +4,19 @@ import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useLearnerJourney, type LearnerJourney } from "@/hooks/useLearnerJourney";
 import { JourneyHeaderCard } from "./JourneyHeaderCard";
-import { JourneyTrackTabs } from "./JourneyTrackTabs";
+import { JourneyTrackCards } from "./JourneyTrackCards";
 import { JourneyModuleAccordion } from "./JourneyModuleAccordion";
 import { EmbarkJourneyAccordion } from "./LearnPathJourneyAccordion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, BookOpen, Loader2 } from "lucide-react";
 import type { UnifiedStep } from "./LearnPathContent";
 
-type FilterKey = "all" | "in_progress" | "completed" | "locked";
-
 interface Props {
   // Steps fed by the legacy pipeline — used for the fallback view.
   legacySteps: UnifiedStep[];
   activeChapterId: string | null;
 }
+
 
 export function EmbarkJourneyView({ legacySteps, activeChapterId }: Props) {
   const { user } = useUser();

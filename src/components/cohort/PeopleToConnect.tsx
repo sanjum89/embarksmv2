@@ -51,15 +51,18 @@ export function PeopleToConnect({ peopleSimilar, peerMatches, onConnect }: Props
               <div className="truncate text-sm font-semibold">{p.name}</div>
               <div className="truncate text-xs text-muted-foreground">{p.title}</div>
               <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                <Badge
-                  variant="outline"
-                  className={`text-[9px] uppercase tracking-wide ${
-                    p.source === "similar" ? "border-primary/30 text-primary" : "border-accent/40 text-accent-foreground"
-                  }`}
-                >
-                  {p.source === "similar" ? "Similar topic" : "Suggested match"}
-                </Badge>
-                <span className="truncate text-[11px] text-muted-foreground">{p.reason}</span>
+                {p.source === "similar" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                    <Sparkles className="h-2.5 w-2.5" /> Same topic
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-accent/50 bg-accent/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent">
+                    <UserPlus className="h-2.5 w-2.5" /> Mentor match
+                  </span>
+                )}
+                {p.reason && (
+                  <span className="truncate text-[11px] text-muted-foreground">{p.reason}</span>
+                )}
               </div>
             </div>
             <Button size="sm" variant="outline" className="h-7 text-xs shrink-0" onClick={() => onConnect(p)}>Connect</Button>

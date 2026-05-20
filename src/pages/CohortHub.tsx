@@ -324,37 +324,40 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                           </div>
                         </div>
 
-                        <div className="relative mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                        <StaggerList className="relative mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                           {data.achievements.map((a) => {
                             const Icon = ICONS[a.code] ?? Award;
                             if (a.earned) {
                               return (
-                                <div
-                                  key={a.code}
-                                  title={`${a.label} · +${a.points} pts`}
-                                  className={`flex items-center gap-1.5 rounded-full border px-2 py-1 transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
-                                >
-                                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${TIER_ICON_BG[a.tier]}`}>
-                                    <Icon className="h-3 w-3" />
+                                <StaggerItem key={a.code}>
+                                  <div
+                                    title={`${a.label} · +${a.points} pts`}
+                                    className={`flex items-center gap-1.5 rounded-full border px-2 py-1 transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
+                                  >
+                                    <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${TIER_ICON_BG[a.tier]}`}>
+                                      <Icon className="h-3 w-3" />
+                                    </div>
+                                    <div className="truncate text-[11px] font-semibold leading-none text-foreground">{a.label}</div>
                                   </div>
-                                  <div className="truncate text-[11px] font-semibold leading-none text-foreground">{a.label}</div>
-                                </div>
+                                </StaggerItem>
                               );
                             }
                             return (
-                              <div
-                                key={a.code}
-                                title={`Locked · ${a.label}`}
-                                className="flex items-center gap-1.5 rounded-full border border-dashed border-border bg-muted/30 px-2 py-1 opacity-70"
-                              >
-                                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                                  <Lock className="h-3 w-3" />
+                              <StaggerItem key={a.code}>
+                                <div
+                                  title={`Locked · ${a.label}`}
+                                  className="flex items-center gap-1.5 rounded-full border border-dashed border-border bg-muted/30 px-2 py-1 opacity-70"
+                                >
+                                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                    <Lock className="h-3 w-3" />
+                                  </div>
+                                  <div className="truncate text-[11px] font-medium leading-none text-muted-foreground">{a.label}</div>
                                 </div>
-                                <div className="truncate text-[11px] font-medium leading-none text-muted-foreground">{a.label}</div>
-                              </div>
+                              </StaggerItem>
                             );
                           })}
-                        </div>
+                        </StaggerList>
+
 
                         {firstLocked && (
                           <div className="relative mt-4 border-t border-border pt-3 text-xs text-muted-foreground">

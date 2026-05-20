@@ -93,6 +93,8 @@ export interface HubAchievement {
   code: string;
   label: string;
   earned: boolean;
+  points: number;
+  tier: "bronze" | "silver" | "gold";
 }
 
 export interface HubEvidence {
@@ -429,14 +431,14 @@ export function useCohortHub({ accountId, employeeId, employeesById }: UseArgs):
       // achievements (rule-based; locked shown struck-through in component)
       const completedYou = completedByLearner[employeeId] || 0;
       const achievements: HubAchievement[] = [
-        { code: "first_quiz", label: "First quiz passed", earned: completedYou >= 1 },
-        { code: "5_day_streak", label: "5-day streak", earned: true },
-        { code: "module_1", label: "Module 1 complete", earned: completedYou >= 3 },
-        { code: "peer_mentor", label: "Peer mentor", earned: true },
-        { code: "mock_ace", label: "Mock client ace", earned: false },
-        { code: "top_10", label: "Top 10 cohort", earned: yourRank <= 10 && yourRank > 0 && totalLearners >= 10 },
-        { code: "cisi_l4", label: "CISI L4 ready", earned: false },
-        { code: "fca_notified", label: "FCA notified", earned: false },
+        { code: "first_quiz",   label: "First quiz passed", earned: completedYou >= 1,                              points: 25,  tier: "bronze" },
+        { code: "5_day_streak", label: "5-day streak",      earned: true,                                           points: 50,  tier: "bronze" },
+        { code: "module_1",     label: "Module 1 complete", earned: completedYou >= 3,                              points: 75,  tier: "silver" },
+        { code: "peer_mentor",  label: "Peer mentor",       earned: true,                                           points: 75,  tier: "silver" },
+        { code: "mock_ace",     label: "Mock client ace",   earned: false,                                          points: 100, tier: "silver" },
+        { code: "top_10",       label: "Top 10 cohort",     earned: yourRank <= 10 && yourRank > 0 && totalLearners >= 10, points: 150, tier: "gold" },
+        { code: "cisi_l4",      label: "CISI L4 ready",     earned: false,                                          points: 200, tier: "gold" },
+        { code: "fca_notified", label: "FCA notified",      earned: false,                                          points: 250, tier: "gold" },
       ];
 
       const evidence: HubEvidence[] = [

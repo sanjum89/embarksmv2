@@ -1,79 +1,70 @@
-## Goal
+## Why
 
-Two-state learner New Chat:
-- **Home** = original layout (image 1): hero greeting, Agent One LIVE strip, centered 6-card grid, composer. No left rail.
-- **Inner chat** = same UI as Deep Research (3-column workspace, envelope responses, pinned dashboard, thread list), but scoped to the learner's own data only.
+Today's Action Centre is manager-only, leads with four mostly-decorative KPI tiles, stacks Tabs + filters + KPIs in the header, and renders every item with the same card — so nothing stands out. It also can't surface learner-side signals (mentor messages, kudos, due dates, AI nudges) you described.
 
-This means extracting the Deep Research workspace into a shared component so any future Deep Research redesign automatically applies to the learner chat too.
+This rebuild turns it into a single triage inbox patterned on Linear / GitHub Notifications / Asana Inbox: one ordered list grouped by urgency, category pills per row, AI suggestions in a calm rail.
 
-## Changes
+## New layout
 
-### 1. Restore home state (image 1)
-`src/pages/LearnerChat.tsx` — home branch:
-- Drop the left rail (`Today's focus`, `Suggested topics`, `Recent`) from the home view.
-- Center column only: `H1 "Hi {firstName}, let's grow together"` → `<AgentOneNudgeStack>` → 6-card grid using the existing `CardIllustration` SVGs (3-up on lg, 2-up on md, 1 on mobile) → composer with `Ask anything…` → small tip line.
-- Keep the existing card prompts (`Grow My Skills`, `Required Skills`, `Explore Career Paths`, `View My Activities`, `Build Your Profile`, `Create a Reflection`).
-
-### 2. Extract shared Deep Research workspace
-New `src/components/deep-research/DeepResearchWorkspace.tsx` — takes the entire body of `DeepResearch.tsx` (3-col grid, conversation/envelope rendering, `ThinkingPanel`, composer, threads list, pinned dashboard) and exposes props:
-
-```ts
-type Props = {
-  scope: "personal" | "team";
-  ownerId: string;
-  accountId: string;
-  accountName?: string | null;
-  starters: { label: string; prompt: string; icon?: LucideIcon }[];
-  emptyState?: { title: string; subtitle: string };
-  threadBasePath: string;     // "/team/deep-research" or "/chat"
-  activeThreadId?: string;
-  onExit?: () => void;        // Home button for learner
-};
+```text
+┌───────────────────────────────────────────────────────────────────────────┐
+│ Action Centre                                                             │
+│ 3 need you now · 7 today · 12 this week                                   │
+│ [All] [Mentions] [Approvals] [AI suggestions]                             │
+├──────────────────────────────────────┬────────────────────────────────────┤
+│ NOW (3)                              │  AI suggestions                    │
+│  ▌🔴 Overdue · Module 4 · Due 2d ago │   ✦ Likely skill gap in IM ethics  │
+│  ▌🔴 Mentor message · Felix          │     → Build me a 15-min top-up     │
+│  ▌🔴 Peer session request · Theo     │                                    │
+│ TODAY (7)                            │   ✦ Last assessment 80%            │
+│  ▌🟠 Reflection due · Module 5       │     → Open adapted micro-path      │
+│  ▌🟠 Kudos from manager              │                                    │
+│  …                                   │   ✦ 3 peers finished Chapter 6     │
+│ THIS WEEK (12)                       │     → Resume your chapter          │
+│ LATER (4)                            │                                    │
+└──────────────────────────────────────┴────────────────────────────────────┘
 ```
 
-Refactor `src/pages/DeepResearch.tsx` to a thin wrapper that renders `<DeepResearchWorkspace scope="team" ... />` with manager starters and PageHeader.
+- Header strip is one sentence of state + a tiny segmented control (All / Mentions / Approvals / AI). No KPI tiles.
+- One ordered list grouped by **Now / Today / This week / Later** — bucket computed from `due_at` and severity, not from the user's role.
+- Each row is one component (`<ActionRow>`) with: left severity rail, kind icon, title, one-line detail, time-ago, category pill, and inline CTAs (Open · Snooze · Done · Dismiss). Hover reveals secondary actions; no card chrome.
+- AI suggestions live in a right rail as soft tiles, never mixed into the urgent list. Each tile has a primary CTA ("Build me a 15-min top-up", "Open adapted path", "Find me a peer").
+- Empty state: full-bleed single line ("You're all clear. We'll ping you when something needs you."), no fake tiles.
 
-### 3. Wire learner inner chat to the shared workspace
-In `LearnerChat.tsx`, replace the entire `chatActive` branch with:
+## Unified item kinds (13)
 
-```tsx
-<DeepResearchWorkspace
-  scope="personal"
-  ownerId={user.id}
-  accountId={activeAccount.id}
-  accountName={activeAccount.name}
-  starters={learnerStarters /* derived from the 6 cards */}
-  threadBasePath="/chat"
-  activeThreadId={...}
-  onExit={() => setChatActive(false)}
-  emptyState={{
-    title: `Hi ${firstName}, what would you like to explore?`,
-    subtitle: "Pick a topic on the left or ask your own question.",
-  }}
-/>
-```
+`due_soon`, `overdue`, `mentor_message`, `peer_session_request`, `kudos`, `team_shoutout`, `assessment_result`, `ai_skill_gap`, `ai_microlearning_offer`, `ai_path_adapted`, `approval_request`, `raised_hand`, `reflection_review`.
 
-Threads & pins persist per learner (already keyed by `ownerId` in `useDeepResearch`). Home button in the workspace top bar calls `onExit` to return to image 1.
+Each rendered from one `<ActionRow>` driven by `{ kind, priority, when, actor, title, detail, cta[], category }`.
 
-### 4. Enforce personal scope (learner sees own data only)
-- `src/hooks/useDeepResearch.ts`: accept `scope: "personal" | "team"`, include it in storage key (`dr:${accountId}:${ownerId}:${scope}`) so learner and manager threads don't mix.
-- `src/data/deepResearchShowcase.ts` (or new `learnerDeepResearchShowcase.ts`): add personal-scope envelopes for the 6 learner prompts (Grow My Skills, Required Skills, Explore Career Paths, View My Activities, Build Your Profile, Create a Reflection). Each envelope references **only Clara's own** metrics, modules, evidence — no cohort tables, no other learners, no team aggregates.
-- `src/lib/deepResearch/actionDispatch.ts`: guard `assign_to_learner`, `nudge_learner`, and other manager-only actions when `scope === "personal"` (hide button or no-op with toast).
+## Data
 
-### 5. Cleanup
-- Remove now-dead code in `LearnerChat.tsx`: the old chat branch (Agent One strip, message rendering, suggestion pills, voice composer) — replaced by the shared workspace.
-- Keep `useAgentOne` only if still needed for the home-state nudge stack; otherwise drop the imports.
-- Leave `UnifiedChat.tsx` alone (unused, separate concern).
+- Reuse `nudge_cards` as the canonical store; add the new `type` values above. No new tables.
+- Manager-side items continue to flow from `managerDemoOverlay` via `useRathbonesPersonaOverlays` and get adapted into the same shape.
+- New hook `useActionCentreFeed(userId, role)` merges both sources, computes urgency bucket from `due_at` / `created_at` + severity, returns `{ now, today, thisWeek, later, ai }`, and exposes `snooze(id, until)`, `markDone(id)`, `dismiss(id)`.
+- Snooze + done state stored in `nudge_cards.metadata.action_centre_state` so it survives reload without schema changes.
+- Seed coherent demo notifications for Clara, Sophie, Theo, and rb-mgr so each persona has a realistic Now/Today/Week mix (overdue module for Sophie, mentor message + kudos for Clara, peer session request for Theo, approvals + raised hands for rb-mgr).
 
-## Out of scope
-- Visual redesign of Deep Research itself (only extraction). Any future redesign edits `DeepResearchWorkspace` and both surfaces update.
-- Backend / RLS changes — scope is enforced at the UI + showcase-data layer for the demo.
-- The home-state Agent One nudge stack stays as-is.
+## Role behaviour
+
+- **Learner** (`role = learner`): personal nudges only — own due dates, own mentor messages, kudos to them, AI suggestions about their gaps.
+- **Manager** (`role = manager`): everything above for themselves **plus** their reporting tree's approvals, raised hands, and reflection reviews. Same UI, same row component — `category` pill tells them apart.
+- No team-level data leaks to learners (matches the data-scoping rule already used in Deep Research / Chat).
 
 ## Files
-- new: `src/components/deep-research/DeepResearchWorkspace.tsx`
-- edit: `src/pages/DeepResearch.tsx` (delegate to workspace)
-- edit: `src/pages/LearnerChat.tsx` (home redesign + delegate inner chat)
-- edit: `src/hooks/useDeepResearch.ts` (scope param)
-- edit/new: `src/data/deepResearchShowcase.ts` (personal-scope responses for 6 learner prompts)
-- edit: `src/lib/deepResearch/actionDispatch.ts` (guard team-only actions on personal scope)
+
+- rewrite: `src/pages/ActionCentre.tsx`
+- create: `src/components/action-centre/ActionRow.tsx`
+- create: `src/components/action-centre/TimeBucketGroup.tsx`
+- create: `src/components/action-centre/AIRecommendationStream.tsx`
+- create: `src/components/action-centre/EmptyState.tsx`
+- create: `src/hooks/useActionCentreFeed.ts`
+- create: `src/lib/actionCentre/itemKinds.ts`
+- edit: `src/data/agentOneSeeds.ts` (add learner-side demo notifications for Clara/Sophie/Theo)
+
+## Out of scope
+
+- No new database tables, no realtime channel.
+- No bulk-select / multi-action toolbar.
+- No merge with the topbar bell — that stays a quick-peek; Action Centre stays the deep view.
+- AI History / "Path changes" stays where it is for now (already moved to a separate surface).

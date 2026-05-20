@@ -116,17 +116,6 @@ export default function CohortHub() {
       <PageHeader
         title="Cohort Hub"
         subtitle={`Learn with peers, mentors, and cohort sessions · ${sub(c.title)}`}
-        titleAside={
-          <ToggleGroup
-            type="single"
-            value={view}
-            onValueChange={(v) => v && setView(v as any)}
-            className="bg-muted/40 rounded-md p-0.5"
-          >
-            <ToggleGroupItem value="editorial" className="text-xs px-3 h-6">Editorial</ToggleGroupItem>
-            <ToggleGroupItem value="cards" className="text-xs px-3 h-6">Cards</ToggleGroupItem>
-          </ToggleGroup>
-        }
       />
 
       <div className="mx-auto max-w-7xl space-y-6 p-6">

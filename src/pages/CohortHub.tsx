@@ -274,49 +274,88 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
 
                 <Card className="relative overflow-hidden p-6 flex flex-col">
                   {/* decorative glows */}
-                  <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-accent/30 blur-3xl" />
+                  <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-400/20 blur-3xl" />
                   <div className="pointer-events-none absolute -bottom-12 -left-8 h-28 w-28 rounded-full bg-primary/10 blur-3xl" />
 
                   {(() => {
                     const earned = data.achievements.filter((a) => a.earned).length;
                     const total = data.achievements.length || 1;
-                    const pct = Math.round((earned / total) * 100);
+                    const pointsEarned = data.achievements.filter((a) => a.earned).reduce((s, a) => s + a.points, 0);
+                    const pointsTotal = data.achievements.reduce((s, a) => s + a.points, 0) || 1;
+                    const ptsPct = Math.round((pointsEarned / pointsTotal) * 100);
                     const firstLocked = data.achievements.find((a) => !a.earned);
+
+                    const ICONS: Record<string, typeof Trophy> = {
+                      first_quiz: CheckCircle2,
+                      "5_day_streak": Flame,
+                      module_1: BookOpen,
+                      peer_mentor: Users,
+                      mock_ace: Target,
+                      top_10: Trophy,
+                      cisi_l4: GraduationCap,
+                      fca_notified: ShieldCheck,
+                    };
+                    const TIER_EARNED: Record<string, string> = {
+                      bronze: "border-amber-500/40 bg-gradient-to-br from-amber-500/15 to-orange-500/10 text-amber-700 dark:text-amber-300",
+                      silver: "border-sky-500/40 bg-gradient-to-br from-sky-500/15 to-indigo-500/10 text-sky-700 dark:text-sky-300",
+                      gold:   "border-amber-400/50 bg-gradient-to-br from-amber-400/25 to-rose-400/15 text-amber-700 dark:text-amber-200 shadow-[0_2px_12px_-4px_hsl(38_92%_50%/0.4)]",
+                    };
+                    const TIER_ICON_BG: Record<string, string> = {
+                      bronze: "bg-amber-500/20",
+                      silver: "bg-sky-500/20",
+                      gold:   "bg-amber-400/30",
+                    };
+
                     return (
                       <>
                         <div className="relative flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Milestones earned</div>
                             <h2 className="font-display text-lg font-bold">Achievements</h2>
+                            <div className="mt-0.5 text-xs text-muted-foreground tabular-nums">{earned} of {total} unlocked</div>
                           </div>
                           <div className="shrink-0 text-right">
-                            <div className="font-display text-lg font-bold text-accent tabular-nums">{earned}<span className="text-muted-foreground">/{total}</span></div>
-                            <div className="mt-1 h-1 w-12 overflow-hidden rounded-full bg-muted">
-                              <div className="h-full bg-accent shadow-[0_0_8px_hsl(var(--accent)/0.5)]" style={{ width: `${pct}%` }} />
+                            <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-gradient-to-r from-amber-400/20 to-rose-400/15 px-2.5 py-1">
+                              <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
+                              <span className="font-display text-sm font-bold tabular-nums text-foreground">{pointsEarned}</span>
+                              <span className="text-[11px] text-muted-foreground tabular-nums">/ {pointsTotal} pts</span>
+                            </div>
+                            <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
+                              <div className="h-full bg-gradient-to-r from-amber-400 to-rose-400 shadow-[0_0_8px_hsl(38_92%_50%/0.5)]" style={{ width: `${ptsPct}%` }} />
                             </div>
                           </div>
                         </div>
 
-                        <div className="relative mt-4 flex flex-wrap gap-2">
-                          {data.achievements.map((a) => (
-                            <span
-                              key={a.code}
-                              className={
-                                a.earned
-                                  ? "group inline-flex items-center gap-1.5 rounded-xl border border-accent/40 bg-accent/15 px-2.5 py-1 text-xs font-semibold text-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.35),inset_0_1px_0_hsl(var(--background)/0.6)] transition-transform hover:-translate-y-0.5"
-                                  : "inline-flex items-center gap-1.5 rounded-xl border border-dashed border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground opacity-60"
-                              }
-                            >
-                              <span
-                                className={
-                                  a.earned
-                                    ? "h-1.5 w-1.5 rounded-full bg-accent animate-pulse"
-                                    : "h-1.5 w-1.5 rounded-full bg-muted-foreground/50"
-                                }
-                              />
-                              {a.label}
-                            </span>
-                          ))}
+                        <div className="relative mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                          {data.achievements.map((a) => {
+                            const Icon = ICONS[a.code] ?? Award;
+                            if (a.earned) {
+                              return (
+                                <div
+                                  key={a.code}
+                                  className={`group flex flex-col items-center rounded-xl border p-2.5 text-center transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
+                                >
+                                  <div className={`mb-1.5 rounded-full p-2 ${TIER_ICON_BG[a.tier]}`}>
+                                    <Icon className="h-4 w-4" />
+                                  </div>
+                                  <div className="text-[11px] font-semibold leading-tight text-foreground">{a.label}</div>
+                                  <div className="mt-0.5 text-[10px] font-medium tabular-nums opacity-80">+{a.points} pts</div>
+                                </div>
+                              );
+                            }
+                            return (
+                              <div
+                                key={a.code}
+                                className="flex flex-col items-center rounded-xl border border-dashed border-border bg-muted/30 p-2.5 text-center opacity-70"
+                              >
+                                <div className="mb-1.5 rounded-full bg-muted p-2 text-muted-foreground">
+                                  <Lock className="h-4 w-4" />
+                                </div>
+                                <div className="text-[11px] font-medium leading-tight text-muted-foreground line-through decoration-muted-foreground/50">{a.label}</div>
+                                <div className="mt-0.5 text-[10px] font-medium tabular-nums text-muted-foreground/80">+{a.points} pts</div>
+                              </div>
+                            );
+                          })}
                         </div>
 
                         {firstLocked && (
@@ -324,8 +363,9 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                             <span className="text-muted-foreground">
                               Next: <span className="font-medium text-foreground">{firstLocked.label}</span>
                             </span>
-                            <span className="inline-flex items-center rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-semibold text-accent">
-                              +50 points
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
+                              <Star className="h-3 w-3 fill-current" />
+                              +{firstLocked.points} pts
                             </span>
                           </div>
                         )}

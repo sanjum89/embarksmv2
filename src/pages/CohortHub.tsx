@@ -23,6 +23,7 @@ import { CoLearningTimeline } from "@/components/cohort/CoLearningTimeline";
 import { PeopleToConnect } from "@/components/cohort/PeopleToConnect";
 import { CohortRightRail } from "@/components/cohort/CohortRightRail";
 import { AdaptedPathTab } from "@/components/cohort/AdaptedPathTab";
+import { StaggerList, StaggerItem } from "@/components/motion/Motion";
 
 function initials(name: string) {
   return name.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
@@ -323,37 +324,40 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                           </div>
                         </div>
 
-                        <div className="relative mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                        <StaggerList className="relative mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                           {data.achievements.map((a) => {
                             const Icon = ICONS[a.code] ?? Award;
                             if (a.earned) {
                               return (
-                                <div
-                                  key={a.code}
-                                  title={`${a.label} · +${a.points} pts`}
-                                  className={`flex items-center gap-1.5 rounded-full border px-2 py-1 transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
-                                >
-                                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${TIER_ICON_BG[a.tier]}`}>
-                                    <Icon className="h-3 w-3" />
+                                <StaggerItem key={a.code}>
+                                  <div
+                                    title={`${a.label} · +${a.points} pts`}
+                                    className={`flex items-center gap-1.5 rounded-full border px-2 py-1 transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
+                                  >
+                                    <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${TIER_ICON_BG[a.tier]}`}>
+                                      <Icon className="h-3 w-3" />
+                                    </div>
+                                    <div className="truncate text-[11px] font-semibold leading-none text-foreground">{a.label}</div>
                                   </div>
-                                  <div className="truncate text-[11px] font-semibold leading-none text-foreground">{a.label}</div>
-                                </div>
+                                </StaggerItem>
                               );
                             }
                             return (
-                              <div
-                                key={a.code}
-                                title={`Locked · ${a.label}`}
-                                className="flex items-center gap-1.5 rounded-full border border-dashed border-border bg-muted/30 px-2 py-1 opacity-70"
-                              >
-                                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                                  <Lock className="h-3 w-3" />
+                              <StaggerItem key={a.code}>
+                                <div
+                                  title={`Locked · ${a.label}`}
+                                  className="flex items-center gap-1.5 rounded-full border border-dashed border-border bg-muted/30 px-2 py-1 opacity-70"
+                                >
+                                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                    <Lock className="h-3 w-3" />
+                                  </div>
+                                  <div className="truncate text-[11px] font-medium leading-none text-muted-foreground">{a.label}</div>
                                 </div>
-                                <div className="truncate text-[11px] font-medium leading-none text-muted-foreground">{a.label}</div>
-                              </div>
+                              </StaggerItem>
                             );
                           })}
-                        </div>
+                        </StaggerList>
+
 
                         {firstLocked && (
                           <div className="relative mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
@@ -374,18 +378,23 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                 </div>
                 <div className="mt-4 space-y-4">
                   {data.moduleProgress.length === 0 && <p className="text-sm text-muted-foreground">No module data yet.</p>}
-                  {data.moduleProgress.map((m) => (
-                    <div key={m.trackCode}>
-                      <div className="flex items-baseline justify-between text-sm">
-                        <span className="font-medium">{m.trackName}</span>
-                        <span className="text-muted-foreground">Cohort <b className="text-foreground">{m.cohortAvgPct}%</b> · You <b className="text-foreground">{m.youPct}%</b></span>
-                      </div>
-                      <div className="relative mt-1 h-2 overflow-hidden rounded-full bg-muted">
-                        <div className="absolute inset-y-0 left-0 bg-muted-foreground/40" style={{ width: `${m.cohortAvgPct}%` }} />
-                        <div className="absolute inset-y-0 left-0 bg-primary" style={{ width: `${Math.max(m.youPct, 1)}%` }} />
-                      </div>
-                    </div>
-                  ))}
+                  <StaggerList className="space-y-4">
+                    {data.moduleProgress.map((m) => (
+                      <StaggerItem key={m.trackCode}>
+                        <div>
+                          <div className="flex items-baseline justify-between text-sm">
+                            <span className="font-medium">{m.trackName}</span>
+                            <span className="text-muted-foreground">Cohort <b className="text-foreground">{m.cohortAvgPct}%</b> · You <b className="text-foreground">{m.youPct}%</b></span>
+                          </div>
+                          <div className="relative mt-1 h-2 overflow-hidden rounded-full bg-muted">
+                            <div className="absolute inset-y-0 left-0 bg-muted-foreground/40" style={{ width: `${m.cohortAvgPct}%` }} />
+                            <div className="absolute inset-y-0 left-0 bg-primary" style={{ width: `${Math.max(m.youPct, 1)}%` }} />
+                          </div>
+                        </div>
+                      </StaggerItem>
+                    ))}
+                  </StaggerList>
+
                   <div className="flex gap-3 pt-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-muted-foreground/40" /> Cohort avg</span>
                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> You</span>

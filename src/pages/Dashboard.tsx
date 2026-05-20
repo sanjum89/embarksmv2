@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { getAssignedSkillTargetsForUser, orderSkillTargets } from "@/lib/skillTargetSequence";
 import PageHeader from "@/components/layout/PageHeader";
 import { useModeEyebrow } from "@/components/layout/useModeEyebrow";
+import { StaggerList, StaggerItem } from "@/components/motion/Motion";
 
 type Filter = "all" | "in_progress" | "completed" | "not_started";
 type ViewMode = "cards" | "list";
@@ -272,18 +273,23 @@ export default function Dashboard() {
           </motion.div>
         ) : targets.length > 0 ? (
           viewMode === "cards" ? (
-            <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            <StaggerList className="grid grid-cols-1 gap-5 md:grid-cols-2">
               {targets.map((target, i) => (
-                <SkillTargetCard key={target.id} target={target} index={i} />
+                <StaggerItem key={target.id}>
+                  <SkillTargetCard target={target} index={i} />
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerList>
           ) : (
-            <div className="flex flex-col gap-3">
+            <StaggerList className="flex flex-col gap-3">
               {targets.map((target, i) => (
-                <SkillTargetListItem key={target.id} target={target} index={i} />
+                <StaggerItem key={target.id}>
+                  <SkillTargetListItem target={target} index={i} />
+                </StaggerItem>
               ))}
-            </div>
+            </StaggerList>
           )
+
         ) : (
           <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">
             No skill targets match this filter.

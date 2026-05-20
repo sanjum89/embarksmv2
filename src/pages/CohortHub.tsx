@@ -120,31 +120,118 @@ export default function CohortHub() {
       />
 
       <div className="mx-auto max-w-7xl space-y-6 p-6">
-        {/* Top KPI strip */}
-        <Card className="overflow-hidden">
-          <div className="grid grid-cols-1 gap-px bg-border md:grid-cols-5">
-            {[
-              { k: "PROJECTED COMPLETION", v: fmtDate(c.dueDate) },
-              { k: "OFFICIAL DUE DATE", v: fmtDate(c.dueDate), sub: `${data.daysLeft} days remaining` },
-              { k: "COHORT RANK", v: `${data.yourRank} / ${data.totalLearners}`, sub: "By overall progress" },
-              { k: "COHORT CODE", v: c.code, sub: c.startDate ? `Started ${new Date(c.startDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}` : "" },
-              { k: "YOUR PROGRESS", v: `${data.yourPct}%`, sub: data.needsAttention ? "Needs attention" : "On track" },
-            ].map((kpi, i) => (
-              <div key={i} className="bg-card p-4">
-                <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{kpi.k}</div>
-                <div className="mt-1 font-display text-xl font-bold text-foreground">{kpi.v}</div>
-                {kpi.sub && <div className="mt-0.5 text-xs text-muted-foreground">{kpi.sub}</div>}
+        {/* Top status bar */}
+        {(() => {
+          const status = deriveHubStatus(data);
+          const avg = cohortAvgPct(data);
+          const toneStyles: Record<string, { bar: string; pill: string; icon: JSX.Element }> = {
+            attention: {
+              bar: "bg-destructive/5 border-destructive/20",
+              pill: "bg-destructive/15 text-destructive border-destructive/30",
+              icon: <AlertTriangle className="h-3.5 w-3.5" />,
+            },
+            action: {
+              bar: "bg-primary/5 border-primary/20",
+              pill: "bg-primary/15 text-primary border-primary/30",
+              icon: <Calendar className="h-3.5 w-3.5" />,
+            },
+            milestone: {
+              bar: "bg-accent/10 border-accent/30",
+              pill: "bg-accent/20 text-accent-foreground border-accent/40",
+              icon: <Flag className="h-3.5 w-3.5" />,
+            },
+            ontrack: {
+              bar: "bg-muted/30 border-border",
+              pill: "bg-muted text-muted-foreground border-border",
+              icon: <CheckCircle2 className="h-3.5 w-3.5" />,
+            },
+          };
+          const t = toneStyles[status.tone];
+          const nextGateTitle = data.nextModuleGate.replace(/^MODULE GATE \d+\s*—\s*/i, "") || "—";
+
+          return (
+            <Card className="overflow-hidden">
+              {/* Status banner */}
+              <div className={`flex flex-wrap items-center gap-3 border-b px-4 py-3 ${t.bar}`}>
+                <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${t.pill}`}>
+                  {t.icon}
+                  {status.label}
+                </span>
+                <p className="flex-1 min-w-0 text-sm text-foreground">{status.headline}</p>
+                {status.cta && (
+                  status.cta.to?.startsWith("/") ? (
+                    <Button asChild size="sm" variant={status.tone === "attention" ? "default" : "outline"}>
+                      <Link to={status.cta.to}>{status.cta.label} <ArrowRight className="ml-1 h-3.5 w-3.5" /></Link>
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="outline" onClick={() => {
+                      if (status.cta?.to?.startsWith("#")) {
+                        document.querySelector(status.cta.to)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }
+                    }}>
+                      {status.cta.label} <ArrowRight className="ml-1 h-3.5 w-3.5" />
+                    </Button>
+                  )
+                )}
               </div>
-            ))}
-          </div>
-          {data.nextModuleGate && (
-            <div className="flex flex-wrap items-center gap-2 border-t border-border bg-muted/20 px-4 py-3">
-              {data.needsAttention && <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[10px]">NEEDS ATTENTION</Badge>}
-              <Badge variant="outline" className="text-[10px]">CHAPTER · {data.nextChapter.toUpperCase()}</Badge>
-              <Badge className="bg-amber-100 text-amber-900 hover:bg-amber-100 text-[10px] dark:bg-amber-500/20 dark:text-amber-200">NEXT · {data.nextModuleGate.toUpperCase()}</Badge>
-            </div>
-          )}
-        </Card>
+
+              {/* 4 KPI tiles */}
+              <div className="grid grid-cols-1 gap-px bg-border md:grid-cols-4">
+                {/* Your progress */}
+                <div className="bg-card p-4">
+                  <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <Trophy className="h-3 w-3" /> Your progress
+                  </div>
+                  <div className="mt-1 font-display text-xl font-bold text-foreground">{data.yourPct}%</div>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div className="h-full bg-primary" style={{ width: `${Math.max(data.yourPct, 2)}%` }} />
+                  </div>
+                  <div className="mt-1.5 text-xs text-muted-foreground">Cohort avg {avg}%</div>
+                </div>
+
+                {/* Time remaining */}
+                <div className="bg-card p-4">
+                  <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <Clock className="h-3 w-3" /> Time remaining
+                  </div>
+                  <div className="mt-1 font-display text-xl font-bold text-foreground">
+                    {data.daysLeft > 0 ? `${data.daysLeft} days` : "—"}
+                  </div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">Due {fmtDate(c.dueDate)}</div>
+                </div>
+
+                {/* Currently learning */}
+                <Link
+                  to="/"
+                  className="bg-card p-4 transition-colors hover:bg-muted/30 group"
+                >
+                  <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <BookOpen className="h-3 w-3" /> Currently learning
+                  </div>
+                  <div className="mt-1 font-display text-xl font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                    {data.nextChapter || "—"}
+                  </div>
+                  <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+                    Chapter in progress · continue →
+                  </div>
+                </Link>
+
+                {/* Up next */}
+                <div className="bg-card p-4">
+                  <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    <Lock className="h-3 w-3" /> Up next
+                  </div>
+                  <div className="mt-1 font-display text-xl font-bold text-foreground line-clamp-1">
+                    {nextGateTitle}
+                  </div>
+                  <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">
+                    Module gate · unlocks after this chapter
+                  </div>
+                </div>
+              </div>
+            </Card>
+          );
+        })()}
 
         {/* Row: Cohort vs You + Achievements */}
         <div className="grid gap-6 lg:grid-cols-3">

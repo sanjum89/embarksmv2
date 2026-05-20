@@ -378,18 +378,23 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                 </div>
                 <div className="mt-4 space-y-4">
                   {data.moduleProgress.length === 0 && <p className="text-sm text-muted-foreground">No module data yet.</p>}
-                  {data.moduleProgress.map((m) => (
-                    <div key={m.trackCode}>
-                      <div className="flex items-baseline justify-between text-sm">
-                        <span className="font-medium">{m.trackName}</span>
-                        <span className="text-muted-foreground">Cohort <b className="text-foreground">{m.cohortAvgPct}%</b> · You <b className="text-foreground">{m.youPct}%</b></span>
-                      </div>
-                      <div className="relative mt-1 h-2 overflow-hidden rounded-full bg-muted">
-                        <div className="absolute inset-y-0 left-0 bg-muted-foreground/40" style={{ width: `${m.cohortAvgPct}%` }} />
-                        <div className="absolute inset-y-0 left-0 bg-primary" style={{ width: `${Math.max(m.youPct, 1)}%` }} />
-                      </div>
-                    </div>
-                  ))}
+                  <StaggerList className="space-y-4">
+                    {data.moduleProgress.map((m) => (
+                      <StaggerItem key={m.trackCode}>
+                        <div>
+                          <div className="flex items-baseline justify-between text-sm">
+                            <span className="font-medium">{m.trackName}</span>
+                            <span className="text-muted-foreground">Cohort <b className="text-foreground">{m.cohortAvgPct}%</b> · You <b className="text-foreground">{m.youPct}%</b></span>
+                          </div>
+                          <div className="relative mt-1 h-2 overflow-hidden rounded-full bg-muted">
+                            <div className="absolute inset-y-0 left-0 bg-muted-foreground/40" style={{ width: `${m.cohortAvgPct}%` }} />
+                            <div className="absolute inset-y-0 left-0 bg-primary" style={{ width: `${Math.max(m.youPct, 1)}%` }} />
+                          </div>
+                        </div>
+                      </StaggerItem>
+                    ))}
+                  </StaggerList>
+
                   <div className="flex gap-3 pt-1 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-muted-foreground/40" /> Cohort avg</span>
                     <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-primary" /> You</span>

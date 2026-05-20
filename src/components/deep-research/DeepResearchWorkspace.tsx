@@ -13,9 +13,10 @@ export interface DeepResearchStarter {
   label: string;
   prompt: string;
   description?: string;
-  icon?: LucideIcon;
+  icon?: React.ElementType;
   category?: string;
 }
+
 
 interface Props {
   dr: ReturnType<typeof useDeepResearch>;

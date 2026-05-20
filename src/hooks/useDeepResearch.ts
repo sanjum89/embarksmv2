@@ -74,27 +74,33 @@ const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
 
-export function useDeepResearch(args: { accountId: string; accountName?: string | null; ownerId: string }) {
-  const { accountId, accountName, ownerId } = args;
-  const [threads, setThreads] = useState<DeepResearchThread[]>(() => loadThreads(accountId));
+export function useDeepResearch(args: {
+  accountId: string;
+  accountName?: string | null;
+  ownerId: string;
+  scope?: DeepResearchScope;
+}) {
+  const { accountId, accountName, ownerId, scope = "team" } = args;
+  const [threads, setThreads] = useState<DeepResearchThread[]>(() => loadThreads(accountId, scope, ownerId));
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null);
-  const [pins, setPins] = useState<PinnedAnswer[]>(() => loadPins(accountId));
+  const [pins, setPins] = useState<PinnedAnswer[]>(() => loadPins(accountId, scope, ownerId));
   const [isStreaming, setIsStreaming] = useState(false);
   const [thinkingStage, setThinkingStage] = useState<ThinkingStage | null>(null);
   const [thinkingTrace, setThinkingTrace] = useState<ThinkingStage[]>([]);
 
   useEffect(() => {
-    setThreads(loadThreads(accountId));
-    setPins(loadPins(accountId));
+    setThreads(loadThreads(accountId, scope, ownerId));
+    setPins(loadPins(accountId, scope, ownerId));
     setActiveThreadId(null);
-  }, [accountId]);
+  }, [accountId, scope, ownerId]);
 
   useEffect(() => {
-    saveThreads(threads);
-  }, [threads]);
+    saveThreads(threads, scope);
+  }, [threads, scope]);
   useEffect(() => {
-    savePins(accountId, pins);
-  }, [pins, accountId]);
+    savePins(accountId, scope, ownerId, pins);
+  }, [pins, accountId, scope, ownerId]);
+
 
   const activeThread = threads.find((t) => t.id === activeThreadId) ?? null;
 

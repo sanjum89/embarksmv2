@@ -145,24 +145,24 @@ export default function LearnerChat() {
       <div className="flex flex-col min-h-0 flex-1">
         <AnimatePresence mode="wait">
           {!chatActive ? (
-            /* ── Home State (image 1) ── */
+            /* ── Home State (image 1) — centered, narrow frame ── */
             <motion.div
               key="home"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0, y: -20 }}
-              className="flex-1 overflow-y-auto min-h-0"
+              className="flex-1 overflow-y-auto min-h-0 flex items-center justify-center"
             >
-              <div className="mx-auto w-full max-w-[960px] px-4 lg:px-6 pt-8 pb-10">
+              <div className="mx-auto w-full max-w-[720px] px-4 py-8">
                 <motion.h1
                   initial={{ opacity: 0, y: 16 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="font-display text-[1.7rem] font-bold text-foreground mb-5"
+                  className="font-display text-[1.7rem] font-bold text-foreground mb-4"
                 >
                   Hi {firstName}, let's grow together
                 </motion.h1>
 
-                <div className="mb-6">
+                <div className="mb-5">
                   <AgentOneNudgeStack
                     onAgentClick={() => setChatActive(true)}
                     onChatAction={(prompt) => {
@@ -175,8 +175,8 @@ export default function LearnerChat() {
                   />
                 </div>
 
-                {/* 6-card grid (image 1) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+                {/* 6-card grid (image 1) — squarer tiles */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
                   {suggestionCards.map((card, i) => (
                     <motion.button
                       key={card.label}
@@ -186,7 +186,7 @@ export default function LearnerChat() {
                       onClick={() => startWith(card.prompt)}
                       className="text-left rounded-2xl border border-border/70 bg-card p-4 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-sm transition-all group"
                     >
-                      <div className="rounded-xl bg-muted/50 mb-3 flex items-center justify-center">
+                      <div className="rounded-xl bg-muted/50 mb-3 flex items-center justify-center h-24">
                         <CardIllustration type={card.illustration} />
                       </div>
                       <div className="text-sm font-semibold text-foreground leading-tight">{card.label}</div>
@@ -220,10 +220,6 @@ export default function LearnerChat() {
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
-
-                <p className="text-[11px] text-muted-foreground mt-3">
-                  Tip: pick a topic above, or just type your own question.
-                </p>
               </div>
             </motion.div>
           ) : (

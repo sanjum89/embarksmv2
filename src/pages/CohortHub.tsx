@@ -11,12 +11,17 @@ import { Progress } from "@/components/ui/progress";
 import { JoinModal } from "@/components/cohort-hub/JoinModal";
 
 import {
-  Users, Calendar, ChevronRight, Sparkles, Pin, Trophy, Award, MessageCircle,
-  Video, MapPin, FileText, Plus, ArrowRight, AlertTriangle, CheckCircle2, Flag, BookOpen, Clock, Lock,
+  Users, Calendar, ChevronRight, Sparkles, Trophy, Award, MessageCircle,
+  FileText, ArrowRight, AlertTriangle, CheckCircle2, Flag, BookOpen, Clock, Lock,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import PageHeader from "@/components/layout/PageHeader";
 import { deriveHubStatus, cohortAvgPct } from "@/lib/cohortHubStatus";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { CoLearningTimeline } from "@/components/cohort/CoLearningTimeline";
+import { PeopleToConnect } from "@/components/cohort/PeopleToConnect";
+import { CohortRightRail } from "@/components/cohort/CohortRightRail";
+import { AdaptedPathTab } from "@/components/cohort/AdaptedPathTab";
 
 function initials(name: string) {
   return name.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();

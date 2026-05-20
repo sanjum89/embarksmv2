@@ -1,61 +1,41 @@
-## 1. Consistent page header across all modes
+## Audit: what's still unimplemented from the previous plan
 
-**Goal:** every menu-item top-level page (learner, manager, admin) renders the same `PageHeader` anatomy — same heights, same fonts, same paddings.
+I re-checked every page named in the last plan against the current code. Sections 2 (Action Centre) and 3 (Cohort Hub `titleAside`) shipped correctly. Section 1 (consistent `PageHeader` everywhere) and the deprecated-prop sweep are **partially done**. Four pages were missed:
 
-**Audit findings**
-- `PageHeader` is the canonical compact header (breadcrumbs row, `text-2xl font-display bold` title, optional `text-sm` subtitle, `py-3`).
-- Some menu-item pages still ship a bespoke header instead of `PageHeader`, so heights/fonts drift:
-  - Learner: `Dashboard.tsx` traditional branch (custom `flex` + `h1`), `UnifiedChat.tsx` / `LearnerChat.tsx` (custom `text-[1.6rem]` hero — intentional chat surface, leave alone; just verify it's not double-stacked with a `PageHeader`).
-  - Manager: `TeamMode.tsx` / `TeamDashboard.tsx` use `TeamHero` (`text-3xl/4xl`, eyebrow chip) instead of `PageHeader`. `ManagerView.tsx` uses custom `text-[1.6rem]`. `ManagerCohortPicker.tsx`, `ProgramContextPage.tsx` use bespoke `font-display text-lg` titles.
-  - Admin: `AdminView.tsx` has its own header block.
-- Several call sites still pass the now-deprecated `eyebrow` / `back` props (Dashboard, NewMy360, RolePlayBank). They compile but signal stale usage.
+| Page | Status | Issue |
+|---|---|---|
+| `src/pages/TeamDashboard.tsx` | ❌ | Still passes `eyebrow={eyebrow}` and `back` to `PageHeader` (lines 39–44). Deprecated props the previous plan said to strip. |
+| `src/pages/ManagerView.tsx` (`/team` for managers) | ❌ | Renders its own bespoke hero `<h1 className="font-display text-[1.6rem] font-bold ... mb-8">` (line 255). No `PageHeader`, so the header height/typography drifts from every other page. |
+| `src/pages/ProgramContextPage.tsx` | ❌ | Three bespoke `<h1 className="font-display text-lg font-bold ...">` headers (lines 172, 407, 606) for the list, create, and detail views. No `PageHeader` anywhere. |
+| `src/pages/Dashboard.tsx` (traditional branch) | ❌ | Traditional branch (line 65+) still renders a custom `<h1>` inside its own flex bar. The non-traditional branch already uses `PageHeader`. |
 
-**Changes**
-- Replace every top-level menu page's header with `<PageHeader title=… subtitle=… actions=… />`:
-  - `Dashboard` traditional branch, `TeamMode`, `TeamDashboard`, `ManagerView`, `ManagerCohortPicker`, `ProgramContextPage` (top level), `AdminView`.
-  - Move any KPI tiles / action buttons currently embedded in the bespoke hero down into the page body (per the project rule: KPIs never in header).
-  - Keep `TeamHero` only if it adds team-specific content (manager name, summary). If so, render it inside the body **below** the `PageHeader`, not as the header itself.
-- Strip the deprecated `eyebrow={…}` and `back` props from `Dashboard.tsx`, `NewMy360.tsx`, `RolePlayBank.tsx`.
-- Leave chat-first surfaces (`UnifiedChat`, `LearnerChat`, `EmbarkAI`) alone — they are intentionally headerless. Just confirm none of them stack a second header.
+Sections 2 and 3 of the prior plan are fine — `MyInbox.tsx` has the divider + Mark-all-read inline, and `CohortHub.tsx` uses `titleAside` for the Editorial/Cards toggle. `PageHeader` exposes `titleAside`. No regressions there.
 
-**Out of scope:** redesigning `PageHeader` itself; touching detail pages (`SkillTargetDetail`, `LearningModulePage`, etc.) that already use it.
+## Plan: finish the sweep
 
-## 2. Action Centre — move "Mark all read" next to the filter pills
+### 1. `TeamDashboard.tsx`
+- Remove `eyebrow={eyebrow}` and `back` props from the `<PageHeader>` call.
+- Remove the now-unused `useModeEyebrow` import and `const eyebrow = useModeEyebrow()`.
 
-In `src/pages/MyInbox.tsx`:
-- Remove the `actions={…}` prop from `<PageHeader>` (drop the button from the top-right of the header).
-- In the existing filter-pill row (`All / High priority / Unread`), keep the pills left-aligned, then add a thin `Separator` (`h-4 w-px bg-border`) and render the `Mark all read` button immediately after it, still inside the same flex row.
-- Hide the button when `unreadCount === 0` (same condition as today).
-- Keep the right-aligned `"{n} items · sorted by urgency"` counter on the far right.
+### 2. `ManagerView.tsx`
+- Wrap the page in the standard shell: `<div className="flex-1 overflow-y-auto"><PageHeader title="Manager" subtitle="..." /><PageBody>…</PageBody></div>`.
+- Delete the bespoke `<h1 className="font-display text-[1.6rem] ...">` at line 255 (and its surrounding hero wrapper if it only existed to host that title).
+- Title/subtitle wording: `title="Manager"`, `subtitle="Chat-first command centre for your team"` (matches the existing chat-hub intent without inventing new copy).
 
-Result matches the reference: pill group → divider → `Mark all read`, all on one row.
+### 3. `ProgramContextPage.tsx`
+- Top-level list view (line ~172): replace the custom header row with `<PageHeader title="Cohorts" subtitle="Programmes and learner progress" actions={<Button …>Create cohort</Button>} />`. Move the existing "Create cohort" CTA into `actions`.
+- Create view (line ~407) and detail view (line ~606): keep using the existing in-body `<h1>` since these are sub-views reached via a back arrow (they're not top-level menu items, so the prior plan's "menu-item pages" rule doesn't force them onto `PageHeader`). Leave them alone unless you'd like them unified too — say the word and I'll convert them.
 
-## 3. Cohort Hub — place the Editorial/Cards toggle next to the title
+### 4. `Dashboard.tsx` (traditional branch)
+- Replace the custom header bar inside `if (isTraditional)` (lines 65–~110) with `<PageHeader title="Your Skill Targets" actions={<the existing status select + view toggle + Add button>} />`.
+- Keep the same controls; just relocate them into the canonical header. The non-traditional branch needs no change.
 
-In `src/pages/CohortHub.tsx`:
-- Remove the `ToggleGroup` from the `<PageHeader actions={…}>` slot.
-- Render it inline to the right of the title. Since `PageHeader` doesn't expose a title-row slot today, add an optional `titleAside?: ReactNode` prop to `PageHeader` (rendered on the same baseline as the `<h1>`, right-aligned via `justify-between` — the row already uses `flex items-baseline justify-between`).
-- Pass the toggle through `titleAside={…}` so it sits neatly beside "Cohort Hub" rather than way up in the breadcrumbs row.
-- The new prop is optional and backwards-compatible; no other page is forced to use it.
+### Verification
 
-## 4. Cross-role verification
+After the edits, smoke-test:
+- `/team-dashboard` (header no longer has eyebrow/back chrome).
+- `/team` as manager (`ManagerView`) — same header height as `/team-dashboard`.
+- `/program-context` — list view header matches.
+- `/` as Clara in traditional theme — header matches non-traditional theme.
 
-After the edits, smoke-test every menu item in each persona to confirm the header is identical in height and typography:
-- Clara (Learner): `/`, `/chat`, `/role-play-bank`, `/my-inbox`, `/cohort`, `/my-360`.
-- Manager mode: `/team`, `/manager/cohorts`, `/manager/people-graph`, `/team/deep-research`, `/action-centre`.
-- Admin: `/admin`.
-- Manager-as-Me toggle: re-check learner pages above.
-
-Acceptance: header bar is the same pixel height on every page that has one; title is always `text-2xl font-display bold`; no page shows a second large hero stacked above the `PageHeader`.
-
-## Technical notes
-
-- `PageHeader` change: add `titleAside?: ReactNode`. Render row 2 as:
-  ```tsx
-  <div className="mt-1 flex items-baseline justify-between gap-4">
-    <h1 className="font-display text-2xl font-bold ...">{title}</h1>
-    {titleAside && <div className="flex-shrink-0">{titleAside}</div>}
-  </div>
-  ```
-- No design-token changes; everything stays on existing semantic tokens.
-- No business-logic changes — purely presentation.
+No business logic changes; presentation only. All edits stay in the four files above plus removing one unused import in `TeamDashboard.tsx`.

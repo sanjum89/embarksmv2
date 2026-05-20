@@ -231,9 +231,24 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                     <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">Chapter in progress · continue →</div>
                   </Link>
                   <div className="bg-card p-4">
-                    <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"><Lock className="h-3 w-3" /> Up next</div>
-                    <div className="mt-1 font-display text-xl font-bold text-foreground line-clamp-1">{nextGateTitle}</div>
-                    <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">Module gate · unlocks after this chapter</div>
+                    <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400"><Users className="h-3 w-3" /> Your mentor</div>
+                    {data.mentor ? (
+                      <>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <Avatar className="h-8 w-8"><AvatarFallback className="text-[10px] bg-muted">{initials(data.mentor.name)}</AvatarFallback></Avatar>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-display text-sm font-bold leading-tight truncate text-foreground">{data.mentor.name}</div>
+                            <div className="text-[11px] text-muted-foreground truncate">{data.mentor.title}</div>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex gap-1.5">
+                          <Button size="sm" variant="outline" className="flex-1 h-7 text-xs px-2" onClick={mentorMessage}><MessageCircle className="mr-1 h-3 w-3" />Message</Button>
+                          <Button size="sm" className="flex-1 h-7 text-xs px-2" onClick={mentorBook}>Book</Button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="mt-1 text-xs text-muted-foreground">No mentor assigned yet.</div>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -256,18 +271,66 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                   </div>
                 </Card>
 
-                <Card className="p-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-display text-lg font-bold">Achievements</h2>
-                    <Award className="h-5 w-5 text-amber-500" />
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {data.achievements.map((a) => (
-                      <Badge key={a.code} variant="outline" className={a.earned
-                        ? "border-amber-500/30 bg-amber-100/60 text-amber-900 dark:bg-amber-500/15 dark:text-amber-200"
-                        : "border-dashed text-muted-foreground line-through opacity-60"}>{a.label}</Badge>
-                    ))}
-                  </div>
+                <Card className="relative overflow-hidden p-6 flex flex-col">
+                  {/* decorative glows */}
+                  <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-accent/30 blur-3xl" />
+                  <div className="pointer-events-none absolute -bottom-12 -left-8 h-28 w-28 rounded-full bg-primary/10 blur-3xl" />
+
+                  {(() => {
+                    const earned = data.achievements.filter((a) => a.earned).length;
+                    const total = data.achievements.length || 1;
+                    const pct = Math.round((earned / total) * 100);
+                    const firstLocked = data.achievements.find((a) => !a.earned);
+                    return (
+                      <>
+                        <div className="relative flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Milestones earned</div>
+                            <h2 className="font-display text-lg font-bold">Achievements</h2>
+                          </div>
+                          <div className="shrink-0 text-right">
+                            <div className="font-display text-lg font-bold text-accent tabular-nums">{earned}<span className="text-muted-foreground">/{total}</span></div>
+                            <div className="mt-1 h-1 w-12 overflow-hidden rounded-full bg-muted">
+                              <div className="h-full bg-accent shadow-[0_0_8px_hsl(var(--accent)/0.5)]" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="relative mt-4 flex flex-wrap gap-2">
+                          {data.achievements.map((a) => (
+                            <span
+                              key={a.code}
+                              className={
+                                a.earned
+                                  ? "group inline-flex items-center gap-1.5 rounded-xl border border-accent/40 bg-accent/15 px-2.5 py-1 text-xs font-semibold text-foreground shadow-[0_2px_8px_-2px_hsl(var(--accent)/0.35),inset_0_1px_0_hsl(var(--background)/0.6)] transition-transform hover:-translate-y-0.5"
+                                  : "inline-flex items-center gap-1.5 rounded-xl border border-dashed border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground opacity-60"
+                              }
+                            >
+                              <span
+                                className={
+                                  a.earned
+                                    ? "h-1.5 w-1.5 rounded-full bg-accent animate-pulse"
+                                    : "h-1.5 w-1.5 rounded-full bg-muted-foreground/50"
+                                }
+                              />
+                              {a.label}
+                            </span>
+                          ))}
+                        </div>
+
+                        {firstLocked && (
+                          <div className="relative mt-4 flex items-center justify-between border-t border-border pt-3 text-xs">
+                            <span className="text-muted-foreground">
+                              Next: <span className="font-medium text-foreground">{firstLocked.label}</span>
+                            </span>
+                            <span className="inline-flex items-center rounded-full bg-accent/20 px-2 py-0.5 text-[10px] font-semibold text-accent">
+                              +50 points
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })()}
                 </Card>
               </div>
 
@@ -314,23 +377,9 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                 onConnect={peerOpen}
               />
 
-              {/* Leaderboard · Mentor · Evidence */}
-              <div className="grid gap-6 lg:grid-cols-3">
-                <Card className="p-6">
-                  <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Top of the class</div>
-                  <h2 className="mt-1 font-display text-lg font-bold">Cohort leaderboard</h2>
-                  <div className="mt-4 space-y-2">
-                    {data.leaderboard.length === 0 && <p className="text-sm text-muted-foreground">Leaderboard will populate as the cohort progresses.</p>}
-                    {data.leaderboard.map((row) => (
-                      <div key={row.employeeId} className={`flex items-center gap-3 rounded-md p-2 ${row.isYou ? "bg-primary/5 ring-1 ring-primary/20" : ""}`}>
-                        <span className="w-5 text-sm text-muted-foreground">{row.rank}</span>
-                        <Avatar className="h-7 w-7"><AvatarFallback className="text-[10px] bg-muted">{initials(row.name)}</AvatarFallback></Avatar>
-                        <span className="flex-1 text-sm font-medium">{row.isYou ? "You" : row.name}</span>
-                        <span className="text-sm tabular-nums text-muted-foreground">{row.pct}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
+              {/* Mentor · Evidence */}
+              <div className="grid gap-6 lg:grid-cols-2">
+
 
                 <Card className="p-6">
                   <div className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Your mentor</div>
@@ -378,6 +427,7 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
             <CohortRightRail
               announcements={data.announcements}
               recentActivity={data.recentActivity}
+              leaderboard={data.leaderboard}
               substitute={sub}
             />
           </div>

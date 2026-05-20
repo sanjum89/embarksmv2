@@ -15,6 +15,7 @@ import { COHORT_MODULES_FALLBACK, type ActionItem } from "@/data/managerDemoOver
 import { useAccount } from "@/contexts/AccountContext";
 import { useRathbonesPersonaOverlays } from "@/hooks/useRathbonesPersonaOverlays";
 import { cn } from "@/lib/utils";
+import { StaggerList, StaggerItem } from "@/components/motion/Motion";
 import type { CategoryFilter, ActionFeedItem } from "@/lib/actionCentre/itemKinds";
 
 const FILTERS: { key: CategoryFilter; label: string }[] = [

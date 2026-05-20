@@ -1,37 +1,27 @@
-## Why
+## Achievements card cleanup
 
-The Achievements card on Cohort Hub uses a single accent colour for every badge and shows no running points total — it reads as a list of pills, not a recognition surface. The user wants more visual variety per badge and a clear "points accumulated" number.
+Scope: `src/pages/CohortHub.tsx` — Achievements card only. Keep colour palette (bronze/silver/gold tiers, amber star). No data/hook changes.
 
-## Changes
+### Changes
 
-**1. Data — `src/hooks/useCohortHub.ts`**
-- Extend `HubAchievement` with `points: number` and `tier: "bronze" | "silver" | "gold"` (drives colour).
-- Assign points + tier per badge:
-  - `first_quiz` 25 · bronze
-  - `5_day_streak` 50 · bronze
-  - `module_1` 75 · silver
-  - `peer_mentor` 75 · silver
-  - `mock_ace` 100 · silver
-  - `top_10` 150 · gold
-  - `cisi_l4` 200 · gold
-  - `fca_notified` 250 · gold
-- Add derived fields on `CohortHubData`: `pointsEarned`, `pointsTotal`.
+**Header (points display)**
+- Drop the "/ 925 pts" denominator and the progress bar underneath.
+- Keep a single compact pill: `★ 225 pts` (star icon + total accumulated, no denominator, no bar).
+- Keep "Milestones earned" eyebrow + "Achievements" title + "4 of 8 unlocked" line as the count indicator.
 
-**2. UI — `src/pages/CohortHub.tsx` Achievements card**
-- Header row: keep "Achievements" title; add a points pill on the right (`★ 225 pts` style) with a thin progress bar to `pointsTotal`. Move the "earned/total" count under the title as a small subline.
-- Replace the flat pill row with a 4-col grid of small badge tiles (2-col on mobile). Each tile:
-  - Icon glyph chosen per badge code (Trophy, Flame, BookOpen, Users, Target, Award, GraduationCap, ShieldCheck).
-  - Tier gradient background — bronze `from-amber-500/15 to-orange-500/10`, silver `from-sky-500/15 to-indigo-500/10`, gold `from-amber-400/25 to-rose-400/15` — with matching border + icon colour.
-  - Label + `+N pts` line under it.
-  - Locked tiles: greyscale, dashed border, lock icon, `+N pts` shown muted as the carrot.
-- Keep the "Next: …" footer line, but show its `+N pts` from the badge data instead of the hardcoded `+50 points`.
+**Pills (badge tiles)**
+- Revert to the previous compact pill style: smaller, single-row label, no per-pill `+N pts` line.
+- Earned: tier-coloured rounded pill with small icon + label (1 line, truncate if needed).
+- Locked: muted pill, dashed border, lock icon + label (no points, no strikethrough block).
+- Grid stays 4 across on desktop, 2 on mobile, but with reduced padding so it reads as a tight badge row rather than tall cards.
 
-**3. Out of scope**
-- No backend/DB changes — points live in the hook seed.
-- No changes to other Cohort Hub cards.
-- No new achievement codes.
+**Footer (Next)**
+- Keep "Next: <label>" line.
+- Remove the `+N pts` chip on the right (since per-badge points are no longer surfaced).
 
-## Files
+### Out of scope
+- No changes to `useCohortHub.ts` (points data stays in the model, just not rendered per pill).
+- No changes to other cards, tabs, or routes.
 
-- edit: `src/hooks/useCohortHub.ts`
-- edit: `src/pages/CohortHub.tsx`
+### Result
+A calmer card: one star-points number, count of unlocked, a tidy row of coloured badge pills, and a simple "Next" hint.

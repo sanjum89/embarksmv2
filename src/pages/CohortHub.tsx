@@ -314,59 +314,50 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                             <h2 className="font-display text-lg font-bold">Achievements</h2>
                             <div className="mt-0.5 text-xs text-muted-foreground tabular-nums">{earned} of {total} unlocked</div>
                           </div>
-                          <div className="shrink-0 text-right">
+                          <div className="shrink-0">
                             <div className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-gradient-to-r from-amber-400/20 to-rose-400/15 px-2.5 py-1">
                               <Star className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
                               <span className="font-display text-sm font-bold tabular-nums text-foreground">{pointsEarned}</span>
-                              <span className="text-[11px] text-muted-foreground tabular-nums">/ {pointsTotal} pts</span>
-                            </div>
-                            <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
-                              <div className="h-full bg-gradient-to-r from-amber-400 to-rose-400 shadow-[0_0_8px_hsl(38_92%_50%/0.5)]" style={{ width: `${ptsPct}%` }} />
+                              <span className="text-[11px] text-muted-foreground">pts</span>
                             </div>
                           </div>
                         </div>
 
-                        <div className="relative mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        <div className="relative mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                           {data.achievements.map((a) => {
                             const Icon = ICONS[a.code] ?? Award;
                             if (a.earned) {
                               return (
                                 <div
                                   key={a.code}
-                                  className={`group flex flex-col items-center rounded-xl border p-2.5 text-center transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
+                                  title={`${a.label} · +${a.points} pts`}
+                                  className={`flex items-center gap-1.5 rounded-full border px-2 py-1 transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
                                 >
-                                  <div className={`mb-1.5 rounded-full p-2 ${TIER_ICON_BG[a.tier]}`}>
-                                    <Icon className="h-4 w-4" />
+                                  <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${TIER_ICON_BG[a.tier]}`}>
+                                    <Icon className="h-3 w-3" />
                                   </div>
-                                  <div className="text-[11px] font-semibold leading-tight text-foreground">{a.label}</div>
-                                  <div className="mt-0.5 text-[10px] font-medium tabular-nums opacity-80">+{a.points} pts</div>
+                                  <div className="truncate text-[11px] font-semibold leading-none text-foreground">{a.label}</div>
                                 </div>
                               );
                             }
                             return (
                               <div
                                 key={a.code}
-                                className="flex flex-col items-center rounded-xl border border-dashed border-border bg-muted/30 p-2.5 text-center opacity-70"
+                                title={`Locked · ${a.label}`}
+                                className="flex items-center gap-1.5 rounded-full border border-dashed border-border bg-muted/30 px-2 py-1 opacity-70"
                               >
-                                <div className="mb-1.5 rounded-full bg-muted p-2 text-muted-foreground">
-                                  <Lock className="h-4 w-4" />
+                                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                                  <Lock className="h-3 w-3" />
                                 </div>
-                                <div className="text-[11px] font-medium leading-tight text-muted-foreground line-through decoration-muted-foreground/50">{a.label}</div>
-                                <div className="mt-0.5 text-[10px] font-medium tabular-nums text-muted-foreground/80">+{a.points} pts</div>
+                                <div className="truncate text-[11px] font-medium leading-none text-muted-foreground">{a.label}</div>
                               </div>
                             );
                           })}
                         </div>
 
                         {firstLocked && (
-                          <div className="relative mt-4 flex items-center justify-between border-t border-border pt-3 text-xs">
-                            <span className="text-muted-foreground">
-                              Next: <span className="font-medium text-foreground">{firstLocked.label}</span>
-                            </span>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:text-amber-300">
-                              <Star className="h-3 w-3 fill-current" />
-                              +{firstLocked.points} pts
-                            </span>
+                          <div className="relative mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
+                            Next: <span className="font-medium text-foreground">{firstLocked.label}</span>
                           </div>
                         )}
                       </>

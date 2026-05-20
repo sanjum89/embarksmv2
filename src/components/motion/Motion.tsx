@@ -43,7 +43,7 @@ export function PageTransition({ children, className, transitionKey }: PageTrans
         initial={{ opacity: 0, y: MOTION.PAGE_RISE }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -MOTION.PAGE_RISE / 2 }}
-        transition={{ duration: MOTION.PAGE_DURATION, ease: MOTION.EASE as unknown as number[] }}
+        transition={{ duration: MOTION.PAGE_DURATION, ease: MOTION.EASE }}
         className={cn("h-full", className)}
       >
         {children}
@@ -65,7 +65,7 @@ export function SectionReveal({ children, className, delay = 0 }: SectionRevealP
     <motion.div
       initial={{ opacity: 0, y: MOTION.PAGE_RISE }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: MOTION.PAGE_DURATION, ease: MOTION.EASE as unknown as number[], delay }}
+      transition={{ duration: MOTION.PAGE_DURATION, ease: MOTION.EASE, delay }}
       className={className}
     >
       {children}
@@ -123,7 +123,7 @@ export function StaggerItem({ children, className, index = 0, inline = false }: 
       transition={{
         delay: index * MOTION.STAGGER,
         duration: MOTION.DURATION,
-        ease: MOTION.EASE as unknown as number[],
+        ease: MOTION.EASE,
       }}
       className={className}
     >

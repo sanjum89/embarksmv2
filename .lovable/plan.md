@@ -1,41 +1,37 @@
-## Audit: what's still unimplemented from the previous plan
+## Problem
 
-I re-checked every page named in the last plan against the current code. Sections 2 (Action Centre) and 3 (Cohort Hub `titleAside`) shipped correctly. Section 1 (consistent `PageHeader` everywhere) and the deprecated-prop sweep are **partially done**. Four pages were missed:
+In the collapsed sidebar (the variant rendered around lines 700–778 of `src/components/layout/AppSidebar.tsx`), the three footer buttons — theme toggle (Sun), Accessibility (T) and Settings (gear) — each sit inside their own `<div className="w-full flex justify-center py-0.5">` wrapper. They use slightly different markup (plain `<button>` for theme, `<button>` inside `AccessibilityPanel` for T, `<NavLink>` inside `Tooltip` for gear). The result is that the gear sits a few pixels left of the Sun/T icons and the vertical rhythm differs from the upper nav and from the other sidebar variant (lines 340–413). The user flagged this as "Settings is misaligned".
 
-| Page | Status | Issue |
-|---|---|---|
-| `src/pages/TeamDashboard.tsx` | ❌ | Still passes `eyebrow={eyebrow}` and `back` to `PageHeader` (lines 39–44). Deprecated props the previous plan said to strip. |
-| `src/pages/ManagerView.tsx` (`/team` for managers) | ❌ | Renders its own bespoke hero `<h1 className="font-display text-[1.6rem] font-bold ... mb-8">` (line 255). No `PageHeader`, so the header height/typography drifts from every other page. |
-| `src/pages/ProgramContextPage.tsx` | ❌ | Three bespoke `<h1 className="font-display text-lg font-bold ...">` headers (lines 172, 407, 606) for the list, create, and detail views. No `PageHeader` anywhere. |
-| `src/pages/Dashboard.tsx` (traditional branch) | ❌ | Traditional branch (line 65+) still renders a custom `<h1>` inside its own flex bar. The non-traditional branch already uses `PageHeader`. |
+## Fix
 
-Sections 2 and 3 of the prior plan are fine — `MyInbox.tsx` has the divider + Mark-all-read inline, and `CohortHub.tsx` uses `titleAside` for the Editorial/Cards toggle. `PageHeader` exposes `titleAside`. No regressions there.
+Refactor only the footer block (`Dark mode toggle` + `Accessibility` + `Settings`) in the second sidebar branch so all three controls share one container with consistent geometry, matching the upper nav pattern.
 
-## Plan: finish the sweep
+### Edits — `src/components/layout/AppSidebar.tsx` (lines ~700–778)
 
-### 1. `TeamDashboard.tsx`
-- Remove `eyebrow={eyebrow}` and `back` props from the `<PageHeader>` call.
-- Remove the now-unused `useModeEyebrow` import and `const eyebrow = useModeEyebrow()`.
+Replace the three per-item `<div className="w-full flex justify-center py-0.5">` wrappers with a single wrapper:
 
-### 2. `ManagerView.tsx`
-- Wrap the page in the standard shell: `<div className="flex-1 overflow-y-auto"><PageHeader title="Manager" subtitle="..." /><PageBody>…</PageBody></div>`.
-- Delete the bespoke `<h1 className="font-display text-[1.6rem] ...">` at line 255 (and its surrounding hero wrapper if it only existed to host that title).
-- Title/subtitle wording: `title="Manager"`, `subtitle="Chat-first command centre for your team"` (matches the existing chat-hub intent without inventing new copy).
+```text
+<div className={cn(
+  "w-full pb-1",
+  expanded ? "px-3 space-y-1" : "flex flex-col items-center gap-1 px-0"
+)}>
+  {/* theme button */}
+  {/* AccessibilityPanel trigger */}
+  {/* Settings NavLink (wrapped in Tooltip when collapsed) */}
+</div>
+```
 
-### 3. `ProgramContextPage.tsx`
-- Top-level list view (line ~172): replace the custom header row with `<PageHeader title="Cohorts" subtitle="Programmes and learner progress" actions={<Button …>Create cohort</Button>} />`. Move the existing "Create cohort" CTA into `actions`.
-- Create view (line ~407) and detail view (line ~606): keep using the existing in-body `<h1>` since these are sub-views reached via a back arrow (they're not top-level menu items, so the prior plan's "menu-item pages" rule doesn't force them onto `PageHeader`). Leave them alone unless you'd like them unified too — say the word and I'll convert them.
+Inside this wrapper:
 
-### 4. `Dashboard.tsx` (traditional branch)
-- Replace the custom header bar inside `if (isTraditional)` (lines 65–~110) with `<PageHeader title="Your Skill Targets" actions={<the existing status select + view toggle + Add button>} />`.
-- Keep the same controls; just relocate them into the canonical header. The non-traditional branch needs no change.
+- Keep the expanded variants of each control as-is (full-width `h-9 px-3 rounded-lg` rows).
+- For the collapsed variants, standardize every button to **exactly** the same classes:
+  `flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors` (Settings adds the active `bg-sidebar-accent text-sidebar-accent-foreground` variant via `NavLink`'s render-prop, unchanged).
+- Remove the `mb-1` margin on the expanded Sun button (replaced by `space-y-1` on the wrapper).
 
-### Verification
+Also apply the analogous tidy-up to the first sidebar branch (lines ~340–413) so the Sun / T / Gear there share the same `h-9 w-9 rounded-full` classes verbatim (they already do; just collapse the wrapping `<div className="w-full pb-3 ... gap-1">` to remove the empty line / extra spacing between Accessibility and Settings so the three icons sit on a single tight axis).
 
-After the edits, smoke-test:
-- `/team-dashboard` (header no longer has eyebrow/back chrome).
-- `/team` as manager (`ManagerView`) — same header height as `/team-dashboard`.
-- `/program-context` — list view header matches.
-- `/` as Clara in traditional theme — header matches non-traditional theme.
+No business-logic, no routing, no token changes — purely presentational alignment.
 
-No business logic changes; presentation only. All edits stay in the four files above plus removing one unused import in `TeamDashboard.tsx`.
+## Verification
+
+After the edit, screenshot the collapsed sidebar in Manager view and confirm the three footer icons share the same horizontal centerline and equal vertical gaps. Re-check in expanded mode to confirm the labelled rows still align with the nav rows above.

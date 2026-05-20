@@ -34,15 +34,8 @@ function fmtDayTime(iso: string) {
   const d = new Date(iso);
   return `${d.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short" })} · ${d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false })}`;
 }
-function fmtAgo(iso: string) {
-  const h = Math.round((Date.now() - new Date(iso).getTime()) / 3600000);
-  if (h < 1) return "just now";
-  if (h < 24) return `${h}h ago`;
-  const d = Math.round(h / 24);
-  if (d === 1) return "Yesterday";
-  if (d < 7) return `${d} days ago`;
-  return new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
-}
+
+
 
 export default function CohortHub() {
   const { user } = useUser();

@@ -82,19 +82,32 @@ export default function ProgramContextPage() {
   const selectedCohort = cohorts.find((c) => c.id === selectedCohortId) ?? null;
 
   return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <BackButton />
-      <AnimatePresence mode="wait">
-        {view === "list" && (
-          <CohortList key="list" cohorts={cohorts} onCreate={() => setView("create")} onSelect={openDetail} />
-        )}
-        {view === "create" && (
-          <CreateCohort key="create" onBack={goList} onSubmit={addCohort} />
-        )}
-        {view === "detail" && selectedCohort && (
-          <CohortDetail key="detail" cohort={selectedCohort} onBack={goList} />
-        )}
-      </AnimatePresence>
+    <div className="flex-1 overflow-y-auto">
+      {view === "list" && (
+        <PageHeader
+          title="Cohorts"
+          subtitle="Programmes and learner progress"
+          actions={
+            <Button size="sm" onClick={() => setView("create")} className="gap-1.5">
+              <Plus className="h-3.5 w-3.5" /> New cohort
+            </Button>
+          }
+        />
+      )}
+      <div className={view === "list" ? "p-6 max-w-5xl mx-auto" : "p-6 max-w-3xl mx-auto"}>
+        {view !== "list" && <BackButton />}
+        <AnimatePresence mode="wait">
+          {view === "list" && (
+            <CohortList key="list" cohorts={cohorts} onCreate={() => setView("create")} onSelect={openDetail} />
+          )}
+          {view === "create" && (
+            <CreateCohort key="create" onBack={goList} onSubmit={addCohort} />
+          )}
+          {view === "detail" && selectedCohort && (
+            <CohortDetail key="detail" cohort={selectedCohort} onBack={goList} />
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

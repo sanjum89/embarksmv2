@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { JoinModal } from "@/components/cohort-hub/JoinModal";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
 import {
   Users, Calendar, ChevronRight, Sparkles, Pin, Trophy, Award, MessageCircle,
   Video, MapPin, FileText, Plus, ArrowRight,

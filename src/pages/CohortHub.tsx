@@ -377,23 +377,9 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                 onConnect={peerOpen}
               />
 
-              {/* Leaderboard · Mentor · Evidence */}
-              <div className="grid gap-6 lg:grid-cols-3">
-                <Card className="p-6">
-                  <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Top of the class</div>
-                  <h2 className="mt-1 font-display text-lg font-bold">Cohort leaderboard</h2>
-                  <div className="mt-4 space-y-2">
-                    {data.leaderboard.length === 0 && <p className="text-sm text-muted-foreground">Leaderboard will populate as the cohort progresses.</p>}
-                    {data.leaderboard.map((row) => (
-                      <div key={row.employeeId} className={`flex items-center gap-3 rounded-md p-2 ${row.isYou ? "bg-primary/5 ring-1 ring-primary/20" : ""}`}>
-                        <span className="w-5 text-sm text-muted-foreground">{row.rank}</span>
-                        <Avatar className="h-7 w-7"><AvatarFallback className="text-[10px] bg-muted">{initials(row.name)}</AvatarFallback></Avatar>
-                        <span className="flex-1 text-sm font-medium">{row.isYou ? "You" : row.name}</span>
-                        <span className="text-sm tabular-nums text-muted-foreground">{row.pct}%</span>
-                      </div>
-                    ))}
-                  </div>
-                </Card>
+              {/* Mentor · Evidence */}
+              <div className="grid gap-6 lg:grid-cols-2">
+
 
                 <Card className="p-6">
                   <div className="text-[11px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Your mentor</div>

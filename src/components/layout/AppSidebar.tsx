@@ -38,6 +38,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { AccountSwitcher } from "@/components/account/AccountSwitcher";
+import { TourSidebarHint } from "@/components/tour/TourSidebarHint";
 import { LoginDialog } from "@/components/layout/LoginDialog";
 
 
@@ -386,27 +387,29 @@ export function AppSidebar() {
             />
 
             {/* Take a tour */}
-            {expanded ? (
-              <button
-                onClick={() => tour.start(0)}
-                className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors text-sm font-medium"
-              >
-                <Sparkles className="h-4 w-4 shrink-0" />
-                <span>Take a tour</span>
-              </button>
-            ) : (
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={() => tour.start(0)}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors"
-                  >
-                    <Sparkles className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>Take a tour</TooltipContent>
-              </Tooltip>
-            )}
+            <TourSidebarHint>
+              {expanded ? (
+                <button
+                  onClick={() => tour.start(0)}
+                  className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors text-sm font-medium"
+                >
+                  <Sparkles className="h-4 w-4 shrink-0" />
+                  <span>Take a tour</span>
+                </button>
+              ) : (
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => tour.start(0)}
+                      className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={8}>Take a tour</TooltipContent>
+                </Tooltip>
+              )}
+            </TourSidebarHint>
 
             {/* Settings */}
             {expanded ? (
@@ -770,27 +773,29 @@ export function AppSidebar() {
         />
 
         {/* Take a tour */}
-        {expanded ? (
-          <button
-            onClick={() => tour.start(0)}
-            className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors text-sm font-medium"
-          >
-            <Sparkles className="h-4 w-4 shrink-0" />
-            <span>Take a tour</span>
-          </button>
-        ) : (
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => tour.start(0)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors"
-              >
-                <Sparkles className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}>Take a tour</TooltipContent>
-          </Tooltip>
-        )}
+        <TourSidebarHint>
+          {expanded ? (
+            <button
+              onClick={() => tour.start(0)}
+              className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors text-sm font-medium"
+            >
+              <Sparkles className="h-4 w-4 shrink-0" />
+              <span>Take a tour</span>
+            </button>
+          ) : (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => tour.start(0)}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors"
+                >
+                  <Sparkles className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>Take a tour</TooltipContent>
+            </Tooltip>
+          )}
+        </TourSidebarHint>
 
         {/* Settings */}
         {expanded ? (

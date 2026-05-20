@@ -11,7 +11,7 @@ import { useBrandColors } from "@/hooks/useBrandColors";
 import { cn } from "@/lib/utils";
 import { TourProvider } from "@/contexts/TourContext";
 import { EmbarkTour } from "@/components/tour/EmbarkTour";
-import { TourLaunchButton } from "@/components/tour/TourLaunchButton";
+
 import { TourWelcomeBanner } from "@/components/tour/TourWelcomeBanner";
 import { PageTransition } from "@/components/motion/Motion";
 
@@ -56,7 +56,7 @@ export function AppLayout() {
           </div>
         </main>
         <AIChatWrapper />
-        <TourLaunchButton />
+        
         <TourWelcomeBanner />
         <EmbarkTour />
       </div>

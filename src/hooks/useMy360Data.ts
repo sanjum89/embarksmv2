@@ -86,6 +86,62 @@ export interface LearnerProgressRow {
   completed_at?: string | null;
 }
 
+export interface PersonaBasicsData {
+  location?: string;
+  office?: string;
+  work_pattern?: string;
+  languages?: string[];
+  pronouns?: string;
+  joined_team_months_ago?: number;
+  manager_label?: string;
+  prior_employer?: string;
+  prior_industry?: string;
+  years_experience?: number;
+  education?: string[];
+  certifications?: Array<{ name: string; status: string; target?: string }>;
+}
+
+export interface PersonaCareerHereData {
+  current_role?: string;
+  team?: string;
+  tenure_label?: string;
+  timeline?: Array<{ role: string; since?: string; from?: string; to?: string }>;
+}
+
+export interface PersonaAspirationData {
+  north_star?: string;
+  next_move?: string;
+  horizon_months?: number;
+  interests?: string[];
+}
+
+export interface PersonaSuccessionData {
+  closed_loop_summary?: string;
+  engagement_score?: number;
+  human_ai_fit?: string;
+  workforce_of_the_future?: string;
+  successor_for?: string[];
+  potential_successors?: string[];
+}
+
+export interface PersonaFeedbackRow {
+  feedback_at: string;
+  author_label: string;
+  sentiment: string;
+  body: string;
+}
+export interface PersonaStretchRow {
+  title: string;
+  detail?: string;
+  status: string;
+}
+export interface PersonaRoleRow {
+  role_title: string;
+  fit_percent: number;
+  horizon_months?: number;
+  rationale?: string;
+}
+
 export interface My360Data {
   loading: boolean;
   error?: string;
@@ -102,6 +158,14 @@ export interface My360Data {
   modules: ModuleRow[];
   adaptations: AdaptationRow[];
   progress: LearnerProgressRow[];
+  // Persona content
+  basics?: PersonaBasicsData;
+  careerHere?: PersonaCareerHereData;
+  aspiration?: PersonaAspirationData;
+  succession?: PersonaSuccessionData;
+  managerFeedback: PersonaFeedbackRow[];
+  stretchTasks: PersonaStretchRow[];
+  potentialRoles: PersonaRoleRow[];
 }
 
 const empty: My360Data = {
@@ -116,7 +180,11 @@ const empty: My360Data = {
   modules: [],
   adaptations: [],
   progress: [],
+  managerFeedback: [],
+  stretchTasks: [],
+  potentialRoles: [],
 };
+
 
 export function useMy360Data(): My360Data & { refresh: () => void } {
   const { activeAccount } = useAccount();

@@ -37,11 +37,6 @@ export function JourneyTrackCards({ tracks, activeCode, onSelect }: Props) {
                 : "bg-accent/10 text-foreground border-accent/30 hover:bg-card",
             )}
           >
-            {isActive && (
-              <span className="absolute -top-2 left-4 inline-flex items-center rounded-full bg-accent text-accent-foreground text-[9px] font-semibold uppercase tracking-wider px-2 py-0.5 shadow-sm">
-                Current track
-              </span>
-            )}
 
             <div className="flex items-center justify-between gap-2">
               <span

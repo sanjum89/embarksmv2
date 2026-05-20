@@ -1,39 +1,17 @@
-## What's there today
-
-- `src/components/tour/TourLaunchButton.tsx` — the floating pink/primary "Take the tour" pill at the bottom-left, mounted once in `AppLayout.tsx`.
-- `src/components/layout/AppSidebar.tsx` — already has a permanent "Take a tour" sidebar item (Sparkles icon → `tour.start(0)`), both in expanded and collapsed sidebar variants.
-- `src/components/tour/TourWelcomeBanner.tsx` — a separate bottom-right welcome card; not what the user is referring to.
-- `useShowTourEntryPoints` gates all of this to Clara (`rb-l6`) and Theo (`rb-l3`).
+## Issue
+In `src/components/learnpath/JourneyTrackCards.tsx` (lines 40–44), every selected track gets a small floating badge that reads **"Current track"** pinned to the top-left of the card. This is redundant because:
+- The selected card is already heavily styled (navy fill, scale-up, shadow, z-index).
+- The eyebrow inside the card already reads **"In focus"** for the selected track.
+- The label appears on every track the user clicks, so it never adds information.
 
 ## Change
+Remove the floating "Current track" badge entirely. Keep all other styling: the bold selected-state visuals + the "In focus" eyebrow already communicate selection clearly, and removing the floating chip also cleans up the top edge of the card (visible in the screenshot).
 
-1. **Remove the floating pill.**
-   - Delete `src/components/tour/TourLaunchButton.tsx`.
-   - Remove its import and `<TourLaunchButton />` mount from `src/components/layout/AppLayout.tsx`.
-
-2. **Replace it with a first-login popover anchored to the sidebar "Take a tour" item.**
-   - New component `src/components/tour/TourSidebarHint.tsx` that wraps the sidebar's "Take a tour" trigger button in a shadcn `Popover` (open by default on first login, anchored to the same button).
-   - Copy: short headline "Start here" + one-line "Take a 2-minute tour to see how Embark works." + two buttons: **Start tour** (calls `tour.start(0)` and dismisses) and **Later** (dismisses).
-   - Has the same little pulsing dot accent the current pill uses, so the user's eye still gets pulled to it — just on the sidebar item itself instead of floating in the canvas.
-   - Visibility rules (all must be true):
-     - `useShowTourEntryPoints()` → Clara/Theo only.
-     - `tour.open` is false.
-     - Not previously dismissed — reuse the existing `embark_tour_seen::{userId}` localStorage key already used by `TourWelcomeBanner`, so dismissing in one place dismisses both and the existing welcome card stays consistent.
-   - Auto-closes if the user clicks the "Take a tour" item directly, or starts the tour, or dismisses.
-
-3. **Sidebar integration**
-   - In `AppSidebar.tsx`, wrap the two existing "Take a tour" buttons (lines ~388–409 for the desktop sidebar and ~772–791 for the mobile sheet) with `TourSidebarHint` so the popover anchors correctly in both. No layout/markup change to the sidebar itself.
-   - When the sidebar is **collapsed**, the popover still anchors to the icon-only button (side="right").
-
-## Out of scope
-
-- No changes to tour content, steps, or `TourContext`.
-- No changes to `TourWelcomeBanner` behaviour; it remains as-is (same dismissal key means it won't double-prompt after the popover is dismissed).
-- No changes to which personas see the tour.
+No substitution is needed — the card already shows: eyebrow status (In focus / Up next / In progress / Completed), title, chapter count, % complete, and a progress bar. Adding more text on top would only re-clutter the corner.
 
 ## Files touched
+- `src/components/learnpath/JourneyTrackCards.tsx` — delete the `{isActive && (<span>…Current track…</span>)}` block (lines 40–44).
 
-- delete: `src/components/tour/TourLaunchButton.tsx`
-- edit: `src/components/layout/AppLayout.tsx` (remove import + mount)
-- create: `src/components/tour/TourSidebarHint.tsx`
-- edit: `src/components/layout/AppSidebar.tsx` (wrap two "Take a tour" buttons)
+## Out of scope
+- No changes to the eyebrow logic, colors, or active-card styling.
+- No changes to track ordering or selection behaviour.

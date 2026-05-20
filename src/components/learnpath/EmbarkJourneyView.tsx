@@ -84,31 +84,7 @@ function JourneyBody({
     setActiveTrack((cur) => cur ?? initialTrack);
   }, [initialTrack]);
 
-  const [filter, setFilter] = useState<FilterKey>("all");
-
   const selected = tracks.find((t) => t.code === activeTrack) ?? tracks[0] ?? null;
-
-  // Apply filter to the selected track's modules
-  const filteredTrack = useMemo(() => {
-    if (!selected) return null;
-    if (filter === "all") return selected;
-    return {
-      ...selected,
-      modules: selected.modules.filter((m) => {
-        if (filter === "in_progress") return m.status === "in_progress";
-        if (filter === "completed") return m.status === "completed";
-        if (filter === "locked") return m.status === "locked";
-        return true;
-      }),
-    };
-  }, [selected, filter]);
-
-  const filterChips: { key: FilterKey; label: string }[] = [
-    { key: "all", label: "All" },
-    { key: "in_progress", label: "In progress" },
-    { key: "completed", label: "Completed" },
-    { key: "locked", label: "Locked" },
-  ];
 
   return (
     <div className="space-y-4">
@@ -116,7 +92,7 @@ function JourneyBody({
         <JourneyHeaderCard cohort={cohort} />
 
         {tracks.length > 0 && (
-          <JourneyTrackTabs
+          <JourneyTrackCards
             tracks={tracks}
             activeCode={activeTrack}
             onSelect={setActiveTrack}
@@ -124,33 +100,14 @@ function JourneyBody({
         )}
       </div>
 
-      {selected && (
-        <div className="flex items-center justify-end gap-2 flex-wrap">
-          <span className="text-[0.7rem] uppercase tracking-wide text-muted-foreground mr-1">
-            Show
-          </span>
-          {filterChips.map((c) => (
-            <Button
-              key={c.key}
-              variant={filter === c.key ? "default" : "ghost"}
-              size="sm"
-              className="h-7 px-3 text-xs rounded-full"
-              onClick={() => setFilter(c.key)}
-            >
-              {c.label}
-            </Button>
-          ))}
-        </div>
-      )}
-
-      {filteredTrack && filteredTrack.modules.length === 0 ? (
+      {selected && selected.modules.length === 0 ? (
         <p className="text-xs text-muted-foreground py-6 text-center">
           No modules in this view.
         </p>
-      ) : filteredTrack ? (
+      ) : selected ? (
         <div data-tour="embark-modules">
           <JourneyModuleAccordion
-            track={filteredTrack}
+            track={selected}
             cohortId={cohort.id}
             activeChapterCode={activeChapterId}
           />
@@ -159,6 +116,7 @@ function JourneyBody({
     </div>
   );
 }
+
 
 
 function ViewShell({

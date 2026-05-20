@@ -35,10 +35,8 @@ export default function TeamDashboard() {
   return (
     <div className="flex-1 overflow-y-auto">
       <PageHeader
-        eyebrow={eyebrow}
         title="Team Dashboard"
         subtitle={`${user.name}'s Team — ${memberCount} member${memberCount !== 1 ? "s" : ""}`}
-        back
       />
       <PageBody>
 

@@ -1,58 +1,79 @@
-## Issues to fix on `src/pages/CohortHub.tsx` and friends
+## Goal
 
-### 1. Achievements card still looks like a basic chip list
-The redesign was planned (msg #751) but never shipped — the request was interrupted by the "Take a tour" pivot, and the chip list at lines 259–272 is still the old version. Rebuild it now with the previously-approved "tactile glass depth" treatment.
+Two-state learner New Chat:
+- **Home** = original layout (image 1): hero greeting, Agent One LIVE strip, centered 6-card grid, composer. No left rail.
+- **Inner chat** = same UI as Deep Research (3-column workspace, envelope responses, pinned dashboard, thread list), but scoped to the learner's own data only.
 
-**Apply to lines 259–272 of `CohortHub.tsx`:**
-- Card shell: `relative overflow-hidden p-6 flex flex-col`.
-- Two decorative blurred glows: `bg-accent/30` top-right and `bg-primary/10` bottom-left (`blur-3xl`, pointer-events-none).
-- Header row: title "Achievements" + eyebrow "Milestones earned"; right side shows live `{earned}/{total}` in accent + 48px accent progress bar with `shadow-[0_0_8px_hsl(var(--accent)/0.5)]`.
-- Badges grid (`flex flex-wrap gap-2`):
-  - Earned: `rounded-xl border-accent/40 bg-accent/15`, soft accent drop-shadow + inset top-highlight, pulsing accent dot, bold foreground text, lift-on-hover.
-  - Locked: dashed muted border, `bg-muted/40`, opacity-60, static muted dot, no strikethrough.
-- Footer (only if any locked): `Next: {first locked label}` chip + `+50 points` accent badge above a thin top divider.
-- Semantic tokens only (no `amber-*`, hex, or raw colors).
+This means extracting the Deep Research workspace into a shared component so any future Deep Research redesign automatically applies to the learner chat too.
 
-### 2. KPI strip duplicates learning info — swap one tile for the mentor
-"Currently learning" and "Up next" both restate the journey. Keep "Currently learning"; **replace the "Up next" tile (lines 233–237) with a Mentor tile** so the user sees their mentor up top instead of buried in a card halfway down.
+## Changes
 
-Tile layout (fits the same `bg-card p-4` slot, no grid changes):
-- Eyebrow: `Your mentor` (small uppercase, with a `Users` icon, emerald accent matching the existing mentor card eyebrow).
-- Body: mentor avatar (h-9 w-9, initials fallback) + name (`font-display text-base font-bold`, one line) + title (`text-xs text-muted-foreground`, one line).
-- Two side-by-side CTAs: `Message` (outline, `flex-1`) and `Book` (default, `flex-1`), both `size="sm" h-7 text-xs`, calling the existing `mentorMessage` / `mentorBook` handlers already in scope.
-- Fallback (no mentor): single muted line "No mentor assigned yet."
+### 1. Restore home state (image 1)
+`src/pages/LearnerChat.tsx` — home branch:
+- Drop the left rail (`Today's focus`, `Suggested topics`, `Recent`) from the home view.
+- Center column only: `H1 "Hi {firstName}, let's grow together"` → `<AgentOneNudgeStack>` → 6-card grid using the existing `CardIllustration` SVGs (3-up on lg, 2-up on md, 1 on mobile) → composer with `Ask anything…` → small tip line.
+- Keep the existing card prompts (`Grow My Skills`, `Required Skills`, `Explore Career Paths`, `View My Activities`, `Build Your Profile`, `Create a Reflection`).
 
-### 3. Move Cohort leaderboard out of the main column into the right rail
-- **Remove** the standalone leaderboard `<Card>` from `CohortHub.tsx` lines 319–333 (the first card in the "Leaderboard · Mentor · Evidence" 3-up).
-- Rework the surrounding 3-column row (`lg:grid-cols-3`, lines 318–374) into a 2-column row (`lg:grid-cols-2`) containing just Mentor + Evidence.
-- In `src/components/cohort/CohortRightRail.tsx`, add a **third Card directly below the announcements card** (between announcements and "Recent activity") titled `Cohort leaderboard` with the same compact rows: rank, avatar, name (or "You"), `pct%`. Wire it via a new `leaderboard` prop on `CohortRightRail` (type `HubLeaderRow[]` from `useCohortHub`). Pass it from `CohortHub.tsx`.
+### 2. Extract shared Deep Research workspace
+New `src/components/deep-research/DeepResearchWorkspace.tsx` — takes the entire body of `DeepResearch.tsx` (3-col grid, conversation/envelope rendering, `ThinkingPanel`, composer, threads list, pinned dashboard) and exposes props:
 
-### 4. Blank pill in Co-learning timeline ("CLASSROOM" invisible)
-In `src/components/cohort/CoLearningTimeline.tsx` line 142, the classroom badge uses `text-accent-foreground` on a transparent background. With the Rathbones palette, `accent-foreground` is near-white, so the text vanishes on the white card. Fix the colour token only:
-- Live → keep `border-primary/30 text-primary`.
-- Classroom → change to `border-accent/40 text-accent` (peach text on white card, readable).
-- Study group → keep `border-border text-muted-foreground`.
+```ts
+type Props = {
+  scope: "personal" | "team";
+  ownerId: string;
+  accountId: string;
+  accountName?: string | null;
+  starters: { label: string; prompt: string; icon?: LucideIcon }[];
+  emptyState?: { title: string; subtitle: string };
+  threadBasePath: string;     // "/team/deep-research" or "/chat"
+  activeThreadId?: string;
+  onExit?: () => void;        // Home button for learner
+};
+```
 
-### 5. Blank pill in People to connect + similar/match indistinguishable
-In `src/components/cohort/PeopleToConnect.tsx` line 57:
-- "Suggested match" pill uses the same broken `text-accent-foreground` → invisible.
-- Both pill types look weakly differentiated.
+Refactor `src/pages/DeepResearch.tsx` to a thin wrapper that renders `<DeepResearchWorkspace scope="team" ... />` with manager starters and PageHeader.
 
-Fix and add a clear visual split:
-- **Similar topic**: keep outline pill `border-primary/30 text-primary bg-primary/5` with a 2-letter prefix dot — e.g., `<Sparkles className="h-2.5 w-2.5"/>` before the label is overkill; keep current dotless treatment but with `bg-primary/5` for fill so it reads as a chip.
-- **Suggested match**: solid filled pill `bg-accent/20 text-accent border-accent/40` plus a `Users` icon (h-2.5 w-2.5) inside the pill so it's visually distinct from "Similar topic".
-- Make the pill larger (`text-[10px]`) and replace `p.reason` with a clearer secondary line:
-  - similar → "Same topic · {p.reason}" prefix.
-  - match → "Match · {p.reason}" prefix.
-- Where `p.reason` is empty, render nothing instead of an empty span (current code already handles via truncate but verify the label still reads).
+### 3. Wire learner inner chat to the shared workspace
+In `LearnerChat.tsx`, replace the entire `chatActive` branch with:
 
-## Files touched
-- `src/pages/CohortHub.tsx` — Achievements rebuild (259–272), KPI tile swap (233–237), remove leaderboard card + restructure 3-up → 2-up (318–374), pass `leaderboard` to `CohortRightRail`.
-- `src/components/cohort/CohortRightRail.tsx` — Add `leaderboard` prop + new leaderboard card under Announcements.
-- `src/components/cohort/CoLearningTimeline.tsx` — Fix classroom badge colour (line 142).
-- `src/components/cohort/PeopleToConnect.tsx` — Fix match badge colour + restyle for stronger differentiation (lines 53–63).
+```tsx
+<DeepResearchWorkspace
+  scope="personal"
+  ownerId={user.id}
+  accountId={activeAccount.id}
+  accountName={activeAccount.name}
+  starters={learnerStarters /* derived from the 6 cards */}
+  threadBasePath="/chat"
+  activeThreadId={...}
+  onExit={() => setChatActive(false)}
+  emptyState={{
+    title: `Hi ${firstName}, what would you like to explore?`,
+    subtitle: "Pick a topic on the left or ask your own question.",
+  }}
+/>
+```
+
+Threads & pins persist per learner (already keyed by `ownerId` in `useDeepResearch`). Home button in the workspace top bar calls `onExit` to return to image 1.
+
+### 4. Enforce personal scope (learner sees own data only)
+- `src/hooks/useDeepResearch.ts`: accept `scope: "personal" | "team"`, include it in storage key (`dr:${accountId}:${ownerId}:${scope}`) so learner and manager threads don't mix.
+- `src/data/deepResearchShowcase.ts` (or new `learnerDeepResearchShowcase.ts`): add personal-scope envelopes for the 6 learner prompts (Grow My Skills, Required Skills, Explore Career Paths, View My Activities, Build Your Profile, Create a Reflection). Each envelope references **only Clara's own** metrics, modules, evidence — no cohort tables, no other learners, no team aggregates.
+- `src/lib/deepResearch/actionDispatch.ts`: guard `assign_to_learner`, `nudge_learner`, and other manager-only actions when `scope === "personal"` (hide button or no-op with toast).
+
+### 5. Cleanup
+- Remove now-dead code in `LearnerChat.tsx`: the old chat branch (Agent One strip, message rendering, suggestion pills, voice composer) — replaced by the shared workspace.
+- Keep `useAgentOne` only if still needed for the home-state nudge stack; otherwise drop the imports.
+- Leave `UnifiedChat.tsx` alone (unused, separate concern).
 
 ## Out of scope
-- No data-shape changes to `useCohortHub`.
-- Mentor card lower down stays (Mentor tile up top is a quick-access summary; the full card keeps notes + "Next 1:1" + booking flow).
-- No changes to the Adapted path tab.
+- Visual redesign of Deep Research itself (only extraction). Any future redesign edits `DeepResearchWorkspace` and both surfaces update.
+- Backend / RLS changes — scope is enforced at the UI + showcase-data layer for the demo.
+- The home-state Agent One nudge stack stays as-is.
+
+## Files
+- new: `src/components/deep-research/DeepResearchWorkspace.tsx`
+- edit: `src/pages/DeepResearch.tsx` (delegate to workspace)
+- edit: `src/pages/LearnerChat.tsx` (home redesign + delegate inner chat)
+- edit: `src/hooks/useDeepResearch.ts` (scope param)
+- edit/new: `src/data/deepResearchShowcase.ts` (personal-scope responses for 6 learner prompts)
+- edit: `src/lib/deepResearch/actionDispatch.ts` (guard team-only actions on personal scope)

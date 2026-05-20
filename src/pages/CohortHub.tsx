@@ -12,10 +12,11 @@ import { JoinModal } from "@/components/cohort-hub/JoinModal";
 
 import {
   Users, Calendar, ChevronRight, Sparkles, Pin, Trophy, Award, MessageCircle,
-  Video, MapPin, FileText, Plus, ArrowRight,
+  Video, MapPin, FileText, Plus, ArrowRight, AlertTriangle, CheckCircle2, Flag, BookOpen, Clock, Lock,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import PageHeader from "@/components/layout/PageHeader";
+import { deriveHubStatus, cohortAvgPct } from "@/lib/cohortHubStatus";
 
 function initials(name: string) {
   return name.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();

@@ -14,7 +14,7 @@ export const MOTION = {
   STAGGER: 0.06,
   RISE: 12,
   PAGE_RISE: 8,
-  EASE: [0.22, 1, 0.36, 1] as const,
+  EASE: [0.22, 1, 0.36, 1] as [number, number, number, number],
 };
 
 /** Returns true if animations should be suppressed (a11y toggle OR OS pref). */

@@ -1,30 +1,25 @@
-## Embark Journey — finish the two pending changes
+# Add "Take a tour" to the sidebar
 
-Both items previously requested never actually landed in `src/components/learnpath/EmbarkJourneyView.tsx`. The current file still renders `<JourneyTrackTabs>` and still shows the `Show · All · In progress · Completed · Locked` chip row. This plan finishes both in one pass.
+The guided tour currently launches from a floating bottom-left pill (`TourLaunchButton`). Once a user dismisses or closes it, there is no permanent way to reopen it. We'll add a persistent sidebar entry so the tour is always one click away.
 
-### 1. New `src/components/learnpath/JourneyTrackCards.tsx`
+## What to build
 
-Replaces `JourneyTrackTabs` for the cohort journey view only. A 4-up responsive grid (`grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3`) of track cards with three visual states:
+In `src/components/layout/AppSidebar.tsx`, add a new "Take a tour" item in the bottom utility section of **both** sidebar variants (traditional theme around line 345, new theme around line 700), placed directly above **Settings** and below **Accessibility**.
 
-- **Completed** (`pct === 100`): `bg-card border-border`, small green check pill, muted percent.
-- **Active** (selected track): `bg-primary text-primary-foreground scale-[1.02] shadow-lg`, peach `bg-accent text-accent-foreground` "CURRENT TRACK" badge floated at `-top-2`, inline mini progress bar with `bg-accent` fill on `bg-primary-foreground/15` track.
-- **Other** (in_progress / up_next / locked, not selected): `bg-accent/10 border-accent/30 hover:bg-card transition-colors`, accent-colored eyebrow.
+- Icon: `Sparkles` from `lucide-react` (matches the existing `TourLaunchButton` styling).
+- Label: `Take a tour`.
+- Behaviour: `onClick` calls `tour.start(0)` from `useTour()`.
+- Styling: mirror the existing bottom-row buttons exactly (same `h-9`, padding, hover, muted-foreground tokens) for both expanded and collapsed states; in collapsed state use a `Tooltip` with `"Take a tour"`.
+- Wire the existing `TourProvider` via `useTour()` (already exported from `@/contexts/TourContext`).
 
-Each card shows: state eyebrow (`text-[10px] uppercase tracking-wider`), track name (`font-display text-base font-semibold`), and `{completedChapters}/{totalChapters} chapters · {pct}%`. Click → `onSelect(track.code)`. All colors via semantic tokens (`primary`, `accent`, `card`, `border`, `muted-foreground`, `foreground`) — no hex.
+## Closing → re-opening flow
 
-### 2. Edit `src/components/learnpath/EmbarkJourneyView.tsx`
+The tour already supports `tour.close()`, which sets `open: false` without losing the steps. The new sidebar entry simply calls `tour.start(0)` again, so users who close mid-tour can relaunch from the start at any time. No changes to `TourContext` are needed.
 
-- Swap `<JourneyTrackTabs>` (line 120) for `<JourneyTrackCards>` with the same `tracks` / `activeCode` / `onSelect` props.
-- Delete the filter chip row (lines 128–145) entirely.
-- Remove `filter` / `setFilter` state (line 88), the `filteredTrack` `useMemo` (lines 93–105), the `filterChips` array (lines 107–112), and the `FilterKey` type (line 14).
-- Pass `selected` (renamed back from `filteredTrack`) directly to `<JourneyModuleAccordion>`.
-- Drop the `Button` import if no longer used in this file.
+## Out of scope
 
-### 3. Leave alone
+- The floating `TourLaunchButton` stays as-is (first-run nudge). Its dismiss behaviour is unchanged.
+- No changes to tour steps, content, or analytics.
+- No new routes or pages.
 
-- `JourneyTrackTabs.tsx` stays in place (other consumers may use it).
-- `JourneyHeaderCard`, `JourneyModuleAccordion`, page header, data hooks, routing, sequencing logic — untouched.
-
-### Verification
-
-After the edit, confirm the Embark Journey page renders elevated track cards instead of pill tabs, and that no `Show / All / In progress / Completed / Locked` row appears above the module accordion.
+Approve and I'll ship it.

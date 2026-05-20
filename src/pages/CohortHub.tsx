@@ -427,6 +427,7 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
             <CohortRightRail
               announcements={data.announcements}
               recentActivity={data.recentActivity}
+              leaderboard={data.leaderboard}
               substitute={sub}
             />
           </div>

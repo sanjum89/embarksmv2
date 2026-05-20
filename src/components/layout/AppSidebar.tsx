@@ -773,27 +773,29 @@ export function AppSidebar() {
         />
 
         {/* Take a tour */}
-        {expanded ? (
-          <button
-            onClick={() => tour.start(0)}
-            className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors text-sm font-medium"
-          >
-            <Sparkles className="h-4 w-4 shrink-0" />
-            <span>Take a tour</span>
-          </button>
-        ) : (
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => tour.start(0)}
-                className="flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors"
-              >
-                <Sparkles className="h-4 w-4" />
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8}>Take a tour</TooltipContent>
-          </Tooltip>
-        )}
+        <TourSidebarHint>
+          {expanded ? (
+            <button
+              onClick={() => tour.start(0)}
+              className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors text-sm font-medium"
+            >
+              <Sparkles className="h-4 w-4 shrink-0" />
+              <span>Take a tour</span>
+            </button>
+          ) : (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => tour.start(0)}
+                  className="flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors"
+                >
+                  <Sparkles className="h-4 w-4" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={8}>Take a tour</TooltipContent>
+            </Tooltip>
+          )}
+        </TourSidebarHint>
 
         {/* Settings */}
         {expanded ? (

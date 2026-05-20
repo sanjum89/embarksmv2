@@ -475,11 +475,10 @@ export default function RolePlayBank() {
                       </>
                     )}
                   </div>
-                </motion.div>
+                </StaggerItem>
               );
             })}
-          </AnimatePresence>
-        </div>
+        </StaggerList>
 
         {filtered.length === 0 && (
           <div className="flex items-center justify-center py-20 text-muted-foreground text-sm">

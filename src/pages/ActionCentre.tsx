@@ -114,18 +114,19 @@ export default function ActionCentre() {
           <EmptyState />
         ) : (
           <div className="grid gap-8 pt-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="space-y-6">
+            <StaggerList className="space-y-6">
               {feed.totalOpen === 0 ? (
                 <EmptyState />
               ) : (
                 <>
-                  <TimeBucketGroup priority="now"       items={feed.buckets.now}       onSnooze={onSnooze} onDone={onDone} onDismiss={onDismiss} />
-                  <TimeBucketGroup priority="today"     items={feed.buckets.today}     onSnooze={onSnooze} onDone={onDone} onDismiss={onDismiss} />
-                  <TimeBucketGroup priority="this_week" items={feed.buckets.this_week} onSnooze={onSnooze} onDone={onDone} onDismiss={onDismiss} />
-                  <TimeBucketGroup priority="later"     items={feed.buckets.later}     onSnooze={onSnooze} onDone={onDone} onDismiss={onDismiss} />
+                  <StaggerItem><TimeBucketGroup priority="now"       items={feed.buckets.now}       onSnooze={onSnooze} onDone={onDone} onDismiss={onDismiss} /></StaggerItem>
+                  <StaggerItem><TimeBucketGroup priority="today"     items={feed.buckets.today}     onSnooze={onSnooze} onDone={onDone} onDismiss={onDismiss} /></StaggerItem>
+                  <StaggerItem><TimeBucketGroup priority="this_week" items={feed.buckets.this_week} onSnooze={onSnooze} onDone={onDone} onDismiss={onDismiss} /></StaggerItem>
+                  <StaggerItem><TimeBucketGroup priority="later"     items={feed.buckets.later}     onSnooze={onSnooze} onDone={onDone} onDismiss={onDismiss} /></StaggerItem>
                 </>
               )}
-            </div>
+            </StaggerList>
+
 
             <AIRecommendationStream items={feed.ai} onDismiss={onDismiss} />
           </div>

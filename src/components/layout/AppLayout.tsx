@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { LoginPage } from "./LoginPage";
 import { AIChatWrapper } from "@/components/chat/AIChatWrapper";
@@ -13,6 +13,7 @@ import { TourProvider } from "@/contexts/TourContext";
 import { EmbarkTour } from "@/components/tour/EmbarkTour";
 import { TourLaunchButton } from "@/components/tour/TourLaunchButton";
 import { TourWelcomeBanner } from "@/components/tour/TourWelcomeBanner";
+import { PageTransition } from "@/components/motion/Motion";
 
 
 export function AppLayout() {
@@ -20,6 +21,7 @@ export function AppLayout() {
   const { styleTheme } = useTheme();
   const { signedInUserIds } = useUser();
   const { switching } = useAccount();
+  const location = useLocation();
   const isTraditional = styleTheme === "traditional";
 
   // Apply brand colors from active account
@@ -29,6 +31,10 @@ export function AppLayout() {
   if (signedInUserIds.length === 0) {
     return <LoginPage />;
   }
+
+  // Use only the pathname (not search/hash) so in-page tab/query changes
+  // don't re-trigger the page entrance animation.
+  const routeKey = location.pathname;
 
   return (
     <TourProvider>
@@ -44,7 +50,9 @@ export function AppLayout() {
         <AppSidebar />
         <main className={cn("flex-1 flex flex-col min-h-0 transition-all duration-200", expanded ? (isTraditional ? "ml-[248px]" : "ml-56") : (isTraditional ? "ml-[82px]" : "ml-16"), isTraditional && "pt-14")}>
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <Outlet />
+            <PageTransition transitionKey={routeKey} className="flex-1 flex flex-col min-h-0 overflow-auto">
+              <Outlet />
+            </PageTransition>
           </div>
         </main>
         <AIChatWrapper />

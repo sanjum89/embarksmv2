@@ -86,6 +86,62 @@ export interface LearnerProgressRow {
   completed_at?: string | null;
 }
 
+export interface PersonaBasicsData {
+  location?: string;
+  office?: string;
+  work_pattern?: string;
+  languages?: string[];
+  pronouns?: string;
+  joined_team_months_ago?: number;
+  manager_label?: string;
+  prior_employer?: string;
+  prior_industry?: string;
+  years_experience?: number;
+  education?: string[];
+  certifications?: Array<{ name: string; status: string; target?: string }>;
+}
+
+export interface PersonaCareerHereData {
+  current_role?: string;
+  team?: string;
+  tenure_label?: string;
+  timeline?: Array<{ role: string; since?: string; from?: string; to?: string }>;
+}
+
+export interface PersonaAspirationData {
+  north_star?: string;
+  next_move?: string;
+  horizon_months?: number;
+  interests?: string[];
+}
+
+export interface PersonaSuccessionData {
+  closed_loop_summary?: string;
+  engagement_score?: number;
+  human_ai_fit?: string;
+  workforce_of_the_future?: string;
+  successor_for?: string[];
+  potential_successors?: string[];
+}
+
+export interface PersonaFeedbackRow {
+  feedback_at: string;
+  author_label: string;
+  sentiment: string;
+  body: string;
+}
+export interface PersonaStretchRow {
+  title: string;
+  detail?: string;
+  status: string;
+}
+export interface PersonaRoleRow {
+  role_title: string;
+  fit_percent: number;
+  horizon_months?: number;
+  rationale?: string;
+}
+
 export interface My360Data {
   loading: boolean;
   error?: string;
@@ -102,6 +158,14 @@ export interface My360Data {
   modules: ModuleRow[];
   adaptations: AdaptationRow[];
   progress: LearnerProgressRow[];
+  // Persona content
+  basics?: PersonaBasicsData;
+  careerHere?: PersonaCareerHereData;
+  aspiration?: PersonaAspirationData;
+  succession?: PersonaSuccessionData;
+  managerFeedback: PersonaFeedbackRow[];
+  stretchTasks: PersonaStretchRow[];
+  potentialRoles: PersonaRoleRow[];
 }
 
 const empty: My360Data = {
@@ -116,7 +180,11 @@ const empty: My360Data = {
   modules: [],
   adaptations: [],
   progress: [],
+  managerFeedback: [],
+  stretchTasks: [],
+  potentialRoles: [],
 };
+
 
 export function useMy360Data(): My360Data & { refresh: () => void } {
   const { activeAccount } = useAccount();
@@ -257,6 +325,18 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
           : Promise.resolve({ data: [] } as any),
       ]);
 
+      const personaContent = personaCode
+        ? await Promise.all([
+            supabase.from("persona_profile_basics").select("data").eq("account_id", accountId).eq("persona_code", personaCode).maybeSingle(),
+            supabase.from("persona_career_here").select("data").eq("account_id", accountId).eq("persona_code", personaCode).maybeSingle(),
+            supabase.from("persona_aspiration").select("data").eq("account_id", accountId).eq("persona_code", personaCode).maybeSingle(),
+            supabase.from("persona_succession_notes").select("data").eq("account_id", accountId).eq("persona_code", personaCode).maybeSingle(),
+            supabase.from("persona_manager_feedback").select("feedback_at,author_label,sentiment,body").eq("account_id", accountId).eq("persona_code", personaCode).order("display_order"),
+            supabase.from("persona_stretch_tasks").select("title,detail,status").eq("account_id", accountId).eq("persona_code", personaCode).order("display_order"),
+            supabase.from("persona_potential_roles").select("role_title,fit_percent,horizon_months,rationale").eq("account_id", accountId).eq("persona_code", personaCode).order("display_order"),
+          ])
+        : null;
+
       if (cancelled) return;
       setState({
         loading: false,
@@ -273,7 +353,15 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
         modules: ((modulesRes as any).data ?? []) as ModuleRow[],
         adaptations: ((adaptRes as any).data ?? []) as AdaptationRow[],
         progress: ((progressRes as any).data ?? []) as LearnerProgressRow[],
+        basics: (personaContent?.[0] as any)?.data?.data ?? undefined,
+        careerHere: (personaContent?.[1] as any)?.data?.data ?? undefined,
+        aspiration: (personaContent?.[2] as any)?.data?.data ?? undefined,
+        succession: (personaContent?.[3] as any)?.data?.data ?? undefined,
+        managerFeedback: ((personaContent?.[4] as any)?.data ?? []) as PersonaFeedbackRow[],
+        stretchTasks: ((personaContent?.[5] as any)?.data ?? []) as PersonaStretchRow[],
+        potentialRoles: ((personaContent?.[6] as any)?.data ?? []) as PersonaRoleRow[],
       });
+
     })();
 
     return () => {

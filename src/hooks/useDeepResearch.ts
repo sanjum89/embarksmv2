@@ -268,7 +268,7 @@ export function useDeepResearch(args: {
       setThinkingTrace([]);
       return assistantMsg;
     },
-    [activeThreadId, newThread, accountName, threads]
+    [activeThreadId, newThread, accountName, threads, scope]
   );
 
   const pinAnswer = useCallback(

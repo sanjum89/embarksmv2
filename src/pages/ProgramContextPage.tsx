@@ -179,16 +179,6 @@ function CohortList({ cohorts, onCreate, onSelect }: { cohorts: Cohort[]; onCrea
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-      {/* Compact header (Program Context style) */}
-      <div className="flex items-start justify-between gap-3 mb-1">
-        <div className="flex items-center gap-2">
-          <Layers className="h-4 w-4 text-primary" />
-          <h1 className="font-display text-lg font-bold text-foreground">Cohorts</h1>
-        </div>
-        <Button size="sm" onClick={onCreate} className="gap-1.5 h-8">
-          <Plus className="h-3.5 w-3.5" /> New cohort
-        </Button>
-      </div>
       <p className="text-sm text-muted-foreground mb-5">
         {stats.total} {stats.total === 1 ? "cohort" : "cohorts"} · {stats.activeLearners} active learner{stats.activeLearners === 1 ? "" : "s"} · {stats.avg}% avg progress
         {stats.attention > 0 && (

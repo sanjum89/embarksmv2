@@ -697,12 +697,17 @@ export function AppSidebar() {
         })}
       </nav>
 
-      {/* Dark mode toggle */}
-      <div className={cn("w-full flex", expanded ? "px-3" : "justify-center py-0.5")}>
+      <div
+        className={cn(
+          "w-full pb-1",
+          expanded ? "px-3 space-y-1" : "flex flex-col items-center gap-1 px-0"
+        )}
+      >
+        {/* Dark mode toggle */}
         {expanded ? (
           <button
             onClick={toggleTheme}
-            className="flex items-center gap-2 w-full px-3 h-9 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors text-sm font-medium mb-1"
+            className="flex items-center gap-2 w-full px-3 h-9 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors text-sm font-medium"
           >
             {theme === "dark" ? <Moon className="h-4 w-4 shrink-0" /> : <Sun className="h-4 w-4 shrink-0" />}
             <span>{theme === "dark" ? "Dark mode" : "Light mode"}</span>
@@ -722,16 +727,14 @@ export function AppSidebar() {
             </TooltipContent>
           </Tooltip>
         )}
-      </div>
 
-      {/* Accessibility */}
-      <div className={cn("w-full flex", expanded ? "px-3" : "justify-center py-0.5")}>
+        {/* Accessibility */}
         <AccessibilityPanel
           expanded={expanded}
           trigger={
             <button
               className={cn(
-                "flex items-center rounded-lg transition-all duration-200 text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+                "flex items-center rounded-lg transition-colors text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
                 expanded ? "h-9 gap-3 w-full px-3" : "h-10 w-10 justify-center"
               )}
             >
@@ -740,10 +743,8 @@ export function AppSidebar() {
             </button>
           }
         />
-      </div>
 
-      {/* Settings */}
-      <div className={cn("w-full flex", expanded ? "px-3" : "justify-center py-0.5")}>
+        {/* Settings */}
         {expanded ? (
           <NavLink
             to="/settings"

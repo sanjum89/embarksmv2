@@ -177,24 +177,23 @@ export default function LearnerChat() {
                 </div>
 
                 {/* 6-card grid (image 1) — squarer tiles */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
-                  {suggestionCards.map((card, i) => (
-                    <motion.button
-                      key={card.label}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.04 * i }}
-                      onClick={() => startWith(card.prompt)}
-                      className="text-left rounded-2xl border border-border/70 bg-card p-4 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-sm transition-all group"
-                    >
-                      <div className="rounded-xl bg-muted/50 mb-3 flex items-center justify-center h-24">
-                        <CardIllustration type={card.illustration} />
-                      </div>
-                      <div className="text-sm font-semibold text-foreground leading-tight">{card.label}</div>
-                      <div className="text-[12px] text-muted-foreground mt-1 leading-snug">{card.description}</div>
-                    </motion.button>
+                <StaggerList className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
+                  {suggestionCards.map((card) => (
+                    <StaggerItem key={card.label}>
+                      <button
+                        onClick={() => startWith(card.prompt)}
+                        className="w-full text-left rounded-2xl border border-border/70 bg-card p-4 hover:border-primary/40 hover:-translate-y-0.5 hover:shadow-sm transition-all group"
+                      >
+                        <div className="rounded-xl bg-muted/50 mb-3 flex items-center justify-center h-24">
+                          <CardIllustration type={card.illustration} />
+                        </div>
+                        <div className="text-sm font-semibold text-foreground leading-tight">{card.label}</div>
+                        <div className="text-[12px] text-muted-foreground mt-1 leading-snug">{card.description}</div>
+                      </button>
+                    </StaggerItem>
                   ))}
-                </div>
+                </StaggerList>
+
 
                 {/* Composer */}
                 <div className="relative w-full">

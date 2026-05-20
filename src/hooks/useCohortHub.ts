@@ -93,6 +93,8 @@ export interface HubAchievement {
   code: string;
   label: string;
   earned: boolean;
+  points: number;
+  tier: "bronze" | "silver" | "gold";
 }
 
 export interface HubEvidence {

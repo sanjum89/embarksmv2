@@ -1,70 +1,37 @@
 ## Why
 
-Today's Action Centre is manager-only, leads with four mostly-decorative KPI tiles, stacks Tabs + filters + KPIs in the header, and renders every item with the same card — so nothing stands out. It also can't surface learner-side signals (mentor messages, kudos, due dates, AI nudges) you described.
+The Achievements card on Cohort Hub uses a single accent colour for every badge and shows no running points total — it reads as a list of pills, not a recognition surface. The user wants more visual variety per badge and a clear "points accumulated" number.
 
-This rebuild turns it into a single triage inbox patterned on Linear / GitHub Notifications / Asana Inbox: one ordered list grouped by urgency, category pills per row, AI suggestions in a calm rail.
+## Changes
 
-## New layout
+**1. Data — `src/hooks/useCohortHub.ts`**
+- Extend `HubAchievement` with `points: number` and `tier: "bronze" | "silver" | "gold"` (drives colour).
+- Assign points + tier per badge:
+  - `first_quiz` 25 · bronze
+  - `5_day_streak` 50 · bronze
+  - `module_1` 75 · silver
+  - `peer_mentor` 75 · silver
+  - `mock_ace` 100 · silver
+  - `top_10` 150 · gold
+  - `cisi_l4` 200 · gold
+  - `fca_notified` 250 · gold
+- Add derived fields on `CohortHubData`: `pointsEarned`, `pointsTotal`.
 
-```text
-┌───────────────────────────────────────────────────────────────────────────┐
-│ Action Centre                                                             │
-│ 3 need you now · 7 today · 12 this week                                   │
-│ [All] [Mentions] [Approvals] [AI suggestions]                             │
-├──────────────────────────────────────┬────────────────────────────────────┤
-│ NOW (3)                              │  AI suggestions                    │
-│  ▌🔴 Overdue · Module 4 · Due 2d ago │   ✦ Likely skill gap in IM ethics  │
-│  ▌🔴 Mentor message · Felix          │     → Build me a 15-min top-up     │
-│  ▌🔴 Peer session request · Theo     │                                    │
-│ TODAY (7)                            │   ✦ Last assessment 80%            │
-│  ▌🟠 Reflection due · Module 5       │     → Open adapted micro-path      │
-│  ▌🟠 Kudos from manager              │                                    │
-│  …                                   │   ✦ 3 peers finished Chapter 6     │
-│ THIS WEEK (12)                       │     → Resume your chapter          │
-│ LATER (4)                            │                                    │
-└──────────────────────────────────────┴────────────────────────────────────┘
-```
+**2. UI — `src/pages/CohortHub.tsx` Achievements card**
+- Header row: keep "Achievements" title; add a points pill on the right (`★ 225 pts` style) with a thin progress bar to `pointsTotal`. Move the "earned/total" count under the title as a small subline.
+- Replace the flat pill row with a 4-col grid of small badge tiles (2-col on mobile). Each tile:
+  - Icon glyph chosen per badge code (Trophy, Flame, BookOpen, Users, Target, Award, GraduationCap, ShieldCheck).
+  - Tier gradient background — bronze `from-amber-500/15 to-orange-500/10`, silver `from-sky-500/15 to-indigo-500/10`, gold `from-amber-400/25 to-rose-400/15` — with matching border + icon colour.
+  - Label + `+N pts` line under it.
+  - Locked tiles: greyscale, dashed border, lock icon, `+N pts` shown muted as the carrot.
+- Keep the "Next: …" footer line, but show its `+N pts` from the badge data instead of the hardcoded `+50 points`.
 
-- Header strip is one sentence of state + a tiny segmented control (All / Mentions / Approvals / AI). No KPI tiles.
-- One ordered list grouped by **Now / Today / This week / Later** — bucket computed from `due_at` and severity, not from the user's role.
-- Each row is one component (`<ActionRow>`) with: left severity rail, kind icon, title, one-line detail, time-ago, category pill, and inline CTAs (Open · Snooze · Done · Dismiss). Hover reveals secondary actions; no card chrome.
-- AI suggestions live in a right rail as soft tiles, never mixed into the urgent list. Each tile has a primary CTA ("Build me a 15-min top-up", "Open adapted path", "Find me a peer").
-- Empty state: full-bleed single line ("You're all clear. We'll ping you when something needs you."), no fake tiles.
-
-## Unified item kinds (13)
-
-`due_soon`, `overdue`, `mentor_message`, `peer_session_request`, `kudos`, `team_shoutout`, `assessment_result`, `ai_skill_gap`, `ai_microlearning_offer`, `ai_path_adapted`, `approval_request`, `raised_hand`, `reflection_review`.
-
-Each rendered from one `<ActionRow>` driven by `{ kind, priority, when, actor, title, detail, cta[], category }`.
-
-## Data
-
-- Reuse `nudge_cards` as the canonical store; add the new `type` values above. No new tables.
-- Manager-side items continue to flow from `managerDemoOverlay` via `useRathbonesPersonaOverlays` and get adapted into the same shape.
-- New hook `useActionCentreFeed(userId, role)` merges both sources, computes urgency bucket from `due_at` / `created_at` + severity, returns `{ now, today, thisWeek, later, ai }`, and exposes `snooze(id, until)`, `markDone(id)`, `dismiss(id)`.
-- Snooze + done state stored in `nudge_cards.metadata.action_centre_state` so it survives reload without schema changes.
-- Seed coherent demo notifications for Clara, Sophie, Theo, and rb-mgr so each persona has a realistic Now/Today/Week mix (overdue module for Sophie, mentor message + kudos for Clara, peer session request for Theo, approvals + raised hands for rb-mgr).
-
-## Role behaviour
-
-- **Learner** (`role = learner`): personal nudges only — own due dates, own mentor messages, kudos to them, AI suggestions about their gaps.
-- **Manager** (`role = manager`): everything above for themselves **plus** their reporting tree's approvals, raised hands, and reflection reviews. Same UI, same row component — `category` pill tells them apart.
-- No team-level data leaks to learners (matches the data-scoping rule already used in Deep Research / Chat).
+**3. Out of scope**
+- No backend/DB changes — points live in the hook seed.
+- No changes to other Cohort Hub cards.
+- No new achievement codes.
 
 ## Files
 
-- rewrite: `src/pages/ActionCentre.tsx`
-- create: `src/components/action-centre/ActionRow.tsx`
-- create: `src/components/action-centre/TimeBucketGroup.tsx`
-- create: `src/components/action-centre/AIRecommendationStream.tsx`
-- create: `src/components/action-centre/EmptyState.tsx`
-- create: `src/hooks/useActionCentreFeed.ts`
-- create: `src/lib/actionCentre/itemKinds.ts`
-- edit: `src/data/agentOneSeeds.ts` (add learner-side demo notifications for Clara/Sophie/Theo)
-
-## Out of scope
-
-- No new database tables, no realtime channel.
-- No bulk-select / multi-action toolbar.
-- No merge with the topbar bell — that stays a quick-peek; Action Centre stays the deep view.
-- AI History / "Path changes" stays where it is for now (already moved to a separate surface).
+- edit: `src/hooks/useCohortHub.ts`
+- edit: `src/pages/CohortHub.tsx`

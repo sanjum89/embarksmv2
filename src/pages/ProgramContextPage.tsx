@@ -21,6 +21,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import BackButton from "@/components/layout/BackButton";
+import PageHeader from "@/components/layout/PageHeader";
 import { TeamAvatar } from "@/components/team-home/Avatar";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,

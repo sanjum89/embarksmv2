@@ -46,7 +46,7 @@ export default function CohortHub() {
   const employeeId = user?.id ?? null;
   const employeesById = (normalizedAccount?.employeesById ?? {}) as any;
   const data = useCohortHub({ accountId, employeeId, employeesById });
-  const [view, setView] = useState<"editorial" | "cards">("editorial");
+  
   const [modal, setModal] = useState<null | { title: string; description?: string; meta?: any[]; teamsLink?: string; primaryLabel?: string }>(null);
 
   const sub = substitute;

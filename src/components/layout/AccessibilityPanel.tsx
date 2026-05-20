@@ -98,6 +98,12 @@ export function AccessibilityPanel({ trigger, expanded, side }: Props) {
             checked={a11y.underlineLinks}
             onChange={a11y.setUnderlineLinks}
           />
+          <ToggleRow
+            label="Reduce motion"
+            description="Turn off subtle page and list animations."
+            checked={a11y.reduceMotion}
+            onChange={a11y.setReduceMotion}
+          />
         </div>
       </PopoverContent>
     </Popover>
@@ -106,17 +112,24 @@ export function AccessibilityPanel({ trigger, expanded, side }: Props) {
 
 function ToggleRow({
   label,
+  description,
   checked,
   onChange,
 }: {
   label: string;
+  description?: string;
   checked: boolean;
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-center justify-between gap-3 cursor-pointer">
-      <span className="text-sm">{label}</span>
-      <Switch checked={checked} onCheckedChange={onChange} />
+    <label className="flex items-start justify-between gap-3 cursor-pointer">
+      <span className="flex flex-col">
+        <span className="text-sm">{label}</span>
+        {description && (
+          <span className="text-[0.7rem] text-muted-foreground leading-tight">{description}</span>
+        )}
+      </span>
+      <Switch checked={checked} onCheckedChange={onChange} className="mt-0.5" />
     </label>
   );
 }

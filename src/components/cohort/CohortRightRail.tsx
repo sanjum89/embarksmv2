@@ -1,10 +1,12 @@
 import { Card } from "@/components/ui/card";
-import { Pin, Sparkles } from "lucide-react";
-import type { HubAnnouncement, HubActivity } from "@/hooks/useCohortHub";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Pin, Sparkles, Trophy } from "lucide-react";
+import type { HubAnnouncement, HubActivity, HubLeaderboardRow } from "@/hooks/useCohortHub";
 
 interface Props {
   announcements: HubAnnouncement[];
   recentActivity: HubActivity[];
+  leaderboard: HubLeaderboardRow[];
   substitute: (s: string) => string;
 }
 
@@ -18,7 +20,11 @@ function fmtAgo(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
 }
 
-export function CohortRightRail({ announcements, recentActivity, substitute }: Props) {
+function initials(name: string) {
+  return name.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
+}
+
+export function CohortRightRail({ announcements, recentActivity, leaderboard, substitute }: Props) {
   return (
     <aside className="space-y-6 lg:sticky lg:top-20 lg:self-start" aria-label="Cohort feed">
       <Card className="p-5">
@@ -40,16 +46,35 @@ export function CohortRightRail({ announcements, recentActivity, substitute }: P
 
       <Card className="p-5">
         <div className="flex items-center justify-between">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Top of the class</div>
+          <Trophy className="h-4 w-4 text-accent" />
+        </div>
+        <h2 className="mt-1 font-display text-base font-bold">Cohort leaderboard</h2>
+        <div className="mt-3 space-y-1.5">
+          {leaderboard.length === 0 && <p className="text-sm text-muted-foreground">Leaderboard will populate as the cohort progresses.</p>}
+          {leaderboard.map((row) => (
+            <div key={row.employeeId} className={`flex items-center gap-2.5 rounded-md p-1.5 ${row.isYou ? "bg-primary/5 ring-1 ring-primary/20" : ""}`}>
+              <span className="w-4 text-xs text-muted-foreground tabular-nums">{row.rank}</span>
+              <Avatar className="h-6 w-6"><AvatarFallback className="text-[9px] bg-muted">{initials(row.name)}</AvatarFallback></Avatar>
+              <span className="flex-1 truncate text-xs font-medium">{row.isYou ? "You" : row.name}</span>
+              <span className="text-xs tabular-nums text-muted-foreground">{row.pct}%</span>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      <Card className="p-5">
+        <div className="flex items-center justify-between">
           <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Live</div>
-          <Sparkles className="h-4 w-4 text-amber-500" />
+          <Sparkles className="h-4 w-4 text-accent" />
         </div>
         <h2 className="mt-1 font-display text-base font-bold">Recent activity</h2>
         <div className="mt-3 space-y-2.5">
           {recentActivity.slice(0, 6).map((a) => (
             <div key={a.id} className="flex gap-2 text-sm">
               <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${
-                a.color === "amber" ? "bg-amber-500"
-                : a.color === "indigo" ? "bg-indigo-500"
+                a.color === "amber" ? "bg-accent"
+                : a.color === "indigo" ? "bg-primary"
                 : a.color === "emerald" ? "bg-emerald-500"
                 : "bg-muted-foreground"
               }`} />

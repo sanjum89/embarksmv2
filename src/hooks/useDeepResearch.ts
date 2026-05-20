@@ -304,6 +304,7 @@ export function useDeepResearch(args: {
   );
 
   return {
+    scope,
     threads,
     activeThread,
     activeThreadId,
@@ -316,6 +317,7 @@ export function useDeepResearch(args: {
     thinkingTrace,
     pins,
     pinAnswer,
+
     renamePin,
     unpin,
   };

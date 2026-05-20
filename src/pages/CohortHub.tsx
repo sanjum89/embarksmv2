@@ -13,6 +13,7 @@ import { JoinModal } from "@/components/cohort-hub/JoinModal";
 import {
   Users, Calendar, ChevronRight, Sparkles, Trophy, Award, MessageCircle,
   FileText, ArrowRight, AlertTriangle, CheckCircle2, Flag, BookOpen, Clock, Lock,
+  Flame, Target, GraduationCap, ShieldCheck, Star,
 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import PageHeader from "@/components/layout/PageHeader";

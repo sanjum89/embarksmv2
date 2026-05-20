@@ -61,17 +61,13 @@ export default function Dashboard() {
     completed: allTargets.filter((st) => st.progress === 100).length,
   };
 
-  /* ── Traditional UI layout ── */
   if (isTraditional) {
     return (
-      <div>
-        <div className="flex-1 px-10 py-8 max-w-5xl mx-auto">
-          {/* Header bar */}
-          <div className="flex items-center justify-between mb-8">
-            <h1 className="font-display text-2xl font-bold text-foreground">
-              Your Skill Targets
-            </h1>
-            <div className="flex items-center gap-3">
+      <div className="flex-1 overflow-y-auto">
+        <PageHeader
+          title="Your Skill Targets"
+          actions={
+            <>
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Status</span>
                 <div className="relative">
@@ -101,9 +97,10 @@ export default function Dashboard() {
                 <Search className="h-4 w-4" />
                 Browse
               </button>
-            </div>
-          </div>
-
+            </>
+          }
+        />
+        <div className="px-10 py-8 max-w-5xl mx-auto">
           {hasAnyTargets && targets.length > 0 ? (
             <div className="flex flex-col gap-4">
               {targets.map((target, i) => (
@@ -143,6 +140,7 @@ export default function Dashboard() {
       </div>
     );
   }
+
 
   /* ── New UI layout ── */
   return (

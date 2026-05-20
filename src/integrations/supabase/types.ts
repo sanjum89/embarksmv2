@@ -1514,6 +1514,60 @@ export type Database = {
           },
         ]
       }
+      persona_aspiration: {
+        Row: {
+          account_id: string
+          created_at: string
+          data: Json
+          id: string
+          persona_code: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          data?: Json
+          id?: string
+          persona_code: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          persona_code?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      persona_career_here: {
+        Row: {
+          account_id: string
+          created_at: string
+          data: Json
+          id: string
+          persona_code: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          data?: Json
+          id?: string
+          persona_code: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          persona_code?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       persona_competency_profiles: {
         Row: {
           account_id: string
@@ -1550,6 +1604,45 @@ export type Database = {
           short_rationale?: string | null
           updated_at?: string
           validation_needed?: boolean
+        }
+        Relationships: []
+      }
+      persona_manager_feedback: {
+        Row: {
+          account_id: string
+          author_label: string | null
+          body: string
+          created_at: string
+          display_order: number
+          feedback_at: string | null
+          id: string
+          persona_code: string
+          sentiment: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          author_label?: string | null
+          body: string
+          created_at?: string
+          display_order?: number
+          feedback_at?: string | null
+          id?: string
+          persona_code: string
+          sentiment?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          author_label?: string | null
+          body?: string
+          created_at?: string
+          display_order?: number
+          feedback_at?: string | null
+          id?: string
+          persona_code?: string
+          sentiment?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1592,6 +1685,135 @@ export type Database = {
           section_overrides?: Json
           updated_at?: string
           visible_to_learner?: boolean
+        }
+        Relationships: []
+      }
+      persona_potential_roles: {
+        Row: {
+          account_id: string
+          created_at: string
+          display_order: number
+          fit_percent: number
+          horizon_months: number | null
+          id: string
+          persona_code: string
+          rationale: string | null
+          role_title: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          display_order?: number
+          fit_percent?: number
+          horizon_months?: number | null
+          id?: string
+          persona_code: string
+          rationale?: string | null
+          role_title: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          display_order?: number
+          fit_percent?: number
+          horizon_months?: number | null
+          id?: string
+          persona_code?: string
+          rationale?: string | null
+          role_title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      persona_profile_basics: {
+        Row: {
+          account_id: string
+          created_at: string
+          data: Json
+          id: string
+          persona_code: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          data?: Json
+          id?: string
+          persona_code: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          persona_code?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      persona_stretch_tasks: {
+        Row: {
+          account_id: string
+          created_at: string
+          detail: string | null
+          display_order: number
+          id: string
+          persona_code: string
+          status: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          detail?: string | null
+          display_order?: number
+          id?: string
+          persona_code: string
+          status?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          detail?: string | null
+          display_order?: number
+          id?: string
+          persona_code?: string
+          status?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      persona_succession_notes: {
+        Row: {
+          account_id: string
+          created_at: string
+          data: Json
+          id: string
+          persona_code: string
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          data?: Json
+          id?: string
+          persona_code: string
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          persona_code?: string
+          updated_at?: string
         }
         Relationships: []
       }

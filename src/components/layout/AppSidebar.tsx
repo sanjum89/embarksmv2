@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, LogOut, LogIn, GitGraph, Type, Archive, Settings as SettingsIcon } from "lucide-react";
+import { Loader2, LogOut, LogIn, GitGraph, Type, Archive, Settings as SettingsIcon, Sparkles } from "lucide-react";
 import { AccessibilityPanel } from "@/components/layout/AccessibilityPanel";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -28,6 +28,7 @@ import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useTour } from "@/contexts/TourContext";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,
@@ -94,6 +95,7 @@ export function AppSidebar() {
   const { activeAccount } = useAccount();
   const { expanded, toggle } = useSidebarState();
   const { theme, toggleTheme, styleTheme, showLegacyModules } = useTheme();
+  const tour = useTour();
   const navigate = useNavigate();
   const location = useLocation();
   const [learningSpacesOpen, setLearningSpacesOpen] = useState(true);
@@ -382,6 +384,29 @@ export function AppSidebar() {
                 )
               }
             />
+
+            {/* Take a tour */}
+            {expanded ? (
+              <button
+                onClick={() => tour.start(0)}
+                className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors text-sm font-medium"
+              >
+                <Sparkles className="h-4 w-4 shrink-0" />
+                <span>Take a tour</span>
+              </button>
+            ) : (
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => tour.start(0)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8}>Take a tour</TooltipContent>
+              </Tooltip>
+            )}
 
             {/* Settings */}
             {expanded ? (
@@ -743,6 +768,29 @@ export function AppSidebar() {
             </button>
           }
         />
+
+        {/* Take a tour */}
+        {expanded ? (
+          <button
+            onClick={() => tour.start(0)}
+            className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors text-sm font-medium"
+          >
+            <Sparkles className="h-4 w-4 shrink-0" />
+            <span>Take a tour</span>
+          </button>
+        ) : (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={() => tour.start(0)}
+                className="flex h-10 w-10 items-center justify-center rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground transition-colors"
+              >
+                <Sparkles className="h-4 w-4" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right" sideOffset={8}>Take a tour</TooltipContent>
+          </Tooltip>
+        )}
 
         {/* Settings */}
         {expanded ? (

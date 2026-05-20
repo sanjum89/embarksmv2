@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Loader2, MessageSquare, Trash2, Pin, ChevronDown, ChevronRight, Microscope, type LucideIcon } from "lucide-react";
+import { Send, Loader2, MessageSquare, Trash2, Pin, ChevronDown, ChevronRight, Microscope } from "lucide-react";
 import { ResponseEnvelopeView } from "@/components/deep-research/ResponseEnvelopeView";
 import { ThinkingPanel } from "@/components/deep-research/ThinkingPanel";
 import type { PinnedAnswer } from "@/lib/deepResearch/envelope";

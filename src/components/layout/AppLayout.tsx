@@ -56,7 +56,7 @@ export function AppLayout() {
           </div>
         </main>
         <AIChatWrapper />
-        <TourLaunchButton />
+        
         <TourWelcomeBanner />
         <EmbarkTour />
       </div>

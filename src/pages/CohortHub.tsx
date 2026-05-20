@@ -231,9 +231,24 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                     <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">Chapter in progress · continue →</div>
                   </Link>
                   <div className="bg-card p-4">
-                    <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"><Lock className="h-3 w-3" /> Up next</div>
-                    <div className="mt-1 font-display text-xl font-bold text-foreground line-clamp-1">{nextGateTitle}</div>
-                    <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">Module gate · unlocks after this chapter</div>
+                    <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400"><Users className="h-3 w-3" /> Your mentor</div>
+                    {data.mentor ? (
+                      <>
+                        <div className="mt-1.5 flex items-center gap-2">
+                          <Avatar className="h-8 w-8"><AvatarFallback className="text-[10px] bg-muted">{initials(data.mentor.name)}</AvatarFallback></Avatar>
+                          <div className="min-w-0 flex-1">
+                            <div className="font-display text-sm font-bold leading-tight truncate text-foreground">{data.mentor.name}</div>
+                            <div className="text-[11px] text-muted-foreground truncate">{data.mentor.title}</div>
+                          </div>
+                        </div>
+                        <div className="mt-2 flex gap-1.5">
+                          <Button size="sm" variant="outline" className="flex-1 h-7 text-xs px-2" onClick={mentorMessage}><MessageCircle className="mr-1 h-3 w-3" />Message</Button>
+                          <Button size="sm" className="flex-1 h-7 text-xs px-2" onClick={mentorBook}>Book</Button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="mt-1 text-xs text-muted-foreground">No mentor assigned yet.</div>
+                    )}
                   </div>
                 </div>
               </Card>

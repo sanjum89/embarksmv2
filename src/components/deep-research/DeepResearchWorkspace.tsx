@@ -23,7 +23,7 @@ interface Props {
   authorId: string;
   starters: DeepResearchStarter[];
   startersHeading?: string;
-  emptyState: { title: string; subtitle: string; icon?: LucideIcon };
+  emptyState: { title: string; subtitle: string; icon?: React.ElementType };
   /** Optional: navigate to thread URL when one is picked. Omit for in-page state only. */
   onSelectThread?: (threadId: string) => void;
   /** Optional callback when New thread is created (e.g. for URL sync). */

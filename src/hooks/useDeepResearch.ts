@@ -169,12 +169,16 @@ export function useDeepResearch(args: {
 
       let envelope: ResponseEnvelope | null = null;
 
-      if (isShowcaseAccount(accountName)) {
+      if (scope === "personal") {
+        const match = findLearnerShowcaseMatch(prompt);
+        if (match) envelope = match.envelope;
+      } else if (isShowcaseAccount(accountName)) {
         const match = findShowcaseMatch(prompt);
         if (match) {
           envelope = match.envelope;
         }
       }
+
 
       if (!envelope) {
         try {

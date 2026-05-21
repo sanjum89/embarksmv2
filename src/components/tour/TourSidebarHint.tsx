@@ -67,7 +67,7 @@ export function TourSidebarHint({ children, side: _side = "right" }: Props) {
   return (
     <>
       <div ref={wrapperRef} className="relative inline-flex">
-        {!seen && !tour.open && (
+        {visible && (
           <span className="pointer-events-none absolute -right-0.5 -top-0.5 z-10 flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-70" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary" />

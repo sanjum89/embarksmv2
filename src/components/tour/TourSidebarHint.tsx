@@ -68,7 +68,7 @@ export function TourSidebarHint({ children, side: _side = "right", className }: 
 
   return (
     <>
-      <div ref={wrapperRef} className={`relative inline-flex items-center justify-center ${className ?? ""}`}>
+      <div ref={wrapperRef} className={`relative flex items-center justify-center ${className ?? ""}`}>
         {visible && (
           <span className="pointer-events-none absolute -right-0.5 -top-0.5 z-10 flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-70" />

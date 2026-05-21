@@ -395,7 +395,8 @@ export function AppSidebar() {
             />
 
             {/* Take a tour */}
-            <TourSidebarHint>
+            <TourSidebarHint className={expanded ? "w-full" : "h-9 w-9"}>
+
               {expanded ? (
                 <button
                   onClick={() => tour.start(0)}
@@ -784,7 +785,7 @@ export function AppSidebar() {
         />
 
         {/* Take a tour */}
-        <TourSidebarHint>
+        <TourSidebarHint className={expanded ? "w-full" : "h-10 w-10"}>
           {expanded ? (
             <button
               onClick={() => tour.start(0)}

@@ -364,7 +364,7 @@ export function AppSidebar() {
                 <span>{theme === "light" ? "Light mode" : "Dark mode"}</span>
               </button>
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center">
+              <div className="flex w-full h-9 items-center justify-center">
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
                     <button
@@ -391,7 +391,7 @@ export function AppSidebar() {
                 }
               />
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center">
+              <div className="flex w-full h-9 items-center justify-center">
                 <AccessibilityPanel
                   expanded={expanded}
                   trigger={
@@ -415,7 +415,7 @@ export function AppSidebar() {
                 </button>
               </TourSidebarHint>
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center">
+              <div className="flex w-full h-9 items-center justify-center">
                 <TourSidebarHint className="h-9 w-9">
                   <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>
@@ -445,7 +445,7 @@ export function AppSidebar() {
                 <span>Settings</span>
               </NavLink>
             ) : (
-              <div className="flex h-9 w-9 items-center justify-center">
+              <div className="flex w-full h-9 items-center justify-center">
                 <Tooltip delayDuration={0}>
                   <TooltipTrigger asChild>
                     <NavLink
@@ -767,7 +767,7 @@ export function AppSidebar() {
             <span>{theme === "dark" ? "Dark mode" : "Light mode"}</span>
           </button>
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center">
+          <div className="flex w-full h-10 items-center justify-center">
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <button
@@ -796,7 +796,7 @@ export function AppSidebar() {
             }
           />
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center">
+          <div className="flex w-full h-10 items-center justify-center">
             <AccessibilityPanel
               expanded={expanded}
               trigger={
@@ -820,7 +820,7 @@ export function AppSidebar() {
             </button>
           </TourSidebarHint>
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center">
+          <div className="flex w-full h-10 items-center justify-center">
             <TourSidebarHint className="h-10 w-10">
               <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
@@ -852,7 +852,7 @@ export function AppSidebar() {
             <span>Settings</span>
           </NavLink>
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center">
+          <div className="flex w-full h-10 items-center justify-center">
             <Tooltip delayDuration={0}>
               <TooltipTrigger asChild>
                 <NavLink

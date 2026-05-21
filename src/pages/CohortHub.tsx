@@ -286,7 +286,7 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
 
               {/* Recommended actions + Achievements */}
               <div className="grid gap-6 lg:grid-cols-3">
-                <Card className="p-6 lg:col-span-2">
+                <Card className="p-6 lg:col-span-1">
                   <div className="flex items-center justify-between">
                     <h2 className="font-display text-lg font-bold">Recommended actions</h2>
                     <Sparkles className="h-4 w-4 text-amber-500" />
@@ -302,7 +302,8 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                   </div>
                 </Card>
 
-                <Card className="relative overflow-hidden p-6 flex flex-col">
+                <Card className="relative overflow-hidden p-6 flex flex-col lg:col-span-2">
+
                   {/* decorative glows */}
                   <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-400/20 blur-3xl" />
                   <div className="pointer-events-none absolute -bottom-12 -left-8 h-28 w-28 rounded-full bg-primary/10 blur-3xl" />

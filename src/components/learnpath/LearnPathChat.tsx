@@ -104,7 +104,7 @@ export function EmbarkChat() {
   // Cohort journey (new model). Falls back to {} when learner has no enrollment.
   const linkedEmployeeId =
     normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
-  const { journey } = useLearnerJourney(activeAccountId, linkedEmployeeId);
+  const { journey, isLoading: journeyLoading } = useLearnerJourney(activeAccountId, linkedEmployeeId);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");

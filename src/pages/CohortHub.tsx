@@ -290,8 +290,9 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
               </Card>
 
               {/* Recommended actions + Achievements */}
-              <div className="grid gap-6 lg:grid-cols-3">
-                <Card className="p-6 lg:col-span-1">
+              <div className="grid gap-6 lg:grid-cols-2">
+                <Card className="p-6">
+
                   <div className="flex items-center justify-between">
                     <h2 className="font-display text-lg font-bold">Recommended actions</h2>
                     <Sparkles className="h-4 w-4 text-amber-500" />

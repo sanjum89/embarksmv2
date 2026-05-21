@@ -313,25 +313,6 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                     ))}
                   </div>
 
-                  <div className="mt-6 space-y-2 border-t border-border/60 pt-5">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      <Pin className="h-3 w-3" /> Pinned answers
-                    </div>
-                    {pinned.length === 0 ? (
-                      <div className="rounded-lg border border-dashed border-border/60 p-3 text-xs text-muted-foreground">
-                        Pin Agent One answers here to jump back to them later.
-                      </div>
-                    ) : (
-                      pinned.map((p) => (
-                        <PinnedRow
-                          key={p.id}
-                          title={p.title}
-                          preview={p.preview}
-                          onRemove={() => setPinned((s) => s.filter((x) => x.id !== p.id))}
-                        />
-                      ))
-                    )}
-                  </div>
                 </Card>
 
 

@@ -56,7 +56,7 @@ export function PeopleToConnect({ peopleSimilar, peerMatches, onConnect }: Props
                     <Sparkles className="h-2.5 w-2.5" /> Same topic
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-accent/50 bg-accent/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-300">
                     <UserPlus className="h-2.5 w-2.5" /> Peer match
                   </span>
                 )}

@@ -37,54 +37,50 @@ export function JourneyTrackCards({ tracks, activeCode, onSelect }: Props) {
   const totalPages = pages.length;
   const safePage = Math.min(page, totalPages - 1);
   const visible = pages[safePage] ?? [];
+  const hasPrev = safePage > 0;
+  const hasNext = safePage < totalPages - 1;
 
   return (
     <div className="pt-2">
-      {/* Desktop: paged 3-up grid */}
-      <div className="hidden sm:block">
+      {/* Desktop: paged 3-up grid with side rails */}
+      <div className="hidden sm:flex items-stretch gap-2">
+        {hasPrev && (
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            aria-label="Previous tracks"
+            className={cn(
+              "shrink-0 w-9 self-stretch flex items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground transition-colors",
+              "hover:bg-accent/10 hover:border-accent/40 hover:text-foreground",
+            )}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+        )}
+
         <StaggerList
           key={safePage}
-          className="grid grid-cols-3 gap-3"
+          className="flex-1 min-w-0 grid grid-cols-3 gap-3 items-stretch"
         >
           {visible.map((t) => (
-            <StaggerItem key={t.code}>
+            <StaggerItem key={t.code} className="h-full">
               <TrackCard t={t} isActive={t.code === activeCode} onSelect={onSelect} />
             </StaggerItem>
           ))}
         </StaggerList>
 
-        {totalPages > 1 && (
-          <div className="mt-3 flex items-center justify-end gap-2">
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={safePage === 0}
-              aria-label="Previous tracks"
-              className={cn(
-                "inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors",
-                "hover:bg-accent/10 hover:border-accent/40",
-                "disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-card disabled:hover:border-border",
-              )}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <span className="text-xs tabular-nums text-muted-foreground min-w-[2.5rem] text-center">
-              {safePage + 1} / {totalPages}
-            </span>
-            <button
-              type="button"
-              onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
-              disabled={safePage === totalPages - 1}
-              aria-label="Next tracks"
-              className={cn(
-                "inline-flex h-8 w-8 items-center justify-center rounded-full border border-border bg-card text-foreground transition-colors",
-                "hover:bg-accent/10 hover:border-accent/40",
-                "disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-card disabled:hover:border-border",
-              )}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
+        {hasNext && (
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+            aria-label="Next tracks"
+            className={cn(
+              "shrink-0 w-9 self-stretch flex items-center justify-center rounded-2xl border border-border bg-card text-muted-foreground transition-colors",
+              "hover:bg-accent/10 hover:border-accent/40 hover:text-foreground",
+            )}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         )}
       </div>
 
@@ -136,13 +132,24 @@ function TrackCard({ t, isActive, onSelect }: TrackCardProps) {
         <span
           className={cn(
             "text-[10px] uppercase tracking-wider font-semibold",
-            isActive ? "text-accent" : isCompleted ? "text-muted-foreground" : "text-accent",
+            isActive
+              ? "text-primary-foreground/80"
+              : isCompleted
+              ? "text-muted-foreground"
+              : "text-accent",
           )}
         >
           {eyebrow}
         </span>
         {isCompleted && (
-          <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-500/15 text-green-600">
+          <span
+            className={cn(
+              "inline-flex h-5 w-5 items-center justify-center rounded-full",
+              isActive
+                ? "bg-primary-foreground/15 text-primary-foreground"
+                : "bg-green-500/15 text-green-600",
+            )}
+          >
             <Check className="h-3 w-3" />
           </span>
         )}
@@ -150,7 +157,7 @@ function TrackCard({ t, isActive, onSelect }: TrackCardProps) {
 
       <h3
         className={cn(
-          "mt-1.5 font-display text-base font-semibold leading-snug line-clamp-2",
+          "mt-1.5 font-display text-base font-semibold leading-snug line-clamp-2 min-h-[2.6em]",
           isActive ? "text-primary-foreground" : "text-foreground",
         )}
       >

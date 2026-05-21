@@ -47,6 +47,7 @@ export function SkillsTab({ data }: Props) {
   }, [data.competencyCatalog]);
 
   const [filter, setFilter] = useState<SourceKey | "all">("all");
+  const [levelBucket, setLevelBucket] = useState<"all" | "strengths" | "growing" | "gaps">("all");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const toggle = (code: string) =>
     setExpanded((s) => {
@@ -55,9 +56,27 @@ export function SkillsTab({ data }: Props) {
       return n;
     });
 
+  const matchesBucket = (lvl: number) =>
+    levelBucket === "all" ||
+    (levelBucket === "strengths" && lvl >= 4) ||
+    (levelBucket === "growing" && lvl === 3) ||
+    (levelBucket === "gaps" && lvl <= 2);
+
   const visible = topLevel
     .filter((p) => filter === "all" || p.source === filter)
+    .filter((p) => matchesBucket(p.current_level))
     .sort((a, b) => b.current_level - a.current_level);
+
+  // Auto-expand top 3 strengths + top 3 gaps on first render so sub-skills are visible.
+  const autoExpanded = useMemo(() => {
+    const sorted = [...topLevel].sort((a, b) => b.current_level - a.current_level);
+    const strengths = sorted.slice(0, 3).map((r) => r.capability_code);
+    const gaps = [...topLevel].sort((a, b) => a.current_level - b.current_level).slice(0, 3).map((r) => r.capability_code);
+    return new Set([...strengths, ...gaps]);
+  }, [topLevel]);
+
+  const isExpanded = (code: string) => expanded.has(code) || (autoExpanded.has(code) && expanded.size === 0);
+
 
   return (
     <div className="space-y-5">

@@ -44,6 +44,21 @@ interface ChatMessage {
 const LEARNPATH_CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/learnpath-chat`;
 const MAX_TRANSCRIPT_CONTEXT_CHARS = 5000;
 
+/**
+ * Lightly clean assistant text so paragraphs render with breathing room.
+ * - Collapse 3+ blank lines to 2.
+ * - If the model returned no paragraph breaks at all, insert one after
+ *   sentence-ending punctuation that's immediately followed by a capital
+ *   letter (a heuristic; safe because remark-breaks handles single \n too).
+ */
+function normalizeAssistantText(raw: string): string {
+  let s = raw.replace(/\n{3,}/g, "\n\n");
+  if (!/\n\n/.test(s) && s.length > 280) {
+    s = s.replace(/([.?!])\s+(?=[A-Z])/g, "$1\n\n");
+  }
+  return s;
+}
+
 function createMessageId(prefix: string) {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return `${prefix}-${crypto.randomUUID()}`;

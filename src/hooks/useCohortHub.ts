@@ -179,11 +179,12 @@ export function useCohortHub({ accountId, employeeId, employeesById }: UseArgs):
   });
 
   const empName = useCallback(
-    (id: string) => employeesById[id]?.name || id,
+    (id: string) => employeesById[id]?.name || SUPPORT_NAMES[id]?.name || id,
     [employeesById]
   );
-  const empTitle = useCallback((id: string) => employeesById[id]?.title || "", [employeesById]);
+  const empTitle = useCallback((id: string) => employeesById[id]?.title || SUPPORT_NAMES[id]?.title || "", [employeesById]);
   const empAvatar = useCallback((id: string) => employeesById[id]?.avatarUrl, [employeesById]);
+
 
   useEffect(() => {
     if (!accountId || !employeeId) {

@@ -57,7 +57,7 @@ export function PeopleToConnect({ peopleSimilar, peerMatches, onConnect }: Props
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-1 rounded-full border border-accent/50 bg-accent/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-accent">
-                    <UserPlus className="h-2.5 w-2.5" /> Mentor match
+                    <UserPlus className="h-2.5 w-2.5" /> Peer match
                   </span>
                 )}
                 {p.reason && (

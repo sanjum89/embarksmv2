@@ -1,40 +1,59 @@
-## Finish the standardised entrance animations rollout
+# Cohort Hub copy & header consistency fixes
 
-The motion infrastructure already shipped:
-- `src/components/motion/Motion.tsx` — exports `PageTransition`, `StaggerList`, `StaggerItem`, `SectionReveal`, `useReducedMotion`, shared `MOTION` timing constants.
-- `AppLayout.tsx` wraps `<Outlet />` in `<PageTransition keyed by pathname>`, so every route already has a baseline fade+rise.
-- `AccessibilityContext` exposes `reduceMotion` and toggles a `no-motion` class on `<html>`; Motion primitives respect it.
+Four small but visible polish issues across Cohort Hub.
 
-What's missing: the **per-page list/grid stagger retrofits**. Only `RolePlayBank.tsx` uses `StaggerList`/`StaggerItem` today, so pages like Cohort Hub, Dashboard, My 360, Manager screens still feel flat after the initial page fade.
+## 1. Match the "Cohort vs you" header to the "Co-learning" pattern
+**File:** `src/pages/CohortHub.tsx` (line 376)
 
-### Pages to retrofit (one main grid each)
+Today it's a single `<h2>` line: `Cohort vs you · progress by module`.
+Co-learning uses a two-line block: bold title + small muted subtitle (see `CoLearningTimeline.tsx:99-101`).
 
-For each page, wrap the most prominent repeating grid in `<StaggerList>` and convert each child into a `<StaggerItem index={i}>`. No layout, data, or styling changes — just the wrapper.
+Replace with the same structure:
 
-1. `src/pages/CohortHub.tsx` — module progress list + co-learning timeline + achievements grid.
-2. `src/pages/Dashboard.tsx` — main KPI / shortcut cards row.
-3. `src/pages/NewMy360.tsx` — radar/skills grid inside Overview and Skills tabs.
-4. `src/pages/ActionCentre.tsx` — `TimeBucketGroup` rows (each bucket fades in, items stagger inside).
-5. `src/pages/ManagerView.tsx` + `src/pages/TeamDashboard.tsx` + `src/pages/TeamInsights.tsx` — primary card grids.
-6. `src/pages/ManagerSkillTargets.tsx` + `src/pages/SkillTargetDetail.tsx` + `src/pages/SkillTargetBuilder.tsx` — top card lists.
-7. `src/pages/PeopleGraphIntelligence.tsx` — node/insight column.
-8. `src/pages/DeepResearch.tsx` — starter chips + result blocks.
-9. `src/pages/Settings.tsx`, `src/pages/DevTools.tsx`, `src/pages/AdminView.tsx`, `src/pages/ProgramContextPage.tsx` — main section list.
-10. `src/pages/AssessmentPage.tsx` — question card transition between steps via `SectionReveal`.
-11. `src/pages/LearnerChat.tsx` — already uses inline motion for the 6 tiles; swap to `StaggerList`/`StaggerItem` for consistency.
+```tsx
+<div>
+  <h2 className="font-display text-lg font-bold">Cohort vs you</h2>
+  <p className="text-xs text-muted-foreground">Progress by track — your completion vs the cohort average across each learning track.</p>
+</div>
+```
 
-### Cleanup
-- Remove ad-hoc `motion.div initial/animate` blocks that duplicate `StaggerItem` behaviour (LearnerChat tiles, any My 360 inline fades, Role Play already done).
-- Keep loading skeletons, modals, popovers, tour overlays untouched.
+Note: copy says **track**, not module (the data is grouped by `learning_track`, see `useCohortHub.ts` `moduleProgress`).
 
-### Constants (already in `MOTION`)
-`DURATION 0.35` · `PAGE_DURATION 0.3` · `STAGGER 0.06` · `RISE 12` · `PAGE_RISE 8` · ease `[0.22, 1, 0.36, 1]`.
+## 2. Peer match (not Mentor match)
+**File:** `src/components/cohort/PeopleToConnect.tsx` (line 60)
 
-### Out of scope
-- New animations on modals, tooltips, sheets — shadcn defaults stay.
-- Chat stream typewriter / Embark AI assistant typing.
-- Tour overlay, login screen.
-- Any data, routing, or visual changes beyond mount transitions.
+Change pill text from `Mentor match` → `Peer match`. Icon (`UserPlus`) and colour stay the same. The accompanying line "Mentor-recommended pair" in `useCohortHub.ts:309` stays — it correctly describes *who* recommended the pair (the mentor), but the pair itself is peer↔peer.
 
-### Result
-Every route gets a baseline page fade *and* its main grid staggers in, consistent across learner, manager, and admin views. Users with reduce-motion on (OS or in-app accessibility toggle) see no animation.
+## 3 & 4. Replace `rb-mentor-1` / `rb-mgr-1` raw IDs with real names
+**Root cause:** `cohort_announcements.author_employee_id` and `mentor_assignments.mentor_employee_id` store demo IDs (`rb-mentor-1`, `rb-mgr-1`) that have no matching row in the normalized employees map, so `empName(id)` in `useCohortHub.ts` falls back to the raw ID.
+
+The Rathbones workforce only defines `rb-l1..rb-l9` as personas — `rb-mentor-1` and `rb-mgr-1` are standalone supporting characters with no persona record.
+
+**Fix:** Add a small static lookup inside `useCohortHub.ts` for these Rathbones-only support roles, applied as a final fallback inside `empName`:
+
+```ts
+const SUPPORT_NAMES: Record<string, { name: string; title: string }> = {
+  "rb-mentor-1": { name: "Margaret Atherton", title: "Embark Mentor — Wealth Strategy" },
+  "rb-mgr-1":    { name: "Edward Whitfield",  title: "Cohort Lead — Investment Management" },
+};
+
+const empName  = (id: string) => employeesById[id]?.name  || SUPPORT_NAMES[id]?.name  || id;
+const empTitle = (id: string) => employeesById[id]?.title || SUPPORT_NAMES[id]?.title || "";
+```
+
+Both names already appear elsewhere in the seeded activity feed (`Margaret Atherton`, `Edward Whitfield` in `activitySeed`), so this is consistent with the existing narrative.
+
+This single change fixes:
+- **Image 3** — `YOUR MENTOR` card now shows "Margaret Atherton · Embark Mentor — Wealth Strategy".
+- **Image 4** — `Cohort announcements` rows show "Edward Whitfield · Cohort Lead" and "Margaret Atherton · Mentor".
+- Also fixes the mentor name in any modal opened from the mentor card (already routes through `empName`).
+
+## Out of scope
+- No DB writes/migrations — IDs in the database stay as-is; only the display layer is patched.
+- No layout/structural changes beyond the one header in §1.
+- No changes to the achievements/KPI strip work (separate plans).
+
+## Files touched
+- `src/pages/CohortHub.tsx` — header in the "Cohort vs you" card
+- `src/components/cohort/PeopleToConnect.tsx` — pill label
+- `src/hooks/useCohortHub.ts` — `SUPPORT_NAMES` fallback for `empName` / `empTitle`

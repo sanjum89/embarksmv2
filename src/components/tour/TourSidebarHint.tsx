@@ -1,11 +1,8 @@
 import { ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Sparkles, X } from "lucide-react";
-import { useUser } from "@/contexts/UserContext";
 import { useTour } from "@/contexts/TourContext";
 import { useShowTourEntryPoints } from "./useShowTourEntryPoints";
-
-const storageKey = (uid: string) => `embark_tour_seen::${uid}`;
 
 interface Props {
   children: ReactNode;
@@ -13,39 +10,26 @@ interface Props {
 }
 
 /**
- * Wraps the sidebar "Take a tour" button. On first login for eligible
+ * Wraps the sidebar "Take a tour" button. On every page load for eligible
  * personas, a floating callout pops out next to the sparkle icon prompting
- * the user to start the guided tour.
- *
- * The callout is rendered via a portal so the surrounding sidebar's
- * `overflow-hidden` and fixed width don't clip it, and so the wrapper
- * itself does not affect the alignment of adjacent sidebar icons.
+ * the user to start the guided tour. Dismissing hides it until the next
+ * full page refresh (no persistence).
  */
 export function TourSidebarHint({ children, side: _side = "right" }: Props) {
-  const { user } = useUser();
   const tour = useTour();
   const show = useShowTourEntryPoints();
   const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const [visible, setVisible] = useState(false);
-  const [seen, setSeen] = useState(true);
+  const [dismissed, setDismissed] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
 
   useEffect(() => {
     if (!show) return;
-    let s = true;
-    try {
-      s = localStorage.getItem(storageKey(user.id)) === "1";
-    } catch {}
-    setSeen(s);
-    if (!s) {
-      const t = setTimeout(() => setVisible(true), 600);
-      return () => clearTimeout(t);
-    }
-  }, [show, user.id]);
+    const t = setTimeout(() => setMounted(true), 600);
+    return () => clearTimeout(t);
+  }, [show]);
 
-  useEffect(() => {
-    if (tour.open) setVisible(false);
-  }, [tour.open]);
+  const visible = show && mounted && !dismissed && !tour.open;
 
   const updateCoords = useCallback(() => {
     const el = wrapperRef.current;
@@ -70,11 +54,7 @@ export function TourSidebarHint({ children, side: _side = "right" }: Props) {
 
   const dismiss = (e?: React.MouseEvent) => {
     e?.stopPropagation();
-    try {
-      localStorage.setItem(storageKey(user.id), "1");
-    } catch {}
-    setSeen(true);
-    setVisible(false);
+    setDismissed(true);
   };
 
   const startTour = () => {

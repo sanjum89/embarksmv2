@@ -344,7 +344,7 @@ export function AppSidebar() {
             })}
           </nav>
 
-          {/* Bottom section — collapsed uses items-center so each child shrinks to icon width (keeps tooltips + popouts anchored to the button) */}
+          {/* Bottom section — collapsed wraps every child in an identical 36px shell so all icons sit in the exact same column */}
           <div
             className={cn(
               "w-full pb-3",
@@ -364,40 +364,48 @@ export function AppSidebar() {
                 <span>{theme === "light" ? "Light mode" : "Dark mode"}</span>
               </button>
             ) : (
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={toggleTheme}
-                    className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors"
-                  >
-                    {theme === "light" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>{theme === "light" ? "Switch to dark mode" : "Switch to light mode"}</TooltipContent>
-              </Tooltip>
+              <div className="flex h-9 w-9 items-center justify-center">
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={toggleTheme}
+                      className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors"
+                    >
+                      {theme === "light" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={8}>{theme === "light" ? "Switch to dark mode" : "Switch to light mode"}</TooltipContent>
+                </Tooltip>
+              </div>
             )}
 
             {/* Accessibility */}
-            <AccessibilityPanel
-              expanded={expanded}
-              trigger={
-                expanded ? (
+            {expanded ? (
+              <AccessibilityPanel
+                expanded={expanded}
+                trigger={
                   <button className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors text-sm font-medium">
                     <Type className="h-4 w-4 shrink-0" />
                     <span>Accessibility</span>
                   </button>
-                ) : (
-                  <button className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors">
-                    <Type className="h-4 w-4" />
-                  </button>
-                )
-              }
-            />
+                }
+              />
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center">
+                <AccessibilityPanel
+                  expanded={expanded}
+                  trigger={
+                    <button className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors">
+                      <Type className="h-4 w-4" />
+                    </button>
+                  }
+                />
+              </div>
+            )}
 
             {/* Take a tour */}
-            <TourSidebarHint className={expanded ? "w-full" : "h-9 w-9"}>
-
-              {expanded ? (
+            {expanded ? (
+              <TourSidebarHint className="w-full">
                 <button
                   onClick={() => tour.start(0)}
                   className="flex items-center gap-3 w-full px-3 h-9 rounded-lg text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors text-sm font-medium"
@@ -405,20 +413,24 @@ export function AppSidebar() {
                   <Sparkles className="h-4 w-4 shrink-0" />
                   <span>Take a tour</span>
                 </button>
-              ) : (
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={() => tour.start(0)}
-                      className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors"
-                    >
-                      <Sparkles className="h-4 w-4" />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right" sideOffset={8}>Take a tour</TooltipContent>
-                </Tooltip>
-              )}
-            </TourSidebarHint>
+              </TourSidebarHint>
+            ) : (
+              <div className="flex h-9 w-9 items-center justify-center">
+                <TourSidebarHint className="h-9 w-9">
+                  <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={() => tour.start(0)}
+                        className="flex h-9 w-9 items-center justify-center rounded-full text-muted-foreground hover:bg-white/50 hover:text-foreground transition-colors"
+                      >
+                        <Sparkles className="h-4 w-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={8}>Take a tour</TooltipContent>
+                  </Tooltip>
+                </TourSidebarHint>
+              </div>
+            )}
 
             {/* Settings */}
             {expanded ? (
@@ -433,20 +445,22 @@ export function AppSidebar() {
                 <span>Settings</span>
               </NavLink>
             ) : (
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <NavLink
-                    to="/settings"
-                    className={({ isActive }) => cn(
-                      "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
-                      isActive ? "bg-white/60 text-foreground" : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
-                    )}
-                  >
-                    <SettingsIcon className="h-4 w-4" />
-                  </NavLink>
-                </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8}>Settings</TooltipContent>
-              </Tooltip>
+              <div className="flex h-9 w-9 items-center justify-center">
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <NavLink
+                      to="/settings"
+                      className={({ isActive }) => cn(
+                        "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
+                        isActive ? "bg-white/60 text-foreground" : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
+                      )}
+                    >
+                      <SettingsIcon className="h-4 w-4" />
+                    </NavLink>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" sideOffset={8}>Settings</TooltipContent>
+                </Tooltip>
+              </div>
             )}
 
 

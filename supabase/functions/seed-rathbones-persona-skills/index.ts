@@ -445,7 +445,6 @@ Deno.serve(async (req) => {
             persona_code: personaCode,
             competency_id: r.code,
             current_level: r.level,
-            source: r.source,
             confidence: r.confidence,
             short_rationale: r.rationale,
             validation_needed: r.source === "pending",

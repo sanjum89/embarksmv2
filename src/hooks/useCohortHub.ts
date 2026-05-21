@@ -151,6 +151,15 @@ function initials(name: string) {
   return name.split(/\s+/).map((p) => p[0]).slice(0, 2).join("").toUpperCase();
 }
 
+// Support roles that exist in the demo data (cohort_announcements, mentor_assignments)
+// but have no persona/employee record — provide friendly display names so the UI
+// never falls back to raw IDs like "rb-mentor-1".
+const SUPPORT_NAMES: Record<string, { name: string; title: string }> = {
+  "rb-mentor-1": { name: "Margaret Atherton", title: "Embark Mentor — Wealth Strategy" },
+  "rb-mgr-1": { name: "Edward Whitfield", title: "Cohort Lead — Investment Management" },
+};
+
+
 export function useCohortHub({ accountId, employeeId, employeesById }: UseArgs): CohortHubData {
   const [tick, setTick] = useState(0);
   const refresh = useCallback(() => setTick((t) => t + 1), []);

@@ -161,7 +161,7 @@ interface BodyProps {
 function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorMessage, mentorBook }: BodyProps) {
   const [params, setParams] = useSearchParams();
   const [achPage, setAchPage] = useState(0);
-  const ACH_PAGE_SIZE = 8;
+  const ACH_PAGE_SIZE = 6;
 
   const tab = params.get("tab") === "adapted-path" ? "adapted-path" : "overview";
   const setTab = (v: string) => {

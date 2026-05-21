@@ -7,7 +7,9 @@ import { useShowTourEntryPoints } from "./useShowTourEntryPoints";
 interface Props {
   children: ReactNode;
   side?: "right" | "top";
+  className?: string;
 }
+
 
 /**
  * Wraps the sidebar "Take a tour" button. On every page load for eligible
@@ -15,7 +17,7 @@ interface Props {
  * the user to start the guided tour. Dismissing hides it until the next
  * full page refresh (no persistence).
  */
-export function TourSidebarHint({ children, side: _side = "right" }: Props) {
+export function TourSidebarHint({ children, side: _side = "right", className }: Props) {
   const tour = useTour();
   const show = useShowTourEntryPoints();
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -66,7 +68,7 @@ export function TourSidebarHint({ children, side: _side = "right" }: Props) {
 
   return (
     <>
-      <div ref={wrapperRef} className="relative inline-flex">
+      <div ref={wrapperRef} className={`relative inline-flex items-center justify-center ${className ?? ""}`}>
         {visible && (
           <span className="pointer-events-none absolute -right-0.5 -top-0.5 z-10 flex h-2.5 w-2.5">
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-70" />

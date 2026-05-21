@@ -621,7 +621,7 @@ export function EmbarkChat() {
 
     setMessages([greetMessage, assistantPlaceholder]);
     void sendToAI([greetMessage], assistantId);
-  }, [buildContext, hasGreeted, messages.length, sendToAI]);
+  }, [buildContext, hasGreeted, messages.length, sendToAI, journeyLoading]);
 
   const handleSend = (overrideText?: string) => {
     const text = (overrideText ?? input).trim();

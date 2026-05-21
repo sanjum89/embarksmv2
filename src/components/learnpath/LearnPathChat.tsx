@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Send, Loader2, Sparkles, Settings2, Lightbulb, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
 import { cn } from "@/lib/utils";
 import { EmbarkRichBlock, parseEmbarkRichBlocks, type InlineQuizResult } from "./LearnPathRichBlock";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,21 @@ interface ChatMessage {
 
 const LEARNPATH_CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/learnpath-chat`;
 const MAX_TRANSCRIPT_CONTEXT_CHARS = 5000;
+
+/**
+ * Lightly clean assistant text so paragraphs render with breathing room.
+ * - Collapse 3+ blank lines to 2.
+ * - If the model returned no paragraph breaks at all, insert one after
+ *   sentence-ending punctuation that's immediately followed by a capital
+ *   letter (a heuristic; safe because remark-breaks handles single \n too).
+ */
+function normalizeAssistantText(raw: string): string {
+  let s = raw.replace(/\n{3,}/g, "\n\n");
+  if (!/\n\n/.test(s) && s.length > 280) {
+    s = s.replace(/([.?!])\s+(?=[A-Z])/g, "$1\n\n");
+  }
+  return s;
+}
 
 function createMessageId(prefix: string) {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -832,7 +848,7 @@ Keep it to 2-4 short sentences plus a one-line closing question.`,
         <EngagementSettingsButton />
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-5">
         {visibleMessages.map((message, idx) => {
           const isLastAssistant =
             message.role === "assistant" &&
@@ -845,12 +861,12 @@ Keep it to 2-4 short sentences plus a one-line closing question.`,
               >
                 <div
                   className={cn(
-                    "max-w-[85%] min-w-0 rounded-xl px-3.5 py-2.5 text-sm break-words overflow-hidden",
+                    "min-w-0 break-words overflow-hidden",
                     message.role === "user"
-                      ? "bg-primary text-primary-foreground"
+                      ? "max-w-[85%] rounded-xl px-3.5 py-2.5 text-sm bg-primary text-primary-foreground"
                       : message.isNudge
-                        ? "bg-accent/10 border border-accent/30 text-foreground"
-                        : "bg-muted text-foreground"
+                        ? "max-w-[92%] rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed bg-accent/10 border border-accent/30 text-foreground"
+                        : "max-w-[92%] rounded-2xl px-4 py-3 text-[0.9375rem] leading-relaxed bg-muted text-foreground"
                   )}
                 >
                   {message.role === "assistant" ? (
@@ -858,12 +874,14 @@ Keep it to 2-4 short sentences plus a one-line closing question.`,
                       {message.isNudge && (
                         <Lightbulb className="h-4 w-4 text-accent shrink-0 mt-0.5" />
                       )}
-                      <div className="prose prose-sm dark:prose-invert max-w-none min-w-0 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0 flex-1">
+                      <div className="max-w-none min-w-0 flex-1 [&_p]:my-2 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:my-2 [&_ul]:pl-5 [&_ul]:list-disc [&_ol]:my-2 [&_ol]:pl-5 [&_ol]:list-decimal [&_li]:my-1 [&_code]:bg-foreground/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[0.85em] [&_a]:text-primary [&_a]:underline [&_a]:underline-offset-2">
                         {(() => {
                           const { segments } = parseEmbarkRichBlocks(message.content);
                           return segments.map((seg, si) =>
                             seg.type === "text" ? (
-                              <ReactMarkdown key={si}>{seg.content}</ReactMarkdown>
+                              <ReactMarkdown key={si} remarkPlugins={[remarkBreaks]}>
+                                {normalizeAssistantText(seg.content)}
+                              </ReactMarkdown>
                             ) : (
                               <EmbarkRichBlock
                                 key={si}

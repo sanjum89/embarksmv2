@@ -81,7 +81,14 @@ export function useLearnerJourney(
   employeeId: string | null | undefined
 ): State {
   const [refreshTick, setRefreshTick] = useState(0);
-  const [state, setState] = useState<Omit<State, "refresh">>({ journey: null, isLoading: false, error: null });
+  // Initialize isLoading=true when both ids are present so first-render
+  // consumers (e.g. EmbarkChat greeting) don't race ahead of the fetch.
+  const [state, setState] = useState<Omit<State, "refresh">>(() => ({
+    journey: null,
+    isLoading: Boolean(accountId && employeeId),
+    error: null,
+  }));
+
 
   // Stable key so we don't refetch on object identity churn
   const key = `${accountId ?? ""}::${employeeId ?? ""}::${refreshTick}`;

@@ -372,10 +372,14 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
 
               {/* Cohort vs you */}
               <Card className="p-6">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-display text-lg font-bold">Cohort vs you · progress by module</h2>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-lg font-bold">Cohort vs you</h2>
+                    <p className="text-xs text-muted-foreground">Progress by track — your completion vs the cohort average across each learning track.</p>
+                  </div>
                   <Trophy className="h-5 w-5 text-amber-500" />
                 </div>
+
                 <div className="mt-4 space-y-4">
                   {data.moduleProgress.length === 0 && <p className="text-sm text-muted-foreground">No module data yet.</p>}
                   <StaggerList className="space-y-4">

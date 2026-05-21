@@ -104,7 +104,7 @@ export function EmbarkChat() {
   // Cohort journey (new model). Falls back to {} when learner has no enrollment.
   const linkedEmployeeId =
     normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
-  const { journey } = useLearnerJourney(activeAccountId, linkedEmployeeId);
+  const { journey, isLoading: journeyLoading } = useLearnerJourney(activeAccountId, linkedEmployeeId);
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -595,6 +595,7 @@ export function EmbarkChat() {
 
   useEffect(() => {
     if (hasGreeted || messages.length > 0) return;
+    if (journeyLoading) return; // wait for cohort journey to finish loading
 
     setHasGreeted(true);
     const context = buildContext();
@@ -620,7 +621,7 @@ export function EmbarkChat() {
 
     setMessages([greetMessage, assistantPlaceholder]);
     void sendToAI([greetMessage], assistantId);
-  }, [buildContext, hasGreeted, messages.length, sendToAI]);
+  }, [buildContext, hasGreeted, messages.length, sendToAI, journeyLoading]);
 
   const handleSend = (overrideText?: string) => {
     const text = (overrideText ?? input).trim();

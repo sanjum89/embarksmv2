@@ -1,44 +1,31 @@
-## Goal
+## Bug
 
-Improve readability of Embark AI assistant messages in the chat panel. Today they render as a wall of text because single newlines from the model collapse into one paragraph and the prose has no visible paragraph rhythm.
+Clara's Embark AI greeting says she has no learning path, even though she is enrolled in a cohort that's 36% complete. The cohort journey is rendered correctly in the right pane, so the data exists — the chat just greets her before it's loaded.
 
-## Problem (from screenshot)
+## Root cause
 
-- Paragraphs run together — no vertical gap between blocks (lines 156, 235, 359 in the screenshot all look like one block).
-- Tight line-height makes long sentences feel dense.
-- Bold ("Associate Investment Manager", "Suitability and Documentation") blends in.
-- Bubble is the same `text-sm` and same width whether it's a one-liner or a 6-paragraph answer.
+`LearnPathChat.tsx`:
 
-## Changes (scoped to `src/components/learnpath/LearnPathChat.tsx`)
+- `useLearnerJourney(...)` returns `journey: null` on first render and populates it asynchronously (sets `isLoading: true` while fetching).
+- The greeting effect (lines 596–623) runs as soon as `messages.length === 0`, calls `setHasGreeted(true)` immediately, builds context with `journey === null` → no `cohortJourney`, no legacy modules → falls into the "no cohort enrollment and no skill targets" branch.
+- Once `journey` resolves, the effect can't re-run because `hasGreeted` is already true and a message has already been queued.
 
-1. **Honor single newlines as paragraph breaks for assistant messages.**
-   - Add `remark-breaks` to the ReactMarkdown call (`remarkPlugins={[remarkBreaks]}`) so single `\n` → `<br>` and blank-line gaps → paragraphs.
-   - Lightly normalize the streamed text before parsing: collapse 3+ blank lines to 2, and split obvious run-on paragraphs by inserting a blank line after `.` / `?` / `!` followed by a capital letter when the model emitted no break at all (only as a fallback when no `\n\n` is present in the whole message).
+## Fix (scoped to `src/components/learnpath/LearnPathChat.tsx`)
 
-2. **Tighten typography for the assistant bubble.**
-   - Replace `prose prose-sm` wrapper classes with a richer set:
-     - `text-[0.9375rem] leading-relaxed` (slightly larger than `text-sm`, more line-height).
-     - `[&_p]:my-2 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0` for visible paragraph rhythm.
-     - `[&_strong]:font-semibold [&_strong]:text-foreground` so bold actually stands out against `text-foreground/90`.
-     - `[&_ul]:my-2 [&_ul]:pl-5 [&_ul]:list-disc [&_li]:my-1` and the same for `ol` so lists are readable.
-     - `[&_code]:bg-muted-foreground/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded`.
-
-3. **Give assistant messages more breathing room.**
-   - Bubble: `max-w-[88%]` → `max-w-[92%]`, padding `px-3.5 py-2.5` → `px-4 py-3`, `rounded-xl` → `rounded-2xl`.
-   - User bubble stays as-is (short prompts, tight is fine).
-   - Increase outer message gap from `space-y-4` → `space-y-5`.
-
-4. **Subtle visual separation.**
-   - Assistant bubble background stays `bg-muted` but text becomes `text-foreground` (not the default muted prose color) so contrast matches the user bubble.
-
-No changes to streaming logic, message data shape, rich-block parsing, suggestion pills, nudges, or any other component.
-
-## Dependency
-
-- Add `remark-breaks` (small, already a peer-friendly companion to `react-markdown`) via `bun add remark-breaks`.
+1. Also destructure `isLoading` from `useLearnerJourney`:
+   ```ts
+   const { journey, isLoading: journeyLoading } = useLearnerJourney(activeAccountId, linkedEmployeeId);
+   ```
+2. Gate the greeting on the journey being settled:
+   ```ts
+   if (hasGreeted || messages.length > 0) return;
+   if (journeyLoading) return; // wait for cohort journey to finish loading
+   ```
+   Add `journeyLoading` to the effect's dependency array so it retries once loading flips to false.
+3. No other change. The existing `cohortIntro` branch already produces a rich, personalized greeting using cohort title, % complete, chapters, and resume target — once `journey` is present, it'll be used.
 
 ## Out of scope
 
-- Restyling user messages, nudge bubbles, rich blocks, or the input.
-- Changing model prompt/output behavior.
-- Avatars, timestamps, or message actions.
+- Edge function prompt changes.
+- Greeting copy itself (already rich when given cohort context).
+- Other chats (`super-agent-chat`, `chat`).

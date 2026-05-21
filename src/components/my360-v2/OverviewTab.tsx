@@ -63,7 +63,7 @@ export function OverviewTab({ data }: Props) {
         <Detail label="Office" value={b?.office} />
         <Detail label="Work pattern" value={b?.work_pattern} />
         <Detail label="Languages" value={b?.languages?.join(" · ")} />
-        <Detail label="Pronouns" value={b?.pronouns} />
+        
         <Detail label="Manager" value={b?.manager_label} />
       </SectionCard>
 

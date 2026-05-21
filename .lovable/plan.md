@@ -1,47 +1,44 @@
 ## Goal
 
-Rebalance the "Recommended actions" and "Achievements" cards into a true 50/50 split, and make the achievement pills compact + single-line with hover-to-expand behavior (mirroring the KPI strip pattern).
+The left "Recommended actions" card (50% column) only has 3 items and leaves a tall empty stripe beneath them now that it sits next to the equally-tall Achievements card. Fill that whitespace with a "Pinned answers" section mirroring the visual pattern from Deep Research (the screenshot's pin icon + collapsed row with trash icon).
 
-## Changes
+## Changes — `src/pages/CohortHub.tsx`
 
-### 1. Equal-width layout (`src/pages/CohortHub.tsx`, ~line 293)
-- Change grid from `lg:grid-cols-3` (1/2 split) to `lg:grid-cols-2` (50/50).
-- Drop `lg:col-span-1` / `lg:col-span-2` on the two cards.
-- Bump achievements `ACH_PAGE_SIZE` from 8 to 6 (3×2 grid) to fit the narrower card cleanly. Grid becomes `sm:grid-cols-3` instead of `sm:grid-cols-4`.
+Inside the left `<Card>` (currently containing only the Recommended actions header + list), append a second block beneath the actions list:
 
-### 2. Shorten achievement labels (`src/hooks/useCohortHub.ts`)
-Recalibrate every achievement `label` to 1–2 short words. Examples:
-- "First quiz passed" → "First quiz"
-- "First reflection logged" → "First reflection"
-- "5-day streak" → "5-day streak" (keep)
-- "Module 1 complete" → "Module 1"
-- "Peer mentor" → "Peer mentor" (keep)
-- "Mock client ace" → "Mock ace"
-- "Cohort lead nomination" → "Cohort lead"
-- "CISI Level 4 passed" → "CISI L4"
-- "FCA notified" → "FCA notified" (keep)
-- "30-day streak" → "30-day streak" (keep)
-- "Programme graduate" → "Graduate"
-- "Client handover" → "Handover"
-- "Top 10" → "Top 10" (keep)
+```
+<div className="mt-6 pt-5 border-t border-border/60 space-y-2">
+  <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+    <Pin className="h-3 w-3" /> Pinned answers
+  </div>
+  {pinned.map((p) => (
+    <PinnedRow key={p.id} title={p.title} onOpen={...} onRemove={...} />
+  ))}
+  {pinned.length === 0 && (
+    <div className="rounded-lg border border-dashed border-border/60 p-3 text-xs text-muted-foreground">
+      Pin Agent One answers here to jump back to them later.
+    </div>
+  )}
+</div>
+```
 
-### 3. Compact single-line pills with hover-expand (`src/pages/CohortHub.tsx`, lines 374–409)
-Replace the current 2-line pill body with a single-line flex pill:
-- Pill container: `flex items-center gap-1.5 rounded-full border px-2.5 py-1 min-w-0 max-w-full transition-all duration-200 group/pill`
-- Label: `truncate whitespace-nowrap text-[11px] font-semibold` so overflow shows ellipsis on a single line.
-- Points suffix: kept inline, hidden on overflow when collapsed (`hidden group-hover/pill:inline` on small viewports; always inline when fits).
-- Hover behavior — mirror the KPI strip flex trick: wrap each pill cell in a flex item with `flex-1 min-w-0 hover:flex-[2] transition-[flex] duration-200`, so on hover the hovered pill grows lengthwise and siblings shrink (their labels truncate further). Implementation: change the grid to a `flex flex-wrap` row of fixed-basis items per row (3 per row on `sm:`), where each item uses `basis-[calc((100%-0.375rem*2)/3)] grow hover:grow-[3]` and contains a `min-w-0` truncating pill.
-- Tooltip via `title={a.label}` retained so the full label is still readable.
-- Locked pill follows the same single-line + truncate pattern.
+### Pinned data source
+- Local mock array of 3 short answers (e.g. "Your fastest growth areas right now are…", "Top peer matches for IM…", "What to prep for next 1:1…"). Cohort hub already uses local mock state for the surrounding cards, so this matches the existing pattern. No hook/data wiring beyond a `useState` for removal.
+- Each pin stores `{ id, title }`. Trash icon removes it from local state. Chevron acts as expand/collapse showing a short preview snippet.
 
-### 4. Keep existing pieces intact
-- Decorative glows, header (Milestones earned / Achievements / pts badge), pagination footer, and "Next: …" line stay unchanged in structure.
-- No data-shape changes beyond label string edits; no hook/business-logic changes.
+### Row visuals (matches uploaded screenshot)
+- `flex items-center gap-2 rounded-full border border-border bg-card px-3 py-2`
+- `ChevronRight` (rotates to `ChevronDown` when open), title with `truncate text-sm font-medium`, trailing `Trash2` ghost button.
+- Expanded state shows a 2–3 line preview paragraph beneath the row.
+
+### Imports
+Add `Pin, Trash2, ChevronDown` to the existing `lucide-react` import (ChevronRight already imported).
 
 ## Out of scope
-- KPI strip, mentor card, tracks carousel, right rail, tabs.
-- Icons, tier colors, points values, pagination logic (just page size constant).
+- Right Achievements card, KPI strip, mentor card, tabs.
+- Wiring to real Agent One / Deep Research pin store — purely local mock here, consistent with the rest of Cohort Hub mock content.
+- Persisting pins across reloads.
 
 ## Technical notes
-- Hover-expand uses Tailwind `transition-[flex]` + `grow` / `hover:grow-[N]` on flex children with `min-w-0` + `truncate` on the inner label. This is the same pattern already in the KPI strip and avoids JS state.
-- 6 items per page in a 3-col grid keeps rows full and the card visually balanced against Recommended actions.
+- Implemented inline in `CohortHub.tsx`; small `PinnedRow` helper component co-located in the file (similar to other inline pieces).
+- No business-logic or hook changes.

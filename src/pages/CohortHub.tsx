@@ -11,9 +11,10 @@ import { JoinModal } from "@/components/cohort-hub/JoinModal";
 
 
 import {
-  Users, Calendar, ChevronRight, ChevronLeft, Sparkles, Trophy, Award, MessageCircle,
+  Users, Calendar, ChevronRight, ChevronLeft, ChevronDown, Sparkles, Trophy, Award, MessageCircle,
   FileText, ArrowRight, AlertTriangle, CheckCircle2, Flag, BookOpen, Clock, Lock,
   Flame, Target, GraduationCap, ShieldCheck, Star, Handshake, Crown, Medal, Rocket, Briefcase, PencilLine,
+  Pin, Trash2,
 } from "lucide-react";
 
 import { Link, useSearchParams } from "react-router-dom";
@@ -162,6 +163,11 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
   const [params, setParams] = useSearchParams();
   const [achPage, setAchPage] = useState(0);
   const ACH_PAGE_SIZE = 6;
+  const [pinned, setPinned] = useState<{ id: string; title: string; preview: string }[]>([
+    { id: "p1", title: "Your fastest growth areas right now are…", preview: "Top three: client conversation skills, portfolio construction fundamentals, and regulatory horizon scanning. Focus your next two weeks here." },
+    { id: "p2", title: "Top peer matches for IM track", preview: "Theo Mensah and Priya Anand are 1–2 modules ahead on the same track and have flagged availability for peer pairing." },
+    { id: "p3", title: "What to prep for next 1:1 with Margaret", preview: "Bring your draft IPS for the Henderson case, two questions on risk profiling, and your reflection from Module 2." },
+  ]);
 
   const tab = params.get("tab") === "adapted-path" ? "adapted-path" : "overview";
   const setTab = (v: string) => {
@@ -306,7 +312,28 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                       </button>
                     ))}
                   </div>
+
+                  <div className="mt-6 space-y-2 border-t border-border/60 pt-5">
+                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <Pin className="h-3 w-3" /> Pinned answers
+                    </div>
+                    {pinned.length === 0 ? (
+                      <div className="rounded-lg border border-dashed border-border/60 p-3 text-xs text-muted-foreground">
+                        Pin Agent One answers here to jump back to them later.
+                      </div>
+                    ) : (
+                      pinned.map((p) => (
+                        <PinnedRow
+                          key={p.id}
+                          title={p.title}
+                          preview={p.preview}
+                          onRemove={() => setPinned((s) => s.filter((x) => x.id !== p.id))}
+                        />
+                      ))
+                    )}
+                  </div>
                 </Card>
+
 
                 <Card className="relative overflow-hidden p-6 flex flex-col">
 
@@ -583,3 +610,42 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
   );
 }
 
+
+function PinnedRow({ title, preview, onRemove }: { title: string; preview: string; onRemove: () => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-full border border-border bg-card">
+      <div className="flex items-center gap-2 px-3 py-2">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Collapse" : "Expand"}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex-1 min-w-0 truncate text-left text-sm font-medium text-foreground"
+          title={title}
+        >
+          {title}
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Remove pin"
+          className="text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      {open && (
+        <div className="border-t border-border/60 px-3 py-2 text-xs text-muted-foreground">
+          {preview}
+        </div>
+      )}
+    </div>
+  );
+}

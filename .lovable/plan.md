@@ -1,29 +1,11 @@
-## Plan
+Root cause: the Tour button is wrapped in `TourSidebarHint`, but that wrapper is only `inline-flex`. In the collapsed sidebar, the surrounding bottom controls expect every item to occupy the same fixed icon footprint (`h-9 w-9` in the traditional sidebar, `h-10 w-10` in the newer sidebar). The wrapper does not enforce that footprint, so the Tour row can measure differently from Accessibility/Settings, making Settings appear off-column.
 
-Change the sidebar tour callout so it behaves as a per-session attention prompt, independent of the existing "tour seen" flag.
-
-### Behavior
-
-1. On every page load, if the user is eligible (Clara/Theo) and the tour is not currently open, show the floating callout next to the "Take a tour" sidebar item.
-2. Show it regardless of whether the user has progress in their Embark journey or has previously seen/started the tour.
-3. The callout has a close (X) button. Clicking it hides the callout for the rest of the session.
-4. Clicking the callout body starts the tour (and also hides the callout).
-5. On a full page refresh, the callout returns. There is no localStorage persistence for this prompt.
-
-### Technical notes
-
-- Edit `src/components/tour/TourSidebarHint.tsx`:
-  - Remove the `localStorage` read/write for `embark_tour_seen::<uid>` from this component (keep `TourWelcomeBanner`'s own usage intact).
-  - Replace `seen` state with a simple in-memory `dismissed` state that defaults to `false`. Since React state resets on full page reload, this naturally satisfies the "until refresh" requirement.
-  - Show the callout when `show && !dismissed && !tour.open`.
-  - Keep the existing portal-based positioning beside the sidebar button so layout/alignment of the Settings icon is unaffected.
-  - Keep the small ping dot on the icon while the callout is visible.
-- No changes to `TourWelcomeBanner`, `AppSidebar`, or the tour context.
-- No backend changes.
-
-### Validation
-
-- Load the app as Clara: callout appears next to the Tour sparkle icon on first render.
-- Click X: callout disappears and does not return while navigating between routes.
-- Refresh the page: callout reappears.
-- Click the callout: tour starts and callout hides.
+Plan:
+1. Update `TourSidebarHint` to accept an explicit `expanded` and `size`/`className` style input, or a simpler `variant`, so the wrapper can match the exact sidebar button dimensions.
+2. In `AppSidebar.tsx`, pass the correct wrapper size in both sidebar branches:
+   - Traditional collapsed: `h-9 w-9`
+   - New collapsed: `h-10 w-10`
+   - Expanded: `w-full h-9`
+3. Keep the floating callout rendered through the portal so it never affects layout.
+4. Keep the close button behavior exactly as requested: closing hides only until refresh; no persistent storage.
+5. Verify visually that Theme, Accessibility, Tour, and Settings align in the same vertical column and the callout appears next to Tour without pushing anything.

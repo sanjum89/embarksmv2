@@ -1,35 +1,43 @@
-# Pinned answers → scroll-to-message shortcuts
+## Goal
 
-Today, pinning an answer copies the full envelope into the left rail and renders it expanded below the list. You want pins to behave like bookmarks: clicking jumps to the original message in its thread, opening that thread first if it's not the active one.
+Replace the current first-login tour popover card with a smaller, more inviting animated pill that floats next to the sidebar's sparkle (tour) icon — matching the uploaded reference. The pill says "Take a tour", animates in to draw attention, and has a close (X) button.
 
-## Changes
+## Behavior
 
-### 1. `src/components/deep-research/DeepResearchWorkspace.tsx`
-- Remove `PinnedAnswerCard` (the expandable render of the saved envelope) entirely.
-- Replace the pinned-answers list with a compact list of rows: pin icon + title (single line, truncated) + unpin (trash) on hover. No expand chevron, no embedded `ResponseEnvelopeView`.
-- Row click handler:
-  1. If `pin.threadId !== dr.activeThreadId` → `dr.setActiveThreadId(pin.threadId)` + `onSelectThread?.(pin.threadId)`.
-  2. Set a `pendingScrollMessageId` ref/state to `pin.messageId`.
-- Wrap each rendered assistant message in the center column with `data-message-id={m.id}` so we can locate it in the DOM.
-- New effect: when `pendingScrollMessageId` is set AND `dr.activeThread?.id === targetThreadId` AND the message exists in the DOM, `scrollIntoView({ behavior: "smooth", block: "start" })` inside `scrollRef`, briefly add a highlight ring class (e.g. `ring-2 ring-primary/40` for ~1.5s via a `highlightedMessageId` state with a `setTimeout`), then clear pending state.
-- Disable the existing auto-scroll-to-bottom effect when a pending scroll is in flight so it doesn't fight the jump.
+- Shows only for eligible personas (Clara / Theo) on first login (same `useShowTourEntryPoints` + `embark_tour_seen::{uid}` localStorage flag already used).
+- Anchored to the right of the sparkle button in the collapsed sidebar bottom controls.
+- Animations:
+  - Slide-in + fade from the left after a short delay (~600ms after mount), so it feels like it "pops out" of the icon.
+  - Gentle continuous wiggle/bounce (subtle, every few seconds) to draw the eye until dismissed.
+  - Soft glow / ring pulse around the pill.
+- Clicking the pill body → starts the tour (`tour.start(0)`) and dismisses.
+- Clicking the X → dismisses without starting (persists `seen=1`).
+- Auto-hides when the tour opens, or once dismissed (never returns).
+- Keeps the existing small pulsing dot on the sparkle icon as a secondary cue (optional — keep for now).
 
-### 2. `src/components/deep-research/ResponseEnvelopeView.tsx`
-- Keep the pin button, but change `onPinAnswer` semantics: it now just records a bookmark (title + threadId + messageId). The envelope payload is still passed through for backward compatibility but no longer rendered from the rail.
-- Optional polish: rename inline label from "Pin title" → "Bookmark title". (Cosmetic only.)
+## Visual
 
-### 3. `src/hooks/useDeepResearch.ts`
-- No signature change required — `pinAnswer(threadId, threadTitle, messageId, envelope, title)` and the `PinnedAnswer` shape stay the same so existing localStorage entries keep working.
-- `envelope` field on stored pins becomes unused by the UI but remains in the type to avoid a migration. (We can drop it in a later cleanup.)
+```
+ [✦]  ╭──────────────────╮
+       │ Take a tour  ✕ │   ← rounded-full, bg-card, border, shadow-lg
+       ╰──────────────────╯
+```
 
-### 4. Empty-state copy
-- Update the "Click the pin icon…" hint to: "Pin any answer to bookmark it. Click a pin to jump back to that message."
+- `rounded-full` pill, `bg-card`, `border-border`, `shadow-2xl`.
+- Left side: small sparkle icon in primary tint, then "Take a tour" label (text-sm, font-medium).
+- Right side: ghost X button.
+- Position: `absolute left-full ml-3 top-1/2 -translate-y-1/2` relative to the sparkle button's wrapper, `z-[9000]`, `whitespace-nowrap`.
+
+## Technical changes
+
+- Edit `src/components/tour/TourSidebarHint.tsx`:
+  - Drop the `Popover` / `PopoverAnchor` / `PopoverContent` UI.
+  - Render `children` as-is, then absolutely position the new pill next to it inside the existing `div.relative` wrapper.
+  - Reuse the existing `show`, `seen`, `dismiss`, and `tour.start` logic unchanged.
+  - Add Tailwind animation classes; if a custom keyframe (subtle wiggle) is needed, add it to `tailwind.config.ts` under `keyframes` + `animation` (e.g. `tour-nudge`). Use `animate-in slide-in-from-left-2 fade-in` for entry.
+- No changes to `TourContext`, `EmbarkTour`, `AppSidebar`, or the welcome banner.
 
 ## Out of scope
-- No changes to how pins are persisted, scoped (personal vs team), or synced across accounts.
-- No changes to `ResponseEnvelopeView` rendering of envelopes inside the conversation.
-- No changes to the pinned-answer data shape in storage.
 
-## Technical notes
-- DOM lookup uses `scrollRef.current?.querySelector(\`[data-message-id="\${id}"]\`)` after the thread switch re-renders. A small `requestAnimationFrame` (or a `useEffect` keyed on `dr.activeThread?.id` + `pendingScrollMessageId`) handles the timing.
-- Highlight class is applied via conditional `cn(..., highlightedMessageId === m.id && "ring-2 ring-primary/40 rounded-xl transition-shadow")`.
+- Tour content/steps themselves.
+- Behavior on other personas or when sidebar is expanded (pill still anchors next to the button — works in both states since it's `left-full`).

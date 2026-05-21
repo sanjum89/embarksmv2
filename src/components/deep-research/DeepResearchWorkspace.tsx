@@ -45,38 +45,65 @@ export function DeepResearchWorkspace({
 }: Props) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [pendingScroll, setPendingScroll] = useState<{ threadId: string; messageId: string } | null>(null);
+  const pendingScrollRef = useRef<{ threadId: string; messageId: string } | null>(null);
+  const lastThreadIdRef = useRef<string | null>(null);
+  const lastMsgCountRef = useRef<number>(0);
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
+  const [pendingTick, setPendingTick] = useState(0);
 
-  // Auto-scroll to bottom on new messages — suppressed while we're jumping to a pin.
+  // Auto-scroll to bottom only when a new message is appended to the SAME thread.
+  // Suppress while jumping to a pin, or when the active thread just changed.
   useEffect(() => {
-    if (pendingScroll) return;
+    const tid = dr.activeThread?.id ?? null;
+    const count = dr.activeThread?.messages.length ?? 0;
+    const sameThread = tid === lastThreadIdRef.current;
+    const grew = count > lastMsgCountRef.current;
+    lastThreadIdRef.current = tid;
+    lastMsgCountRef.current = count;
+    if (pendingScrollRef.current) return;
+    if (!sameThread) return;
+    if (!grew && !dr.isStreaming && !dr.thinkingStage) return;
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [dr.activeThread?.messages.length, dr.isStreaming, dr.thinkingStage, pendingScroll]);
+  }, [dr.activeThread?.id, dr.activeThread?.messages.length, dr.isStreaming, dr.thinkingStage]);
 
-  // Jump-to-pinned-message effect: runs once the target thread is active and the DOM has the node.
+  // Jump-to-pinned-message: poll briefly for the DOM node (thread switch + envelope render are async).
   useEffect(() => {
-    if (!pendingScroll) return;
-    if (dr.activeThread?.id !== pendingScroll.threadId) return;
+    const target = pendingScrollRef.current;
+    if (!target) return;
+    if (dr.activeThread?.id !== target.threadId) return;
 
-    const raf = requestAnimationFrame(() => {
+    let attempts = 0;
+    let raf = 0;
+    const tryScroll = () => {
       const root = scrollRef.current;
-      const el = root?.querySelector<HTMLElement>(`[data-message-id="${pendingScroll.messageId}"]`);
-      if (!el) return;
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-      setHighlightedMessageId(pendingScroll.messageId);
-      setPendingScroll(null);
-      window.setTimeout(() => setHighlightedMessageId((id) => (id === pendingScroll.messageId ? null : id)), 1800);
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [pendingScroll, dr.activeThread?.id, dr.activeThread?.messages.length]);
+      const el = root?.querySelector<HTMLElement>(`[data-message-id="${target.messageId}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+        setHighlightedMessageId(target.messageId);
+        pendingScrollRef.current = null;
+        window.setTimeout(
+          () => setHighlightedMessageId((id) => (id === target.messageId ? null : id)),
+          1800
+        );
+        return;
+      }
+      if (attempts++ < 60) {
+        raf = window.requestAnimationFrame(tryScroll);
+      } else {
+        pendingScrollRef.current = null;
+      }
+    };
+    raf = window.requestAnimationFrame(tryScroll);
+    return () => window.cancelAnimationFrame(raf);
+  }, [dr.activeThread?.id, dr.activeThread?.messages.length, pendingTick]);
 
   const jumpToPin = (threadId: string, messageId: string) => {
+    pendingScrollRef.current = { threadId, messageId };
     if (threadId !== dr.activeThreadId) {
       dr.setActiveThreadId(threadId);
       onSelectThread?.(threadId);
     }
-    setPendingScroll({ threadId, messageId });
+    setPendingTick((t) => t + 1);
   };
 
   const submit = async (text?: string) => {

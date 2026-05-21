@@ -149,6 +149,8 @@ export default {
         "flow-left": "flow-left 2s linear infinite",
         shimmer: "shimmer 1.8s ease-in-out infinite",
         "pulse-soft": "pulse-soft 1.4s ease-in-out infinite",
+        "tour-nudge": "tour-nudge 3.2s ease-in-out infinite",
+        "tour-pop-in": "tour-pop-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both",
       },
     },
   },

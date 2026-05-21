@@ -736,9 +736,12 @@ export function AppSidebar() {
       <div
         className={cn(
           "w-full pb-1",
-          expanded ? "px-3 space-y-1" : "flex flex-col items-center gap-1 px-0"
+          expanded
+            ? "px-3 space-y-1"
+            : "flex flex-col items-stretch gap-1 px-0 [&>*]:flex [&>*]:w-full [&>*]:justify-center"
         )}
       >
+
         {/* Dark mode toggle */}
         {expanded ? (
           <button

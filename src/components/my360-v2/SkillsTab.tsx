@@ -105,16 +105,34 @@ export function SkillsTab({ data }: Props) {
 
       {/* Skill list */}
       <div className="rounded-xl border border-border bg-card">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border flex-wrap">
           <div>
-            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80 font-medium">Capabilities</div>
+            <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground/80 font-medium">Skills</div>
             <div className="text-sm font-semibold">{filter === "all" ? `All ${visible.length}` : `${SOURCE_CONFIG[filter].label} (${visible.length})`}</div>
           </div>
-          {filter !== "all" && (
-            <button onClick={() => setFilter("all")} className="text-xs text-muted-foreground hover:text-foreground underline">
-              Clear filter
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            <div className="inline-flex rounded-lg border border-border bg-muted/40 p-0.5 text-xs">
+              {([
+                ["all", "All"],
+                ["strengths", "Strengths"],
+                ["growing", "Growing"],
+                ["gaps", "Gaps"],
+              ] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setLevelBucket(key)}
+                  className={`px-2.5 py-1 rounded-md transition-colors ${levelBucket === key ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            {filter !== "all" && (
+              <button onClick={() => setFilter("all")} className="text-xs text-muted-foreground hover:text-foreground underline">
+                Clear source
+              </button>
+            )}
+          </div>
         </div>
         <div className="divide-y divide-border">
           {visible.length === 0 && (
@@ -126,7 +144,8 @@ export function SkillsTab({ data }: Props) {
             const Icon = cfg.icon;
             const name = catalogByCode[row.capability_code] ?? humanizeCode(row.capability_code);
             const subs = subByParent[row.capability_code] ?? [];
-            const isOpen = expanded.has(row.capability_code);
+            const isOpen = isExpanded(row.capability_code);
+
             const pct = (row.current_level / 5) * 100;
             return (
               <div key={row.capability_code}>

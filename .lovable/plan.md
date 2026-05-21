@@ -1,31 +1,24 @@
-## Bug
+## Plan
 
-Clara's Embark AI greeting says she has no learning path, even though she is enrolled in a cohort that's 36% complete. The cohort journey is rendered correctly in the right pane, so the data exists — the chat just greets her before it's loaded.
+1. **Restore icon alignment in the collapsed sidebar**
+   - Keep the bottom action column centered.
+   - Ensure the settings icon uses the same fixed collapsed button dimensions and wrapper behavior as the other bottom icons.
+   - Avoid letting the tour hint wrapper affect the width/position of the adjacent settings item.
 
-## Root cause
+2. **Make the tour prompt a real floating message**
+   - Keep the normal tooltip behavior for all bottom icons.
+   - Add a separate floating callout next to the **Take a tour** menu item, anchored beside that specific button.
+   - Include clear copy such as “Start the guided tour” with a dismiss control and click-to-start behavior.
 
-`LearnPathChat.tsx`:
+3. **Fix why the callout may not appear**
+   - Adjust `TourSidebarHint` so the callout is positioned from a stable wrapper and is not hidden or mispositioned by sidebar layout.
+   - Preserve the existing first-login/localStorage dismissal behavior for Clara/Theo demo personas.
 
-- `useLearnerJourney(...)` returns `journey: null` on first render and populates it asynchronously (sets `isLoading: true` while fetching).
-- The greeting effect (lines 596–623) runs as soon as `messages.length === 0`, calls `setHasGreeted(true)` immediately, builds context with `journey === null` → no `cohortJourney`, no legacy modules → falls into the "no cohort enrollment and no skill targets" branch.
-- Once `journey` resolves, the effect can't re-run because `hasGreeted` is already true and a message has already been queued.
+4. **Validate visually**
+   - Check the collapsed sidebar view so the four bottom icons line up vertically and the floating tour message appears beside the tour item rather than replacing/centering tooltips.
 
-## Fix (scoped to `src/components/learnpath/LearnPathChat.tsx`)
+## Technical notes
 
-1. Also destructure `isLoading` from `useLearnerJourney`:
-   ```ts
-   const { journey, isLoading: journeyLoading } = useLearnerJourney(activeAccountId, linkedEmployeeId);
-   ```
-2. Gate the greeting on the journey being settled:
-   ```ts
-   if (hasGreeted || messages.length > 0) return;
-   if (journeyLoading) return; // wait for cohort journey to finish loading
-   ```
-   Add `journeyLoading` to the effect's dependency array so it retries once loading flips to false.
-3. No other change. The existing `cohortIntro` branch already produces a rich, personalized greeting using cohort title, % complete, chapters, and resume target — once `journey` is present, it'll be used.
-
-## Out of scope
-
-- Edge function prompt changes.
-- Greeting copy itself (already rich when given cohort context).
-- Other chats (`super-agent-chat`, `chat`).
+- Primary files involved: `src/components/layout/AppSidebar.tsx` and `src/components/tour/TourSidebarHint.tsx`.
+- No backend/database changes are needed.
+- The fix will be frontend-only and scoped to the sidebar tour hint behavior.

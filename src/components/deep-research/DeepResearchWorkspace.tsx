@@ -68,7 +68,7 @@ export function DeepResearchWorkspace({
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {topBar}
-      <div className="flex-1 grid grid-cols-[280px_1fr_320px] min-h-0">
+      <div className="flex-1 grid grid-cols-[300px_1fr] min-h-0">
         {/* Left: starters + threads */}
         <aside className="border-r border-border/60 overflow-y-auto p-4 space-y-6">
           <div>
@@ -148,6 +148,34 @@ export function DeepResearchWorkspace({
               </div>
             </div>
           )}
+
+          <div>
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              <Pin className="h-3 w-3" />
+              Pinned answers
+            </div>
+            {dr.pins.length === 0 ? (
+              <div className="text-xs text-muted-foreground rounded-lg border border-dashed border-border/60 p-3">
+                Click the pin icon in any answer header to save the full response here with a title.
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {dr.pins.map((pin) => (
+                  <PinnedAnswerCard
+                    key={pin.id}
+                    pin={pin}
+                    authorId={authorId}
+                    onUnpin={() => dr.unpin(pin.id)}
+                    onRename={(t) => dr.renamePin(pin.id, t)}
+                    onJump={() => {
+                      dr.setActiveThreadId(pin.threadId);
+                      onSelectThread?.(pin.threadId);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </aside>
 
         {/* Center: conversation + composer */}
@@ -222,32 +250,6 @@ export function DeepResearchWorkspace({
           </div>
         </main>
 
-        {/* Right: pinned dashboard */}
-        <aside className="border-l border-border/60 overflow-y-auto p-4 space-y-2">
-          <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
-            <Pin className="h-3 w-3" />
-            Pinned answers
-          </div>
-          {dr.pins.length === 0 ? (
-            <div className="text-xs text-muted-foreground rounded-lg border border-dashed border-border/60 p-3">
-              Click the pin icon in any answer header to save the full response here with a title.
-            </div>
-          ) : (
-            dr.pins.map((pin) => (
-              <PinnedAnswerCard
-                key={pin.id}
-                pin={pin}
-                authorId={authorId}
-                onUnpin={() => dr.unpin(pin.id)}
-                onRename={(t) => dr.renamePin(pin.id, t)}
-                onJump={() => {
-                  dr.setActiveThreadId(pin.threadId);
-                  onSelectThread?.(pin.threadId);
-                }}
-              />
-            ))
-          )}
-        </aside>
       </div>
     </div>
   );

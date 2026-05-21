@@ -322,12 +322,20 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                     const ICONS: Record<string, typeof Trophy> = {
                       first_quiz: CheckCircle2,
                       "5_day_streak": Flame,
+                      "30_day_streak": Flame,
                       module_1: BookOpen,
+                      module_2: BookOpen,
+                      module_3: BookOpen,
+                      module_4: BookOpen,
                       peer_mentor: Users,
                       mock_ace: Target,
                       top_10: Trophy,
                       cisi_l4: GraduationCap,
                       fca_notified: ShieldCheck,
+                      first_reflection: PencilLine,
+                      cohort_lead_nom: Crown,
+                      programme_grad: Rocket,
+                      client_handover: Briefcase,
                     };
                     const TIER_EARNED: Record<string, string> = {
                       bronze: "border-amber-500/40 bg-gradient-to-br from-amber-500/15 to-orange-500/10 text-amber-700 dark:text-amber-300",
@@ -339,6 +347,10 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                       silver: "bg-sky-500/20",
                       gold:   "bg-amber-400/30",
                     };
+
+                    const pageCount = Math.max(1, Math.ceil(data.achievements.length / ACH_PAGE_SIZE));
+                    const safePage = Math.min(achPage, pageCount - 1);
+                    const pageItems = data.achievements.slice(safePage * ACH_PAGE_SIZE, safePage * ACH_PAGE_SIZE + ACH_PAGE_SIZE);
 
                     return (
                       <>
@@ -357,20 +369,23 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                           </div>
                         </div>
 
-                        <StaggerList className="relative mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                          {data.achievements.map((a) => {
+                        <StaggerList key={safePage} className="relative mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                          {pageItems.map((a) => {
                             const Icon = ICONS[a.code] ?? Award;
                             if (a.earned) {
                               return (
                                 <StaggerItem key={a.code}>
                                   <div
                                     title={`${a.label} · +${a.points} pts`}
-                                    className={`flex items-center gap-1.5 rounded-full border px-2 py-1 transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
+                                    className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
                                   >
                                     <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${TIER_ICON_BG[a.tier]}`}>
                                       <Icon className="h-3 w-3" />
                                     </div>
-                                    <div className="truncate text-[11px] font-semibold leading-none text-foreground">{a.label}</div>
+                                    <div className="text-[11px] font-semibold leading-tight text-foreground">
+                                      {a.label}
+                                      <span className="ml-1 text-[10px] font-medium text-muted-foreground">+{a.points}</span>
+                                    </div>
                                   </div>
                                 </StaggerItem>
                               );
@@ -379,28 +394,55 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                               <StaggerItem key={a.code}>
                                 <div
                                   title={`Locked · ${a.label}`}
-                                  className="flex items-center gap-1.5 rounded-full border border-dashed border-border bg-muted/30 px-2 py-1 opacity-70"
+                                  className="flex items-center gap-1.5 rounded-full border border-dashed border-border bg-muted/30 px-2.5 py-1.5 opacity-70"
                                 >
                                   <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                                     <Lock className="h-3 w-3" />
                                   </div>
-                                  <div className="truncate text-[11px] font-medium leading-none text-muted-foreground">{a.label}</div>
+                                  <div className="text-[11px] font-medium leading-tight text-muted-foreground">{a.label}</div>
                                 </div>
                               </StaggerItem>
                             );
                           })}
                         </StaggerList>
 
-
-                        {firstLocked && (
-                          <div className="relative mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-                            Next: <span className="font-medium text-foreground">{firstLocked.label}</span>
+                        <div className="relative mt-auto flex items-center justify-between gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
+                          <div className="min-w-0 truncate">
+                            {firstLocked ? (
+                              <>Next: <span className="font-medium text-foreground">{firstLocked.label}</span></>
+                            ) : (
+                              <>All milestones unlocked — nice work.</>
+                            )}
                           </div>
-                        )}
+                          {pageCount > 1 && (
+                            <div className="flex shrink-0 items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setAchPage((p) => Math.max(0, p - 1))}
+                                disabled={safePage === 0}
+                                aria-label="Previous achievements"
+                                className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                <ChevronLeft className="h-3.5 w-3.5" />
+                              </button>
+                              <span className="tabular-nums">{safePage + 1} / {pageCount}</span>
+                              <button
+                                type="button"
+                                onClick={() => setAchPage((p) => Math.min(pageCount - 1, p + 1))}
+                                disabled={safePage >= pageCount - 1}
+                                aria-label="Next achievements"
+                                className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </>
                     );
                   })()}
                 </Card>
+
               </div>
 
               {/* Cohort vs you */}

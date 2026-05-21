@@ -1,73 +1,35 @@
-## Context
+# Pinned answers → scroll-to-message shortcuts
 
-Synthetic skills data already exists for all 9 Rathbones personas — 76 rows each in `employee_capability_proficiency` (16 top-level competencies + 60 supporting sub-skills), with levels graduated by seniority band. What's missing is **persona narrative**: rationales are 3 generic strings, and spikes/gaps don't reflect each persona's actual journey (Theo's KYC fail, Clara's clean run, Felix's Charles River fluency, etc.).
+Today, pinning an answer copies the full envelope into the left rail and renders it expanded below the list. You want pins to behave like bookmarks: clicking jumps to the original message in its thread, opening that thread first if it's not the active one.
 
-The adaptive journey (`learner_progress`, `assessment_instances`, `chapter_lock_events`, `micro_learnings`, `learner_analytics`) is seeded separately by `reset-rathbones-demo` and lives in different tables — **no table-level collision**. The only risk is narrative drift, which the plan resolves by deriving spikes and gaps from the journey itself.
+## Changes
 
-## Plan
+### 1. `src/components/deep-research/DeepResearchWorkspace.tsx`
+- Remove `PinnedAnswerCard` (the expandable render of the saved envelope) entirely.
+- Replace the pinned-answers list with a compact list of rows: pin icon + title (single line, truncated) + unpin (trash) on hover. No expand chevron, no embedded `ResponseEnvelopeView`.
+- Row click handler:
+  1. If `pin.threadId !== dr.activeThreadId` → `dr.setActiveThreadId(pin.threadId)` + `onSelectThread?.(pin.threadId)`.
+  2. Set a `pendingScrollMessageId` ref/state to `pin.messageId`.
+- Wrap each rendered assistant message in the center column with `data-message-id={m.id}` so we can locate it in the DOM.
+- New effect: when `pendingScrollMessageId` is set AND `dr.activeThread?.id === targetThreadId` AND the message exists in the DOM, `scrollIntoView({ behavior: "smooth", block: "start" })` inside `scrollRef`, briefly add a highlight ring class (e.g. `ring-2 ring-primary/40` for ~1.5s via a `highlightedMessageId` state with a `setTimeout`), then clear pending state.
+- Disable the existing auto-scroll-to-bottom effect when a pending scroll is in flight so it doesn't fight the jump.
 
-### 1. New edge function: `seed-rathbones-persona-skills`
+### 2. `src/components/deep-research/ResponseEnvelopeView.tsx`
+- Keep the pin button, but change `onPinAnswer` semantics: it now just records a bookmark (title + threadId + messageId). The envelope payload is still passed through for backward compatibility but no longer rendered from the rail.
+- Optional polish: rename inline label from "Pin title" → "Bookmark title". (Cosmetic only.)
 
-Mirrors `reset-rathbones-demo` (same account, same 9 persona IDs). Run order: journey reset first, then this. Idempotent.
+### 3. `src/hooks/useDeepResearch.ts`
+- No signature change required — `pinAnswer(threadId, threadTitle, messageId, envelope, title)` and the `PinnedAnswer` shape stay the same so existing localStorage entries keep working.
+- `envelope` field on stored pins becomes unused by the UI but remains in the type to avoid a migration. (We can drop it in a later cleanup.)
 
-**Step A — Read the journey as the source of truth.** For each persona, pull from the DB:
-- `assessment_instances` (latest attempt per module) → score, `weak_topic_tags`, `strong_topic_tags`, retake outcome.
-- `learner_analytics.rolling_weak_topic_tags` / `rolling_strong_topic_tags`.
-- `learner_progress` → which modules are completed vs in-progress.
-- `chapter_lock_events` → which chapters were reopened (Rule B).
+### 4. Empty-state copy
+- Update the "Click the pin icon…" hint to: "Pin any answer to bookmark it. Click a pin to jump back to that message."
 
-**Step B — Map module/topic signals onto the competency catalog.** A static `MODULE_TO_COMPETENCY` map (authored once, ~25 entries) lives in the function and ties each module to its primary competency + supporting sub-skills. Examples:
+## Out of scope
+- No changes to how pins are persisted, scoped (personal vs team), or synced across accounts.
+- No changes to `ResponseEnvelopeView` rendering of envelopes inside the conversation.
+- No changes to the pinned-answer data shape in storage.
 
-```
-bk2.kyc_suitability       → tk.client_suitability   (kyc_execution, suitability_assessment, risk_profiling)
-tk1.charles_river_ims     → oe.systems_data_ai      (charles_river_navigation, systems_navigation)
-tk2.bloomberg_essentials  → oe.systems_data_ai      (bloomberg_navigation, market_data_interpretation)
-cps4.aml_financial_crime  → cps.regulatory_consumer_duty (aml_red_flag_detection)
-bs1.client_communication  → bs.client_facing        (active_listening, concise_explanation)
-…etc.
-```
-
-**Step C — Compute per-persona level + source from signals.** Per competency:
-- Module completed with score ≥90 → `current_level = max(current, 4)`, `source = validated`, `confidence = high`, rationale references the module + score.
-- Module completed with score 80–89 → `level = max(current, 3)`, `source = self_claimed` (or `pending` if recent), rationale notes "demonstrated in <module> (84%)".
-- `rolling_weak_topic_tags` hit → matching sub-skill `level = min(current, 2)`, `source = pending`, `validation_needed = true`, rationale references the failed assessment.
-- `rolling_strong_topic_tags` (after retake) → matching sub-skill `level = max(current, 3)`, `source = validated`, rationale "recovered after retake of <module>".
-- Chapter reopened (Rule B) → matching sub-skill stays at `pending` with rationale "chapter reopened for remediation".
-- Modules `not_started` → leave at the persona's baseline (career-band default).
-
-**Step D — Apply a hand-authored persona bias on top.** A small `PERSONA_BIAS` table for narrative items the journey can't infer (prior employer, mentor, certifications). Bias **never overrides** a journey-derived value; it only fills gaps. Examples:
-- `rb-l1` Clara → `+1` on `bs.client_facing::client_rapport_building` (prior client-facing role), rationale references background.
-- `rb-l4` Felix → `+1` on `oe.systems_data_ai::charles_river_navigation` if no contradicting journey signal, with rationale "fluent from prior CRD environment".
-- `rb-l2` Theo → `+1` on `cps.cisi_l7_readiness::cisi_ioc_securities_readiness` (exam date booked).
-- Elliot path → `ai_inferred` strengths on `bs.collab_leadership::initiative_taking` from prior leadership role.
-
-**Step E — Write back.** Per persona, inside a single transaction: delete existing rows in `employee_capability_proficiency` and `persona_competency_profiles`, bulk insert the recomputed set. Sub-skills derive from parent ± per-sub-skill bias so internal variation stays.
-
-Function returns a per-persona summary (level histogram, source mix, count of journey-derived rows vs bias-filled rows) for verification.
-
-### 2. Light UI follow-up in My360 → Skills
-
-Scope kept small — only enough so it reads as "skills" rather than a competency grid:
-- Rename the section heading `Capabilities` → `Skills`.
-- Add a `Strengths / Growing / Gaps` segmented filter (levels 4–5 / 3 / 1–2) alongside the existing source filter.
-- Auto-expand the top 3 strengths and top 3 gaps on first render, so supporting sub-skills are visible without clicking.
-- Promote `short_rationale` from 11px italic-inside-row to 12px on-row, since rationales are now meaningful per persona.
-
-### Run order & safety
-
-1. `reset-rathbones-demo` (journey + analytics) — already exists.
-2. `seed-rathbones-persona-skills` (this) — reads what step 1 produced, then writes skills.
-
-Re-running step 1 invalidates skills only narratively. Re-running step 2 brings them back in sync. Neither function touches the other's tables.
-
-### Technical notes
-
-- No schema changes. Writes only to `employee_capability_proficiency` and `persona_competency_profiles`.
-- Pinnacle Capital (white-label clone) is handled by re-pointing the `ACCOUNT_ID` constant or accepting it as a request body parameter; same persona IDs, same logic.
-- `MODULE_TO_COMPETENCY` and `PERSONA_BIAS` live in the edge function file so the demo stays self-contained (matches the pattern in `reset-rathbones-demo`).
-
-### Out of scope
-
-- No changes to `competency_catalog`, modules, cohorts, or assessments.
-- No new tabs or routes in My360.
-- No changes to the journey seed itself.
+## Technical notes
+- DOM lookup uses `scrollRef.current?.querySelector(\`[data-message-id="\${id}"]\`)` after the thread switch re-renders. A small `requestAnimationFrame` (or a `useEffect` keyed on `dr.activeThread?.id` + `pendingScrollMessageId`) handles the timing.
+- Highlight class is applied via conditional `cn(..., highlightedMessageId === m.id && "ring-2 ring-primary/40 rounded-xl transition-shadow")`.

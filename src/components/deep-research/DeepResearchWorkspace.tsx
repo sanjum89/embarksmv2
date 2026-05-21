@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Loader2, MessageSquare, Trash2, Pin, ChevronDown, ChevronRight, Microscope } from "lucide-react";
+import { Send, Loader2, MessageSquare, Trash2, Pin, Microscope } from "lucide-react";
 import { ResponseEnvelopeView } from "@/components/deep-research/ResponseEnvelopeView";
 import { ThinkingPanel } from "@/components/deep-research/ThinkingPanel";
-import type { PinnedAnswer } from "@/lib/deepResearch/envelope";
 import type { useDeepResearch } from "@/hooks/useDeepResearch";
 import { cn } from "@/lib/utils";
 
@@ -46,10 +45,39 @@ export function DeepResearchWorkspace({
 }: Props) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [pendingScroll, setPendingScroll] = useState<{ threadId: string; messageId: string } | null>(null);
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null);
 
+  // Auto-scroll to bottom on new messages — suppressed while we're jumping to a pin.
   useEffect(() => {
+    if (pendingScroll) return;
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [dr.activeThread?.messages.length, dr.isStreaming, dr.thinkingStage]);
+  }, [dr.activeThread?.messages.length, dr.isStreaming, dr.thinkingStage, pendingScroll]);
+
+  // Jump-to-pinned-message effect: runs once the target thread is active and the DOM has the node.
+  useEffect(() => {
+    if (!pendingScroll) return;
+    if (dr.activeThread?.id !== pendingScroll.threadId) return;
+
+    const raf = requestAnimationFrame(() => {
+      const root = scrollRef.current;
+      const el = root?.querySelector<HTMLElement>(`[data-message-id="${pendingScroll.messageId}"]`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setHighlightedMessageId(pendingScroll.messageId);
+      setPendingScroll(null);
+      window.setTimeout(() => setHighlightedMessageId((id) => (id === pendingScroll.messageId ? null : id)), 1800);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [pendingScroll, dr.activeThread?.id, dr.activeThread?.messages.length]);
+
+  const jumpToPin = (threadId: string, messageId: string) => {
+    if (threadId !== dr.activeThreadId) {
+      dr.setActiveThreadId(threadId);
+      onSelectThread?.(threadId);
+    }
+    setPendingScroll({ threadId, messageId });
+  };
 
   const submit = async (text?: string) => {
     const prompt = (text ?? input).trim();
@@ -156,22 +184,30 @@ export function DeepResearchWorkspace({
             </div>
             {dr.pins.length === 0 ? (
               <div className="text-xs text-muted-foreground rounded-lg border border-dashed border-border/60 p-3">
-                Click the pin icon in any answer header to save the full response here with a title.
+                Pin any answer to bookmark it. Click a pin to jump back to that message.
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {dr.pins.map((pin) => (
-                  <PinnedAnswerCard
+                  <div
                     key={pin.id}
-                    pin={pin}
-                    authorId={authorId}
-                    onUnpin={() => dr.unpin(pin.id)}
-                    onRename={(t) => dr.renamePin(pin.id, t)}
-                    onJump={() => {
-                      dr.setActiveThreadId(pin.threadId);
-                      onSelectThread?.(pin.threadId);
-                    }}
-                  />
+                    className="group flex items-center gap-2 rounded-lg px-2 py-1.5 cursor-pointer hover:bg-muted/50"
+                    onClick={() => jumpToPin(pin.threadId, pin.messageId)}
+                    title={pin.title}
+                  >
+                    <Pin className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <div className="flex-1 min-w-0 text-[11px] font-medium truncate">{pin.title}</div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dr.unpin(pin.id);
+                      }}
+                      className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
+                      title="Unpin"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </div>
                 ))}
               </div>
             )}
@@ -191,7 +227,14 @@ export function DeepResearchWorkspace({
               </div>
             ) : (
               dr.activeThread.messages.map((m) => (
-                <div key={m.id} className="space-y-3 animate-fade-in">
+                <div
+                  key={m.id}
+                  data-message-id={m.id}
+                  className={cn(
+                    "space-y-3 animate-fade-in scroll-mt-4 rounded-xl transition-shadow",
+                    highlightedMessageId === m.id && "ring-2 ring-primary/40 ring-offset-2 ring-offset-background"
+                  )}
+                >
                   {m.role === "user" ? (
                     <div className="flex justify-end">
                       <div className="rounded-2xl rounded-br-sm bg-primary text-primary-foreground px-4 py-2 text-sm max-w-[80%] shadow-sm">
@@ -251,86 +294,6 @@ export function DeepResearchWorkspace({
         </main>
 
       </div>
-    </div>
-  );
-}
-
-function PinnedAnswerCard({
-  pin,
-  authorId,
-  onUnpin,
-  onRename,
-  onJump,
-}: {
-  pin: PinnedAnswer;
-  authorId: string;
-  onUnpin: () => void;
-  onRename: (title: string) => void;
-  onJump: () => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [title, setTitle] = useState(pin.title);
-
-  return (
-    <div className="rounded-lg border border-border/60 bg-card">
-      <div className="flex items-center gap-1.5 px-2.5 py-2">
-        <button
-          onClick={() => setOpen((v) => !v)}
-          className="text-muted-foreground hover:text-foreground"
-          title={open ? "Collapse" : "Expand"}
-        >
-          {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-        </button>
-        {editing ? (
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            onBlur={() => {
-              onRename(title.trim() || pin.title);
-              setEditing(false);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                onRename(title.trim() || pin.title);
-                setEditing(false);
-              }
-            }}
-            className="h-6 text-[11px] flex-1"
-            autoFocus
-          />
-        ) : (
-          <button
-            onClick={() => setOpen((v) => !v)}
-            onDoubleClick={() => setEditing(true)}
-            className="flex-1 text-left text-[11px] font-medium truncate"
-            title="Double-click to rename"
-          >
-            {pin.title}
-          </button>
-        )}
-        <button
-          onClick={onUnpin}
-          className="text-muted-foreground hover:text-destructive"
-          title="Unpin"
-        >
-          <Trash2 className="h-3 w-3" />
-        </button>
-      </div>
-      {open && (
-        <div className="border-t border-border/60 p-2.5 space-y-2 text-[11px]">
-          <ResponseEnvelopeView
-            envelope={pin.envelope}
-            threadId={pin.threadId}
-            messageId={pin.messageId}
-            authorId={authorId}
-            readOnly
-          />
-          <button onClick={onJump} className="text-[10px] text-primary hover:underline">
-            Jump to thread →
-          </button>
-        </div>
-      )}
     </div>
   );
 }

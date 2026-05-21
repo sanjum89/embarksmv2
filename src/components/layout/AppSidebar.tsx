@@ -344,13 +344,13 @@ export function AppSidebar() {
             })}
           </nav>
 
-          {/* Bottom section — each direct child wrapped in [&>*] so all icons share identical centered geometry when collapsed */}
+          {/* Bottom section — collapsed uses items-center so each child shrinks to icon width (keeps tooltips + popouts anchored to the button) */}
           <div
             className={cn(
               "w-full pb-3",
               expanded
                 ? "px-3 space-y-1"
-                : "flex flex-col items-stretch gap-1 px-0 [&>*]:flex [&>*]:w-full [&>*]:justify-center"
+                : "flex flex-col items-center gap-1 px-0"
             )}
           >
 
@@ -738,7 +738,7 @@ export function AppSidebar() {
           "w-full pb-1",
           expanded
             ? "px-3 space-y-1"
-            : "flex flex-col items-stretch gap-1 px-0 [&>*]:flex [&>*]:w-full [&>*]:justify-center"
+            : "flex flex-col items-center gap-1 px-0"
         )}
       >
 

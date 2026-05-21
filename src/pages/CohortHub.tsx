@@ -372,42 +372,61 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                           </div>
                         </div>
 
-                        <StaggerList key={safePage} className="relative mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                          {pageItems.map((a) => {
-                            const Icon = ICONS[a.code] ?? Award;
-                            if (a.earned) {
-                              return (
-                                <StaggerItem key={a.code}>
-                                  <div
-                                    title={`${a.label} · +${a.points} pts`}
-                                    className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
-                                  >
-                                    <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${TIER_ICON_BG[a.tier]}`}>
-                                      <Icon className="h-3 w-3" />
-                                    </div>
-                                    <div className="text-[11px] font-semibold leading-tight text-foreground">
-                                      {a.label}
-                                      <span className="ml-1 text-[10px] font-medium text-muted-foreground">+{a.points}</span>
-                                    </div>
-                                  </div>
-                                </StaggerItem>
-                              );
-                            }
+                        <div key={safePage} className="relative mt-4 flex flex-col gap-1.5">
+                          {Array.from({ length: Math.ceil(pageItems.length / 3) }).map((_, rowIdx) => {
+                            const row = pageItems.slice(rowIdx * 3, rowIdx * 3 + 3);
                             return (
-                              <StaggerItem key={a.code}>
-                                <div
-                                  title={`Locked · ${a.label}`}
-                                  className="flex items-center gap-1.5 rounded-full border border-dashed border-border bg-muted/30 px-2.5 py-1.5 opacity-70"
-                                >
-                                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                                    <Lock className="h-3 w-3" />
-                                  </div>
-                                  <div className="text-[11px] font-medium leading-tight text-muted-foreground">{a.label}</div>
-                                </div>
-                              </StaggerItem>
+                              <div key={rowIdx} className="flex gap-1.5">
+                                {row.map((a) => {
+                                  const Icon = ICONS[a.code] ?? Award;
+                                  const earned = a.earned;
+                                  return (
+                                    <div
+                                      key={a.code}
+                                      className="group/pill flex-1 min-w-0 basis-0 hover:flex-[2.5] transition-[flex] duration-200"
+                                    >
+                                      <div
+                                        title={earned ? `${a.label} · +${a.points} pts` : `Locked · ${a.label}`}
+                                        className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 min-w-0 w-full ${
+                                          earned
+                                            ? TIER_EARNED[a.tier]
+                                            : "border-dashed border-border bg-muted/30 opacity-70"
+                                        }`}
+                                      >
+                                        <div
+                                          className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                                            earned ? TIER_ICON_BG[a.tier] : "bg-muted text-muted-foreground"
+                                          }`}
+                                        >
+                                          {earned ? <Icon className="h-3 w-3" /> : <Lock className="h-3 w-3" />}
+                                        </div>
+                                        <div className="flex min-w-0 flex-1 items-baseline gap-1">
+                                          <span
+                                            className={`truncate whitespace-nowrap text-[11px] font-semibold leading-tight ${
+                                              earned ? "text-foreground" : "text-muted-foreground"
+                                            }`}
+                                          >
+                                            {a.label}
+                                          </span>
+                                          {earned && (
+                                            <span className="hidden shrink-0 text-[10px] font-medium text-muted-foreground group-hover/pill:inline">
+                                              +{a.points}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                                {row.length < 3 &&
+                                  Array.from({ length: 3 - row.length }).map((_, i) => (
+                                    <div key={`spacer-${i}`} className="flex-1 min-w-0 basis-0" />
+                                  ))}
+                              </div>
                             );
                           })}
-                        </StaggerList>
+                        </div>
+
 
                         <div className="relative mt-auto flex items-center justify-between gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
                           <div className="min-w-0 truncate">

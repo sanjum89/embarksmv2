@@ -610,3 +610,42 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
   );
 }
 
+
+function PinnedRow({ title, preview, onRemove }: { title: string; preview: string; onRemove: () => void }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-full border border-border bg-card">
+      <div className="flex items-center gap-2 px-3 py-2">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? "Collapse" : "Expand"}
+          className="text-muted-foreground hover:text-foreground"
+        >
+          {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex-1 min-w-0 truncate text-left text-sm font-medium text-foreground"
+          title={title}
+        >
+          {title}
+        </button>
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label="Remove pin"
+          className="text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      {open && (
+        <div className="border-t border-border/60 px-3 py-2 text-xs text-muted-foreground">
+          {preview}
+        </div>
+      )}
+    </div>
+  );
+}

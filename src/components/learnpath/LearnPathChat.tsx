@@ -595,6 +595,7 @@ export function EmbarkChat() {
 
   useEffect(() => {
     if (hasGreeted || messages.length > 0) return;
+    if (journeyLoading) return; // wait for cohort journey to finish loading
 
     setHasGreeted(true);
     const context = buildContext();

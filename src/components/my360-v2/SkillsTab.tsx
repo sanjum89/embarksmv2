@@ -171,7 +171,7 @@ export function SkillsTab({ data }: Props) {
                         </div>
                         <span className="text-xs font-medium tabular-nums text-muted-foreground w-10 text-right">{row.current_level}/5</span>
                       </div>
-                      {row.short_rationale && <div className="text-[11px] text-muted-foreground mt-1.5 italic">{row.short_rationale}</div>}
+                      {row.short_rationale && <div className="text-[12px] text-foreground/70 mt-1.5 leading-snug">{row.short_rationale}</div>}
                     </div>
                   </div>
                 </div>

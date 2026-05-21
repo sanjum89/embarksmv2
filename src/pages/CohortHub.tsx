@@ -11,10 +11,11 @@ import { JoinModal } from "@/components/cohort-hub/JoinModal";
 
 
 import {
-  Users, Calendar, ChevronRight, Sparkles, Trophy, Award, MessageCircle,
+  Users, Calendar, ChevronRight, ChevronLeft, Sparkles, Trophy, Award, MessageCircle,
   FileText, ArrowRight, AlertTriangle, CheckCircle2, Flag, BookOpen, Clock, Lock,
-  Flame, Target, GraduationCap, ShieldCheck, Star,
+  Flame, Target, GraduationCap, ShieldCheck, Star, Handshake, Crown, Medal, Rocket, Briefcase, PencilLine,
 } from "lucide-react";
+
 import { Link, useSearchParams } from "react-router-dom";
 import PageHeader from "@/components/layout/PageHeader";
 import { deriveHubStatus, cohortAvgPct } from "@/lib/cohortHubStatus";
@@ -49,6 +50,8 @@ export default function CohortHub() {
   const data = useCohortHub({ accountId, employeeId, employeesById });
   
   const [modal, setModal] = useState<null | { title: string; description?: string; meta?: any[]; teamsLink?: string; primaryLabel?: string }>(null);
+
+
 
   const sub = substitute;
 
@@ -157,6 +160,9 @@ interface BodyProps {
 
 function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorMessage, mentorBook }: BodyProps) {
   const [params, setParams] = useSearchParams();
+  const [achPage, setAchPage] = useState(0);
+  const ACH_PAGE_SIZE = 8;
+
   const tab = params.get("tab") === "adapted-path" ? "adapted-path" : "overview";
   const setTab = (v: string) => {
     const next = new URLSearchParams(params);
@@ -215,37 +221,64 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 gap-px bg-border md:grid-cols-2 lg:grid-cols-4">
-                  <div className="bg-card p-4">
+                <div className="group/strip flex flex-col gap-px bg-border md:grid md:grid-cols-2 lg:flex lg:flex-row">
+                  {/* Your progress */}
+                  <div className="group/tile relative flex-1 lg:flex-[1] bg-card p-4 transition-[flex-grow] duration-300 ease-out lg:hover:flex-[1.6] lg:focus-within:flex-[1.6] min-w-0">
                     <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"><Trophy className="h-3 w-3" /> Your progress</div>
                     <div className="mt-1 font-display text-xl font-bold text-foreground">{data.yourPct}%</div>
                     <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full bg-primary" style={{ width: `${Math.max(data.yourPct, 2)}%` }} /></div>
                     <div className="mt-1.5 text-xs text-muted-foreground">Cohort avg {avg}%</div>
+                    <div className="grid max-h-0 grid-rows-[0fr] overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover/tile:max-h-32 group-hover/tile:grid-rows-[1fr] group-hover/tile:opacity-100 group-focus-within/tile:max-h-32 group-focus-within/tile:grid-rows-[1fr] group-focus-within/tile:opacity-100">
+                      <div className="min-h-0 pt-2 text-[11px] text-muted-foreground">
+                        You're <b className="text-foreground">{Math.max(0, data.yourPct - avg)}%</b> ahead of the cohort average · ranked <b className="text-foreground">#{data.yourRank || "—"}</b> of {data.totalLearners || "—"}.
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-card p-4">
+
+                  {/* Time remaining */}
+                  <div className="group/tile relative flex-1 lg:flex-[1] bg-card p-4 transition-[flex-grow] duration-300 ease-out lg:hover:flex-[1.6] lg:focus-within:flex-[1.6] min-w-0">
                     <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"><Clock className="h-3 w-3" /> Time remaining</div>
                     <div className="mt-1 font-display text-xl font-bold text-foreground">{data.daysLeft > 0 ? `${data.daysLeft} days` : "—"}</div>
                     <div className="mt-0.5 text-xs text-muted-foreground">Due {fmtDate(c.dueDate)}</div>
+                    <div className="grid max-h-0 grid-rows-[0fr] overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover/tile:max-h-32 group-hover/tile:grid-rows-[1fr] group-hover/tile:opacity-100 group-focus-within/tile:max-h-32 group-focus-within/tile:grid-rows-[1fr] group-focus-within/tile:opacity-100">
+                      <div className="min-h-0 pt-2 text-[11px] text-muted-foreground">
+                        Programme started {fmtDate(c.startDate)} · keep pace to graduate on schedule with the cohort.
+                      </div>
+                    </div>
                   </div>
-                  <Link to="/" className="bg-card p-4 transition-colors hover:bg-muted/30 group">
+
+                  {/* Currently learning */}
+                  <Link to="/" className="group/tile relative flex-1 lg:flex-[1.2] bg-card p-4 transition-[flex-grow,background-color] duration-300 ease-out hover:bg-muted/30 lg:hover:flex-[1.8] lg:focus-within:flex-[1.8] min-w-0">
                     <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"><BookOpen className="h-3 w-3" /> Currently learning</div>
-                    <div className="mt-1 font-display text-xl font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">{data.nextChapter || "—"}</div>
+                    <div className="mt-1 font-display text-xl font-bold text-foreground line-clamp-1 group-hover/tile:text-primary transition-colors">{data.nextChapter || "—"}</div>
                     <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">Chapter in progress · continue →</div>
+                    <div className="grid max-h-0 grid-rows-[0fr] overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover/tile:max-h-32 group-hover/tile:grid-rows-[1fr] group-hover/tile:opacity-100 group-focus-within/tile:max-h-32 group-focus-within/tile:grid-rows-[1fr] group-focus-within/tile:opacity-100">
+                      <div className="min-h-0 pt-2 text-[11px] text-muted-foreground line-clamp-2">
+                        Next up after this chapter: keep momentum with Embark AI's recommended sequence.
+                      </div>
+                    </div>
                   </Link>
-                  <div className="bg-card p-4">
+
+                  {/* Mentor — gets the most real estate */}
+                  <div className="group/tile relative flex-1 lg:flex-[1.7] bg-card p-4 transition-[flex-grow] duration-300 ease-out lg:hover:flex-[2.2] lg:focus-within:flex-[2.2] min-w-0">
                     <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400"><Users className="h-3 w-3" /> Your mentor</div>
                     {data.mentor ? (
                       <>
                         <div className="mt-1.5 flex items-center gap-2">
-                          <Avatar className="h-8 w-8"><AvatarFallback className="text-[10px] bg-muted">{initials(data.mentor.name)}</AvatarFallback></Avatar>
+                          <Avatar className="h-9 w-9"><AvatarFallback className="text-[11px] bg-muted">{initials(data.mentor.name)}</AvatarFallback></Avatar>
                           <div className="min-w-0 flex-1">
-                            <div className="font-display text-sm font-bold leading-tight truncate text-foreground">{data.mentor.name}</div>
-                            <div className="text-[11px] text-muted-foreground truncate">{data.mentor.title}</div>
+                            <div className="font-display text-sm font-bold leading-tight text-foreground">{data.mentor.name}</div>
+                            <div className="text-[11px] text-muted-foreground">{data.mentor.title}</div>
                           </div>
                         </div>
                         <div className="mt-2 flex gap-1.5">
-                          <Button size="sm" variant="outline" className="flex-1 h-7 text-xs px-2" onClick={mentorMessage}><MessageCircle className="mr-1 h-3 w-3" />Message</Button>
-                          <Button size="sm" className="flex-1 h-7 text-xs px-2" onClick={mentorBook}>Book</Button>
+                          <Button size="sm" variant="outline" className="flex-1" onClick={mentorMessage}><MessageCircle className="mr-1 h-3.5 w-3.5" />Message</Button>
+                          <Button size="sm" className="flex-1" onClick={mentorBook}>Book 1:1</Button>
+                        </div>
+                        <div className="grid max-h-0 grid-rows-[0fr] overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover/tile:max-h-32 group-hover/tile:grid-rows-[1fr] group-hover/tile:opacity-100 group-focus-within/tile:max-h-32 group-focus-within/tile:grid-rows-[1fr] group-focus-within/tile:opacity-100">
+                          <div className="min-h-0 pt-2 text-[11px] text-muted-foreground">
+                            Last met 14 days ago · next 1:1 suggested this week. Margaret typically replies within a few hours.
+                          </div>
                         </div>
                       </>
                     ) : (
@@ -253,11 +286,12 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                     )}
                   </div>
                 </div>
+
               </Card>
 
               {/* Recommended actions + Achievements */}
               <div className="grid gap-6 lg:grid-cols-3">
-                <Card className="p-6 lg:col-span-2">
+                <Card className="p-6 lg:col-span-1">
                   <div className="flex items-center justify-between">
                     <h2 className="font-display text-lg font-bold">Recommended actions</h2>
                     <Sparkles className="h-4 w-4 text-amber-500" />
@@ -273,7 +307,8 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                   </div>
                 </Card>
 
-                <Card className="relative overflow-hidden p-6 flex flex-col">
+                <Card className="relative overflow-hidden p-6 flex flex-col lg:col-span-2">
+
                   {/* decorative glows */}
                   <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-400/20 blur-3xl" />
                   <div className="pointer-events-none absolute -bottom-12 -left-8 h-28 w-28 rounded-full bg-primary/10 blur-3xl" />
@@ -289,12 +324,20 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                     const ICONS: Record<string, typeof Trophy> = {
                       first_quiz: CheckCircle2,
                       "5_day_streak": Flame,
+                      "30_day_streak": Flame,
                       module_1: BookOpen,
+                      module_2: BookOpen,
+                      module_3: BookOpen,
+                      module_4: BookOpen,
                       peer_mentor: Users,
                       mock_ace: Target,
                       top_10: Trophy,
                       cisi_l4: GraduationCap,
                       fca_notified: ShieldCheck,
+                      first_reflection: PencilLine,
+                      cohort_lead_nom: Crown,
+                      programme_grad: Rocket,
+                      client_handover: Briefcase,
                     };
                     const TIER_EARNED: Record<string, string> = {
                       bronze: "border-amber-500/40 bg-gradient-to-br from-amber-500/15 to-orange-500/10 text-amber-700 dark:text-amber-300",
@@ -306,6 +349,10 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                       silver: "bg-sky-500/20",
                       gold:   "bg-amber-400/30",
                     };
+
+                    const pageCount = Math.max(1, Math.ceil(data.achievements.length / ACH_PAGE_SIZE));
+                    const safePage = Math.min(achPage, pageCount - 1);
+                    const pageItems = data.achievements.slice(safePage * ACH_PAGE_SIZE, safePage * ACH_PAGE_SIZE + ACH_PAGE_SIZE);
 
                     return (
                       <>
@@ -324,20 +371,23 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                           </div>
                         </div>
 
-                        <StaggerList className="relative mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-                          {data.achievements.map((a) => {
+                        <StaggerList key={safePage} className="relative mt-4 grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                          {pageItems.map((a) => {
                             const Icon = ICONS[a.code] ?? Award;
                             if (a.earned) {
                               return (
                                 <StaggerItem key={a.code}>
                                   <div
                                     title={`${a.label} · +${a.points} pts`}
-                                    className={`flex items-center gap-1.5 rounded-full border px-2 py-1 transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
+                                    className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 transition-transform hover:-translate-y-0.5 ${TIER_EARNED[a.tier]}`}
                                   >
                                     <div className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${TIER_ICON_BG[a.tier]}`}>
                                       <Icon className="h-3 w-3" />
                                     </div>
-                                    <div className="truncate text-[11px] font-semibold leading-none text-foreground">{a.label}</div>
+                                    <div className="text-[11px] font-semibold leading-tight text-foreground">
+                                      {a.label}
+                                      <span className="ml-1 text-[10px] font-medium text-muted-foreground">+{a.points}</span>
+                                    </div>
                                   </div>
                                 </StaggerItem>
                               );
@@ -346,28 +396,55 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                               <StaggerItem key={a.code}>
                                 <div
                                   title={`Locked · ${a.label}`}
-                                  className="flex items-center gap-1.5 rounded-full border border-dashed border-border bg-muted/30 px-2 py-1 opacity-70"
+                                  className="flex items-center gap-1.5 rounded-full border border-dashed border-border bg-muted/30 px-2.5 py-1.5 opacity-70"
                                 >
                                   <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
                                     <Lock className="h-3 w-3" />
                                   </div>
-                                  <div className="truncate text-[11px] font-medium leading-none text-muted-foreground">{a.label}</div>
+                                  <div className="text-[11px] font-medium leading-tight text-muted-foreground">{a.label}</div>
                                 </div>
                               </StaggerItem>
                             );
                           })}
                         </StaggerList>
 
-
-                        {firstLocked && (
-                          <div className="relative mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-                            Next: <span className="font-medium text-foreground">{firstLocked.label}</span>
+                        <div className="relative mt-auto flex items-center justify-between gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
+                          <div className="min-w-0 truncate">
+                            {firstLocked ? (
+                              <>Next: <span className="font-medium text-foreground">{firstLocked.label}</span></>
+                            ) : (
+                              <>All milestones unlocked — nice work.</>
+                            )}
                           </div>
-                        )}
+                          {pageCount > 1 && (
+                            <div className="flex shrink-0 items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setAchPage((p) => Math.max(0, p - 1))}
+                                disabled={safePage === 0}
+                                aria-label="Previous achievements"
+                                className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                <ChevronLeft className="h-3.5 w-3.5" />
+                              </button>
+                              <span className="tabular-nums">{safePage + 1} / {pageCount}</span>
+                              <button
+                                type="button"
+                                onClick={() => setAchPage((p) => Math.min(pageCount - 1, p + 1))}
+                                disabled={safePage >= pageCount - 1}
+                                aria-label="Next achievements"
+                                className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-card text-muted-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                <ChevronRight className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </>
                     );
                   })()}
                 </Card>
+
               </div>
 
               {/* Cohort vs you */}

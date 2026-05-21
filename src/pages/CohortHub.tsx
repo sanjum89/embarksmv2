@@ -308,7 +308,7 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                   </div>
                 </Card>
 
-                <Card className="relative overflow-hidden p-6 flex flex-col lg:col-span-2">
+                <Card className="relative overflow-hidden p-6 flex flex-col">
 
                   {/* decorative glows */}
                   <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-400/20 blur-3xl" />

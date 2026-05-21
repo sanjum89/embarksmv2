@@ -216,37 +216,64 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 gap-px bg-border md:grid-cols-2 lg:grid-cols-4">
-                  <div className="bg-card p-4">
+                <div className="group/strip flex flex-col gap-px bg-border md:grid md:grid-cols-2 lg:flex lg:flex-row">
+                  {/* Your progress */}
+                  <div className="group/tile relative flex-1 lg:flex-[1] bg-card p-4 transition-[flex-grow] duration-300 ease-out lg:hover:flex-[1.6] lg:focus-within:flex-[1.6] lg:[.group\/strip:hover_&:not(:hover)]:flex-[0.85] min-w-0">
                     <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"><Trophy className="h-3 w-3" /> Your progress</div>
                     <div className="mt-1 font-display text-xl font-bold text-foreground">{data.yourPct}%</div>
                     <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted"><div className="h-full bg-primary" style={{ width: `${Math.max(data.yourPct, 2)}%` }} /></div>
                     <div className="mt-1.5 text-xs text-muted-foreground">Cohort avg {avg}%</div>
+                    <div className="grid max-h-0 grid-rows-[0fr] overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover/tile:max-h-32 group-hover/tile:grid-rows-[1fr] group-hover/tile:opacity-100 group-focus-within/tile:max-h-32 group-focus-within/tile:grid-rows-[1fr] group-focus-within/tile:opacity-100">
+                      <div className="min-h-0 pt-2 text-[11px] text-muted-foreground">
+                        You're <b className="text-foreground">{Math.max(0, data.yourPct - avg)}%</b> ahead of the cohort average · ranked <b className="text-foreground">#{data.yourRank || "—"}</b> of {data.totalLearners || "—"}.
+                      </div>
+                    </div>
                   </div>
-                  <div className="bg-card p-4">
+
+                  {/* Time remaining */}
+                  <div className="group/tile relative flex-1 lg:flex-[1] bg-card p-4 transition-[flex-grow] duration-300 ease-out lg:hover:flex-[1.6] lg:focus-within:flex-[1.6] lg:[.group\/strip:hover_&:not(:hover)]:flex-[0.85] min-w-0">
                     <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"><Clock className="h-3 w-3" /> Time remaining</div>
                     <div className="mt-1 font-display text-xl font-bold text-foreground">{data.daysLeft > 0 ? `${data.daysLeft} days` : "—"}</div>
                     <div className="mt-0.5 text-xs text-muted-foreground">Due {fmtDate(c.dueDate)}</div>
+                    <div className="grid max-h-0 grid-rows-[0fr] overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover/tile:max-h-32 group-hover/tile:grid-rows-[1fr] group-hover/tile:opacity-100 group-focus-within/tile:max-h-32 group-focus-within/tile:grid-rows-[1fr] group-focus-within/tile:opacity-100">
+                      <div className="min-h-0 pt-2 text-[11px] text-muted-foreground">
+                        Programme started {fmtDate(c.startDate)} · keep pace to graduate on schedule with the cohort.
+                      </div>
+                    </div>
                   </div>
-                  <Link to="/" className="bg-card p-4 transition-colors hover:bg-muted/30 group">
+
+                  {/* Currently learning */}
+                  <Link to="/" className="group/tile relative flex-1 lg:flex-[1.2] bg-card p-4 transition-[flex-grow,background-color] duration-300 ease-out hover:bg-muted/30 lg:hover:flex-[1.8] lg:focus-within:flex-[1.8] lg:[.group\/strip:hover_&:not(:hover)]:flex-[0.85] min-w-0">
                     <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground"><BookOpen className="h-3 w-3" /> Currently learning</div>
-                    <div className="mt-1 font-display text-xl font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">{data.nextChapter || "—"}</div>
+                    <div className="mt-1 font-display text-xl font-bold text-foreground line-clamp-1 group-hover/tile:text-primary transition-colors">{data.nextChapter || "—"}</div>
                     <div className="mt-0.5 text-xs text-muted-foreground line-clamp-1">Chapter in progress · continue →</div>
+                    <div className="grid max-h-0 grid-rows-[0fr] overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover/tile:max-h-32 group-hover/tile:grid-rows-[1fr] group-hover/tile:opacity-100 group-focus-within/tile:max-h-32 group-focus-within/tile:grid-rows-[1fr] group-focus-within/tile:opacity-100">
+                      <div className="min-h-0 pt-2 text-[11px] text-muted-foreground line-clamp-2">
+                        Next up after this chapter: keep momentum with Embark AI's recommended sequence.
+                      </div>
+                    </div>
                   </Link>
-                  <div className="bg-card p-4">
+
+                  {/* Mentor — gets the most real estate */}
+                  <div className="group/tile relative flex-1 lg:flex-[1.7] bg-card p-4 transition-[flex-grow] duration-300 ease-out lg:hover:flex-[2.2] lg:focus-within:flex-[2.2] lg:[.group\/strip:hover_&:not(:hover)]:flex-[1] min-w-0">
                     <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400"><Users className="h-3 w-3" /> Your mentor</div>
                     {data.mentor ? (
                       <>
                         <div className="mt-1.5 flex items-center gap-2">
-                          <Avatar className="h-8 w-8"><AvatarFallback className="text-[10px] bg-muted">{initials(data.mentor.name)}</AvatarFallback></Avatar>
+                          <Avatar className="h-9 w-9"><AvatarFallback className="text-[11px] bg-muted">{initials(data.mentor.name)}</AvatarFallback></Avatar>
                           <div className="min-w-0 flex-1">
-                            <div className="font-display text-sm font-bold leading-tight truncate text-foreground">{data.mentor.name}</div>
-                            <div className="text-[11px] text-muted-foreground truncate">{data.mentor.title}</div>
+                            <div className="font-display text-sm font-bold leading-tight text-foreground">{data.mentor.name}</div>
+                            <div className="text-[11px] text-muted-foreground">{data.mentor.title}</div>
                           </div>
                         </div>
                         <div className="mt-2 flex gap-1.5">
-                          <Button size="sm" variant="outline" className="flex-1 h-7 text-xs px-2" onClick={mentorMessage}><MessageCircle className="mr-1 h-3 w-3" />Message</Button>
-                          <Button size="sm" className="flex-1 h-7 text-xs px-2" onClick={mentorBook}>Book</Button>
+                          <Button size="sm" variant="outline" className="flex-1" onClick={mentorMessage}><MessageCircle className="mr-1 h-3.5 w-3.5" />Message</Button>
+                          <Button size="sm" className="flex-1" onClick={mentorBook}>Book 1:1</Button>
+                        </div>
+                        <div className="grid max-h-0 grid-rows-[0fr] overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover/tile:max-h-32 group-hover/tile:grid-rows-[1fr] group-hover/tile:opacity-100 group-focus-within/tile:max-h-32 group-focus-within/tile:grid-rows-[1fr] group-focus-within/tile:opacity-100">
+                          <div className="min-h-0 pt-2 text-[11px] text-muted-foreground">
+                            Last met 14 days ago · next 1:1 suggested this week. Margaret typically replies within a few hours.
+                          </div>
                         </div>
                       </>
                     ) : (
@@ -254,6 +281,7 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                     )}
                   </div>
                 </div>
+
               </Card>
 
               {/* Recommended actions + Achievements */}

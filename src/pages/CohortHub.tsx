@@ -163,6 +163,11 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
   const [params, setParams] = useSearchParams();
   const [achPage, setAchPage] = useState(0);
   const ACH_PAGE_SIZE = 6;
+  const [pinned, setPinned] = useState<{ id: string; title: string; preview: string }[]>([
+    { id: "p1", title: "Your fastest growth areas right now are…", preview: "Top three: client conversation skills, portfolio construction fundamentals, and regulatory horizon scanning. Focus your next two weeks here." },
+    { id: "p2", title: "Top peer matches for IM track", preview: "Theo Mensah and Priya Anand are 1–2 modules ahead on the same track and have flagged availability for peer pairing." },
+    { id: "p3", title: "What to prep for next 1:1 with Margaret", preview: "Bring your draft IPS for the Henderson case, two questions on risk profiling, and your reflection from Module 2." },
+  ]);
 
   const tab = params.get("tab") === "adapted-path" ? "adapted-path" : "overview";
   const setTab = (v: string) => {

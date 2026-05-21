@@ -441,15 +441,24 @@ export function useCohortHub({ accountId, employeeId, employeesById }: UseArgs):
       // achievements (rule-based; locked shown struck-through in component)
       const completedYou = completedByLearner[employeeId] || 0;
       const achievements: HubAchievement[] = [
-        { code: "first_quiz",   label: "First quiz passed", earned: completedYou >= 1,                              points: 25,  tier: "bronze" },
-        { code: "5_day_streak", label: "5-day streak",      earned: true,                                           points: 50,  tier: "bronze" },
-        { code: "module_1",     label: "Module 1 complete", earned: completedYou >= 3,                              points: 75,  tier: "silver" },
-        { code: "peer_mentor",  label: "Peer mentor",       earned: true,                                           points: 75,  tier: "silver" },
-        { code: "mock_ace",     label: "Mock client ace",   earned: false,                                          points: 100, tier: "silver" },
-        { code: "top_10",       label: "Top 10 cohort",     earned: yourRank <= 10 && yourRank > 0 && totalLearners >= 10, points: 150, tier: "gold" },
-        { code: "cisi_l4",      label: "CISI L4 ready",     earned: false,                                          points: 200, tier: "gold" },
-        { code: "fca_notified", label: "FCA notified",      earned: false,                                          points: 250, tier: "gold" },
+        { code: "first_quiz",      label: "First quiz passed",       earned: completedYou >= 1,                              points: 25,  tier: "bronze" },
+        { code: "5_day_streak",    label: "5-day streak",            earned: true,                                           points: 50,  tier: "bronze" },
+        { code: "module_1",        label: "Module 1 complete",       earned: completedYou >= 3,                              points: 75,  tier: "silver" },
+        { code: "peer_mentor",     label: "Peer mentor",             earned: true,                                           points: 75,  tier: "silver" },
+        { code: "first_reflection",label: "First reflection logged", earned: true,                                           points: 25,  tier: "bronze" },
+        { code: "module_2",        label: "Module 2 complete",       earned: completedYou >= 6,                              points: 100, tier: "silver" },
+        { code: "mock_ace",        label: "Mock client ace",         earned: false,                                          points: 100, tier: "silver" },
+        { code: "30_day_streak",   label: "30-day streak",           earned: false,                                          points: 125, tier: "silver" },
+        { code: "module_3",        label: "Module 3 complete",       earned: false,                                          points: 150, tier: "silver" },
+        { code: "top_10",          label: "Top 10 cohort",           earned: yourRank <= 10 && yourRank > 0 && totalLearners >= 10, points: 150, tier: "gold" },
+        { code: "cohort_lead_nom", label: "Cohort lead nomination",  earned: false,                                          points: 175, tier: "gold" },
+        { code: "module_4",        label: "Module 4 complete",       earned: false,                                          points: 200, tier: "gold" },
+        { code: "cisi_l4",         label: "CISI L4 ready",           earned: false,                                          points: 200, tier: "gold" },
+        { code: "fca_notified",    label: "FCA notified",            earned: false,                                          points: 250, tier: "gold" },
+        { code: "programme_grad",  label: "Programme graduate",      earned: false,                                          points: 300, tier: "gold" },
+        { code: "client_handover", label: "First client handover",   earned: false,                                          points: 200, tier: "gold" },
       ];
+
 
       const evidence: HubEvidence[] = [
         { category: "Mentor feedback", count: 2 },

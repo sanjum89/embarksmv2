@@ -50,6 +50,9 @@ export default function CohortHub() {
   const data = useCohortHub({ accountId, employeeId, employeesById });
   
   const [modal, setModal] = useState<null | { title: string; description?: string; meta?: any[]; teamsLink?: string; primaryLabel?: string }>(null);
+  const [achPage, setAchPage] = useState(0);
+  const ACH_PAGE_SIZE = 8;
+
 
   const sub = substitute;
 

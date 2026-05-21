@@ -738,7 +738,7 @@ export function AppSidebar() {
           "w-full pb-1",
           expanded
             ? "px-3 space-y-1"
-            : "flex flex-col items-stretch gap-1 px-0 [&>*]:flex [&>*]:w-full [&>*]:justify-center"
+            : "flex flex-col items-center gap-1 px-0"
         )}
       >
 

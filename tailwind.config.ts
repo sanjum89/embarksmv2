@@ -129,6 +129,15 @@ export default {
           "0%, 100%": { opacity: "0.55", transform: "scale(1)" },
           "50%": { opacity: "1", transform: "scale(1.15)" },
         },
+        "tour-nudge": {
+          "0%, 88%, 100%": { transform: "translateY(-50%) translateX(0)" },
+          "92%": { transform: "translateY(-50%) translateX(4px)" },
+          "96%": { transform: "translateY(-50%) translateX(-2px)" },
+        },
+        "tour-pop-in": {
+          from: { opacity: "0", transform: "translateY(-50%) translateX(-8px) scale(0.9)" },
+          to: { opacity: "1", transform: "translateY(-50%) translateX(0) scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",

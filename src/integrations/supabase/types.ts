@@ -134,6 +134,7 @@ export type Database = {
           id: string
           kind: Database["public"]["Enums"]["assessment_scope"]
           learner_responses: Json
+          locks_retake_until_chapters: Json
           metadata: Json
           module_code: string | null
           score: number | null
@@ -158,6 +159,7 @@ export type Database = {
           id?: string
           kind: Database["public"]["Enums"]["assessment_scope"]
           learner_responses?: Json
+          locks_retake_until_chapters?: Json
           metadata?: Json
           module_code?: string | null
           score?: number | null
@@ -182,6 +184,7 @@ export type Database = {
           id?: string
           kind?: Database["public"]["Enums"]["assessment_scope"]
           learner_responses?: Json
+          locks_retake_until_chapters?: Json
           metadata?: Json
           module_code?: string | null
           score?: number | null
@@ -281,6 +284,7 @@ export type Database = {
           chapter_summary: string | null
           chapter_title: string
           complexity: number
+          condensed_by_persona: Json
           content_sections: Json
           content_type: Database["public"]["Enums"]["chapter_content_type"]
           created_at: string
@@ -307,6 +311,7 @@ export type Database = {
           chapter_summary?: string | null
           chapter_title: string
           complexity?: number
+          condensed_by_persona?: Json
           content_sections?: Json
           content_type?: Database["public"]["Enums"]["chapter_content_type"]
           created_at?: string
@@ -333,6 +338,7 @@ export type Database = {
           chapter_summary?: string | null
           chapter_title?: string
           complexity?: number
+          condensed_by_persona?: Json
           content_sections?: Json
           content_type?: Database["public"]["Enums"]["chapter_content_type"]
           created_at?: string
@@ -1335,10 +1341,12 @@ export type Database = {
           failed_question: string
           id: string
           learner_answer: string | null
+          module_code: string | null
           practical_activity: string | null
           source_assessment_id: string
           status: string
           teaching_content_outline: string | null
+          topic_tag: string | null
           updated_at: string
           why_wrong: string | null
         }
@@ -1353,10 +1361,12 @@ export type Database = {
           failed_question: string
           id?: string
           learner_answer?: string | null
+          module_code?: string | null
           practical_activity?: string | null
           source_assessment_id: string
           status?: string
           teaching_content_outline?: string | null
+          topic_tag?: string | null
           updated_at?: string
           why_wrong?: string | null
         }
@@ -1371,10 +1381,12 @@ export type Database = {
           failed_question?: string
           id?: string
           learner_answer?: string | null
+          module_code?: string | null
           practical_activity?: string | null
           source_assessment_id?: string
           status?: string
           teaching_content_outline?: string | null
+          topic_tag?: string | null
           updated_at?: string
           why_wrong?: string | null
         }

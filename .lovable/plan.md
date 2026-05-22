@@ -1,138 +1,102 @@
-# Scope: Cohort Chapter Content and Adaptive Lens Fix
+# Cohort Content + Adaptive Delivery Fix
 
-## What is happening
+## Vocabulary (locked in)
 
-### 1. Why there is no content
-The Rathbones cohort chapter rows exist, but most assigned chapters do not contain real learning content yet.
+Four distinct concepts. Never used interchangeably again in copy or code.
 
-For the modules Clara is seeing, the database currently has:
+1. **Full module** — every chapter as authored, full length.
+2. **Condensed module** — a *shorter rewrite* of the same chapter tailored to the learner's profile. Different prose, not a section filter. Driven by `persona_module_adaptations.adaptation_type = 'microlearning'`. UI label: **"Condensed for you"**.
+3. **Quick diagnostic** — 3 real MCQs covering the first foundation chapters; correct answers skip those chapters, wrong answers leave them open.
+4. **Micro-learning** — a *remediation artefact* created **after** a learner submits an assessment below 100%, targeting the exact topics they got wrong. Stored in `micro_learnings`. UI label: **"Micro-learning"**.
 
-- `content_sections`: empty
-- `chapter_long_form_content`: empty
-- `realistic_content_outline`: empty
-- `practical_activity`: usually empty
-- `diagnostic_questions`: usually empty or only one module-level seed question
-- `chapter_summary`: a short sentence only
+## What's broken today
 
-Because the renderer has no real chapter body to display, it falls back to the tiny summary. That is why the page can show things like `26 words` and a near-empty transcript.
+- **No real chapter content.** Nearly every Rathbones cohort chapter row has empty `chapter_long_form_content`, `content_sections`, `diagnostic_questions`, `practical_activity`, `realistic_content_outline`. Only `chapter_summary` (one line) exists. Clara's *Risk-Adjusted Returns* renders as "26 words".
+- **Condensed modules are fake.** Code just filters sections by `depth_level='applied'`. With no sections seeded, output collapses to a banner plus the one-line summary. There is no real condensed rewrite anywhere.
+- **UI mislabels.** The transcript banner says "Microlearning view" while the header pill says "Full Module" — both wrong, and "microlearning" is the wrong word for a condensed module.
+- **Post-assessment micro-learnings are never created at runtime.** The `micro_learnings` table only ever gets rows from the demo reset script. The feature you asked for previously was never wired.
 
-### 2. Why it says microlearning when it is not
-The label is being driven by the module adaptation setting, not by verified content.
+## Fix plan
 
-For Clara’s persona, some modules are marked as `microlearning`, which the UI displays as `Condensed module`. When Clara opens a chapter in one of those modules, the content composer currently assumes that means it should render a condensed/microlearning view.
+### 1. Generate realistic chapter content
 
-The problem is that there are no sectioned chapter bodies to condense. The UI still prints the “Microlearning view” message even though no actual microlearning content has been generated or selected.
+New edge function `generate-catalog-chapters` fills every Rathbones cohort chapter where `chapter_long_form_content` is empty. Idempotent, batched (10 chapters/run), triggered from a dev button in Settings.
 
-This is misleading and needs to be fixed.
+Per chapter it writes:
+- `chapter_long_form_content` — **600–900 words**, written as an **internal Rathbones playbook** for an Associate IM at a UK discretionary wealth manager. References real working context: Charles River IMS, IFL/MPS model ranges, IOC house view, investment committee notes, COBS, Consumer Duty, KYC/AML workflow, suitability process.
+- `content_sections` — 3–5 sections, each tagged `foundation` | `core` | `applied`.
+- `diagnostic_questions` — 2–3 MCQs with `correctIndex`, `explanation`, `topic_tag` (used by remediation later).
+- `practical_activity` — concrete task, e.g. *"Draft a 150-word client note explaining a 6% drawdown using two attribution drivers from the IFL house view."*
+- `realistic_content_outline` — concise outline.
 
-### 3. Are microlearning, quick diagnostic, and condensed modules implemented correctly?
-They are partially wired, but not correctly complete.
+**Exception — Compliance/Certifications track (`cps*`):** prose reads like **CISI study notes** (formal, exam-ready, definitional, with worked examples), informed by the attached CISI Unit 1 workbook for structure, headings, and question style. Still UK-regulator accurate.
 
-The architecture exists:
+Uses Lovable AI Gateway (`google/gemini-2.5-flash`) with strict JSON schema via tool calling.
 
-- `full_module`: learner reads normal chapter content
-- `microlearning` / `Condensed module`: learner should see only the applied sections that are new or most relevant
-- `diagnostic_only` / `Quick diagnostic`: learner should answer three real questions and reopen missed chapters
-- `evidence_required` / `Evidence task`: learner should submit a practical task that can cover early foundation chapters
+### 2. Build true Condensed modules (per persona)
 
-But the implementation is currently failing in two important ways:
+New edge function `condense-chapter` `{chapterCode, personaCode}` returns a *rewritten* shorter body that:
+- Skips foundations the persona already evidences (per `persona_competency_profiles`).
+- Keeps applied Rathbones-specific content in full.
+- Target length **~50%** of full (default), shorter (~30%) when the persona shows mastery (e.g. Clara on basics).
+- Output cached in a new column `catalog_chapters.condensed_by_persona jsonb` on first generation.
 
-- The required content data was not generated for the majority of cohort chapters.
-- The UI trusts the adaptation label even when the required underlying content is missing.
+Hook `useCatalogChapter` returns the cached condensed body when adaptation is `microlearning` and a body exists; otherwise renders the full module and suppresses the condensed banner.
 
-So the concepts are present, but the system is not yet enforcing the data requirements needed for them to work honestly.
+### 3. Wire real post-assessment micro-learnings
 
-## Scope of fix
+On submit in `EmbarkAssessment.handleSubmit` (and cohort assessment instances):
 
-### A. Backfill real chapter content
-Create an idempotent content generation process for cohort chapters where content is missing.
+- Compute per-`topicTag` accuracy from `answers` vs `correctIndex`.
+- If `score < 100`:
+  - Call new edge function `generate-micro-learning` with the wrong questions + their `topicTag` + originating chapter codes.
+  - For each weak topic, insert a `micro_learnings` row (`failed_question`, `learner_answer`, `correct_answer`, `why_wrong`, `teaching_content_outline` ~300–500 words, `practical_activity`, `chapters` jsonb with source chapter codes, `source_assessment_id`, status `pending`).
+  - Surface in Action Centre and inside the originating module in the Embark journey, labelled **"Micro-learning"**.
+  - On completion → `status = completed`, bump `learner_analytics.total_micro_learnings`.
+- If `score < 80`:
+  - Additionally write `chapter_lock_events` rows that **reopen the source chapters** of the wrong questions (set `learner_progress.status = 'available'` and `is_locked = false`, drop the assessment's completion).
+  - **Lock the assessment** (`assessment_instances.status = 'locked'`, `learner_progress.is_locked = true` for the assessment step) until those chapters are completed again. Re-completing the last reopened chapter unlocks the retake.
+- If `score < CRITICAL_FAIL_THRESHOLD` (20): existing critical-fail reopen logic stays as is, on top of the above.
 
-Each chapter should receive:
+### 4. Honest UI
 
-- `chapter_long_form_content`: 600–900 words of Rathbones-relevant learning content
-- `content_sections`: 3–5 structured sections with `foundation`, `core`, and `applied` depth levels
-- `diagnostic_questions`: 2–3 multiple-choice questions per chapter
-- `practical_activity`: a short applied task suitable for evidence or reflection
-- `realistic_content_outline`: a concise outline of the chapter content
+- Replace the "Microlearning view — we've kept the parts most likely…" banner with **"Condensed for you"**, shown *only* when a real condensed body was returned.
+- Suppress the "Full Module" header pill when lens is `condensed` / `diagnostic` / `evidence`.
+- Reserve the word **"micro-learning"** in learner-facing copy for assessment-generated items only. Audit `LearnPathChapterRow`, `LearnPathModuleContent`, `formatAdaptationLabel`, supportive messages for stray uses.
+- Reopened chapters get a "Reopened from assessment" badge with the failed-topic name; the locked assessment shows "Locked — finish reopened chapters to retake".
+- If a chapter still has no content at render time, show "Content being prepared" rather than a 26-word stub.
 
-The generator should use Lovable AI through a backend function, write only missing content, and be safe to re-run.
+### 5. Audit script
 
-### B. Make the adaptive lens logic honest
-Update the rendering logic so adaptive labels only appear when the required content exists.
-
-Rules:
-
-- Do not show “Microlearning view” unless the chapter has real sectioned content and at least one applied section is being shown.
-- If a chapter cannot actually be condensed, render it as a full module until content exists.
-- Do not show contradictory pills such as “Full Module” while the transcript is being rendered as condensed/evidence/diagnostic.
-- Rename learner-facing copy where needed so `Condensed module` is not confused with post-assessment microlearning remediation.
-
-### C. Validate quick diagnostics
-Make quick diagnostics rely on real chapter questions, not fallback one-line placeholders.
-
-Rules:
-
-- A diagnostic module should show three meaningful questions across the module.
-- Each question should map back to a chapter.
-- Wrong answers should reopen the relevant chapter.
-- Correct answers should mark the covered chapters complete or skipped according to the current journey rules.
-
-### D. Validate evidence tasks
-Ensure evidence-task modules show a real practical activity.
-
-Rules:
-
-- Evidence tasks should not use generic fallback prompts when a real task is expected.
-- The task should reference the actual module/chapter topic.
-- The remaining non-covered chapters should still appear as normal reading.
-
-### E. Add a content QA audit
-Add or extend an audit script/report that checks every Clara/Theo cohort chapter for:
-
-- missing long-form content
-- missing sectioned content
-- missing applied sections for condensed modules
-- insufficient diagnostic questions
-- missing practical activity for evidence modules
-- misleading lens labels caused by incomplete data
+Extend `scripts/audit-clara-theo-content.ts` to fail on: empty long-form / sections / questions / activity; `microlearning` adaptation with no cached condensed body; assessment submissions in `assessment_instances` with `score < 100` that produced zero `micro_learnings` rows.
 
 ## Acceptance criteria
 
-The fix is complete when:
+- Clara → *Risk-Adjusted Returns* renders a multi-section Rathbones-grounded chapter (~700 words), no 26-word stub, no contradictory pills.
+- The same chapter for a persona with `microlearning` adaptation renders a genuinely shorter rewritten body, banner says "Condensed for you", no "Full Module" pill, the word "microlearning" does not appear.
+- Compliance chapter (`cps*`) reads in CISI study-note voice.
+- Submitting an assessment at 85% → ≥1 `micro_learnings` row appears in Action Centre and under the originating module, labelled "Micro-learning". Completing it marks `completed` and increments analytics.
+- Submitting at 65% → micro-learning created **and** wrong-question source chapters reopened **and** the assessment locked until those chapters are re-completed; retake then unlocks.
+- A quick-diagnostic module shows 3 real questions tied to chapter codes.
+- Audit passes for Clara and Theo.
 
-- Clara opens `Risk-Adjusted Returns` and sees a multi-section learning chapter, not a 26-word fallback.
-- A condensed module shows genuinely condensed applied content, not an empty microlearning banner.
-- A full module no longer displays microlearning language.
-- A quick diagnostic contains three real questions tied to source chapters.
-- An evidence task contains a concrete practical submission prompt.
-- The module list badge, chapter page pill, transcript banner, and actual rendered content all agree.
-- The audit returns no missing-content failures for Clara’s assigned Rathbones journey.
+## Technical notes
 
-## Technical implementation notes
-
-Files likely involved:
-
-- `src/hooks/useCatalogChapter.ts`
-- `src/components/learnpath/LearnPathContent.tsx`
-- `src/components/learnpath/LearnPathModuleContent.tsx`
-- `src/components/learnpath/JourneyModuleAccordion.tsx`
-- `scripts/audit-clara-theo-content.ts`
-- New backend function for chapter content generation
-
-Database tables involved:
-
-- `catalog_chapters`
-- `catalog_modules`
-- `persona_module_adaptations`
-- `learner_progress`
-- `catalog_evidence_tasks` if evidence task content needs to be reconciled
-
-No schema migration should be required because the required chapter fields already exist.
+New / changed:
+- New: `supabase/functions/generate-catalog-chapters/index.ts`
+- New: `supabase/functions/condense-chapter/index.ts`
+- New: `supabase/functions/generate-micro-learning/index.ts`
+- Edit: `src/hooks/useCatalogChapter.ts` — return cached condensed body; drop section-filter shortcut; emit honest banner state.
+- Edit: `src/components/learnpath/LearnPathContent.tsx`, `LearnPathModuleContent.tsx`, `LearnPathChapterRow.tsx` — banner + pill + copy split.
+- Edit: `src/components/learnpath/LearnPathAssessment.tsx` and the cohort assessment submit path — call `generate-micro-learning`; on <80% also reopen chapters + lock assessment.
+- Edit: `src/lib/assessmentGates.ts` — add reopen+lock branch driven by per-question topic tags (not just gate map).
+- Edit: Action Centre feed + Embark journey to surface pending `micro_learnings`.
+- Edit: `scripts/audit-clara-theo-content.ts`.
+- DB migration: add `catalog_chapters.condensed_by_persona jsonb default '{}'::jsonb`. No destructive changes.
+- CISI Unit 1 workbook PDF used as a style reference for the `cps*` track only; not redistributed in DB content.
 
 ## Out of scope
 
-- Redesigning the whole learning page UI
-- Changing Clara’s persona assignment
-- Replacing the cohort-first journey model
-- Reworking the full manager analytics flow
-- Changing authentication or account architecture
+- Replacing the cohort-first journey model.
+- Manager analytics changes beyond surfacing new micro-learnings.
+- Changing persona assignments or the gate map structure.

@@ -231,6 +231,8 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Random offset to reduce overlap when many invocations run in parallel.
+    const offset = Math.floor(Math.random() * 200);
     let q = supabase
       .from("catalog_chapters")
       .select(
@@ -244,7 +246,14 @@ Deno.serve(async (req) => {
         "chapter_long_form_content.is.null,chapter_long_form_content.eq.",
       );
     }
-    const { data: chapters, error: chErr } = await q.limit(limit);
+    const { data: chapters, error: chErr } = await q
+      .order("chapter_code", { ascending: true })
+      .range(offset, offset + limit * 4);
+    // Take only `limit` rows after the random offset — and skip any that have
+    // since been filled by a concurrent invocation.
+    const candidates = (chapters ?? []).filter(
+      (c: any) => force || !(c.chapter_long_form_content?.trim()),
+    ).slice(0, limit);
     if (chErr) throw chErr;
 
     const moduleCodes = Array.from(

@@ -231,6 +231,8 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    // Random offset to reduce overlap when many invocations run in parallel.
+    const offset = Math.floor(Math.random() * 200);
     let q = supabase
       .from("catalog_chapters")
       .select(
@@ -244,11 +246,18 @@ Deno.serve(async (req) => {
         "chapter_long_form_content.is.null,chapter_long_form_content.eq.",
       );
     }
-    const { data: chapters, error: chErr } = await q.limit(limit);
+    const { data: chapters, error: chErr } = await q
+      .order("chapter_code", { ascending: true })
+      .range(offset, offset + limit * 4);
+    // Take only `limit` rows after the random offset — and skip any that have
+    // since been filled by a concurrent invocation.
+    const candidates = (chapters ?? []).filter(
+      (c: any) => force || !(c.chapter_long_form_content?.trim()),
+    ).slice(0, limit);
     if (chErr) throw chErr;
 
     const moduleCodes = Array.from(
-      new Set((chapters ?? []).map((c) => c.module_code)),
+      new Set(candidates.map((c: any) => c.module_code)),
     );
     const { data: modules } = await supabase
       .from("catalog_modules")
@@ -265,9 +274,15 @@ Deno.serve(async (req) => {
     let skipped = 0;
     const errors: Array<{ code: string; error: string }> = [];
 
-    for (const ch of chapters ?? []) {
+    for (const ch of candidates) {
       try {
-        if (!force && ch.chapter_long_form_content?.trim()) {
+        // Re-check: if a concurrent invocation filled this chapter, skip.
+        const { data: fresh } = await supabase
+          .from("catalog_chapters")
+          .select("chapter_long_form_content")
+          .eq("id", ch.id)
+          .maybeSingle();
+        if (!force && fresh?.chapter_long_form_content?.trim()) {
           skipped++;
           continue;
         }

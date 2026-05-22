@@ -858,9 +858,9 @@ export function AppSidebar() {
               <TooltipTrigger asChild>
                 <NavLink
                   to="/settings"
-                  className={({ isActive }) => cn(
+                  className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                    isActive
+                    settingsActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
                   )}

@@ -151,6 +151,7 @@ export function AppSidebar() {
     if (path === "/" || path === "/manager" || path === "/chat") return location.pathname === path;
     return location.pathname.startsWith(path);
   };
+  const settingsActive = isPathActive("/settings");
 
   /* ── Traditional theme sidebar ── */
   if (isTraditional) {
@@ -450,9 +451,9 @@ export function AppSidebar() {
                   <TooltipTrigger asChild>
                     <NavLink
                       to="/settings"
-                      className={({ isActive }) => cn(
+                      className={cn(
                         "flex h-9 w-9 items-center justify-center rounded-full transition-colors",
-                        isActive ? "bg-white/60 text-foreground" : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
+                        settingsActive ? "bg-white/60 text-foreground" : "text-muted-foreground hover:bg-white/50 hover:text-foreground"
                       )}
                     >
                       <SettingsIcon className="h-4 w-4" />
@@ -857,9 +858,9 @@ export function AppSidebar() {
               <TooltipTrigger asChild>
                 <NavLink
                   to="/settings"
-                  className={({ isActive }) => cn(
+                  className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
-                    isActive
+                    settingsActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
                       : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
                   )}

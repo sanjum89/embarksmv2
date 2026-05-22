@@ -257,7 +257,7 @@ Deno.serve(async (req) => {
     if (chErr) throw chErr;
 
     const moduleCodes = Array.from(
-      new Set((chapters ?? []).map((c) => c.module_code)),
+      new Set(candidates.map((c: any) => c.module_code)),
     );
     const { data: modules } = await supabase
       .from("catalog_modules")
@@ -274,9 +274,15 @@ Deno.serve(async (req) => {
     let skipped = 0;
     const errors: Array<{ code: string; error: string }> = [];
 
-    for (const ch of chapters ?? []) {
+    for (const ch of candidates) {
       try {
-        if (!force && ch.chapter_long_form_content?.trim()) {
+        // Re-check: if a concurrent invocation filled this chapter, skip.
+        const { data: fresh } = await supabase
+          .from("catalog_chapters")
+          .select("chapter_long_form_content")
+          .eq("id", ch.id)
+          .maybeSingle();
+        if (!force && fresh?.chapter_long_form_content?.trim()) {
           skipped++;
           continue;
         }

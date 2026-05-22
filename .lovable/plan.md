@@ -1,20 +1,18 @@
 ## Plan
 
-1. **Remove the layout side-effect from `TourSidebarHint`**
-   - Change the wrapper from `inline-flex` to a block-level wrapper that does not add its own centering/inline layout behavior.
-   - Keep the notification dot and popout positioning anchored to the tour button.
+1. **Fix the actual cause of the Settings drift**
+   - The Settings item is the only collapsed bottom action rendered as a `NavLink` with a function-based `className` inside `TooltipTrigger asChild`.
+   - That wrapper combination can prevent the anchor from receiving the same fixed `h-9/w-9` or `h-10/w-10` flex box as the other icon buttons, so the gear is drawn from a different left edge.
 
-2. **Normalize the collapsed bottom button row**
-   - In `AppSidebar.tsx`, wrap each collapsed bottom item in the same fixed-size container:
-     - theme toggle
-     - accessibility trigger
-     - tour trigger
-     - settings link
-   - This makes Settings align from its outer box, not from mixed Tooltip/Portal/Tour wrappers.
+2. **Make Settings use the same pattern as the other sidebar links**
+   - Compute `settingsActive` with the existing `isPathActive("/settings")` helper.
+   - Pass Settings a plain string `className` instead of a callback while it is inside the tooltip trigger.
+   - Apply this in both sidebar variants: traditional and new.
 
-3. **Keep existing visual behavior unchanged**
-   - Do not change labels, icons, routes, hover states, or expanded-sidebar layout.
-   - Only adjust collapsed-sidebar sizing/alignment so Settings sits in the same vertical column as the other icons.
+3. **Lock all collapsed bottom actions to one axis**
+   - Keep each bottom row as a full-width centering shell.
+   - Keep each clickable control as a fixed-size flex box.
+   - No label, route, icon, hover, or expanded-sidebar behavior changes.
 
 4. **Verify visually**
-   - Re-open the preview in collapsed mode and confirm the four bottom icons share the same center x-position.
+   - Reload the collapsed sidebar and confirm Sun, Type, Sparkles, and Settings share the same center line.

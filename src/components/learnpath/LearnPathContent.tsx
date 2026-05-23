@@ -137,15 +137,34 @@ export function EmbarkContent() {
   const profileData = normalizedAccount?.profileData?.[user.id];
   const { groups: recommendationGroups } = getRecommendationsForUser(profileData);
 
-  // Assessment view
-  if (contentView === "assessment" && assessmentModuleId) {
-    const stepInfo = allSteps.find((s) => s.stepId === assessmentModuleId || s.moduleId === assessmentModuleId);
-    const currentIdx = allSteps.findIndex((s) => s.stepId === assessmentModuleId || s.moduleId === assessmentModuleId);
+  // Assessment view — handles legacy steps AND cohort blueprint / quiz chapters.
+  // We also detect when activeModuleId is a cohort chapter with contentType=quiz
+  // or a blueprint code (*.bp_post / *.bp_mid) and route to the assessment runner.
+  const detectedAssessmentId = (() => {
+    if (contentView === "assessment" && assessmentModuleId) return assessmentModuleId;
+    if (contentView === "module" && activeModuleId && journey) {
+      for (const t of journey.tracks) {
+        for (const m of t.modules) {
+          const ch = m.chapters.find((c) => c.code === activeModuleId);
+          if (ch && (ch.contentType === "quiz" || ch.contentType === "assessment" ||
+                     ch.code.endsWith(".midpoint") || ch.code.endsWith(".bp_post") || ch.code.endsWith(".bp_mid"))) {
+            return ch.code;
+          }
+        }
+      }
+    }
+    return null;
+  })();
+
+  if ((contentView === "assessment" && assessmentModuleId) || detectedAssessmentId) {
+    const assessmentTarget = (contentView === "assessment" ? assessmentModuleId : detectedAssessmentId) as string;
+    const stepInfo = allSteps.find((s) => s.stepId === assessmentTarget || s.moduleId === assessmentTarget);
+    const currentIdx = allSteps.findIndex((s) => s.stepId === assessmentTarget || s.moduleId === assessmentTarget);
     const nextStep = allSteps.slice(currentIdx + 1).find((s) => s.status !== "completed" && s.status !== "skipped");
 
     return (
       <EmbarkAssessment
-        assessmentId={assessmentModuleId}
+        assessmentId={assessmentTarget}
         skillTargetId={stepInfo?.skillTargetId}
         stepId={stepInfo?.stepId}
         nextStepId={nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId}

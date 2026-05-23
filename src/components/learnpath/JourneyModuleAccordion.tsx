@@ -179,6 +179,10 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                       const isAssessment =
                         c.contentType === "assessment" ||
                         c.contentType === "diagnostic" ||
+                        c.contentType === "quiz" ||
+                        c.code.endsWith(".midpoint") ||
+                        c.code.endsWith(".bp_post") ||
+                        c.code.endsWith(".bp_mid") ||
                         (c as any).assessmentScore != null;
                       const step: UnifiedStep & { lensState?: string } = {
                         stepId: c.code,

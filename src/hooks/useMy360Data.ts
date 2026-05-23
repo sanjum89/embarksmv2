@@ -143,11 +143,18 @@ export interface PersonaRoleRow {
   rationale?: string;
 }
 
+export interface MentorInfo {
+  employeeId: string;
+  name: string;
+  title?: string;
+}
+
 export interface My360Data {
   loading: boolean;
   error?: string;
   eligible: boolean;
   employee?: EmployeeRecord;
+  mentor?: MentorInfo;
   personaCode?: string;
   roleCohortCode: string;
   proficiency: CapabilityRow[];

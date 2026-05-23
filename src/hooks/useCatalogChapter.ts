@@ -171,7 +171,8 @@ export type ChapterLens = "full" | "condensed" | "diagnostic" | "evidence";
 
 export function composeChapterTranscript(
   ch: CatalogChapterContent,
-  lens: ChapterLens = "full"
+  lens: ChapterLens = "full",
+  options: { condensedBody?: string | null } = {}
 ): string {
   if (lens === "evidence") {
     return [
@@ -215,6 +216,18 @@ export function composeChapterTranscript(
   }
 
   if (lens === "condensed") {
+    // Prefer a real persona-condensed rewrite when available.
+    if (options.condensedBody && options.condensedBody.trim().length > 200) {
+      return [
+        `# ${ch.chapterTitle}`,
+        `> Condensed for you — a shorter rewrite tailored to your background. The full chapter is still available if you want it.`,
+        options.condensedBody.trim(),
+        ch.practicalActivity ? `## Try it yourself\n${ch.practicalActivity}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n\n");
+    }
+    // Fallback to heuristic slice while the AI rewrite is being prepared.
     const applied = ch.contentSections.filter((s) => s.depth_level === "applied");
     const sections = applied.length > 0 ? applied : ch.contentSections.slice(-2);
     const body = sections
@@ -222,13 +235,14 @@ export function composeChapterTranscript(
       .join("\n\n");
     return [
       `# ${ch.chapterTitle}`,
-      `> Microlearning view — we've kept the parts most likely to be new for you and trimmed the basics your background already covers.`,
+      `> Preparing your condensed view — showing the most relevant sections in the meantime.`,
       body || (ch.longFormContent?.slice(0, 1500) ?? ""),
       ch.practicalActivity ? `## Try it yourself\n${ch.practicalActivity}` : "",
     ]
       .filter(Boolean)
       .join("\n\n");
   }
+
 
   // full
   if (ch.contentSections.length > 0) {

@@ -8,6 +8,8 @@ import { Loader2 } from "lucide-react";
 export default function DevTools() {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [backfilling, setBackfilling] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<string | null>(null);
 
   const runReset = async () => {
     setRunning(true);
@@ -22,6 +24,22 @@ export default function DevTools() {
       toast({ title: "Reset failed", description: String(e?.message ?? e), variant: "destructive" });
     } finally {
       setRunning(false);
+    }
+  };
+
+  const runBackfill = async () => {
+    setBackfilling(true);
+    setBackfillResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-catalog-chapters", { body: { limit: 25 } });
+      if (error) throw error;
+      setBackfillResult(JSON.stringify(data, null, 2));
+      toast({ title: "Chapter backfill complete", description: `Processed ${(data as any)?.processed ?? "?"} chapters.` });
+    } catch (e: any) {
+      setBackfillResult(String(e?.message ?? e));
+      toast({ title: "Backfill failed", description: String(e?.message ?? e), variant: "destructive" });
+    } finally {
+      setBackfilling(false);
     }
   };
 
@@ -52,6 +70,29 @@ export default function DevTools() {
           {result && (
             <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
               {result}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Backfill chapter content</CardTitle>
+          <CardDescription>
+            Invokes <code>generate-catalog-chapters</code> to fill any{" "}
+            <code>catalog_chapters</code> row with empty <code>chapter_long_form_content</code>.
+            Generates a ~700-word Rathbones playbook body plus content sections and diagnostic
+            questions. Safe to re-run — already-filled chapters are skipped.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button onClick={runBackfill} disabled={backfilling} variant="outline">
+            {backfilling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {backfilling ? "Generating…" : "Backfill empty chapters (25 max)"}
+          </Button>
+          {backfillResult && (
+            <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
+              {backfillResult}
             </pre>
           )}
         </CardContent>

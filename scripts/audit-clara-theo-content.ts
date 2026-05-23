@@ -188,6 +188,16 @@ async function auditPersona(employeeId: string, label: string): Promise<PersonaR
       if (pa.length < 200) issues.push(`evidence chapter has thin practical_activity (${pa.length} chars)`);
     }
 
+    if (adaptType === "microlearning" && personaCode) {
+      const cache = (c.condensed_by_persona ?? {}) as Record<string, { body?: string }>;
+      const cached = cache[personaCode]?.body ?? "";
+      if (!cached || cached.length < 400) {
+        issues.push(
+          `microlearning chapter missing condensed cache for persona ${personaCode} (${cached.length} chars) — will fall back to live generation`,
+        );
+      }
+    }
+
     for (const re of PLACEHOLDERS) {
       if (re.test(longForm) || re.test(JSON.stringify(sections))) {
         issues.push(`placeholder text matched ${re.source}`);

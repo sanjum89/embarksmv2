@@ -39,9 +39,11 @@ export function DiagnosticResultsCard({
   nextTitle,
   onRetry,
   onContinue,
+  lockedRemainingTitles = [],
 }: Props) {
   const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
   const allCorrect = correct === total && total > 0;
+  const isLocked = lockedRemainingTitles.length > 0;
   const reopened = chapters.filter((c) => reopenedCodes.has(c.code));
   const mastered = chapters.filter((c) => !reopenedCodes.has(c.code));
 

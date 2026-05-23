@@ -277,7 +277,7 @@ function CohortHubBody({ data, c, sub, peerOpen, sessionOpen, groupOpen, mentorM
                         </div>
                         <div className="grid max-h-0 grid-rows-[0fr] overflow-hidden opacity-0 transition-all duration-300 ease-out group-hover/tile:max-h-32 group-hover/tile:grid-rows-[1fr] group-hover/tile:opacity-100 group-focus-within/tile:max-h-32 group-focus-within/tile:grid-rows-[1fr] group-focus-within/tile:opacity-100">
                           <div className="min-h-0 pt-2 text-[11px] text-muted-foreground">
-                            Last met 14 days ago · next 1:1 suggested this week. Margaret typically replies within a few hours.
+                            Last met 14 days ago · next 1:1 suggested this week. {data.mentor.name.split(" ")[0]} typically replies {data.mentor.replyWindow ?? "within a day"}.
                           </div>
                         </div>
                       </>

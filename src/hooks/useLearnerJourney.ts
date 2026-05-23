@@ -356,6 +356,7 @@ export function useLearnerJourney(
             assessmentScore: assessment?.score,
             assessmentPassed: assessment?.passed,
             assessmentPassingScore: assessment?.passingScore,
+            metadata: (c as any).metadata ?? null,
           });
           chaptersByModule.set(c.module_code, list);
         });

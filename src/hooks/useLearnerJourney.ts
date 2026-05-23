@@ -17,6 +17,8 @@ export interface JourneyChapter {
   assessmentScore?: number;
   assessmentPassed?: boolean;
   assessmentPassingScore?: number;
+  /** Raw catalog metadata for this chapter (e.g. micro_learning_for). */
+  metadata?: Record<string, any> | null;
 }
 
 
@@ -156,7 +158,7 @@ export function useLearnerJourney(
           ? await supabase
               .from("catalog_chapters")
               .select(
-                "chapter_code, module_code, chapter_title, content_type, estimated_time_minutes, display_order"
+                "chapter_code, module_code, chapter_title, content_type, estimated_time_minutes, display_order, metadata"
               )
               .eq("account_id", accountId)
               .in("module_code", moduleCodes)
@@ -354,6 +356,7 @@ export function useLearnerJourney(
             assessmentScore: assessment?.score,
             assessmentPassed: assessment?.passed,
             assessmentPassingScore: assessment?.passingScore,
+            metadata: (c as any).metadata ?? null,
           });
           chaptersByModule.set(c.module_code, list);
         });

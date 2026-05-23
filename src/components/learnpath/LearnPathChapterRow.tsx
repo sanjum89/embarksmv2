@@ -210,6 +210,17 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
                     {lensPill[lens].label}
                   </Badge>
                 )}
+                {step.metadata?.micro_learning_for && (
+                  <Badge
+                    variant="outline"
+                    className="h-5 px-1.5 text-[0.65rem] border bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30 gap-1"
+                    data-tour="lens-microlearning"
+                    title={`Targeted remediation for the previous assessment (${step.metadata.micro_learning_for})`}
+                  >
+                    <Zap className="h-2.5 w-2.5" />
+                    MICRO-LEARNING
+                  </Badge>
+                )}
                 {step.diagResult && (() => {
                   const { correct, total, reopenedCount } = step.diagResult;
                   const allCorrect = correct === total;

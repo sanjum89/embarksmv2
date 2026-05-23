@@ -52,6 +52,8 @@ export interface UnifiedStep {
   assessmentScore?: number;
   assessmentPassed?: boolean;
   assessmentPassingScore?: number;
+  /** Catalog metadata for the underlying chapter (e.g. micro_learning_for). */
+  metadata?: Record<string, any> | null;
 }
 
 

@@ -203,6 +203,7 @@ export function JourneyModuleAccordion({ track, cohortId, activeChapterCode }: P
                         assessmentScore: (c as any).assessmentScore,
                         assessmentPassed: (c as any).assessmentPassed,
                         assessmentPassingScore: (c as any).assessmentPassingScore,
+                        metadata: (c as any).metadata ?? null,
                       };
                       return (
                         <EmbarkChapterRow

@@ -41,6 +41,9 @@ interface State {
   chapter: CatalogChapterContent | null;
   isLoading: boolean;
   error: string | null;
+  /** Persona-specific condensed rewrite, loaded on demand when personaCode is supplied. */
+  condensedBody: string | null;
+  condensedLoading: boolean;
 }
 
 /**

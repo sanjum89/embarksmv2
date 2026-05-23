@@ -65,6 +65,42 @@ export function useActionCentreFeed(): ActionCentreFeed {
     return learnerSeedsFor(user.id);
   }, [user.id]);
 
+  // Pending micro-learnings created from sub-100% assessments → Action Centre items.
+  const [microItems, setMicroItems] = useState<ActionFeedItem[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (!normalizedAccount?.id || !user.id) {
+        setMicroItems([]);
+        return;
+      }
+      const { data, error } = await supabase
+        .from("micro_learnings")
+        .select("id, failed_question, why_wrong, topic_tag, module_code, status, created_at")
+        .eq("account_id", normalizedAccount.id)
+        .eq("employee_id", user.id)
+        .eq("status", "pending")
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (cancelled || error || !data) return;
+      setMicroItems(
+        data.map((m) => ({
+          id: `ml-${m.id}`,
+          kind: "ai_microlearning_offer" as const,
+          priority: "today" as const,
+          category: "ai" as const,
+          title: m.topic_tag ? `Micro-learning · ${m.topic_tag}` : "Quick refresher ready",
+          detail: m.why_wrong || m.failed_question || "Generated from your last assessment.",
+          when: "New",
+          ai: true,
+          href: m.module_code ? `/embark` : "/embark",
+        }))
+      );
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [normalizedAccount?.id, user.id]);
+
   const managerItems = useMemo<ActionFeedItem[]>(() => {
     if (!isManager) return [];
     return overlays.flatMap((o) =>

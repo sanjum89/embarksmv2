@@ -351,6 +351,7 @@ export function EmbarkContent() {
               reopenedCodes={recorded.reopened}
               nextTitle={diagNext ? substitute(diagNext.title) : null}
               onRetry={() => {
+                if (lockedRemainingCodes.length > 0) return;
                 diagnosticReopens.clear(diagModuleCode);
                 setRetryingDiag((prev) => {
                   const next = new Set(prev);
@@ -362,6 +363,10 @@ export function EmbarkContent() {
                 if (diagNext) openModule(diagNext.id);
                 else showModuleGrid();
               }}
+              lockedRemainingTitles={chapterEntries
+                .filter((c) => lockedRemainingCodes.includes(c.code))
+                .map((c) => c.title)}
+
             />
           </div>
         </div>

@@ -519,17 +519,17 @@ export function EmbarkContent() {
                   // Record the attempt for manager analytics + audit trail.
                   const { data: instance } = await supabase
                     .from("assessment_instances")
-                    .insert({
+                    .insert([{
                       account_id: activeAccountId,
                       cohort_id: journey.cohort.id,
                       employee_id: employeeId,
                       module_code: diagModuleCode,
-                      kind: "diagnostic",
+                      kind: "diagnostic" as const,
                       status: scorePct < 80 ? "locked" : "completed",
                       score: scorePct,
                       completed_at: new Date().toISOString(),
                       locks_retake_until_chapters: scorePct < 80 ? result.wrongChapterCodes : [],
-                    })
+                    }])
                     .select("id")
                     .maybeSingle();
 

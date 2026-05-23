@@ -114,12 +114,12 @@ export function useActionCentreFeed(): ActionCentreFeed {
   }, [overlays, approvals, employeesById, isManager]);
 
   const allItems = useMemo(() => {
-    const merged = [...learnerItems, ...managerItems];
+    const merged = [...microItems, ...learnerItems, ...managerItems];
     return merged.filter((i) => {
       const s = state[i.id];
       return s !== "done" && s !== "dismissed" && s !== "snoozed";
     });
-  }, [learnerItems, managerItems, state]);
+  }, [microItems, learnerItems, managerItems, state]);
 
   const filtered = useMemo(() => allItems.filter((i) => matchesFilter(i, filter)), [allItems, filter]);
 

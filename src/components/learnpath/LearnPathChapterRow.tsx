@@ -266,7 +266,7 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
                 {(step.learningFormat === "micro" || step.learningFormat === "micro_refresher") && (
                   <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-medium">
                     <Zap className="h-3 w-3" />
-                    {step.learningFormat === "micro_refresher" ? "Microlearning · Quick Refresher" : "Microlearning"}
+                    {step.learningFormat === "micro_refresher" ? "Condensed · Quick refresher" : "Condensed for you"}
                   </span>
                 )}
               </div>

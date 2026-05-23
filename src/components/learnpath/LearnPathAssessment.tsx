@@ -3,11 +3,13 @@ import { useEmbark } from "@/contexts/LearnPathContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
-import { resolveAssessment, applyGateActions, STEP_TO_ASSESSMENT } from "@/lib/assessmentGates";
+import { useLearnerJourney } from "@/hooks/useLearnerJourney";
+import { useResolvedAssessment } from "@/hooks/useResolvedAssessment";
+import { handleAssessmentSubmission } from "@/lib/assessmentSubmission";
 import { emitAssessmentCompleted } from "@/lib/agentOneEventEmitter";
 import { emitEngagementEvent } from "@/lib/embarkEngagementEvents";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, ArrowRight } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, RotateCcw, ArrowRight, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import type { StepType } from "@/types/learning";
@@ -25,24 +27,38 @@ interface Props {
 export function EmbarkAssessment({
   assessmentId,
   skillTargetId,
-  stepId,
   nextStepId,
   nextStepTitle,
   nextStepType,
   nextSkillTargetId,
 }: Props) {
   const { closeAssessment, openModule, openAssessment: openNextAssessment, showModuleGrid } = useEmbark();
-  const { skillTargets, updateSkillTarget, recordAssessmentResult } = useSkillTargets();
-  const { activeAccount, normalizedAccount } = useAccount();
+  const { skillTargets, recordAssessmentResult } = useSkillTargets();
+  const { activeAccount, activeAccountId, normalizedAccount } = useAccount();
   const { user } = useUser();
 
-  // Resolve the assessment using shared logic
-  const resolvedId = STEP_TO_ASSESSMENT[assessmentId] ?? assessmentId;
-  const assessment = resolveAssessment(resolvedId, skillTargets);
+  const employeeId =
+    normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
+  const { journey } = useLearnerJourney(activeAccountId, employeeId);
+
+  const { resolved, isLoading: resolving } = useResolvedAssessment(
+    activeAccountId,
+    assessmentId,
+    skillTargets,
+  );
+  const assessment = resolved?.assessment ?? null;
 
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [showResults, setShowResults] = useState(false);
+
+  if (resolving) {
+    return (
+      <div className="h-full flex items-center justify-center text-muted-foreground gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" /> Preparing assessment…
+      </div>
+    );
+  }
 
   if (!assessment) {
     return (
@@ -86,7 +102,6 @@ export function EmbarkAssessment({
         100
     );
 
-    // Emit Agent One event
     if (activeAccount?.id && normalizedAccount && assessmentId) {
       emitAssessmentCompleted(user.id, assessmentId, finalScore, activeAccount.id, normalizedAccount).catch(console.error);
     }
@@ -95,12 +110,42 @@ export function EmbarkAssessment({
     if (skillTargetId) {
       recordAssessmentResult(skillTargetId, assessment, answers);
     } else {
-      // Fallback: at least emit the basic engagement event
       emitEngagementEvent({
         type: "assessment_completed",
         score: finalScore,
         moduleTitle: assessment.title ?? null,
       });
+    }
+
+    // Shared post-submit pipeline — micro-learnings + chapter reopen + lock at <80%.
+    // Only fires for cohort-backed assessments (chapter quiz or blueprint), where
+    // we have a moduleCode resolved by useResolvedAssessment.
+    if (resolved && resolved.moduleCode && activeAccountId && journey && finalScore < 100) {
+      const wrongList = assessment.questions
+        .filter((q) => answers[q.id] !== q.correctIndex)
+        .map((q) => ({
+          question: q.question,
+          learnerAnswer: q.options[answers[q.id]] ?? "(no answer)",
+          correctAnswer: q.options[q.correctIndex] ?? "(unknown)",
+          topicTag: q.topicTag,
+          chapterCodes:
+            (q.topicTag && resolved.topicToChapters?.[q.topicTag]) ||
+            (resolved.chapterCode ? [] : []),
+        }));
+
+      handleAssessmentSubmission({
+        accountId: activeAccountId,
+        cohortId: journey.cohort.id,
+        employeeId,
+        assessmentId,
+        sourceKind: resolved.sourceKind,
+        moduleCode: resolved.moduleCode,
+        chapterCode: resolved.chapterCode,
+        blueprintCode: resolved.blueprintCode,
+        passingScore: assessment.passingScore,
+        score: finalScore,
+        wrongAnswers: wrongList,
+      }).catch((e) => console.warn("[EmbarkAssessment] submission pipeline failed", e));
     }
   };
 
@@ -129,7 +174,6 @@ export function EmbarkAssessment({
           <ArrowLeft className="h-3.5 w-3.5" /> Back
         </Button>
 
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -156,7 +200,6 @@ export function EmbarkAssessment({
           </div>
         </motion.div>
 
-        {/* Results */}
         {showResults ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -175,10 +218,15 @@ export function EmbarkAssessment({
             </p>
             <p className="text-xs text-muted-foreground mb-6">
               You got {assessment.questions.filter((q) => answers[q.id] === q.correctIndex).length} of {totalQuestions} correct.
-              {passed && assessment.type === "pre" ? " Some modules may be skippable based on your score." : ""}
+              {!passed && score < 80
+                ? " A short micro-learning has been added to your Action Centre, and the chapters covering anything you missed have been re-opened. The retake unlocks once they're complete."
+                : !passed
+                  ? " A short micro-learning has been added to your Action Centre to help close the gap."
+                  : score < 100
+                    ? " A short micro-learning has been added to your Action Centre to lock in the topic you missed."
+                    : ""}
             </p>
 
-            {/* Per-question results */}
             <div className="space-y-2 text-left mb-6">
               {assessment.questions.map((q, i) => {
                 const correct = answers[q.id] === q.correctIndex;
@@ -214,7 +262,6 @@ export function EmbarkAssessment({
               </button>
             </div>
 
-            {/* Next up preview */}
             {nextStepId && nextStepTitle && (
               <div className="mt-4 rounded-lg border border-border bg-muted/30 p-3 text-left">
                 <p className="text-xs text-muted-foreground mb-0.5">Next Up</p>
@@ -223,7 +270,6 @@ export function EmbarkAssessment({
             )}
           </motion.div>
         ) : (
-          /* Question card */
           <motion.div
             key={question.id}
             initial={{ opacity: 0, x: 20 }}

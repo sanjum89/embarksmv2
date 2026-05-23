@@ -154,8 +154,12 @@ function initials(name: string) {
 // Support roles that exist in the demo data (cohort_announcements, mentor_assignments)
 // but have no persona/employee record — provide friendly display names so the UI
 // never falls back to raw IDs like "rb-mentor-1".
+import { RATHBONES_MENTORS } from "@/data/rathbonesMentors";
+
 const SUPPORT_NAMES: Record<string, { name: string; title: string }> = {
-  "rb-mentor-1": { name: "Margaret Atherton", title: "Embark Mentor — Wealth Strategy" },
+  ...Object.fromEntries(
+    Object.values(RATHBONES_MENTORS).map((m) => [m.id, { name: m.name, title: m.title }])
+  ),
   "rb-mgr-1": { name: "Edward Whitfield", title: "Cohort Lead — Investment Management" },
 };
 

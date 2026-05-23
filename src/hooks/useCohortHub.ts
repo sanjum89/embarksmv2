@@ -19,6 +19,8 @@ export interface HubMentor {
   focusAreas: string[];
   startDate?: string | null;
   nextOneOnOneAt?: string | null;
+  /** Plain-English phrase used in "X typically replies {replyWindow}." */
+  replyWindow?: string;
 }
 
 export interface HubModuleProgress {
@@ -154,8 +156,12 @@ function initials(name: string) {
 // Support roles that exist in the demo data (cohort_announcements, mentor_assignments)
 // but have no persona/employee record — provide friendly display names so the UI
 // never falls back to raw IDs like "rb-mentor-1".
+import { RATHBONES_MENTORS } from "@/data/rathbonesMentors";
+
 const SUPPORT_NAMES: Record<string, { name: string; title: string }> = {
-  "rb-mentor-1": { name: "Margaret Atherton", title: "Embark Mentor — Wealth Strategy" },
+  ...Object.fromEntries(
+    Object.values(RATHBONES_MENTORS).map((m) => [m.id, { name: m.name, title: m.title }])
+  ),
   "rb-mgr-1": { name: "Edward Whitfield", title: "Cohort Lead — Investment Management" },
 };
 
@@ -413,16 +419,18 @@ export function useCohortHub({ accountId, employeeId, employeesById }: UseArgs):
       }));
 
       // mentor
+      const mentorRoster = RATHBONES_MENTORS[mentorRes.data?.mentor_employee_id ?? ""];
       const mentor: HubMentor | null = mentorRes.data
         ? {
             employeeId: mentorRes.data.mentor_employee_id,
             name: empName(mentorRes.data.mentor_employee_id),
-            title: empTitle(mentorRes.data.mentor_employee_id) || "Embark Mentor — Wealth Strategy",
+            title: empTitle(mentorRes.data.mentor_employee_id) || mentorRoster?.title || "Embark Mentor — Wealth Strategy",
             avatarUrl: empAvatar(mentorRes.data.mentor_employee_id),
             notes: mentorRes.data.notes,
             focusAreas: Array.isArray(mentorRes.data.focus_areas) ? (mentorRes.data.focus_areas as unknown[]).map(String) : [],
             startDate: mentorRes.data.start_date,
             nextOneOnOneAt: new Date(Date.now() + 2 * 86400000).toISOString(),
+            replyWindow: mentorRoster?.replyWindow ?? "within a day",
           }
         : null;
 

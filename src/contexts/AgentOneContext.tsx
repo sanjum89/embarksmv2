@@ -15,6 +15,7 @@ import { chapterSummaries, agentOneContent, onboardingSuggestionPills, isDemoLea
 import { emitEvent } from "@/lib/agentOneEventEmitter";
 import { applyContentNames } from "@/lib/contentSubstitution";
 import { useLearnerJourney } from "@/hooks/useLearnerJourney";
+import { getMentorFor } from "@/data/rathbonesMentors";
 
 /* ─── Stage-based Reflection Triggers (derived from cohort) ─── */
 import { investmentManagerCohort } from "@/data/rathbonesOnboarding";
@@ -370,6 +371,10 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     roleDescription: employeeRole?.description || null,
     roleDetailedDescription: employeeRole?.detailedDescription || null,
     roleName: employeeRole?.name || null,
+    mentor: (() => {
+      const m = getMentorFor(user.id);
+      return m ? { name: m.name, title: m.title } : null;
+    })(),
   };
 
   // Load persisted conversation

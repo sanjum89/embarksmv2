@@ -1,12 +1,13 @@
 import type { EmployeeRecord } from "@/hooks/useMy360Data";
 import { AskEmbarkButton } from "./AskEmbarkButton";
-import { MapPin, Briefcase, Clock, GraduationCap, Award } from "lucide-react";
+import { MapPin, Briefcase, Clock, GraduationCap, Award, UserCheck } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 interface Props {
   employee?: EmployeeRecord;
   managerName?: string;
+  mentorName?: string;
 }
 
 function initials(name?: string) {
@@ -14,7 +15,7 @@ function initials(name?: string) {
   return name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
 }
 
-export function ProfileHero({ employee, managerName }: Props) {
+export function ProfileHero({ employee, managerName, mentorName }: Props) {
   const hris = employee?.hris;
   const [certsOpen, setCertsOpen] = useState(false);
 

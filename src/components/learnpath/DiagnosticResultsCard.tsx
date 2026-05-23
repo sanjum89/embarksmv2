@@ -144,9 +144,34 @@ export function DiagnosticResultsCard({
         </div>
       )}
 
+      {/* Lock notice */}
+      {isLocked && (
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
+          <p className="font-medium text-amber-900 dark:text-amber-200 mb-1 flex items-center gap-1.5">
+            <AlertTriangle className="h-3.5 w-3.5" />
+            Retake locked
+          </p>
+          <p className="text-xs text-amber-900/80 dark:text-amber-200/80">
+            Finish the reopened chapter{lockedRemainingTitles.length === 1 ? "" : "s"} before retaking this diagnostic:
+          </p>
+          <ul className="mt-1.5 list-disc pl-5 text-xs text-amber-900/80 dark:text-amber-200/80">
+            {lockedRemainingTitles.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-        <Button variant="outline" size="sm" onClick={onRetry} className="gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onRetry}
+          disabled={isLocked}
+          title={isLocked ? "Complete the reopened chapters first" : undefined}
+          className="gap-2"
+        >
           <RotateCcw className="h-4 w-4" />
           Retake diagnostic
         </Button>
@@ -155,6 +180,7 @@ export function DiagnosticResultsCard({
           <ArrowRight className="h-4 w-4" />
         </Button>
       </div>
+
 
       {nextTitle && (
         <div className="rounded-lg border border-border bg-muted/30 p-3">

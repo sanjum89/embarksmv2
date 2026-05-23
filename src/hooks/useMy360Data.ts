@@ -309,7 +309,7 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
           .eq("role_cohort_code", roleCohortCode),
       ]);
 
-      const [modulesRes, adaptRes, progressRes] = await Promise.all([
+      const [modulesRes, adaptRes, progressRes, mentorRes] = await Promise.all([
         supabase
           .from("catalog_modules")
           .select("module_code,module_title,module_summary,progression_stage,display_order,difficulty_level")
@@ -331,7 +331,31 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
               .eq("employee_id", employeeId)
               .eq("cohort_id", cohortId)
           : Promise.resolve({ data: [] } as any),
+        supabase
+          .from("mentor_assignments")
+          .select("mentor_employee_id")
+          .eq("account_id", accountId)
+          .eq("mentee_employee_id", employeeId)
+          .eq("status", "active")
+          .maybeSingle(),
       ]);
+
+      // Resolve mentor display info: prefer DB assignment, fall back to canonical roster.
+      const mentorEmployeeId = ((mentorRes as any)?.data?.mentor_employee_id as string | undefined)
+        ?? getMentorFor(employeeId)?.id;
+      let mentor: MentorInfo | undefined;
+      if (mentorEmployeeId) {
+        const rosterEntry = getMentorById(mentorEmployeeId);
+        const empMatch = employees.find((e) => e.id === mentorEmployeeId);
+        const name = rosterEntry?.name ?? empMatch?.name;
+        if (name) {
+          mentor = {
+            employeeId: mentorEmployeeId,
+            name,
+            title: rosterEntry?.title ?? (empMatch as any)?.title,
+          };
+        }
+      }
 
       const personaContent = personaCode
         ? await Promise.all([

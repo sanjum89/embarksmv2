@@ -53,7 +53,10 @@ export function ProfileHero({ employee, managerName, mentorName }: Props) {
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground">
             {managerName && (
-              <span className="inline-flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" />{managerName}</span>
+              <span className="inline-flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" />Manager: {managerName}</span>
+            )}
+            {mentorName && (
+              <span className="inline-flex items-center gap-1.5"><UserCheck className="h-3.5 w-3.5" />Mentor: {mentorName}</span>
             )}
             {hris?.location && (
               <span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{hris.location}</span>

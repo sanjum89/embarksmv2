@@ -158,7 +158,7 @@ export function useLearnerJourney(
           ? await supabase
               .from("catalog_chapters")
               .select(
-                "chapter_code, module_code, chapter_title, content_type, estimated_time_minutes, display_order"
+                "chapter_code, module_code, chapter_title, content_type, estimated_time_minutes, display_order, metadata"
               )
               .eq("account_id", accountId)
               .in("module_code", moduleCodes)

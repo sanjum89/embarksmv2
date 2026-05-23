@@ -1,80 +1,65 @@
-# Persona → Mentor mapping (one mentor, everywhere)
+## Why Clara's BK track looks broken
 
-## Why this is broken today
+Clara's adaptation profile for the Business Knowledge track:
 
-- **Cohort Hub** reads `mentor_assignments` from the DB. Only **Clara (rb-l6)** and **Theo (rb-l3)** have rows, both pointing at `rb-mentor-1` → "Margaret Atherton" (a string defined in `useCohortHub.ts` `SUPPORT_NAMES`, not in `employees`). The other 7 Rathbones learners show "No mentor assigned".
-- **Agent One chat** never receives the mentor in its prompt context, so the LLM hallucinates names like *Sarah West* / *Sophie*.
-- **Action Centre seeds** (`learnerActionSeeds.ts`) hardcode "Felix Arden · Mentor" for Clara and Sophie, and "Clara Wren · Peer mentor" for Theo — inconsistent with Cohort Hub's Margaret.
-- The Cohort Hub mentor footer also hardcodes the string *"Margaret typically replies within a few hours."* (`CohortHub.tsx` line 280) instead of using `data.mentor.name`.
+| Module | Lens | What that adds to the journey |
+|---|---|---|
+| bk1 Intro to Wealth | `diagnostic_only` | Synthetic "Quick diagnostic — 3 questions" row + `bk1.c_micro_fees` micro |
+| bk2 KYC & Suitability | `microlearning` | `bk2.c_micro_vuln` micro + `bk2.bp_mid` milestone check |
+| bk3 Markets & Macro | `diagnostic_only` | Synthetic Quick diagnostic row |
+| bk4 Portfolio Construction | `microlearning` | `bk4.c_micro_rebalance` micro |
+| bk5 Regulatory Landscape | `full_module` | (no extras) |
 
-## Proposed canonical mapping
+Three things are leaking through:
 
-A small mentor roster (4 mentors, each covering 2–3 learners by domain), all surfaced as `rb-mentor-*` virtual employees (no login, display only):
+1. **"YOU ARE HERE" on Chapter 01 of bk1.** The Quick Diagnostic is a synthetic row (`__diag::bk1.intro_wealth_rathbones`) injected by `JourneyModuleAccordion.buildLensChapters`. It looks at the `diagnosticReopens` store / `learner_progress` for a row with `chapter_code='__diag'` and `metadata.diagnostic_result`. Clara has **no** `__diag` row, so the synthetic step renders as `in_progress` → the "You are here" marker lands on it. Same issue exists for bk3.
 
-| Learner | Persona archetype | Mentor | Mentor role |
-|---|---|---|---|
-| rb-l1 Sophie Linden | early / outside-FS | **Margaret Atherton** (`rb-mentor-1`) | Embark Mentor — Wealth Strategy |
-| rb-l2 Maya Holloway | early / FS-non-IM | **Margaret Atherton** | " |
-| rb-l3 Theo Marchant | early / IM | **Henry Caldwell** (`rb-mentor-2`) | Senior IM — Discretionary Portfolios |
-| rb-l4 Owen Castell | mid / outside-FS | **Henry Caldwell** | " |
-| rb-l5 Priya Aldridge | mid / FS-non-IM | **Diana Pemberton** (`rb-mentor-3`) | Head of Suitability & Consumer Duty |
-| rb-l6 Clara Wren | mid / IM (primary) | **Margaret Atherton** | Embark Mentor — Wealth Strategy |
-| rb-l7 Rosa Belmont | experienced / outside-FS | **Diana Pemberton** | " |
-| rb-l8 Felix Arden | experienced / FS-non-IM | **Alistair Quinn** (`rb-mentor-4`) | Investment Director — Private Clients |
-| rb-l9 Elliot Hayes | experienced / IM | **Alistair Quinn** | " |
+2. **Micro-learnings show as not-completed.** `catalog_chapters` has `bk1.c_micro_fees`, `bk2.c_micro_vuln`, `bk4.c_micro_rebalance`, but `learner_progress` has **no rows** for any of them under Clara — so they default to `not_started`. (Despite a previous migration claiming to mark them complete, the rows are missing for `rb-l6`.)
 
-> Clara stays with Margaret to preserve the current Cohort Hub demo. Theo moves from Margaret to **Henry Caldwell** so the seeded action "Clara replied to your portfolio risk question" can stay as a *peer* message while Henry is his formal mentor (matches the image in the user's report where Margaret was Clara's mentor — Theo needs his own). Pinnacle Capital (white-label) inherits via the deep-clone, so substitution will Just Work via `useContentSubstitution`.
+3. **bk2 milestone shows "Failed · 0%".** `assessment_instances` has Clara's latest `bk2.bp_mid` attempt at `score=0.00, status=locked` (from when the failed-assessment bug fired on login). Passing score is 80.
 
-## Implementation
+Everything else on the BK track is already `completed` (chapters c1–c8, midpoint chapter, and all `bp_post` blueprints scoring 82–88).
 
-### 1. DB migration — backfill `mentor_assignments`
+## Fix — data-only migration on `rb-l6` in cohort `11111111-…-111111111111`
 
-Insert one active row per learner (rb-l1..rb-l9) using the mapping above, idempotent (`ON CONFLICT` on `(account_id, mentee_employee_id)` — add the unique index if missing). Apply to the Rathbones account and the Pinnacle Capital clone account.
+All changes go through one Supabase migration. No frontend code changes needed; the existing lens / accordion logic already renders the correct visuals once the data is right.
 
-### 2. Shared mentor roster constant
+### A. Backfill micro-learning completions
 
-New file `src/data/rathbonesMentors.ts`:
-```ts
-export const RATHBONES_MENTORS = {
-  "rb-mentor-1": { name: "Margaret Atherton", title: "Embark Mentor — Wealth Strategy", replyWindow: "a few hours" },
-  "rb-mentor-2": { name: "Henry Caldwell",    title: "Senior IM — Discretionary Portfolios", replyWindow: "the same day" },
-  "rb-mentor-3": { name: "Diana Pemberton",   title: "Head of Suitability & Consumer Duty", replyWindow: "within a day" },
-  "rb-mentor-4": { name: "Alistair Quinn",    title: "Investment Director — Private Clients", replyWindow: "within a day" },
-} as const;
+Insert (idempotent) a `completed` `learner_progress` row for each micro:
 
-export const LEARNER_MENTOR_MAP: Record<string, keyof typeof RATHBONES_MENTORS> = {
-  "rb-l1": "rb-mentor-1", "rb-l2": "rb-mentor-1",
-  "rb-l3": "rb-mentor-2", "rb-l4": "rb-mentor-2",
-  "rb-l5": "rb-mentor-3", "rb-l7": "rb-mentor-3",
-  "rb-l6": "rb-mentor-1",
-  "rb-l8": "rb-mentor-4", "rb-l9": "rb-mentor-4",
-};
-
-export function getMentorFor(employeeId: string) { /* returns {id,name,title,replyWindow} | null */ }
+```text
+bk1.intro_wealth_rathbones  / bk1.c_micro_fees
+bk2.kyc_suitability         / bk2.c_micro_vuln
+bk4.portfolio_construction  / bk4.c_micro_rebalance
 ```
 
-### 3. Wire it in
+Use `ON CONFLICT (cohort_id, employee_id, chapter_code) DO UPDATE SET status='completed', completed_at=now()`.
 
-- **`src/hooks/useCohortHub.ts`** — replace inline `SUPPORT_NAMES` with the roster import; keeps the existing `mentor_assignments` query working since all rb-mentor-* IDs are still resolvable.
-- **`src/pages/CohortHub.tsx` (line 280)** — replace the hardcoded *"Margaret typically replies within a few hours"* with `` `${data.mentor.name.split(" ")[0]} typically replies ${data.mentor.replyWindow}.` ``.
-- **`src/data/learnerActionSeeds.ts`** — replace every hardcoded mentor `actor`/`title`/`detail` with the mapped mentor name for each learner key (Clara → Margaret, Sophie → Margaret, Theo's peer message stays "Clara · Peer mentor" but a new Henry mentor item is added).
-- **`src/contexts/AgentOneContext.tsx`** — import `getMentorFor(user.id)` and add `mentor: { name, title }` to the prompt context object (around line 350 where `isFreshGraduate` is built). This kills the "Sarah West" hallucination.
-- **`supabase/functions/super-agent-chat/index.ts`** — read `mentor` from the payload and inject one line into the system prompt: `Their assigned mentor is **{name}** ({title}). Always refer to this person when discussing mentorship.`
-- **`src/lib/rathbonesNarrative.ts`** — update any persona narrative blurbs that name a mentor to use the canonical map (current file does not, but worth a grep pass).
+### B. Submit the synthetic Quick Diagnostics
 
-### 4. Verification
+Insert `__diag` `learner_progress` rows for bk1 and bk3 with `metadata.diagnostic_result = { total: 3, correct: 3, wrong_chapters: [] }`. This causes `buildLensChapters` to render the synthetic diagnostic as `completed` (clearing the "YOU ARE HERE" marker) and marks the first 3 foundational chapters as `skipped_by_diagnostic` — the intended visual for a mid-career learner who already knows the basics. Because the underlying chapter rows in `learner_progress` are already `completed`, the module's "10 of 11" counter (computed in `useLearnerJourney` before the lens) stays at 100%.
 
-- Log in as each of Clara, Theo, Sophie → Cohort Hub mentor tile shows the right name + title, footer string uses the right first name and reply window.
-- In Agent One chat, ask "Who is my mentor?" as Clara → "Margaret Atherton". As Theo → "Henry Caldwell". As Sophie → "Margaret Atherton". No more *Sarah West*.
-- Action Centre items for all three personas show the matching mentor name in the actor line.
-- Switch to Pinnacle Capital persona → same mentor names appear (white-label substitution applies brand swaps only).
+### C. Pass the bk2 milestone check
 
-## Out of scope
+Update Clara's latest `assessment_instances` row for `blueprint_code='bk2.bp_mid'`:
 
-- Adding mentor avatars / real auth users for the rb-mentor-* IDs.
-- Booking/messaging flows behind the Cohort Hub buttons (still toast stubs).
-- Re-recording or re-generating any deep research narratives that mention mentors by name (will spot-fix only obvious clashes).
+- `score = 82`
+- `status = 'completed'`
+- `completed_at` set to a date between her bk2 chapters and her bk2.bp_post attempt so the timeline stays sensible
 
-## Open question
+This flips the milestone from `Failed · 0%` to a passing badge.
 
-Happy with the proposed 4-mentor roster and pairings above, or do you want different mentor names / a different split (e.g. one mentor per learner)?
+### D. Out of scope
+
+- Theo / other personas — only Clara was requested.
+- `tk3.performance_attribution` (Technical Knowledge track) — Clara is intentionally still in-progress there and the user said "entire business knowledge track", not the tech track.
+- No changes to `passing_score`, blueprint definitions, or any catalog/chapters rows.
+
+## Verification
+
+After approval and migration:
+
+1. Re-query `learner_progress` for `rb-l6` — expect 3 new micro rows + 2 new `__diag` rows, all `completed`.
+2. Re-query `assessment_instances` — `bk2.bp_mid` row should read `score=82, status='completed'`.
+3. Visually confirm in preview that bk1–bk5 each render as IN PROGRESS → COMPLETED with no failed badges, no "YOU ARE HERE" marker on the BK track, and micro-learning rows show a green check.

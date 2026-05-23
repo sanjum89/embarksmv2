@@ -14,12 +14,21 @@ export interface InlineQuizQuestion {
   chapterCode?: string;
 }
 
+export interface InlineQuizWrongAnswer {
+  question: string;
+  learnerAnswer: string;
+  correctAnswer: string;
+  chapterCode?: string;
+}
+
 export interface InlineQuizSubmitResult {
   total: number;
   correctCount: number;
   allCorrect: boolean;
   /** Chapter codes for questions answered incorrectly. Deduplicated. */
   wrongChapterCodes: string[];
+  /** Full detail of each wrong answer, for downstream micro-learning generation. */
+  wrongAnswers: InlineQuizWrongAnswer[];
 }
 
 interface Props {

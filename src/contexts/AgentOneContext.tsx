@@ -371,6 +371,10 @@ export function AgentOneProvider({ children }: { children: ReactNode }) {
     roleDescription: employeeRole?.description || null,
     roleDetailedDescription: employeeRole?.detailedDescription || null,
     roleName: employeeRole?.name || null,
+    mentor: (() => {
+      const m = getMentorFor(user.id);
+      return m ? { name: m.name, title: m.title } : null;
+    })(),
   };
 
   // Load persisted conversation

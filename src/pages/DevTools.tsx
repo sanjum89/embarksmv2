@@ -74,6 +74,29 @@ export default function DevTools() {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Backfill chapter content</CardTitle>
+          <CardDescription>
+            Invokes <code>generate-catalog-chapters</code> to fill any{" "}
+            <code>catalog_chapters</code> row with empty <code>chapter_long_form_content</code>.
+            Generates a ~700-word Rathbones playbook body plus content sections and diagnostic
+            questions. Safe to re-run — already-filled chapters are skipped.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button onClick={runBackfill} disabled={backfilling} variant="outline">
+            {backfilling ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {backfilling ? "Generating…" : "Backfill empty chapters (25 max)"}
+          </Button>
+          {backfillResult && (
+            <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
+              {backfillResult}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

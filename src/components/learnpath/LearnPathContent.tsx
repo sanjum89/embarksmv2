@@ -228,6 +228,52 @@ export function EmbarkContent() {
     return null;
   }, [diagModuleCode, journey]);
 
+  // Retake lock: latest locked assessment_instances row for this employee+module.
+  // Retake is blocked until all listed `locks_retake_until_chapters` are completed.
+  const [lockedRemainingCodes, setLockedRemainingCodes] = useState<string[]>([]);
+  useEffect(() => {
+    if (!diagModuleCode || !activeAccountId || !employeeId) {
+      setLockedRemainingCodes([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data: lockRow } = await supabase
+        .from("assessment_instances")
+        .select("locks_retake_until_chapters")
+        .eq("account_id", activeAccountId)
+        .eq("employee_id", employeeId)
+        .eq("module_code", diagModuleCode)
+        .eq("status", "locked")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      const locked = Array.isArray(lockRow?.locks_retake_until_chapters)
+        ? (lockRow!.locks_retake_until_chapters as unknown as string[])
+        : [];
+      if (locked.length === 0) {
+        if (!cancelled) setLockedRemainingCodes([]);
+        return;
+      }
+      const { data: prog } = await supabase
+        .from("learner_progress")
+        .select("chapter_code, status")
+        .eq("account_id", activeAccountId)
+        .eq("employee_id", employeeId)
+        .eq("module_code", diagModuleCode)
+        .in("chapter_code", locked);
+      const completed = new Set(
+        (prog ?? [])
+          .filter((p: any) => p.status === "completed")
+          .map((p: any) => p.chapter_code as string),
+      );
+      const remaining = locked.filter((c) => !completed.has(c));
+      if (!cancelled) setLockedRemainingCodes(remaining);
+    })();
+    return () => { cancelled = true; };
+  }, [diagModuleCode, activeAccountId, employeeId, retryingDiag, diagState]);
+
+
   if (contentView === "module" && activeModuleId) {
     // Synthetic "Submit evidence" row from the journey accordion (`__evi::<moduleCode>`).
     if (eviModuleCode && journey && activeAccountId) {
@@ -305,6 +351,7 @@ export function EmbarkContent() {
               reopenedCodes={recorded.reopened}
               nextTitle={diagNext ? substitute(diagNext.title) : null}
               onRetry={() => {
+                if (lockedRemainingCodes.length > 0) return;
                 diagnosticReopens.clear(diagModuleCode);
                 setRetryingDiag((prev) => {
                   const next = new Set(prev);
@@ -316,6 +363,10 @@ export function EmbarkContent() {
                 if (diagNext) openModule(diagNext.id);
                 else showModuleGrid();
               }}
+              lockedRemainingTitles={chapterEntries
+                .filter((c) => lockedRemainingCodes.includes(c.code))
+                .map((c) => c.title)}
+
             />
           </div>
         </div>

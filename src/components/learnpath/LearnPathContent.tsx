@@ -524,7 +524,7 @@ export function EmbarkContent() {
                       cohort_id: journey.cohort.id,
                       employee_id: employeeId,
                       module_code: diagModuleCode,
-                      kind: "diagnostic" as const,
+                      kind: "module_post" as const,
                       status: scorePct < 80 ? "locked" : "completed",
                       score: scorePct,
                       completed_at: new Date().toISOString(),

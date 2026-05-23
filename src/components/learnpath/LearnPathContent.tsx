@@ -127,6 +127,17 @@ export function EmbarkContent() {
     }
   }, [hasSteps, contentView, hasJourney]);
 
+  // Tour helper: let the product tour force Embark back to the All Modules
+  // grid so the lens spotlights can find their targets even when the learner
+  // started the tour from inside a chapter view.
+  useEffect(() => {
+    const handler = () => {
+      if (contentView !== "modules") showModuleGrid();
+    };
+    window.addEventListener("embark:tour-show-modules", handler);
+    return () => window.removeEventListener("embark:tour-show-modules", handler);
+  }, [contentView, showModuleGrid]);
+
   // Reset completion-view flag when active module changes (so mode selector returns)
   useEffect(() => {
     setModuleCompletedView(false);

@@ -17,6 +17,8 @@ export interface JourneyChapter {
   assessmentScore?: number;
   assessmentPassed?: boolean;
   assessmentPassingScore?: number;
+  /** Raw catalog metadata for this chapter (e.g. micro_learning_for). */
+  metadata?: Record<string, any> | null;
 }
 
 

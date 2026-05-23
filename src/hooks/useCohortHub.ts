@@ -19,6 +19,8 @@ export interface HubMentor {
   focusAreas: string[];
   startDate?: string | null;
   nextOneOnOneAt?: string | null;
+  /** Plain-English phrase used in "X typically replies {replyWindow}." */
+  replyWindow?: string;
 }
 
 export interface HubModuleProgress {

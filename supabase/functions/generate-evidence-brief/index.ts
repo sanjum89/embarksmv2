@@ -78,7 +78,8 @@ Generate the brief now. JSON only.`;
 
     if (!aiResp.ok) {
       const txt = await aiResp.text();
-      return new Response(JSON.stringify({ error: "AI gateway error", detail: txt }), {
+      console.error("AI gateway error", aiResp.status, txt);
+      return new Response(JSON.stringify({ error: "AI gateway error" }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

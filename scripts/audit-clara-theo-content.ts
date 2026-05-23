@@ -118,7 +118,7 @@ async function auditPersona(employeeId: string, label: string): Promise<PersonaR
 
   const { data: chapters } = await sb
     .from("catalog_chapters")
-    .select("module_code, chapter_code, chapter_title, learning_objective, chapter_long_form_content, content_sections, diagnostic_questions, practical_activity, display_order")
+    .select("module_code, chapter_code, chapter_title, learning_objective, chapter_long_form_content, content_sections, diagnostic_questions, practical_activity, display_order, condensed_by_persona")
     .eq("account_id", ACCOUNT_ID)
     .in("module_code", moduleCodes)
     .order("module_code", { ascending: true })

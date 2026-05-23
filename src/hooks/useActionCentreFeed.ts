@@ -1,9 +1,10 @@
-import { useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useRathbonesPersonaOverlays } from "@/hooks/useRathbonesPersonaOverlays";
 import { useManagerActions } from "@/store/useManagerActions";
 import { learnerSeedsFor } from "@/data/learnerActionSeeds";
+import { supabase } from "@/integrations/supabase/client";
 import type { ActionFeedItem, ActionPriority, CategoryFilter } from "@/lib/actionCentre/itemKinds";
 import { matchesFilter, PRIORITY_RANK } from "@/lib/actionCentre/itemKinds";
 import type { ActionItem } from "@/data/managerDemoOverlay";

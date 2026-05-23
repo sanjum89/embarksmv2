@@ -191,7 +191,29 @@ export function EmbarkContent() {
     return null;
   }, [cohortChapterCode, journey]);
 
-  const { chapter: cohortChapterRow } = useCatalogChapter(activeAccountId, cohortChapterCode);
+  // Persona for condensed rewrites — resolved from employee_persona_assignments.
+  const [personaCode, setPersonaCode] = useState<string | null>(null);
+  useEffect(() => {
+    if (!activeAccountId || !employeeId) return;
+    let cancelled = false;
+    supabase
+      .from("employee_persona_assignments")
+      .select("persona_code")
+      .eq("account_id", activeAccountId)
+      .eq("employee_id", employeeId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setPersonaCode(data?.persona_code ?? null);
+      });
+    return () => { cancelled = true; };
+  }, [activeAccountId, employeeId]);
+
+  const wantCondensed = cohortAdaptationType === "microlearning";
+  const { chapter: cohortChapterRow, condensedBody } = useCatalogChapter(
+    activeAccountId,
+    cohortChapterCode,
+    { personaCode, fetchCondensed: wantCondensed },
+  );
 
   // Quick Diagnostic — fetch ALL chapters of the active module so questions
   // span the chapters being skipped, not just the first one.
@@ -310,7 +332,7 @@ export function EmbarkContent() {
           : cohortAdaptationType === "evidence_required"
             ? "evidence"
             : "full";
-      const transcript = composeChapterTranscript(cohortChapterRow, lens);
+      const transcript = composeChapterTranscript(cohortChapterRow, lens, { condensedBody });
       const minutes =
         lens === "evidence" ? 15 : cohortChapterRow.estimatedTimeMinutes || 25;
       const displayTitle =
@@ -488,6 +510,49 @@ export function EmbarkContent() {
                 result.total,
                 result.correctCount,
               );
+
+              // Post-assessment rule: <100% → spin up a micro-learning per weak topic.
+              // <80% additionally locks the assessment by re-opening the affected chapters.
+              if (!result.allCorrect && activeAccountId && journey && result.wrongAnswers.length > 0) {
+                const scorePct = Math.round((result.correctCount / result.total) * 100);
+                try {
+                  // Record the attempt for manager analytics + audit trail.
+                  const { data: instance } = await supabase
+                    .from("assessment_instances")
+                    .insert([{
+                      account_id: activeAccountId,
+                      cohort_id: journey.cohort.id,
+                      employee_id: employeeId,
+                      module_code: diagModuleCode,
+                      kind: "module_post" as const,
+                      status: scorePct < 80 ? "locked" : "completed",
+                      score: scorePct,
+                      completed_at: new Date().toISOString(),
+                      locks_retake_until_chapters: scorePct < 80 ? result.wrongChapterCodes : [],
+                    }])
+                    .select("id")
+                    .maybeSingle();
+
+                  supabase.functions.invoke("generate-micro-learning", {
+                    body: {
+                      accountId: activeAccountId,
+                      cohortId: journey.cohort.id,
+                      employeeId,
+                      sourceAssessmentId: instance?.id ?? null,
+                      moduleCode: diagModuleCode,
+                      wrongAnswers: result.wrongAnswers.map((w) => ({
+                        question: w.question,
+                        learnerAnswer: w.learnerAnswer,
+                        correctAnswer: w.correctAnswer,
+                        chapterCodes: w.chapterCode ? [w.chapterCode] : [],
+                      })),
+                    },
+                  }).catch((e) => console.warn("[Embark] generate-micro-learning failed", e));
+                } catch (e) {
+                  console.warn("[Embark] assessment_instances insert failed", e);
+                }
+              }
+
               // Persist outcome to learner_progress so module status (computed from
               // chapter rows) reflects the diagnostic result. Wrong → in_progress,
               // right → completed.

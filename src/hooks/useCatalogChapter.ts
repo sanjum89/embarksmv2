@@ -41,6 +41,9 @@ interface State {
   chapter: CatalogChapterContent | null;
   isLoading: boolean;
   error: string | null;
+  /** Persona-specific condensed rewrite, loaded on demand when personaCode is supplied. */
+  condensedBody: string | null;
+  condensedLoading: boolean;
 }
 
 /**
@@ -49,33 +52,45 @@ interface State {
  */
 export function useCatalogChapter(
   accountId: string | null | undefined,
-  chapterCode: string | null | undefined
+  chapterCode: string | null | undefined,
+  options: { personaCode?: string | null; fetchCondensed?: boolean } = {}
 ): State {
-  const [state, setState] = useState<State>({ chapter: null, isLoading: false, error: null });
+  const { personaCode = null, fetchCondensed = false } = options;
+  const [state, setState] = useState<State>({
+    chapter: null,
+    isLoading: false,
+    error: null,
+    condensedBody: null,
+    condensedLoading: false,
+  });
 
   useEffect(() => {
     if (!accountId || !chapterCode) {
-      setState({ chapter: null, isLoading: false, error: null });
+      setState({ chapter: null, isLoading: false, error: null, condensedBody: null, condensedLoading: false });
       return;
     }
     let cancelled = false;
-    setState((s) => ({ ...s, isLoading: true, error: null }));
+    setState((s) => ({ ...s, isLoading: true, error: null, condensedBody: null, condensedLoading: false }));
 
     (async () => {
       try {
         const { data, error } = await supabase
           .from("catalog_chapters")
           .select(
-            "chapter_code, module_code, chapter_title, content_type, estimated_time_minutes, learning_objective, chapter_summary, realistic_content_outline, practical_activity, reflection_prompt, chapter_long_form_content, content_sections, diagnostic_questions"
+            "chapter_code, module_code, chapter_title, content_type, estimated_time_minutes, learning_objective, chapter_summary, realistic_content_outline, practical_activity, reflection_prompt, chapter_long_form_content, content_sections, diagnostic_questions, condensed_by_persona"
           )
           .eq("account_id", accountId)
           .eq("chapter_code", chapterCode)
           .maybeSingle();
         if (error) throw error;
         if (!data) {
-          if (!cancelled) setState({ chapter: null, isLoading: false, error: null });
+          if (!cancelled) setState({ chapter: null, isLoading: false, error: null, condensedBody: null, condensedLoading: false });
           return;
         }
+        const cachedCondensed =
+          personaCode && (data as any).condensed_by_persona
+            ? ((data as any).condensed_by_persona as Record<string, string>)[personaCode] ?? null
+            : null;
         if (!cancelled) {
           setState({
             chapter: {
@@ -99,7 +114,29 @@ export function useCatalogChapter(
             },
             isLoading: false,
             error: null,
+            condensedBody: cachedCondensed,
+            condensedLoading: !cachedCondensed && !!personaCode && fetchCondensed,
           });
+        }
+
+        // On-demand: fetch a persona-condensed rewrite via edge function if not cached.
+        if (!cachedCondensed && personaCode && fetchCondensed) {
+          try {
+            const { data: condensedData, error: condensedErr } = await supabase.functions.invoke(
+              "condense-chapter",
+              { body: { accountId, chapterCode, personaCode } },
+            );
+            if (condensedErr) throw condensedErr;
+            const body = (condensedData as any)?.body as string | undefined;
+            if (!cancelled && body) {
+              setState((s) => ({ ...s, condensedBody: body, condensedLoading: false }));
+            } else if (!cancelled) {
+              setState((s) => ({ ...s, condensedLoading: false }));
+            }
+          } catch (err) {
+            console.warn("[useCatalogChapter] condense-chapter failed", err);
+            if (!cancelled) setState((s) => ({ ...s, condensedLoading: false }));
+          }
         }
       } catch (e: any) {
         if (!cancelled) {
@@ -107,6 +144,8 @@ export function useCatalogChapter(
             chapter: null,
             isLoading: false,
             error: e?.message ?? "Failed to load chapter",
+            condensedBody: null,
+            condensedLoading: false,
           });
         }
       }
@@ -115,10 +154,11 @@ export function useCatalogChapter(
     return () => {
       cancelled = true;
     };
-  }, [accountId, chapterCode]);
+  }, [accountId, chapterCode, personaCode, fetchCondensed]);
 
   return state;
 }
+
 
 /**
  * Compose a structured markdown transcript for a chapter, shaped by `lens`:
@@ -131,7 +171,8 @@ export type ChapterLens = "full" | "condensed" | "diagnostic" | "evidence";
 
 export function composeChapterTranscript(
   ch: CatalogChapterContent,
-  lens: ChapterLens = "full"
+  lens: ChapterLens = "full",
+  options: { condensedBody?: string | null } = {}
 ): string {
   if (lens === "evidence") {
     return [
@@ -175,6 +216,18 @@ export function composeChapterTranscript(
   }
 
   if (lens === "condensed") {
+    // Prefer a real persona-condensed rewrite when available.
+    if (options.condensedBody && options.condensedBody.trim().length > 200) {
+      return [
+        `# ${ch.chapterTitle}`,
+        `> Condensed for you — a shorter rewrite tailored to your background. The full chapter is still available if you want it.`,
+        options.condensedBody.trim(),
+        ch.practicalActivity ? `## Try it yourself\n${ch.practicalActivity}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n\n");
+    }
+    // Fallback to heuristic slice while the AI rewrite is being prepared.
     const applied = ch.contentSections.filter((s) => s.depth_level === "applied");
     const sections = applied.length > 0 ? applied : ch.contentSections.slice(-2);
     const body = sections
@@ -182,13 +235,14 @@ export function composeChapterTranscript(
       .join("\n\n");
     return [
       `# ${ch.chapterTitle}`,
-      `> Microlearning view — we've kept the parts most likely to be new for you and trimmed the basics your background already covers.`,
+      `> Preparing your condensed view — showing the most relevant sections in the meantime.`,
       body || (ch.longFormContent?.slice(0, 1500) ?? ""),
       ch.practicalActivity ? `## Try it yourself\n${ch.practicalActivity}` : "",
     ]
       .filter(Boolean)
       .join("\n\n");
   }
+
 
   // full
   if (ch.contentSections.length > 0) {

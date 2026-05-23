@@ -14,12 +14,21 @@ export interface InlineQuizQuestion {
   chapterCode?: string;
 }
 
+export interface InlineQuizWrongAnswer {
+  question: string;
+  learnerAnswer: string;
+  correctAnswer: string;
+  chapterCode?: string;
+}
+
 export interface InlineQuizSubmitResult {
   total: number;
   correctCount: number;
   allCorrect: boolean;
   /** Chapter codes for questions answered incorrectly. Deduplicated. */
   wrongChapterCodes: string[];
+  /** Full detail of each wrong answer, for downstream micro-learning generation. */
+  wrongAnswers: InlineQuizWrongAnswer[];
 }
 
 interface Props {
@@ -58,18 +67,28 @@ export function InlineQuiz({ title, questions, onPass, onSubmit }: Props) {
     }
     if (!hasFiredSubmit) {
       setHasFiredSubmit(true);
+      const wrongList = questions
+        .map((q, i) => {
+          if (answers[i] === q.correctIndex) return null;
+          const learnerIdx = answers[i];
+          return {
+            question: q.question,
+            learnerAnswer:
+              typeof learnerIdx === "number" ? q.options[learnerIdx] ?? "(no answer)" : "(no answer)",
+            correctAnswer: q.options[q.correctIndex] ?? "(unknown)",
+            chapterCode: q.chapterCode,
+          };
+        })
+        .filter((w): w is NonNullable<typeof w> => !!w);
       const wrongChapterCodes = Array.from(
-        new Set(
-          questions
-            .map((q, i) => (answers[i] !== q.correctIndex ? q.chapterCode : undefined))
-            .filter((c): c is string => !!c),
-        ),
+        new Set(wrongList.map((w) => w.chapterCode).filter((c): c is string => !!c)),
       );
       onSubmit?.({
         total,
         correctCount,
         allCorrect: correctCount === total,
         wrongChapterCodes,
+        wrongAnswers: wrongList,
       });
     }
   };

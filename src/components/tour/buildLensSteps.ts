@@ -44,11 +44,17 @@ function waitMs(ms: number) {
   return new Promise<void>((r) => setTimeout(r, ms));
 }
 
+function fireShowModules() {
+  window.dispatchEvent(new CustomEvent("embark:tour-show-modules"));
+}
+
 function fireExpandAll() {
+  fireShowModules();
   window.dispatchEvent(new CustomEvent("embark:tour-expand-all-modules"));
 }
 
 function fireExpandOne(moduleCode: string) {
+  fireShowModules();
   window.dispatchEvent(
     new CustomEvent("embark:tour-expand-all-modules", { detail: { moduleCode } }),
   );
@@ -61,9 +67,11 @@ function fireExpandOne(moduleCode: string) {
  * step still has somewhere to land.
  */
 export async function buildLensSteps(): Promise<TourStep[]> {
-  // Make sure every module is open so we can see all pills.
+  // Make sure every module is open so we can see all pills. Wait long
+  // enough for the accordion to mount if the learner started the tour
+  // from inside a chapter view.
   fireExpandAll();
-  await waitMs(380);
+  await waitMs(600);
 
   const modules = Array.from(
     document.querySelectorAll<HTMLElement>("[data-module-code]"),

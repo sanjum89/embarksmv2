@@ -273,6 +273,26 @@ export function EmbarkContent() {
   }, [diagModuleCode, activeAccountId, employeeId, retryingDiag, diagState]);
 
 
+  // Deferred assessment early-return (kept below all hooks for stable order).
+  if ((contentView === "assessment" && assessmentModuleId) || detectedAssessmentId) {
+    const assessmentTarget = (contentView === "assessment" ? assessmentModuleId : detectedAssessmentId) as string;
+    const stepInfo = allSteps.find((s) => s.stepId === assessmentTarget || s.moduleId === assessmentTarget);
+    const currentIdx = allSteps.findIndex((s) => s.stepId === assessmentTarget || s.moduleId === assessmentTarget);
+    const nextStep = allSteps.slice(currentIdx + 1).find((s) => s.status !== "completed" && s.status !== "skipped");
+
+    return (
+      <EmbarkAssessment
+        assessmentId={assessmentTarget}
+        skillTargetId={stepInfo?.skillTargetId}
+        stepId={stepInfo?.stepId}
+        nextStepId={nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId}
+        nextStepTitle={nextStep?.title}
+        nextStepType={nextStep?.type}
+        nextSkillTargetId={nextStep?.skillTargetId}
+      />
+    );
+  }
+
   if (contentView === "module" && activeModuleId) {
     // Synthetic "Submit evidence" row from the journey accordion (`__evi::<moduleCode>`).
     if (eviModuleCode && journey && activeAccountId) {

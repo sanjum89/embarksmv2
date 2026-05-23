@@ -107,7 +107,8 @@ export async function buildLensSteps(): Promise<TourStep[]> {
         placement: "left",
         prepare: async () => {
           fireExpandOne(hit.moduleCode);
-          await waitMs(280);
+          // Give the accordion time to mount if returning from chapter view.
+          await waitMs(450);
         },
         fallbackHint: `Look for the ${cfg.label} badge on ${hit.moduleTitle}.`,
       };

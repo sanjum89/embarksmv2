@@ -419,16 +419,18 @@ export function useCohortHub({ accountId, employeeId, employeesById }: UseArgs):
       }));
 
       // mentor
+      const mentorRoster = RATHBONES_MENTORS[mentorRes.data?.mentor_employee_id ?? ""];
       const mentor: HubMentor | null = mentorRes.data
         ? {
             employeeId: mentorRes.data.mentor_employee_id,
             name: empName(mentorRes.data.mentor_employee_id),
-            title: empTitle(mentorRes.data.mentor_employee_id) || "Embark Mentor — Wealth Strategy",
+            title: empTitle(mentorRes.data.mentor_employee_id) || mentorRoster?.title || "Embark Mentor — Wealth Strategy",
             avatarUrl: empAvatar(mentorRes.data.mentor_employee_id),
             notes: mentorRes.data.notes,
             focusAreas: Array.isArray(mentorRes.data.focus_areas) ? (mentorRes.data.focus_areas as unknown[]).map(String) : [],
             startDate: mentorRes.data.start_date,
             nextOneOnOneAt: new Date(Date.now() + 2 * 86400000).toISOString(),
+            replyWindow: mentorRoster?.replyWindow ?? "within a day",
           }
         : null;
 

@@ -332,7 +332,7 @@ export function EmbarkContent() {
           : cohortAdaptationType === "evidence_required"
             ? "evidence"
             : "full";
-      const transcript = composeChapterTranscript(cohortChapterRow, lens);
+      const transcript = composeChapterTranscript(cohortChapterRow, lens, { condensedBody });
       const minutes =
         lens === "evidence" ? 15 : cohortChapterRow.estimatedTimeMinutes || 25;
       const displayTitle =

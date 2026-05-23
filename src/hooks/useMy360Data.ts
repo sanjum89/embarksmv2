@@ -374,6 +374,7 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
         loading: false,
         eligible: true,
         employee,
+        mentor,
         personaCode,
         roleCohortCode,
         proficiency: (prof ?? []) as CapabilityRow[],

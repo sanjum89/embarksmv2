@@ -20,6 +20,9 @@ interface Props {
   nextTitle?: string | null;
   onRetry: () => void;
   onContinue: () => void;
+  /** Titles of chapters the learner must complete before retaking. When non-empty,
+   *  the Retake button is disabled and an explanatory banner is shown. */
+  lockedRemainingTitles?: string[];
 }
 
 /**

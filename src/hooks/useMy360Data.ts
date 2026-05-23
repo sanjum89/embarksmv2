@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
+import { getMentorById, getMentorFor } from "@/data/rathbonesMentors";
 import type { CapabilityRow, RoleRequirementRow } from "@/lib/my360v2/bucketing";
 export type { CapabilityRow, RoleRequirementRow } from "@/lib/my360v2/bucketing";
 

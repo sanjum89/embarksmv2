@@ -1,16 +1,17 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, Clock, MapPin, Briefcase, Sparkles } from "lucide-react";
+import { Check, Clock, MapPin, Briefcase, Sparkles, UserCheck } from "lucide-react";
 import type { EmployeeRecord } from "@/hooks/useMy360Data";
 import { useAgentOne } from "@/contexts/AgentOneContext";
 
 interface Props {
   employee?: EmployeeRecord;
   managerName?: string;
+  mentorName?: string;
 }
 
-export function IdentityHeader({ employee, managerName }: Props) {
+export function IdentityHeader({ employee, managerName, mentorName }: Props) {
   const hris = employee?.hris;
   const { handleSend } = useAgentOne();
 
@@ -29,6 +30,9 @@ export function IdentityHeader({ employee, managerName }: Props) {
           <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
             {managerName && (
               <span className="inline-flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" />Manager: {managerName}</span>
+            )}
+            {mentorName && (
+              <span className="inline-flex items-center gap-1.5"><UserCheck className="h-3.5 w-3.5" />Mentor: {mentorName}</span>
             )}
             {hris?.location && (
               <span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{hris.location}</span>

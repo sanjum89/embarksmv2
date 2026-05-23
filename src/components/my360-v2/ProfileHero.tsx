@@ -1,12 +1,13 @@
 import type { EmployeeRecord } from "@/hooks/useMy360Data";
 import { AskEmbarkButton } from "./AskEmbarkButton";
-import { MapPin, Briefcase, Clock, GraduationCap, Award } from "lucide-react";
+import { MapPin, Briefcase, Clock, GraduationCap, Award, UserCheck } from "lucide-react";
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 
 interface Props {
   employee?: EmployeeRecord;
   managerName?: string;
+  mentorName?: string;
 }
 
 function initials(name?: string) {
@@ -14,7 +15,7 @@ function initials(name?: string) {
   return name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
 }
 
-export function ProfileHero({ employee, managerName }: Props) {
+export function ProfileHero({ employee, managerName, mentorName }: Props) {
   const hris = employee?.hris;
   const [certsOpen, setCertsOpen] = useState(false);
 
@@ -52,7 +53,10 @@ export function ProfileHero({ employee, managerName }: Props) {
 
           <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm text-muted-foreground">
             {managerName && (
-              <span className="inline-flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" />{managerName}</span>
+              <span className="inline-flex items-center gap-1.5"><Briefcase className="h-3.5 w-3.5" />Manager: {managerName}</span>
+            )}
+            {mentorName && (
+              <span className="inline-flex items-center gap-1.5"><UserCheck className="h-3.5 w-3.5" />Mentor: {mentorName}</span>
             )}
             {hris?.location && (
               <span className="inline-flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />{hris.location}</span>

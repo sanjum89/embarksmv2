@@ -42,6 +42,7 @@ export default function NewMy360() {
   const managerName = data.employee?.reportsTo
     ? employees.find((e) => e.id === data.employee?.reportsTo)?.name
     : undefined;
+  const mentorName = data.mentor?.name;
 
   const hasCohortData = !!data.cohort || data.modules.length > 0;
   const tabs = hasCohortData ? allTabs : (allTabs.filter((t) => t !== "Cohort Journey") as readonly Tab[]);
@@ -50,7 +51,7 @@ export default function NewMy360() {
     <div className="flex-1 overflow-y-auto" data-tour="my360">
       <PageHeader title="My 360" subtitle="Your profile, skills, growth and outcomes." />
       <PageBody>
-        <ProfileHero employee={data.employee} managerName={managerName} />
+        <ProfileHero employee={data.employee} managerName={managerName} mentorName={mentorName} />
 
         <div className="flex items-center gap-1 p-1 rounded-full bg-muted border border-border w-fit overflow-x-auto">
           {tabs.map((t) => (

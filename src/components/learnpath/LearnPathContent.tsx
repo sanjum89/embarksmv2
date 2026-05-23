@@ -137,10 +137,9 @@ export function EmbarkContent() {
   const profileData = normalizedAccount?.profileData?.[user.id];
   const { groups: recommendationGroups } = getRecommendationsForUser(profileData);
 
-  // Assessment view — handles legacy steps AND cohort blueprint / quiz chapters.
-  // We also detect when activeModuleId is a cohort chapter with contentType=quiz
-  // or a blueprint code (*.bp_post / *.bp_mid) and route to the assessment runner.
-  const detectedAssessmentId = (() => {
+  // Assessment detection — return is deferred until after all hooks below so
+  // hook order stays stable across renders.
+  const detectedAssessmentId = useMemo(() => {
     if (contentView === "assessment" && assessmentModuleId) return assessmentModuleId;
     if (contentView === "module" && activeModuleId && journey) {
       for (const t of journey.tracks) {
@@ -154,26 +153,7 @@ export function EmbarkContent() {
       }
     }
     return null;
-  })();
-
-  if ((contentView === "assessment" && assessmentModuleId) || detectedAssessmentId) {
-    const assessmentTarget = (contentView === "assessment" ? assessmentModuleId : detectedAssessmentId) as string;
-    const stepInfo = allSteps.find((s) => s.stepId === assessmentTarget || s.moduleId === assessmentTarget);
-    const currentIdx = allSteps.findIndex((s) => s.stepId === assessmentTarget || s.moduleId === assessmentTarget);
-    const nextStep = allSteps.slice(currentIdx + 1).find((s) => s.status !== "completed" && s.status !== "skipped");
-
-    return (
-      <EmbarkAssessment
-        assessmentId={assessmentTarget}
-        skillTargetId={stepInfo?.skillTargetId}
-        stepId={stepInfo?.stepId}
-        nextStepId={nextStep?.type === "assessment" ? nextStep.stepId : nextStep?.moduleId}
-        nextStepTitle={nextStep?.title}
-        nextStepType={nextStep?.type}
-        nextSkillTargetId={nextStep?.skillTargetId}
-      />
-    );
-  }
+  }, [contentView, assessmentModuleId, activeModuleId, journey]);
 
   // Detect synthetic Quick Diagnostic activeModuleId of the form `__diag::<moduleCode>`.
   const diagModuleCode = useMemo(() => {

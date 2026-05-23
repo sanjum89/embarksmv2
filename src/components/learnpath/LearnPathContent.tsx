@@ -191,7 +191,29 @@ export function EmbarkContent() {
     return null;
   }, [cohortChapterCode, journey]);
 
-  const { chapter: cohortChapterRow } = useCatalogChapter(activeAccountId, cohortChapterCode);
+  // Persona for condensed rewrites — resolved from employee_persona_assignments.
+  const [personaCode, setPersonaCode] = useState<string | null>(null);
+  useEffect(() => {
+    if (!activeAccountId || !employeeId) return;
+    let cancelled = false;
+    supabase
+      .from("employee_persona_assignments")
+      .select("persona_code")
+      .eq("account_id", activeAccountId)
+      .eq("employee_id", employeeId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled) setPersonaCode(data?.persona_code ?? null);
+      });
+    return () => { cancelled = true; };
+  }, [activeAccountId, employeeId]);
+
+  const wantCondensed = cohortAdaptationType === "microlearning";
+  const { chapter: cohortChapterRow, condensedBody } = useCatalogChapter(
+    activeAccountId,
+    cohortChapterCode,
+    { personaCode, fetchCondensed: wantCondensed },
+  );
 
   // Quick Diagnostic — fetch ALL chapters of the active module so questions
   // span the chapters being skipped, not just the first one.

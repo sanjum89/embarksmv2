@@ -1,16 +1,17 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Check, Clock, MapPin, Briefcase, Sparkles } from "lucide-react";
+import { Check, Clock, MapPin, Briefcase, Sparkles, UserCheck } from "lucide-react";
 import type { EmployeeRecord } from "@/hooks/useMy360Data";
 import { useAgentOne } from "@/contexts/AgentOneContext";
 
 interface Props {
   employee?: EmployeeRecord;
   managerName?: string;
+  mentorName?: string;
 }
 
-export function IdentityHeader({ employee, managerName }: Props) {
+export function IdentityHeader({ employee, managerName, mentorName }: Props) {
   const hris = employee?.hris;
   const { handleSend } = useAgentOne();
 

@@ -52,33 +52,45 @@ interface State {
  */
 export function useCatalogChapter(
   accountId: string | null | undefined,
-  chapterCode: string | null | undefined
+  chapterCode: string | null | undefined,
+  options: { personaCode?: string | null; fetchCondensed?: boolean } = {}
 ): State {
-  const [state, setState] = useState<State>({ chapter: null, isLoading: false, error: null });
+  const { personaCode = null, fetchCondensed = false } = options;
+  const [state, setState] = useState<State>({
+    chapter: null,
+    isLoading: false,
+    error: null,
+    condensedBody: null,
+    condensedLoading: false,
+  });
 
   useEffect(() => {
     if (!accountId || !chapterCode) {
-      setState({ chapter: null, isLoading: false, error: null });
+      setState({ chapter: null, isLoading: false, error: null, condensedBody: null, condensedLoading: false });
       return;
     }
     let cancelled = false;
-    setState((s) => ({ ...s, isLoading: true, error: null }));
+    setState((s) => ({ ...s, isLoading: true, error: null, condensedBody: null, condensedLoading: false }));
 
     (async () => {
       try {
         const { data, error } = await supabase
           .from("catalog_chapters")
           .select(
-            "chapter_code, module_code, chapter_title, content_type, estimated_time_minutes, learning_objective, chapter_summary, realistic_content_outline, practical_activity, reflection_prompt, chapter_long_form_content, content_sections, diagnostic_questions"
+            "chapter_code, module_code, chapter_title, content_type, estimated_time_minutes, learning_objective, chapter_summary, realistic_content_outline, practical_activity, reflection_prompt, chapter_long_form_content, content_sections, diagnostic_questions, condensed_by_persona"
           )
           .eq("account_id", accountId)
           .eq("chapter_code", chapterCode)
           .maybeSingle();
         if (error) throw error;
         if (!data) {
-          if (!cancelled) setState({ chapter: null, isLoading: false, error: null });
+          if (!cancelled) setState({ chapter: null, isLoading: false, error: null, condensedBody: null, condensedLoading: false });
           return;
         }
+        const cachedCondensed =
+          personaCode && (data as any).condensed_by_persona
+            ? ((data as any).condensed_by_persona as Record<string, string>)[personaCode] ?? null
+            : null;
         if (!cancelled) {
           setState({
             chapter: {
@@ -102,7 +114,29 @@ export function useCatalogChapter(
             },
             isLoading: false,
             error: null,
+            condensedBody: cachedCondensed,
+            condensedLoading: !cachedCondensed && !!personaCode && fetchCondensed,
           });
+        }
+
+        // On-demand: fetch a persona-condensed rewrite via edge function if not cached.
+        if (!cachedCondensed && personaCode && fetchCondensed) {
+          try {
+            const { data: condensedData, error: condensedErr } = await supabase.functions.invoke(
+              "condense-chapter",
+              { body: { accountId, chapterCode, personaCode } },
+            );
+            if (condensedErr) throw condensedErr;
+            const body = (condensedData as any)?.body as string | undefined;
+            if (!cancelled && body) {
+              setState((s) => ({ ...s, condensedBody: body, condensedLoading: false }));
+            } else if (!cancelled) {
+              setState((s) => ({ ...s, condensedLoading: false }));
+            }
+          } catch (err) {
+            console.warn("[useCatalogChapter] condense-chapter failed", err);
+            if (!cancelled) setState((s) => ({ ...s, condensedLoading: false }));
+          }
         }
       } catch (e: any) {
         if (!cancelled) {
@@ -110,6 +144,8 @@ export function useCatalogChapter(
             chapter: null,
             isLoading: false,
             error: e?.message ?? "Failed to load chapter",
+            condensedBody: null,
+            condensedLoading: false,
           });
         }
       }
@@ -118,10 +154,11 @@ export function useCatalogChapter(
     return () => {
       cancelled = true;
     };
-  }, [accountId, chapterCode]);
+  }, [accountId, chapterCode, personaCode, fetchCondensed]);
 
   return state;
 }
+
 
 /**
  * Compose a structured markdown transcript for a chapter, shaped by `lens`:

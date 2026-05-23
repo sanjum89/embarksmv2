@@ -16,10 +16,16 @@ export interface TourStep {
   fallbackHint?: string;
 }
 
-const expandAllModules = () => {
+const expandAllModules = async () => {
+  // First make sure Embark is showing the All Modules grid — if the learner
+  // opened a chapter, the accordion is unmounted and the expand event has
+  // no listener.
+  window.dispatchEvent(new CustomEvent("embark:tour-show-modules"));
+  // Wait for the accordion to mount.
+  await new Promise<void>((r) => setTimeout(r, 280));
   window.dispatchEvent(new CustomEvent("embark:tour-expand-all-modules"));
-  // Give the accordion a beat to mount its rows
-  return new Promise<void>((r) => setTimeout(r, 350));
+  // Give the accordion a beat to mount its rows.
+  await new Promise<void>((r) => setTimeout(r, 350));
 };
 
 export const TOUR_STEPS: TourStep[] = [

@@ -201,6 +201,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       is_default: row.is_default,
       data: row.data as AccountData,
       created_at: row.created_at,
+      workforce_groups_enabled: row.workforce_groups_enabled ?? false,
     })) as Account[];
 
     if (accts.length === 0) {

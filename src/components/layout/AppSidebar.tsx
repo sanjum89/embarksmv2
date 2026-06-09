@@ -19,6 +19,7 @@ import {
   UserRound,
   UsersRound,
   Layers,
+  ShieldCheck,
   Inbox,
   GraduationCap,
   Microscope,

@@ -165,7 +165,7 @@ export default function WorkforceReadiness() {
     <div className="flex-1 overflow-y-auto">
       <PageHeader
         title="Workforce Readiness"
-        breadcrumbs={[{ label: "Admin", path: "/admin" }, { label: "Workforce Readiness" }]}
+        breadcrumbs={[{ label: "Admin", to: "/admin" }, { label: "Workforce Readiness" }]}
         actions={<Button asChild variant="outline" size="sm"><Link to="/admin/workforce-groups">Manage groups</Link></Button>}
       />
 

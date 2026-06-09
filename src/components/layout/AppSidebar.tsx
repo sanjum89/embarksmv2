@@ -147,6 +147,7 @@ export function AppSidebar() {
     const items = baseItems.filter((item) => !item.dev);
     if (viewMode === "team" && user.role === "admin" && wgEnabled) {
       items.push({ label: "Workforce Groups", path: "/admin/workforce-groups", icon: Layers });
+      items.push({ label: "Workforce Readiness", path: "/admin/workforce-readiness", icon: ShieldCheck });
     }
     return items;
   })();

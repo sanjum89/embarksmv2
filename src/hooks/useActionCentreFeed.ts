@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
+import { useWorkforceGroups } from "@/contexts/WorkforceGroupContext";
 import { useRathbonesPersonaOverlays } from "@/hooks/useRathbonesPersonaOverlays";
 import { useManagerActions } from "@/store/useManagerActions";
 import { learnerSeedsFor } from "@/data/learnerActionSeeds";
@@ -53,6 +54,7 @@ export function useActionCentreFeed(): ActionCentreFeed {
   const { normalizedAccount } = useAccount();
   const { overlays } = useRathbonesPersonaOverlays();
   const { approvals } = useManagerActions();
+  const { enabled: wgEnabled, selectedGroupId, selectedSubtreeEmployeeIds } = useWorkforceGroups();
   const employeesById = normalizedAccount?.employeesById ?? {};
 
   const [state, setState] = useState<LocalState>({});

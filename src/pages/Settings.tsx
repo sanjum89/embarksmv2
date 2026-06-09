@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useSearchParams, Navigate } from "react-router-dom";
-import { Palette, Layout, Paintbrush, Code, Info, Loader2 } from "lucide-react";
+import { Palette, Layout, Paintbrush, Code, Info, Loader2, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";

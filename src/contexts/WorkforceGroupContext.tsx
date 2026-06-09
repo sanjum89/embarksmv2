@@ -119,6 +119,7 @@ export function WorkforceGroupProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem(selectionKey(activeAccountId));
       setSelectedGroupIdState(stored);
     } catch { setSelectedGroupIdState(null); }
+    setEnabledOverride(null);
   }, [activeAccountId]);
 
   // Clear selection when feature turns off

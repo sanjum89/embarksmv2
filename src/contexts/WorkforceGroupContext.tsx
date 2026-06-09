@@ -78,7 +78,8 @@ function selectionKey(accountId: string) {
 
 export function WorkforceGroupProvider({ children }: { children: ReactNode }) {
   const { activeAccountId, activeAccount } = useAccount();
-  const enabled = Boolean((activeAccount as any)?.workforce_groups_enabled);
+  const [enabledOverride, setEnabledOverride] = useState<boolean | null>(null);
+  const enabled = enabledOverride ?? Boolean((activeAccount as any)?.workforce_groups_enabled);
 
   const [loading, setLoading] = useState(false);
   const [groups, setGroups] = useState<WorkforceGroup[]>([]);
@@ -118,6 +119,7 @@ export function WorkforceGroupProvider({ children }: { children: ReactNode }) {
       const stored = localStorage.getItem(selectionKey(activeAccountId));
       setSelectedGroupIdState(stored);
     } catch { setSelectedGroupIdState(null); }
+    setEnabledOverride(null);
   }, [activeAccountId]);
 
   // Clear selection when feature turns off
@@ -181,11 +183,14 @@ export function WorkforceGroupProvider({ children }: { children: ReactNode }) {
   }, [selectedGroupId, groupsById]);
 
   const toggleEnabled = useCallback(async (next: boolean) => {
-    if (!activeAccountId) return;
+    if (!activeAccountId) throw new Error("No active account");
     const { error } = await supabase.from("accounts").update({ workforce_groups_enabled: next } as any).eq("id", activeAccountId);
     if (error) throw error;
-    // Soft refresh: optimistic update via reload of account list happens elsewhere; force page-level refetch by reloading.
-    window.location.reload();
+    setEnabledOverride(next);
+    if (!next) {
+      try { localStorage.removeItem(selectionKey(activeAccountId)); } catch {}
+      setSelectedGroupIdState(null);
+    }
   }, [activeAccountId]);
 
   const value: WorkforceGroupContextValue = {

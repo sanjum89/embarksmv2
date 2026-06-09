@@ -12,11 +12,12 @@ import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useAgentOne } from "@/contexts/AgentOneContext";
 import { BrandingPanelContent } from "@/components/account/BrandingPanel";
+import FeatureFlagsPanel from "@/components/admin/FeatureFlagsPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-type SectionKey = "appearance" | "workspace" | "branding" | "developer" | "about";
+type SectionKey = "appearance" | "workspace" | "features" | "branding" | "developer" | "about";
 
 interface SectionDef {
   key: SectionKey;
@@ -28,6 +29,7 @@ interface SectionDef {
 const SECTIONS: SectionDef[] = [
   { key: "appearance", label: "Appearance", icon: Palette },
   { key: "workspace", label: "Workspace", icon: Layout },
+  { key: "features", label: "Features", icon: Sparkles, adminOnly: true },
   { key: "branding", label: "Branding", icon: Paintbrush },
   { key: "developer", label: "Developer", icon: Code, adminOnly: true },
   { key: "about", label: "About", icon: Info },
@@ -96,6 +98,7 @@ export default function Settings() {
           <div className="space-y-6 min-w-0">
             {active === "appearance" && <AppearanceSection />}
             {active === "workspace" && <WorkspaceSection />}
+            {active === "features" && isAdmin && <FeatureFlagsPanel />}
             {active === "branding" && <BrandingSection />}
             {active === "developer" && isAdmin && <DeveloperSection />}
             {active === "about" && <AboutSection />}

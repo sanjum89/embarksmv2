@@ -11,7 +11,9 @@ import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 import { SkillTargetsProvider } from "@/contexts/SkillTargetsContext";
 import { RolePlayProvider } from "@/contexts/RolePlayContext";
 import { AgentOneProvider } from "@/contexts/AgentOneContext";
+import { WorkforceGroupProvider } from "@/contexts/WorkforceGroupContext";
 import { AppLayout } from "@/components/layout/AppLayout";
+import AdminWorkforceGroups from "./pages/AdminWorkforceGroups";
 import Dashboard from "./pages/Dashboard";
 import SkillTargetBuilder from "./pages/SkillTargetBuilder";
 import SkillTargetDetail from "./pages/SkillTargetDetail";
@@ -59,6 +61,7 @@ const App = () => (
       <SkillTargetsProvider>
       <RolePlayProvider>
       <SidebarProvider>
+      <WorkforceGroupProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -99,6 +102,7 @@ const App = () => (
               <Route path="/cohort" element={<CohortHub />} />
               <Route path="/action-centre" element={<ActionCentre />} />
               <Route path="/admin" element={<AdminView />} />
+              <Route path="/admin/workforce-groups" element={<AdminWorkforceGroups />} />
               <Route path="/dev-tools" element={<DevTools />} />
               <Route path="/settings" element={<Settings />} />
             </Route>
@@ -107,6 +111,7 @@ const App = () => (
           </AgentOneProvider>
         </BrowserRouter>
       </TooltipProvider>
+      </WorkforceGroupProvider>
       </SidebarProvider>
       </RolePlayProvider>
       </SkillTargetsProvider>

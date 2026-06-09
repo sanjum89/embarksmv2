@@ -14,6 +14,7 @@ import { EmbarkTour } from "@/components/tour/EmbarkTour";
 
 import { TourWelcomeBanner } from "@/components/tour/TourWelcomeBanner";
 import { PageTransition } from "@/components/motion/Motion";
+import { WorkforceGroupPicker } from "@/components/workforce-groups/WorkforceGroupPicker";
 
 
 export function AppLayout() {
@@ -49,6 +50,9 @@ export function AppLayout() {
         )}
         <AppSidebar />
         <main className={cn("flex-1 flex flex-col min-h-0 transition-all duration-200", expanded ? (isTraditional ? "ml-[248px]" : "ml-56") : (isTraditional ? "ml-[82px]" : "ml-16"), isTraditional && "pt-14")}>
+          <div className="absolute right-4 top-2 z-30">
+            <WorkforceGroupPicker />
+          </div>
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <PageTransition transitionKey={routeKey} className="flex-1 flex flex-col min-h-0">
               <Outlet />

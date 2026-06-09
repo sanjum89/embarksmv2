@@ -33,6 +33,7 @@ export interface Account {
   is_default: boolean;
   data: AccountData;
   created_at?: string;
+  workforce_groups_enabled?: boolean;
 }
 
 export interface OrgNode {

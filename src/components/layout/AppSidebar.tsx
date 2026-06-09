@@ -29,6 +29,7 @@ import { useAccount } from "@/contexts/AccountContext";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useTour } from "@/contexts/TourContext";
+import { useWorkforceGroups } from "@/contexts/WorkforceGroupContext";
 import { cn } from "@/lib/utils";
 import {
   Tooltip,

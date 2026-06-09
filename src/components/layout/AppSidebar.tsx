@@ -140,8 +140,15 @@ export function AppSidebar() {
     logoutUser(userId);
   };
 
+  const wgEnabled = useWorkforceGroups().enabled;
   const baseItems = viewMode === "me" ? meNavItems : teamNavItems;
-  const filteredItems = baseItems.filter((item) => !item.dev);
+  const filteredItems = (() => {
+    const items = baseItems.filter((item) => !item.dev);
+    if (viewMode === "team" && user.role === "admin" && wgEnabled) {
+      items.push({ label: "Workforce Groups", path: "/admin/workforce-groups", icon: Layers });
+    }
+    return items;
+  })();
   const legacyItems = viewMode === "me" ? legacyMeItems : legacyTeamItems;
 
 

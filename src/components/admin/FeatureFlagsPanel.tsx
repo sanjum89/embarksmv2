@@ -20,9 +20,9 @@ export default function FeatureFlagsPanel() {
       toast({ title: next ? "Workforce Groups enabled" : "Workforce Groups disabled" });
     } catch (e: any) {
       toast({ title: "Couldn't update flag", description: String(e?.message ?? e), variant: "destructive" });
+    } finally {
       setSaving(false);
     }
-    // Page reloads on success
   };
 
   return (

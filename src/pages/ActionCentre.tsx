@@ -17,6 +17,7 @@ import { useRathbonesPersonaOverlays } from "@/hooks/useRathbonesPersonaOverlays
 import { cn } from "@/lib/utils";
 import { StaggerList, StaggerItem } from "@/components/motion/Motion";
 import type { CategoryFilter, ActionFeedItem } from "@/lib/actionCentre/itemKinds";
+import GroupReadinessSection from "@/components/action-centre/GroupReadinessSection";
 
 const FILTERS: { key: CategoryFilter; label: string }[] = [
   { key: "all", label: "All" },
@@ -109,6 +110,8 @@ export default function ActionCentre() {
             ))}
           </div>
         </div>
+
+        <GroupReadinessSection />
 
         {showEmpty ? (
           <EmptyState />

@@ -14,6 +14,7 @@ import { AgentOneProvider } from "@/contexts/AgentOneContext";
 import { WorkforceGroupProvider } from "@/contexts/WorkforceGroupContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import AdminWorkforceGroups from "./pages/AdminWorkforceGroups";
+import WorkforceReadiness from "./pages/WorkforceReadiness";
 import Dashboard from "./pages/Dashboard";
 import SkillTargetBuilder from "./pages/SkillTargetBuilder";
 import SkillTargetDetail from "./pages/SkillTargetDetail";
@@ -103,6 +104,7 @@ const App = () => (
               <Route path="/action-centre" element={<ActionCentre />} />
               <Route path="/admin" element={<AdminView />} />
               <Route path="/admin/workforce-groups" element={<AdminWorkforceGroups />} />
+              <Route path="/admin/workforce-readiness" element={<WorkforceReadiness />} />
               <Route path="/dev-tools" element={<DevTools />} />
               <Route path="/settings" element={<Settings />} />
             </Route>

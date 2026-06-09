@@ -105,15 +105,18 @@ export function useActionCentreFeed(): ActionCentreFeed {
 
   const managerItems = useMemo<ActionFeedItem[]>(() => {
     if (!isManager) return [];
-    return overlays.flatMap((o) =>
-      o.actions
-        .filter((a) => {
-          const d = approvals[a.id]?.decision;
-          return d !== "approved" && d !== "rejected" && d !== "resolved";
-        })
-        .map((a) => managerActionToFeedItem({ ...a, learnerName: employeesById[o.employeeId]?.name || o.employeeId }))
-    );
-  }, [overlays, approvals, employeesById, isManager]);
+    const scope = wgEnabled && selectedGroupId ? new Set(selectedSubtreeEmployeeIds) : null;
+    return overlays
+      .filter((o) => !scope || scope.has(o.employeeId))
+      .flatMap((o) =>
+        o.actions
+          .filter((a) => {
+            const d = approvals[a.id]?.decision;
+            return d !== "approved" && d !== "rejected" && d !== "resolved";
+          })
+          .map((a) => managerActionToFeedItem({ ...a, learnerName: employeesById[o.employeeId]?.name || o.employeeId }))
+      );
+  }, [overlays, approvals, employeesById, isManager, wgEnabled, selectedGroupId, selectedSubtreeEmployeeIds]);
 
   const allItems = useMemo(() => {
     const merged = [...microItems, ...learnerItems, ...managerItems];

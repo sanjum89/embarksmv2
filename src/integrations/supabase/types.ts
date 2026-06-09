@@ -25,6 +25,7 @@ export type Database = {
           logo_superlight: string | null
           name: string
           use_case_context: string | null
+          workforce_groups_enabled: boolean
         }
         Insert: {
           accent_color?: string | null
@@ -36,6 +37,7 @@ export type Database = {
           logo_superlight?: string | null
           name: string
           use_case_context?: string | null
+          workforce_groups_enabled?: boolean
         }
         Update: {
           accent_color?: string | null
@@ -47,6 +49,7 @@ export type Database = {
           logo_superlight?: string | null
           name?: string
           use_case_context?: string | null
+          workforce_groups_enabled?: boolean
         }
         Relationships: []
       }
@@ -2241,6 +2244,188 @@ export type Database = {
             columns: ["account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workforce_group_compliance_rules: {
+        Row: {
+          account_id: string
+          cadence: string | null
+          code: string
+          created_at: string
+          framework: string
+          id: string
+          label: string
+          target_hours: number | null
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          cadence?: string | null
+          code: string
+          created_at?: string
+          framework?: string
+          id?: string
+          label: string
+          target_hours?: number | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          cadence?: string | null
+          code?: string
+          created_at?: string
+          framework?: string
+          id?: string
+          label?: string
+          target_hours?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workforce_group_compliance_rules_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workforce_group_links: {
+        Row: {
+          account_id: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          group_id: string
+          id: string
+          metadata: Json
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          group_id: string
+          id?: string
+          metadata?: Json
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          group_id?: string
+          id?: string
+          metadata?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workforce_group_links_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_group_links_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "workforce_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workforce_group_members: {
+        Row: {
+          account_id: string
+          created_at: string
+          employee_id: string
+          group_id: string
+          id: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          employee_id: string
+          group_id: string
+          id?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          employee_id?: string
+          group_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workforce_group_members_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "workforce_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workforce_groups: {
+        Row: {
+          account_id: string
+          created_at: string
+          description: string | null
+          id: string
+          kind: string
+          name: string
+          parent_id: string | null
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          account_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: string
+          name: string
+          parent_id?: string | null
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          kind?: string
+          name?: string
+          parent_id?: string | null
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workforce_groups_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workforce_groups_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "workforce_groups"
             referencedColumns: ["id"]
           },
         ]

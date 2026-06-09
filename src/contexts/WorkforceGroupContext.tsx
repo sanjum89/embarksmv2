@@ -78,7 +78,8 @@ function selectionKey(accountId: string) {
 
 export function WorkforceGroupProvider({ children }: { children: ReactNode }) {
   const { activeAccountId, activeAccount } = useAccount();
-  const enabled = Boolean((activeAccount as any)?.workforce_groups_enabled);
+  const [enabledOverride, setEnabledOverride] = useState<boolean | null>(null);
+  const enabled = enabledOverride ?? Boolean((activeAccount as any)?.workforce_groups_enabled);
 
   const [loading, setLoading] = useState(false);
   const [groups, setGroups] = useState<WorkforceGroup[]>([]);

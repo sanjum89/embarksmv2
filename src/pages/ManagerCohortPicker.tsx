@@ -3,18 +3,19 @@ import { Layers, ChevronRight, Users, AlertCircle } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import PageBody from "@/components/layout/PageBody";
 import { useAccountCohorts } from "@/hooks/useManagerCohortData";
-import { RATHBONES_COHORT_ID } from "@/data/managerDemoOverlay";
+import { usePrimaryCohortId } from "@/hooks/usePrimaryCohortId";
 import { useRathbonesPersonaOverlays } from "@/hooks/useRathbonesPersonaOverlays";
 import { roleCohortLabel } from "@/lib/roleCohortLabel";
 
 export default function ManagerCohortPicker() {
   const { loading, cohorts } = useAccountCohorts();
+  const primaryCohortId = usePrimaryCohortId();
 
   const list = cohorts.length
     ? cohorts
     : [
         {
-          id: RATHBONES_COHORT_ID,
+          id: primaryCohortId,
           cohort_code: "cohort.assoc_im.2026_01",
           cohort_title: "Investment Management Readiness — Jan 2026",
           role_cohort_code: "assoc_im",
@@ -29,7 +30,7 @@ export default function ManagerCohortPicker() {
 
   // Per-cohort metrics — for the demo cohort, attribute all learners; otherwise zero.
   const metricsFor = (cohortId: string) => {
-    if (cohortId === RATHBONES_COHORT_ID && overlays.length) {
+    if (cohortId === primaryCohortId && overlays.length) {
       const total = overlays.length;
       const completedCells = overlays.reduce(
         (acc, o) => acc + o.cells.filter((c) => c.status === "completed").length,

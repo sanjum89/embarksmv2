@@ -10,6 +10,8 @@ export default function DevTools() {
   const [result, setResult] = useState<string | null>(null);
   const [backfilling, setBackfilling] = useState(false);
   const [backfillResult, setBackfillResult] = useState<string | null>(null);
+  const [mirroring, setMirroring] = useState(false);
+  const [mirrorResult, setMirrorResult] = useState<string | null>(null);
 
   const runReset = async () => {
     setRunning(true);
@@ -40,6 +42,22 @@ export default function DevTools() {
       toast({ title: "Backfill failed", description: String(e?.message ?? e), variant: "destructive" });
     } finally {
       setBackfilling(false);
+    }
+  };
+
+  const runMirror = async () => {
+    setMirroring(true);
+    setMirrorResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("mirror-account-content", { body: {} });
+      if (error) throw error;
+      setMirrorResult(JSON.stringify(data, null, 2));
+      toast({ title: "Pinnacle mirrored", description: "Pinnacle Capital now matches Rathbones." });
+    } catch (e: any) {
+      setMirrorResult(String(e?.message ?? e));
+      toast({ title: "Mirror failed", description: String(e?.message ?? e), variant: "destructive" });
+    } finally {
+      setMirroring(false);
     }
   };
 
@@ -93,6 +111,28 @@ export default function DevTools() {
           {backfillResult && (
             <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
               {backfillResult}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Re-mirror Pinnacle from Rathbones</CardTitle>
+          <CardDescription>
+            Replaces every Pinnacle Capital row (cohorts, catalog, chapters, personas, progress,
+            assessments, micro-learnings, workforce groups) with an exact copy of the Rathbones
+            equivalents, keeping the same codes and employee IDs. Safe to re-run after any
+            Rathbones seeding change. Rathbones data is never modified.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button onClick={runMirror} disabled={mirroring} variant="outline">
+            {mirroring ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {mirroring ? "Mirroring…" : "Re-mirror Pinnacle from Rathbones"}
+          </Button>
+          {mirrorResult && (
+            <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
+              {mirrorResult}
             </pre>
           )}
         </CardContent>

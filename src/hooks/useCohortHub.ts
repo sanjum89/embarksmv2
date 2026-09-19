@@ -129,8 +129,7 @@ export interface CohortHubData {
   refresh: () => void;
 }
 
-const RATHBONES_ID = "6c49ca7c-fecb-4b34-a690-7e4e28bb2194";
-const RATHBONES_COHORT = "11111111-1111-1111-1111-111111111111";
+const PRIMARY_COHORT_CODE = "cohort.assoc_im.2026_01";
 
 interface UseArgs {
   accountId: string | null;
@@ -220,8 +219,17 @@ export function useCohortHub({ accountId, employeeId, employeesById }: UseArgs):
         .limit(1);
       let cohortId = enrollments?.[0]?.cohort_id ?? null;
 
-      // Fallback for demo: if Rathbones account but learner not enrolled, show the canonical cohort
-      if (!cohortId && accountId === RATHBONES_ID) cohortId = RATHBONES_COHORT;
+      // Fallback for demo: if the learner is not enrolled, show the account's
+      // canonical cohort (resolved by code so white-label clones work too).
+      if (!cohortId) {
+        const { data: fallbackCohort } = await supabase
+          .from("cohorts")
+          .select("id")
+          .eq("account_id", accountId)
+          .eq("cohort_code", PRIMARY_COHORT_CODE)
+          .maybeSingle();
+        cohortId = (fallbackCohort as any)?.id ?? null;
+      }
 
       if (!cohortId) {
         if (!cancelled) setState((s) => ({ ...s, loading: false, cohort: null }));

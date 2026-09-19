@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAccount } from "@/contexts/AccountContext";
 import {
   COHORT_MODULES_FALLBACK,
-  RATHBONES_COHORT_ID,
+  RATHBONES_COHORT_CODE,
   RATHBONES_PERSONA_IDS,
   bucketStageLabel,
   getDemoOverlay,
@@ -101,8 +101,9 @@ export function useManagerCohortData(cohortId: string | null): ManagerCohortData
       // Live enrollments
       const liveIds = new Set<string>(((enrollRes as any).data ?? []).map((r: any) => r.employee_id));
 
-      // Demo-overlay union for Rathbones cohort
-      const isRathbonesCohort = cohortId === RATHBONES_COHORT_ID;
+      // Demo-overlay union for the canonical demo cohort (matched by code so the
+      // Pinnacle Capital clone behaves identically to Rathbones)
+      const isRathbonesCohort = cohort?.cohort_code === RATHBONES_COHORT_CODE;
       const ids = new Set<string>(liveIds);
       if (isRathbonesCohort) RATHBONES_PERSONA_IDS.forEach((id) => ids.add(id));
 

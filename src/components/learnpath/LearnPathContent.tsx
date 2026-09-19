@@ -14,6 +14,7 @@ import { EmbarkModuleContent } from "./LearnPathModuleContent";
 import { DiagnosticResultsCard } from "./DiagnosticResultsCard";
 import { EmbarkAssessment } from "./LearnPathAssessment";
 import { EvidenceTaskCard } from "./EvidenceTaskCard";
+import { MicroLearningCard } from "./MicroLearningCard";
 import { EmbarkModeSelector } from "./LearnPathModeSelector";
 import { ExplainSelectionPopover } from "./ExplainSelectionPopover";
 import { GraduationCap, Sparkles, AlertTriangle, ArrowRight } from "lucide-react";
@@ -52,6 +53,14 @@ export interface UnifiedStep {
   assessmentScore?: number;
   assessmentPassed?: boolean;
   assessmentPassingScore?: number;
+  /** Attempts made at this assessment. */
+  attemptCount?: number;
+  /** Retake blocked until reopened chapters are completed again. */
+  retakeLocked?: boolean;
+  /** Why a module assessment cannot be submitted yet. */
+  gateReason?: string;
+  /** Per-learner remediation row kind. */
+  remediationKind?: "micro_learning" | "gap_module";
   /** Catalog metadata for the underlying chapter (e.g. micro_learning_for). */
   metadata?: Record<string, any> | null;
 }
@@ -180,9 +189,16 @@ export function EmbarkContent() {
     return activeModuleId.slice("__evi::".length);
   }, [activeModuleId]);
 
+  // Detect a per-learner remediation row of the form `__micro::<microLearningId>`.
+  const microLearningId = useMemo(() => {
+    if (!activeModuleId || !activeModuleId.startsWith("__micro::")) return null;
+    return activeModuleId.slice("__micro::".length);
+  }, [activeModuleId]);
+
+
   // Determine if activeModuleId is a cohort chapter code, and look up its adaptation lens.
   const cohortChapterCode = useMemo(() => {
-    if (!activeModuleId || !journey || diagModuleCode) return null;
+    if (!activeModuleId || !journey || diagModuleCode || microLearningId) return null;
     for (const t of journey.tracks) {
       for (const m of t.modules) {
         if (m.chapters.some((c) => c.code === activeModuleId)) return activeModuleId;
@@ -307,8 +323,25 @@ export function EmbarkContent() {
   }
 
   if (contentView === "module" && activeModuleId) {
+    // Per-learner remediation row (`__micro::<id>`) — micro-learning or gap module.
+    if (microLearningId) {
+      return (
+        <div className="h-full flex flex-col">
+          <ExplainSelectionPopover />
+          <div className="flex-1 overflow-y-auto" data-explainable="true">
+            <MicroLearningCard
+              microLearningId={microLearningId}
+              onCompleted={refreshJourney}
+              onContinue={() => showModuleGrid()}
+            />
+          </div>
+        </div>
+      );
+    }
+
     // Synthetic "Submit evidence" row from the journey accordion (`__evi::<moduleCode>`).
     if (eviModuleCode && journey && activeAccountId) {
+
       let moduleTitle = eviModuleCode;
       let reason: string | null = null;
       for (const t of journey.tracks) for (const m of t.modules) {

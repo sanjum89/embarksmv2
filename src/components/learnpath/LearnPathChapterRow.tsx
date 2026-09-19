@@ -210,17 +210,28 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
                     {lensPill[lens].label}
                   </Badge>
                 )}
-                {step.metadata?.micro_learning_for && (
+                {(step.metadata?.micro_learning_for || step.remediationKind === "micro_learning") && (
                   <Badge
                     variant="outline"
                     className="h-5 px-1.5 text-[0.65rem] border bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30 gap-1"
                     data-tour="lens-microlearning"
-                    title={`Targeted remediation for the previous assessment (${step.metadata.micro_learning_for})`}
+                    title="Targeted remediation created from the question you missed"
                   >
                     <Zap className="h-2.5 w-2.5" />
                     MICRO-LEARNING
                   </Badge>
                 )}
+                {step.remediationKind === "gap_module" && (
+                  <Badge
+                    variant="outline"
+                    className="h-5 px-1.5 text-[0.65rem] border bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 gap-1"
+                    title="You passed, but this topic still had a gap — this short module closes it"
+                  >
+                    <Zap className="h-2.5 w-2.5" />
+                    GAP MODULE
+                  </Badge>
+                )}
+
                 {step.diagResult && (() => {
                   const { correct, total, reopenedCount } = step.diagResult;
                   const allCorrect = correct === total;
@@ -260,6 +271,31 @@ export function EmbarkChapterRow({ step, index, isActive, isLast }: ChapterRowPr
                     </Badge>
                   );
                 })()}
+                {(step.attemptCount ?? 0) > 1 && (
+                  <Badge variant="outline" className="h-5 px-1.5 text-[0.65rem] border font-medium">
+                    Attempt {step.attemptCount}
+                  </Badge>
+                )}
+                {step.retakeLocked && (
+                  <Badge
+                    variant="outline"
+                    className="h-5 px-1.5 text-[0.65rem] border gap-1 bg-muted text-muted-foreground"
+                    title="Retake unlocks once you've redone the chapters that were reopened"
+                  >
+                    <Lock className="h-2.5 w-2.5" />
+                    RETAKE LOCKED
+                  </Badge>
+                )}
+                {step.gateReason && !step.retakeLocked && (
+                  <Badge
+                    variant="outline"
+                    className="h-5 px-1.5 text-[0.65rem] border gap-1 bg-muted text-muted-foreground"
+                    title={step.gateReason}
+                  >
+                    <Lock className="h-2.5 w-2.5" />
+                    LOCKED
+                  </Badge>
+                )}
 
               </div>
 

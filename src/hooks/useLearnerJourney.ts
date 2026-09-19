@@ -6,6 +6,10 @@ import { diagnosticReopens } from "@/store/useDiagnosticReopens";
 export type ChapterStatus = "not_started" | "in_progress" | "completed" | "locked";
 export type ModuleStatus = "completed" | "in_progress" | "up_next" | "locked";
 
+/** Single pass mark used everywhere an assessment has no explicit blueprint. */
+export const PASS_MARK = 80;
+
+
 export interface JourneyChapter {
   code: string;
   title: string;
@@ -17,9 +21,20 @@ export interface JourneyChapter {
   assessmentScore?: number;
   assessmentPassed?: boolean;
   assessmentPassingScore?: number;
+  /** How many attempts the learner has made at this assessment. */
+  attemptCount?: number;
+  /** True when a retake is blocked until the reopened chapters are redone. */
+  retakeLocked?: boolean;
+  retakeBlockedChapters?: string[];
+  /** Why a module assessment can't be submitted yet. */
+  gateReason?: string;
+  /** Per-learner remediation chapter injected beneath its source assessment. */
+  remediationKind?: "micro_learning" | "gap_module";
+  microLearningId?: string;
   /** Raw catalog metadata for this chapter (e.g. micro_learning_for). */
   metadata?: Record<string, any> | null;
 }
+
 
 
 export interface JourneyModule {
@@ -192,7 +207,7 @@ export function useLearnerJourney(
         // 7. Open lock events (unlocked_at IS NULL = still locked)
         const { data: lockEvents, error: lkErr } = await supabase
           .from("chapter_lock_events")
-          .select("module_code, chapter_code, unlocked_at")
+          .select("module_code, chapter_code, unlocked_at, reason")
           .eq("account_id", accountId)
           .eq("employee_id", employeeId)
           .eq("cohort_id", cohortId)
@@ -252,17 +267,30 @@ export function useLearnerJourney(
           const k = `${p.module_code}::${p.chapter_code ?? ""}`;
           progressMap.set(k, p.status);
         });
+        // Two flavours of open lock event: a hard lock (chapter not yet
+        // available) and a "reopened after a failed check" event, which makes
+        // the chapter available again so the learner can redo it.
         const lockSet = new Set<string>();
-        (lockEvents ?? []).forEach((l) =>
-          lockSet.add(`${l.module_code}::${l.chapter_code ?? ""}`)
-        );
+        const reopenSet = new Set<string>();
+        (lockEvents ?? []).forEach((l) => {
+          const key = `${l.module_code}::${l.chapter_code ?? ""}`;
+          if ((l.reason ?? "").startsWith("reopened")) reopenSet.add(key);
+          else lockSet.add(key);
+        });
 
         // 7c. Latest assessment attempt — keyed by chapter_code OR blueprint_code
         // (blueprint rows come from catalog_assessment_blueprints and are
         // injected as synthetic chapter rows further down).
         const assessmentByKey = new Map<
           string,
-          { score: number; passed: boolean; passingScore: number; locked: boolean }
+          {
+            score: number;
+            passed: boolean;
+            passingScore: number;
+            locked: boolean;
+            attemptCount: number;
+            retakeBlockedChapters: string[];
+          }
         >();
         // Module-post + milestone blueprints, used to inject synthetic
         // assessment "chapters" into the journey.
@@ -273,13 +301,26 @@ export function useLearnerJourney(
           assessment_title: string;
           passing_score: number;
         }> = [];
+        // Per-learner remediation items (micro-learnings / gap modules).
+        let microRows: Array<{
+          id: string;
+          module_code: string | null;
+          topic_tag: string | null;
+          status: string;
+          kind: string;
+          teaching_content_outline: string | null;
+          source_assessment_id: string | null;
+          created_at: string;
+        }> = [];
+        // assessment_instances.id → the key (blueprint/chapter code) it belongs to
+        const instanceIdToKey = new Map<string, string>();
         if (moduleCodes.length) {
-          const [{ data: instances }, { data: chapterBlueprints }, { data: moduleBlueprints }] =
+          const [{ data: instances }, { data: chapterBlueprints }, { data: moduleBlueprints }, { data: micros }] =
             await Promise.all([
               supabase
                 .from("assessment_instances")
                 .select(
-                  "chapter_code, blueprint_code, module_code, score, completed_at, started_at, status, metadata",
+                  "id, chapter_code, blueprint_code, module_code, score, attempt_number, completed_at, started_at, status, metadata, locks_retake_until_chapters",
                 )
                 .eq("account_id", accountId)
                 .eq("employee_id", employeeId)
@@ -297,43 +338,87 @@ export function useLearnerJourney(
                 .eq("account_id", accountId)
                 .in("module_code", moduleCodes)
                 .in("scope", ["module_post", "milestone"] as any),
+              supabase
+                .from("micro_learnings")
+                .select(
+                  "id, module_code, topic_tag, status, kind, teaching_content_outline, source_assessment_id, created_at",
+                )
+                .eq("account_id", accountId)
+                .eq("employee_id", employeeId)
+                .eq("cohort_id", cohortId)
+                .order("created_at", { ascending: true }),
             ]);
 
           const passingByChapter = new Map<string, number>();
           (chapterBlueprints ?? []).forEach((b) => {
-            if (b.chapter_code) passingByChapter.set(b.chapter_code, b.passing_score ?? 70);
+            if (b.chapter_code) passingByChapter.set(b.chapter_code, b.passing_score ?? PASS_MARK);
           });
           const passingByBlueprint = new Map<string, number>();
           (moduleBlueprints ?? []).forEach((b) => {
-            passingByBlueprint.set(b.blueprint_code, b.passing_score ?? 80);
+            passingByBlueprint.set(b.blueprint_code, b.passing_score ?? PASS_MARK);
           });
           blueprintRows = (moduleBlueprints ?? []) as any;
+          microRows = ((micros ?? []) as any[]).filter(
+            (m) => (m.teaching_content_outline ?? "").trim().length > 0,
+          ) as any;
 
-          // Keep most-recent attempt per identifier (chapter or blueprint).
+          // Keep the LATEST attempt per identifier (highest attempt_number, then
+          // most recent timestamp) and count how many attempts exist.
           const byKey = new Map<
             string,
-            { score: number | null; ts: string; status: string; passing: number }
+            {
+              score: number | null;
+              ts: string;
+              attempt: number;
+              status: string;
+              passing: number;
+              attemptCount: number;
+              lockChapters: string[];
+            }
           >();
           (instances ?? []).forEach((i) => {
             const key = i.blueprint_code ?? i.chapter_code ?? (i.metadata as any)?.assessment_id;
             if (!key) return;
-            const ts = i.completed_at ?? i.started_at;
+            if (i.id) instanceIdToKey.set(i.id, key);
+            const ts = i.completed_at ?? i.started_at ?? "";
+            const attempt = i.attempt_number ?? 1;
             const passing =
               (i.blueprint_code && passingByBlueprint.get(i.blueprint_code)) ||
               (i.chapter_code && passingByChapter.get(i.chapter_code)) ||
-              70;
+              PASS_MARK;
+            const lockChapters = Array.isArray(i.locks_retake_until_chapters)
+              ? (i.locks_retake_until_chapters as any[]).filter((c): c is string => typeof c === "string")
+              : [];
             const prev = byKey.get(key);
-            if (!prev || (ts && ts > prev.ts)) {
-              byKey.set(key, { score: i.score, ts: ts ?? "", status: i.status, passing });
-            }
+            const isNewer =
+              !prev || attempt > prev.attempt || (attempt === prev.attempt && ts > prev.ts);
+            byKey.set(key, {
+              score: isNewer ? i.score : prev!.score,
+              ts: isNewer ? ts : prev!.ts,
+              attempt: isNewer ? attempt : prev!.attempt,
+              status: isNewer ? i.status : prev!.status,
+              passing,
+              attemptCount: (prev?.attemptCount ?? 0) + 1,
+              lockChapters: isNewer ? lockChapters : prev!.lockChapters,
+            });
           });
           byKey.forEach((v, key) => {
             if (v.score == null) return;
+            const passed = v.score >= v.passing;
+            // A retake is blocked while any reopened chapter is still outstanding.
+            const stillOutstanding = v.lockChapters.filter((code) => {
+              const modCode = (instances ?? []).find(
+                (i) => (i.blueprint_code ?? i.chapter_code) === key,
+              )?.module_code;
+              return progressMap.get(`${modCode}::${code}`) !== "completed";
+            });
             assessmentByKey.set(key, {
               score: v.score,
-              passed: v.score >= v.passing,
+              passed,
               passingScore: v.passing,
-              locked: v.status === "locked",
+              locked: !passed && (v.status === "locked" || stillOutstanding.length > 0),
+              attemptCount: v.attemptCount,
+              retakeBlockedChapters: stillOutstanding,
             });
           });
         }
@@ -343,7 +428,11 @@ export function useLearnerJourney(
         (chapters ?? []).forEach((c) => {
           const key = `${c.module_code}::${c.chapter_code}`;
           const rawStatus = (progressMap.get(key) ?? "not_started") as ChapterStatus;
-          const status: ChapterStatus = lockSet.has(key) ? "locked" : rawStatus;
+          const status: ChapterStatus = lockSet.has(key)
+            ? "locked"
+            : reopenSet.has(key) && rawStatus !== "completed"
+              ? "in_progress"
+              : rawStatus;
           const list = chaptersByModule.get(c.module_code) ?? [];
           const assessment = assessmentByKey.get(c.chapter_code);
           list.push({
@@ -351,15 +440,19 @@ export function useLearnerJourney(
             title: c.chapter_title,
             contentType: c.content_type ?? "reading",
             minutes: c.estimated_time_minutes ?? 0,
-            status,
+            status: assessment?.locked ? "locked" : status,
             displayOrder: c.display_order ?? 0,
             assessmentScore: assessment?.score,
             assessmentPassed: assessment?.passed,
             assessmentPassingScore: assessment?.passingScore,
+            attemptCount: assessment?.attemptCount,
+            retakeLocked: assessment?.locked && (assessment?.retakeBlockedChapters.length ?? 0) > 0,
+            retakeBlockedChapters: assessment?.retakeBlockedChapters,
             metadata: (c as any).metadata ?? null,
           });
           chaptersByModule.set(c.module_code, list);
         });
+
 
         // 7d. Inject synthetic assessment "chapters" from blueprints.
         // module_post → appended last (displayOrder = 9999).
@@ -370,18 +463,33 @@ export function useLearnerJourney(
           const result = assessmentByKey.get(bp.blueprint_code);
           let displayOrder = 9999;
           let title: string;
-          if (bp.scope === "milestone") {
+          let gateReason: string | undefined;
+          const isMilestone = bp.scope === "milestone";
+          if (isMilestone) {
             const midpoint = list.find((c) => c.code.endsWith(".midpoint"));
             displayOrder = midpoint ? midpoint.displayOrder + 1 : 500;
             title = `Milestone check — ${bp.assessment_title || "milestone"}`;
           } else {
             title = `Module assessment — ${bp.assessment_title || "post-module"}`;
+            // Gate: every learning chapter done AND the midpoint check passed.
+            const learningChapters = list.filter((c) => c.contentType !== "assessment" && !c.remediationKind);
+            const outstanding = learningChapters.filter(
+              (c) => c.status !== "completed" && c.status !== ("skipped" as any),
+            );
+            const midpoint = list.find((c) => c.code.endsWith(".midpoint"));
+            if (outstanding.length > 0) {
+              gateReason = `Complete the remaining ${outstanding.length} chapter${
+                outstanding.length === 1 ? "" : "s"
+              } in this module first`;
+            } else if (midpoint && midpoint.assessmentScore != null && !midpoint.assessmentPassed) {
+              gateReason = "Pass the midpoint check before the module assessment";
+            }
           }
-          // Status: completed if a passing attempt exists, locked when the
-          // last attempt was locked, else available.
+          // Status: completed if a passing attempt exists, locked when the last
+          // attempt was locked or the module gate isn't met yet.
           const status: ChapterStatus = result?.passed
             ? "completed"
-            : result?.locked
+            : result?.locked || gateReason
               ? "locked"
               : "not_started";
           list.push({
@@ -394,9 +502,53 @@ export function useLearnerJourney(
             assessmentScore: result?.score,
             assessmentPassed: result?.passed,
             assessmentPassingScore: result?.passingScore,
+            attemptCount: result?.attemptCount,
+            retakeLocked: result?.locked && (result?.retakeBlockedChapters.length ?? 0) > 0,
+            retakeBlockedChapters: result?.retakeBlockedChapters,
+            gateReason,
           });
           chaptersByModule.set(bp.module_code, list);
         });
+
+        // 7e. Inject the learner's own remediation chapters (micro-learnings
+        // after a failed check, gap modules after a pass that still had gaps)
+        // directly beneath the assessment that produced them.
+        microRows.forEach((mr) => {
+          if (!mr.module_code) return;
+          const list = chaptersByModule.get(mr.module_code);
+          if (!list) return;
+          const sourceKey = mr.source_assessment_id
+            ? instanceIdToKey.get(mr.source_assessment_id)
+            : undefined;
+          const source =
+            (sourceKey && list.find((c) => c.code === sourceKey)) ||
+            list.find((c) => c.code.endsWith(".midpoint")) ||
+            [...list].sort((a, b) => b.displayOrder - a.displayOrder).find((c) => c.contentType === "assessment");
+          const kind = (mr.kind === "gap_module" ? "gap_module" : "micro_learning") as
+            | "gap_module"
+            | "micro_learning";
+          const topic = mr.topic_tag?.trim() || "key topic";
+          list.push({
+            code: `__micro::${mr.id}`,
+            title:
+              kind === "gap_module"
+                ? `Gap module — ${topic}`
+                : `Micro-learning — ${topic}`,
+            contentType: "reading",
+            minutes: 5,
+            status:
+              mr.status === "completed"
+                ? "completed"
+                : mr.status === "in_progress"
+                  ? "in_progress"
+                  : "not_started",
+            displayOrder: (source?.displayOrder ?? 9998) + 0.5,
+            remediationKind: kind,
+            microLearningId: mr.id,
+          });
+          chaptersByModule.set(mr.module_code, list);
+        });
+
 
 
         // Build modules

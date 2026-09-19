@@ -124,6 +124,8 @@ Deno.serve(async (req) => {
       sourceAssessmentId,
       moduleCode,
       wrongAnswers,
+      kind,
+      maxItems,
     } = await req.json();
     if (!accountId || !employeeId || !Array.isArray(wrongAnswers)) {
       throw new Error("accountId, employeeId, wrongAnswers required");
@@ -140,8 +142,11 @@ Deno.serve(async (req) => {
     }
 
     const created: string[] = [];
+    const itemKind = kind === "gap_module" ? "gap_module" : "micro_learning";
+    const cap = Number.isFinite(maxItems) ? Number(maxItems) : Infinity;
 
     for (const [topic, items] of groups.entries()) {
+      if (created.length >= cap) break;
       const representative = items[0];
       try {
         const out = await generateOne(representative, moduleCode);
@@ -164,6 +169,7 @@ Deno.serve(async (req) => {
             teaching_content_outline: out.teaching_content_outline,
             practical_activity: out.practical_activity,
             chapters: chapterCodes,
+            kind: itemKind,
             status: "pending",
           })
           .select("id")

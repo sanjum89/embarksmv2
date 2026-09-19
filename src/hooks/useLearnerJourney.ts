@@ -17,9 +17,20 @@ export interface JourneyChapter {
   assessmentScore?: number;
   assessmentPassed?: boolean;
   assessmentPassingScore?: number;
+  /** How many attempts the learner has made at this assessment. */
+  attemptCount?: number;
+  /** True when a retake is blocked until the reopened chapters are redone. */
+  retakeLocked?: boolean;
+  retakeBlockedChapters?: string[];
+  /** Why a module assessment can't be submitted yet. */
+  gateReason?: string;
+  /** Per-learner remediation chapter injected beneath its source assessment. */
+  remediationKind?: "micro_learning" | "gap_module";
+  microLearningId?: string;
   /** Raw catalog metadata for this chapter (e.g. micro_learning_for). */
   metadata?: Record<string, any> | null;
 }
+
 
 
 export interface JourneyModule {

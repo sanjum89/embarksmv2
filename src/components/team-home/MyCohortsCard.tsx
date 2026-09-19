@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Users } from "lucide-react";
-import { RATHBONES_COHORT_ID } from "@/data/managerDemoOverlay";
+import { usePrimaryCohortId } from "@/hooks/usePrimaryCohortId";
 
 export interface CohortItem {
   id: string;
@@ -12,11 +12,12 @@ export interface CohortItem {
 }
 
 export function MyCohortsCard({ cohorts }: { cohorts: CohortItem[] }) {
+  const primaryCohortId = usePrimaryCohortId();
   const list: CohortItem[] = cohorts.length
     ? cohorts
     : [
         {
-          id: RATHBONES_COHORT_ID,
+          id: primaryCohortId,
           title: "Investment Management Readiness — Jan 2026",
           code: "assoc_im · demo",
           learnerCount: 9,

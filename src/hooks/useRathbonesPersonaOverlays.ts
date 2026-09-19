@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAccount } from "@/contexts/AccountContext";
 import {
   COHORT_MODULES_FALLBACK,
-  RATHBONES_COHORT_ID,
   RATHBONES_PERSONA_IDS,
   bucketStageLabel,
   getDemoOverlay,
@@ -12,6 +11,7 @@ import {
 } from "@/data/managerDemoOverlay";
 import type { CohortModuleCol } from "@/hooks/useManagerCohortData";
 import { loadEmployeeSignals, overlayFromSignals } from "@/lib/managerSignals";
+import { usePrimaryCohortId } from "@/hooks/usePrimaryCohortId";
 
 export interface PersonaOverlaysState {
   loading: boolean;
@@ -34,8 +34,10 @@ const empty: PersonaOverlaysState = { loading: true, overlays: [], byId: {}, mod
  * activeAccount.id.
  */
 export function useRathbonesPersonaOverlays(
-  cohortId: string = RATHBONES_COHORT_ID,
+  cohortIdArg?: string,
 ): PersonaOverlaysState {
+  const primaryCohortId = usePrimaryCohortId();
+  const cohortId = cohortIdArg ?? primaryCohortId;
   const { activeAccount } = useAccount();
   const [state, setState] = useState<PersonaOverlaysState>(empty);
 
@@ -91,7 +93,7 @@ export function useRathbonesPersonaOverlays(
 
       const liveIds = new Set<string>(((enrollRes as any).data ?? []).map((r: any) => r.employee_id));
       const ids = new Set<string>(liveIds);
-      if (cohortId === RATHBONES_COHORT_ID) {
+      if (cohortId === primaryCohortId) {
         RATHBONES_PERSONA_IDS.forEach((id) => ids.add(id));
       }
 
@@ -123,7 +125,7 @@ export function useRathbonesPersonaOverlays(
     return () => {
       cancelled = true;
     };
-  }, [activeAccount, cohortId]);
+  }, [activeAccount, cohortId, primaryCohortId]);
 
   return state;
 }

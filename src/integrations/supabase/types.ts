@@ -2435,7 +2435,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      mirror_account_content: {
+        Args: { p_source: string; p_target: string }
+        Returns: Json
+      }
+      mirror_id: { Args: { p_id: string; p_target: string }; Returns: string }
     }
     Enums: {
       agent_action:

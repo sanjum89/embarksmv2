@@ -41,9 +41,9 @@ serve(async (req) => {
 
   try {
     const body = (await req.json()) as BriefRequest;
-    const apiKey = Deno.env.get("LOVABLE_API_KEY");
+    const apiKey = Deno.env.get("OPENAI_API_KEY");
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: "LOVABLE_API_KEY missing" }), {
+      return new Response(JSON.stringify({ error: "OPENAI_API_KEY missing" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -60,14 +60,14 @@ ${(body.qualityIndicators ?? []).map((q) => `- ${q}`).join("\n") || "- (none pro
 
 Generate the brief now. JSON only.`;
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const aiResp = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: SYSTEM },
           { role: "user", content: userPrompt },

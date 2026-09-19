@@ -1,5 +1,5 @@
 // catalog-import: expands the hand-authored skeleton into rich prose via
-// Lovable AI (google/gemini-2.5-pro) and upserts into the catalog tables.
+// OpenAI (gpt-4o) and upserts into the catalog tables.
 //
 // POST { accountId: string, moduleCodes?: string[], dryRun?: boolean }
 //
@@ -14,7 +14,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -124,14 +124,14 @@ async function expandModule(skel: ModuleSkeleton): Promise<any> {
 
   const userPrompt = `Expand this module skeleton with rich, original prose. Keep the codes EXACTLY as given.\n\n${JSON.stringify(skeletonForPrompt, null, 2)}`;
 
-  const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-2.5-pro",
+      model: "gpt-4o",
       messages: [
         { role: "system", content: sysPrompt },
         { role: "user", content: userPrompt },

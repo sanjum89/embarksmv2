@@ -14,6 +14,7 @@ import { EmbarkModuleContent } from "./LearnPathModuleContent";
 import { DiagnosticResultsCard } from "./DiagnosticResultsCard";
 import { EmbarkAssessment } from "./LearnPathAssessment";
 import { EvidenceTaskCard } from "./EvidenceTaskCard";
+import { MicroLearningCard } from "./MicroLearningCard";
 import { EmbarkModeSelector } from "./LearnPathModeSelector";
 import { ExplainSelectionPopover } from "./ExplainSelectionPopover";
 import { GraduationCap, Sparkles, AlertTriangle, ArrowRight } from "lucide-react";
@@ -52,6 +53,14 @@ export interface UnifiedStep {
   assessmentScore?: number;
   assessmentPassed?: boolean;
   assessmentPassingScore?: number;
+  /** Attempts made at this assessment. */
+  attemptCount?: number;
+  /** Retake blocked until reopened chapters are completed again. */
+  retakeLocked?: boolean;
+  /** Why a module assessment cannot be submitted yet. */
+  gateReason?: string;
+  /** Per-learner remediation row kind. */
+  remediationKind?: "micro_learning" | "gap_module";
   /** Catalog metadata for the underlying chapter (e.g. micro_learning_for). */
   metadata?: Record<string, any> | null;
 }

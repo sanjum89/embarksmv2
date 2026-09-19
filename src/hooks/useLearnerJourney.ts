@@ -6,6 +6,10 @@ import { diagnosticReopens } from "@/store/useDiagnosticReopens";
 export type ChapterStatus = "not_started" | "in_progress" | "completed" | "locked";
 export type ModuleStatus = "completed" | "in_progress" | "up_next" | "locked";
 
+/** Single pass mark used everywhere an assessment has no explicit blueprint. */
+export const PASS_MARK = 80;
+
+
 export interface JourneyChapter {
   code: string;
   title: string;

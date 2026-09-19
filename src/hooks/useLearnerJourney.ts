@@ -449,18 +449,33 @@ export function useLearnerJourney(
           const result = assessmentByKey.get(bp.blueprint_code);
           let displayOrder = 9999;
           let title: string;
-          if (bp.scope === "milestone") {
+          let gateReason: string | undefined;
+          const isMilestone = bp.scope === "milestone";
+          if (isMilestone) {
             const midpoint = list.find((c) => c.code.endsWith(".midpoint"));
             displayOrder = midpoint ? midpoint.displayOrder + 1 : 500;
             title = `Milestone check — ${bp.assessment_title || "milestone"}`;
           } else {
             title = `Module assessment — ${bp.assessment_title || "post-module"}`;
+            // Gate: every learning chapter done AND the midpoint check passed.
+            const learningChapters = list.filter((c) => c.contentType !== "assessment" && !c.remediationKind);
+            const outstanding = learningChapters.filter(
+              (c) => c.status !== "completed" && c.status !== ("skipped" as any),
+            );
+            const midpoint = list.find((c) => c.code.endsWith(".midpoint"));
+            if (outstanding.length > 0) {
+              gateReason = `Complete the remaining ${outstanding.length} chapter${
+                outstanding.length === 1 ? "" : "s"
+              } in this module first`;
+            } else if (midpoint && midpoint.assessmentScore != null && !midpoint.assessmentPassed) {
+              gateReason = "Pass the midpoint check before the module assessment";
+            }
           }
-          // Status: completed if a passing attempt exists, locked when the
-          // last attempt was locked, else available.
+          // Status: completed if a passing attempt exists, locked when the last
+          // attempt was locked or the module gate isn't met yet.
           const status: ChapterStatus = result?.passed
             ? "completed"
-            : result?.locked
+            : result?.locked || gateReason
               ? "locked"
               : "not_started";
           list.push({
@@ -473,9 +488,53 @@ export function useLearnerJourney(
             assessmentScore: result?.score,
             assessmentPassed: result?.passed,
             assessmentPassingScore: result?.passingScore,
+            attemptCount: result?.attemptCount,
+            retakeLocked: result?.locked && (result?.retakeBlockedChapters.length ?? 0) > 0,
+            retakeBlockedChapters: result?.retakeBlockedChapters,
+            gateReason,
           });
           chaptersByModule.set(bp.module_code, list);
         });
+
+        // 7e. Inject the learner's own remediation chapters (micro-learnings
+        // after a failed check, gap modules after a pass that still had gaps)
+        // directly beneath the assessment that produced them.
+        microRows.forEach((mr) => {
+          if (!mr.module_code) return;
+          const list = chaptersByModule.get(mr.module_code);
+          if (!list) return;
+          const sourceKey = mr.source_assessment_id
+            ? instanceIdToKey.get(mr.source_assessment_id)
+            : undefined;
+          const source =
+            (sourceKey && list.find((c) => c.code === sourceKey)) ||
+            list.find((c) => c.code.endsWith(".midpoint")) ||
+            [...list].sort((a, b) => b.displayOrder - a.displayOrder).find((c) => c.contentType === "assessment");
+          const kind = (mr.kind === "gap_module" ? "gap_module" : "micro_learning") as
+            | "gap_module"
+            | "micro_learning";
+          const topic = mr.topic_tag?.trim() || "key topic";
+          list.push({
+            code: `__micro::${mr.id}`,
+            title:
+              kind === "gap_module"
+                ? `Gap module — ${topic}`
+                : `Micro-learning — ${topic}`,
+            contentType: "reading",
+            minutes: 5,
+            status:
+              mr.status === "completed"
+                ? "completed"
+                : mr.status === "in_progress"
+                  ? "in_progress"
+                  : "not_started",
+            displayOrder: (source?.displayOrder ?? 9998) + 0.5,
+            remediationKind: kind,
+            microLearningId: mr.id,
+          });
+          chaptersByModule.set(mr.module_code, list);
+        });
+
 
 
         // Build modules

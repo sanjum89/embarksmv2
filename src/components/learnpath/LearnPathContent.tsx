@@ -180,6 +180,13 @@ export function EmbarkContent() {
     return activeModuleId.slice("__evi::".length);
   }, [activeModuleId]);
 
+  // Detect a per-learner remediation row of the form `__micro::<microLearningId>`.
+  const microLearningId = useMemo(() => {
+    if (!activeModuleId || !activeModuleId.startsWith("__micro::")) return null;
+    return activeModuleId.slice("__micro::".length);
+  }, [activeModuleId]);
+
+
   // Determine if activeModuleId is a cohort chapter code, and look up its adaptation lens.
   const cohortChapterCode = useMemo(() => {
     if (!activeModuleId || !journey || diagModuleCode) return null;

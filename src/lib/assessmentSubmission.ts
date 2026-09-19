@@ -10,6 +10,10 @@
 // reflects which chapters were skipped vs reopened).
 
 import { supabase } from "@/integrations/supabase/client";
+import { PASS_MARK } from "@/hooks/useLearnerJourney";
+
+/** At most two gap modules per passed-with-gaps assessment. */
+const MAX_GAP_MODULES = 2;
 
 export type AssessmentSourceKind = "diagnostic" | "midpoint" | "module_post" | "milestone";
 

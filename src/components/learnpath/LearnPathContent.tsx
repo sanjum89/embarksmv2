@@ -189,7 +189,7 @@ export function EmbarkContent() {
 
   // Determine if activeModuleId is a cohort chapter code, and look up its adaptation lens.
   const cohortChapterCode = useMemo(() => {
-    if (!activeModuleId || !journey || diagModuleCode) return null;
+    if (!activeModuleId || !journey || diagModuleCode || microLearningId) return null;
     for (const t of journey.tracks) {
       for (const m of t.modules) {
         if (m.chapters.some((c) => c.code === activeModuleId)) return activeModuleId;

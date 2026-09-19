@@ -1343,6 +1343,7 @@ export type Database = {
           employee_id: string
           failed_question: string
           id: string
+          kind: string
           learner_answer: string | null
           module_code: string | null
           practical_activity: string | null
@@ -1363,6 +1364,7 @@ export type Database = {
           employee_id: string
           failed_question: string
           id?: string
+          kind?: string
           learner_answer?: string | null
           module_code?: string | null
           practical_activity?: string | null
@@ -1383,6 +1385,7 @@ export type Database = {
           employee_id?: string
           failed_question?: string
           id?: string
+          kind?: string
           learner_answer?: string | null
           module_code?: string | null
           practical_activity?: string | null

@@ -314,8 +314,25 @@ export function EmbarkContent() {
   }
 
   if (contentView === "module" && activeModuleId) {
+    // Per-learner remediation row (`__micro::<id>`) — micro-learning or gap module.
+    if (microLearningId) {
+      return (
+        <div className="h-full flex flex-col">
+          <ExplainSelectionPopover />
+          <div className="flex-1 overflow-y-auto" data-explainable="true">
+            <MicroLearningCard
+              microLearningId={microLearningId}
+              onCompleted={refreshJourney}
+              onContinue={() => showModuleGrid()}
+            />
+          </div>
+        </div>
+      );
+    }
+
     // Synthetic "Submit evidence" row from the journey accordion (`__evi::<moduleCode>`).
     if (eviModuleCode && journey && activeAccountId) {
+
       let moduleTitle = eviModuleCode;
       let reason: string | null = null;
       for (const t of journey.tracks) for (const m of t.modules) {

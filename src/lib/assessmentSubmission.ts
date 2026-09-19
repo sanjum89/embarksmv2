@@ -78,13 +78,19 @@ export async function handleAssessmentSubmission(
     wrongAnswers,
   } = input;
 
-  const passed = score >= passingScore;
-  const subPassThreshold = score < 80; // separate threshold for chapter reopen + lock
+  // ── ONE pass mark for every assessment in the journey: the assessment's own
+  // passing_score (80% for the Rathbones blueprints). Three outcome bands:
+  //   • below pass          → reopen source chapters, lock retake, micro-learnings
+  //   • pass with a gap     → no reopen, up to 2 "gap module" chapters
+  //   • clean pass (100%)   → nothing injected
+  const passMark = passingScore > 0 ? passingScore : PASS_MARK;
+  const passed = score >= passMark;
   const hasWrong = wrongAnswers.length > 0;
+  const gapPass = passed && hasWrong;
 
   // Decide what to reopen. Caller can override; otherwise dedupe wrong-answer
   // chapter codes.
-  const reopenedChapterCodes = Array.from(
+  let reopenedChapterCodes = Array.from(
     new Set(
       (input.lockUntilChapterCodes ?? wrongAnswers.flatMap((w) => w.chapterCodes ?? []))
         .filter((c): c is string => typeof c === "string" && c.length > 0)
@@ -93,19 +99,55 @@ export async function handleAssessmentSubmission(
     ),
   );
 
-  // 1. Write the assessment_instances row.
+  // Fallback for assessments that carry no per-chapter mapping (the midpoint
+  // quiz): reopen every completed chapter of this module taught before it.
+  if (!passed && reopenedChapterCodes.length === 0) {
+    try {
+      const { data: done } = await supabase
+        .from("learner_progress")
+        .select("chapter_code, status")
+        .eq("account_id", accountId)
+        .eq("employee_id", employeeId)
+        .eq("cohort_id", cohortId)
+        .eq("module_code", moduleCode)
+        .eq("status", "completed");
+      reopenedChapterCodes = (done ?? [])
+        .map((r) => r.chapter_code)
+        .filter((c): c is string => !!c && c !== chapterCode && !c.startsWith("__"));
+    } catch (e) {
+      console.warn("[assessmentSubmission] reopen fallback failed", e);
+    }
+  }
+
+  // 1. Write the assessment_instances row with the next attempt number.
   let instanceId: string | null = null;
   try {
     const dbKind =
-      sourceKind === "milestone"
-        ? "milestone"
-        : sourceKind === "module_post"
-          ? "module_post"
-          : sourceKind === "midpoint"
-            ? "module_post" // midpoint quiz is recorded under the closest valid scope
-            : "module_post"; // diagnostic also uses module_post for analytics consistency
+      sourceKind === "milestone" ? "milestone" : "module_post";
 
-    const status = !passed && subPassThreshold ? "locked" : passed ? "completed" : "completed";
+    // Next attempt number for this assessment key.
+    let attemptNumber = 1;
+    try {
+      const q = supabase
+        .from("assessment_instances")
+        .select("attempt_number")
+        .eq("account_id", accountId)
+        .eq("cohort_id", cohortId)
+        .eq("employee_id", employeeId)
+        .eq("module_code", moduleCode)
+        .order("attempt_number", { ascending: false })
+        .limit(1);
+      const { data: prev } = blueprintCode
+        ? await q.eq("blueprint_code", blueprintCode)
+        : chapterCode
+          ? await q.eq("chapter_code", chapterCode)
+          : await q;
+      attemptNumber = (prev?.[0]?.attempt_number ?? 0) + 1;
+    } catch {
+      /* keep 1 */
+    }
+
+    const status = passed ? "completed" : "locked";
 
     const { data: inserted, error: insertErr } = await supabase
       .from("assessment_instances")
@@ -118,11 +160,11 @@ export async function handleAssessmentSubmission(
           module_code: moduleCode,
           chapter_code: chapterCode ?? null,
           kind: dbKind as any,
+          attempt_number: attemptNumber,
           status,
           score,
           completed_at: new Date().toISOString(),
-          locks_retake_until_chapters:
-            !passed && subPassThreshold ? (reopenedChapterCodes as any) : ([] as any),
+          locks_retake_until_chapters: passed ? ([] as any) : (reopenedChapterCodes as any),
           metadata: { assessment_id: assessmentId, source_kind: sourceKind } as any,
         },
       ])
@@ -134,7 +176,7 @@ export async function handleAssessmentSubmission(
     console.warn("[assessmentSubmission] assessment_instances insert failed", e);
   }
 
-  // 2. Generate micro-learnings for every wrong answer.
+  // 2. Remediation: micro-learnings on a fail, capped gap modules on a gap pass.
   let microLearningRequested = false;
   if (hasWrong) {
     microLearningRequested = true;
@@ -146,6 +188,8 @@ export async function handleAssessmentSubmission(
           employeeId,
           sourceAssessmentId: instanceId,
           moduleCode,
+          kind: gapPass ? "gap_module" : "micro_learning",
+          maxItems: gapPass ? MAX_GAP_MODULES : undefined,
           wrongAnswers: wrongAnswers.map((w) => ({
             question: w.question,
             learnerAnswer: w.learnerAnswer,
@@ -158,8 +202,8 @@ export async function handleAssessmentSubmission(
       .catch((e) => console.warn("[assessmentSubmission] generate-micro-learning failed", e));
   }
 
-  // 3. Re-open the source chapters when score < 80%.
-  if (!passed && subPassThreshold && reopenedChapterCodes.length > 0) {
+  // 3. Re-open the source chapters — only when the learner did NOT pass.
+  if (!passed && reopenedChapterCodes.length > 0) {
     try {
       const rows = reopenedChapterCodes.map((chCode) => ({
         account_id: accountId,
@@ -199,8 +243,9 @@ export async function handleAssessmentSubmission(
 
   return {
     assessmentInstanceId: instanceId,
-    locked: !passed && subPassThreshold,
+    locked: !passed,
     microLearningRequested,
-    reopenedChapterCodes,
+    reopenedChapterCodes: passed ? [] : reopenedChapterCodes,
   };
 }
+

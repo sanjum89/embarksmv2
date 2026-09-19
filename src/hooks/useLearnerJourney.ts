@@ -207,7 +207,7 @@ export function useLearnerJourney(
         // 7. Open lock events (unlocked_at IS NULL = still locked)
         const { data: lockEvents, error: lkErr } = await supabase
           .from("chapter_lock_events")
-          .select("module_code, chapter_code, unlocked_at")
+          .select("module_code, chapter_code, unlocked_at, reason")
           .eq("account_id", accountId)
           .eq("employee_id", employeeId)
           .eq("cohort_id", cohortId)
@@ -267,10 +267,16 @@ export function useLearnerJourney(
           const k = `${p.module_code}::${p.chapter_code ?? ""}`;
           progressMap.set(k, p.status);
         });
+        // Two flavours of open lock event: a hard lock (chapter not yet
+        // available) and a "reopened after a failed check" event, which makes
+        // the chapter available again so the learner can redo it.
         const lockSet = new Set<string>();
-        (lockEvents ?? []).forEach((l) =>
-          lockSet.add(`${l.module_code}::${l.chapter_code ?? ""}`)
-        );
+        const reopenSet = new Set<string>();
+        (lockEvents ?? []).forEach((l) => {
+          const key = `${l.module_code}::${l.chapter_code ?? ""}`;
+          if ((l.reason ?? "").startsWith("reopened")) reopenSet.add(key);
+          else lockSet.add(key);
+        });
 
         // 7c. Latest assessment attempt — keyed by chapter_code OR blueprint_code
         // (blueprint rows come from catalog_assessment_blueprints and are
@@ -422,7 +428,11 @@ export function useLearnerJourney(
         (chapters ?? []).forEach((c) => {
           const key = `${c.module_code}::${c.chapter_code}`;
           const rawStatus = (progressMap.get(key) ?? "not_started") as ChapterStatus;
-          const status: ChapterStatus = lockSet.has(key) ? "locked" : rawStatus;
+          const status: ChapterStatus = lockSet.has(key)
+            ? "locked"
+            : reopenSet.has(key) && rawStatus !== "completed"
+              ? "in_progress"
+              : rawStatus;
           const list = chaptersByModule.get(c.module_code) ?? [];
           const assessment = assessmentByKey.get(c.chapter_code);
           list.push({

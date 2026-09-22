@@ -62,7 +62,7 @@ const CLARA: PersonaSpec = {
     { module_code: "tk2.bloomberg_essentials",   state: "completed", assessment_score: 93, days_ago: 25 },
     { module_code: "tk3.performance_attribution",state: "completed", assessment_score: 88, days_ago: 18, wrong_tags: ["attribution_drift"] },
     { module_code: "tk4.risk_mandate_restrictions", state: "completed", assessment_score: 92, days_ago: 12 },
-    { module_code: "tk5.tax_wrappers",           state: "in_progress", in_progress_at: 4, days_ago: 1 },
+    { module_code: "tk5.tax_wrappers",           state: "in_progress", in_progress_at: 1, days_ago: 1 },
     { module_code: "bs1.client_communication",   state: "completed", assessment_score: 95, days_ago: 22 },
     { module_code: "bs2.difficult_conversations",state: "completed", assessment_score: 90, days_ago: 15 },
     { module_code: "cps3.smcr_conduct",          state: "completed", assessment_score: 100, days_ago: 35 },

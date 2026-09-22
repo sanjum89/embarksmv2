@@ -287,12 +287,18 @@ function buildLensChapters(
     const submitted = !!diag?.submitted;
     const reopened = diag?.reopened ?? new Set<string>();
     const skipCount = Math.min(MAX_LENS_SKIPS, chapters.length);
+    // If all real chapters are already completed/skipped the learner finished the
+    // module; treat the diagnostic as completed even when the in-memory store
+    // hasn't been hydrated (e.g. on a fresh page load before DB rows are read).
+    const allRealDone = chapters.every(
+      (c) => c.status === "completed" || c.status === "skipped",
+    );
     const synthetic: LensChapter = {
       code: `__diag::${moduleCode}`,
       title: `Quick diagnostic — 3 questions (skips up to ${skipCount} chapters)`,
       contentType: "diagnostic",
       minutes: 5,
-      status: submitted ? ("completed" as any) : ("in_progress" as any),
+      status: (submitted || allRealDone) ? ("completed" as any) : ("in_progress" as any),
       displayOrder: -1,
       lensState: "synthetic_diagnostic",
       diagResult: submitted

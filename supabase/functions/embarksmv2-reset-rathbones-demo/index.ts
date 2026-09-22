@@ -208,10 +208,14 @@ Deno.serve(async (req) => {
       chaptersByModule[k].sort((a, b) => a.display_order - b.display_order);
     }
     const blueprintByModule: Record<string, { blueprint_code: string; scope: string; passing_score: number }> = {};
+    const milestoneByModule: Record<string, { blueprint_code: string; passing_score: number }> = {};
     for (const b of (bpsRes.data ?? []) as any[]) {
       // Prefer module_post over midpoint when both exist; the seed treats midpoint as an extra failed attempt.
       if (!blueprintByModule[b.module_code] || b.scope === "module_post") {
         blueprintByModule[b.module_code] = { blueprint_code: b.blueprint_code, scope: b.scope, passing_score: b.passing_score ?? 80 };
+      }
+      if (b.scope === "milestone") {
+        milestoneByModule[b.module_code] = { blueprint_code: b.blueprint_code, passing_score: b.passing_score ?? 80 };
       }
     }
 
@@ -316,6 +320,33 @@ Deno.serve(async (req) => {
             metadata: { scope: isMidpoint ? "midpoint" : "module_post", seeded: true },
           });
           (m.wrong_tags ?? []).forEach((t) => weakTags.add(t));
+
+          // Milestone blueprint — for completed modules without a midpoint_fail, insert a
+          // passing attempt so the milestone chapter doesn't appear as an empty circle
+          // between green-checked chapters and a passed final assessment.
+          const milestoneBp = milestoneByModule[m.module_code];
+          if (milestoneBp && m.state === "completed" && !isMidpoint) {
+            const milestoneScore = Math.max(milestoneBp.passing_score + 2, m.assessment_score - 6);
+            assessmentRows.push({
+              id: crypto.randomUUID(),
+              account_id: ACCOUNT_ID,
+              cohort_id: COHORT_ID,
+              employee_id: spec.employee_id,
+              blueprint_code: milestoneBp.blueprint_code,
+              module_code: m.module_code,
+              kind: "milestone",
+              attempt_number: 1,
+              generated_questions: [],
+              learner_responses: [],
+              score: milestoneScore,
+              weak_topic_tags: [],
+              strong_topic_tags: [],
+              status: "completed",
+              started_at: isoDaysAgo(attemptDays + 3),
+              completed_at: isoDaysAgo(attemptDays + 2),
+              metadata: { scope: "milestone", seeded: true },
+            });
+          }
 
           // Rule A — micro_learnings for the missed slice.
           if (m.assessment_score < 100) {

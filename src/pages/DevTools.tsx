@@ -39,7 +39,7 @@ export default function DevTools() {
     setBackfilling(true);
     setBackfillResult(null);
     try {
-      const { data, error } = await supabase.functions.invoke("embarksmv2-generate-catalog-chapters", { body: { limit: 25 } });
+      const { data, error } = await supabase.functions.invoke("embarksmv2-generate-catalog-chapters", { body: { accountId: RATHBONES_ACCOUNT_ID, limit: 25 } });
       if (error) throw error;
       setBackfillResult(JSON.stringify(data, null, 2));
       toast({ title: "Chapter backfill complete", description: `Processed ${(data as any)?.processed ?? "?"} chapters.` });

@@ -3,7 +3,6 @@ import { useEmbark } from "@/contexts/LearnPathContext";
 import { useSkillTargets } from "@/contexts/SkillTargetsContext";
 import { useAccount } from "@/contexts/AccountContext";
 import { useUser } from "@/contexts/UserContext";
-import { useLearnerJourney } from "@/hooks/useLearnerJourney";
 import { useResolvedAssessment } from "@/hooks/useResolvedAssessment";
 import { handleAssessmentSubmission } from "@/lib/assessmentSubmission";
 import { emitAssessmentCompleted } from "@/lib/agentOneEventEmitter";
@@ -22,6 +21,10 @@ interface Props {
   nextStepTitle?: string;
   nextStepType?: StepType;
   nextSkillTargetId?: string;
+  /** Cohort ID passed from the parent (which already has a loaded journey). Avoids
+   * a race where the internal journey hook hasn't resolved before the user submits. */
+  cohortId?: string;
+  onComplete?: () => void;
 }
 
 export function EmbarkAssessment({
@@ -31,6 +34,8 @@ export function EmbarkAssessment({
   nextStepTitle,
   nextStepType,
   nextSkillTargetId,
+  cohortId: cohortIdProp,
+  onComplete,
 }: Props) {
   const { closeAssessment, openModule, openAssessment: openNextAssessment, showModuleGrid } = useEmbark();
   const { skillTargets, recordAssessmentResult } = useSkillTargets();
@@ -39,7 +44,6 @@ export function EmbarkAssessment({
 
   const employeeId =
     normalizedAccount?.usersById?.[user.id]?.linkedEmployeeId || user.id;
-  const { journey } = useLearnerJourney(activeAccountId, employeeId);
 
   const { resolved, isLoading: resolving } = useResolvedAssessment(
     activeAccountId,
@@ -117,10 +121,12 @@ export function EmbarkAssessment({
       });
     }
 
-    // Shared post-submit pipeline — micro-learnings + chapter reopen + lock at <80%.
-    // Only fires for cohort-backed assessments (chapter quiz or blueprint), where
-    // we have a moduleCode resolved by useResolvedAssessment.
-    if (resolved && resolved.moduleCode && activeAccountId && journey && finalScore < 100) {
+    // Shared post-submit pipeline — writes assessment_instances + micro-learnings
+    // + chapter reopen on fail. Fires for all cohort-backed assessments regardless
+    // of score (100% still needs the DB row so the journey marks the chapter passed).
+    // cohortIdProp comes from the parent (already loaded); avoids a race where the
+    // submission fires before this component's own journey hook resolves.
+    if (resolved && resolved.moduleCode && activeAccountId && cohortIdProp) {
       const wrongList = assessment.questions
         .filter((q) => answers[q.id] !== q.correctIndex)
         .map((q) => ({
@@ -135,7 +141,7 @@ export function EmbarkAssessment({
 
       handleAssessmentSubmission({
         accountId: activeAccountId,
-        cohortId: journey.cohort.id,
+        cohortId: cohortIdProp,
         employeeId,
         assessmentId,
         sourceKind: resolved.sourceKind,
@@ -145,7 +151,9 @@ export function EmbarkAssessment({
         passingScore: assessment.passingScore,
         score: finalScore,
         wrongAnswers: wrongList,
-      }).catch((e) => console.warn("[EmbarkAssessment] submission pipeline failed", e));
+      })
+        .then(() => onComplete?.())
+        .catch((e) => console.warn("[EmbarkAssessment] submission pipeline failed", e));
     }
   };
 

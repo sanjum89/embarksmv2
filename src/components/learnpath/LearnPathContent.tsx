@@ -318,6 +318,8 @@ export function EmbarkContent() {
         nextStepTitle={nextStep?.title}
         nextStepType={nextStep?.type}
         nextSkillTargetId={nextStep?.skillTargetId}
+        cohortId={journey?.cohort.id}
+        onComplete={refreshJourney}
       />
     );
   }

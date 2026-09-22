@@ -84,6 +84,7 @@ export default function DevTools() {
   };
 
   return (
+    <div className="h-full overflow-y-auto">
     <div className="container mx-auto py-8 max-w-3xl space-y-6">
       <div>
         <h1 className="font-display text-2xl font-bold text-foreground">Dev Tools</h1>
@@ -182,6 +183,7 @@ export default function DevTools() {
           )}
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }

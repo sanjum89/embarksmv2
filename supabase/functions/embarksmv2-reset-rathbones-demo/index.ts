@@ -48,9 +48,9 @@ interface PersonaSpec {
 }
 
 // ─── Persona specs ──────────────────────────────────────────────────────────
-// Clara (rb-l3) — Rising star.
+// Clara (rb-l6) — Rising star.
 const CLARA: PersonaSpec = {
-  employee_id: "rb-l3",
+  employee_id: "rb-l6",
   last_activity_days_ago: 0,
   modules: [
     { module_code: "bk1.intro_wealth_rathbones", state: "completed", assessment_score: 96, days_ago: 70 },
@@ -153,10 +153,10 @@ function baselineSpec(employee_id: string, weeksAgoStart: number, modulesDone: n
 const ALL_SPECS: PersonaSpec[] = [
   baselineSpec("rb-l1", 6, 4),
   THEO,
-  CLARA,
+  baselineSpec("rb-l3", 7, 5),
   baselineSpec("rb-l4", 7, 5),
   BETH,
-  baselineSpec("rb-l6", 9, 7),
+  CLARA,
   KOFI,
   baselineSpec("rb-l8", 5, 3),
   baselineSpec("rb-l9", 8, 6),

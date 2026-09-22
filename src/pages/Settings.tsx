@@ -61,7 +61,7 @@ export default function Settings() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="h-full overflow-y-auto flex flex-col">
       <PageHeader
         title="Settings"
         breadcrumbs={[

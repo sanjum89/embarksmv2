@@ -1,7 +1,11 @@
 import { useState } from "react";
+import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
@@ -10,10 +14,13 @@ const PINNACLE_ACCOUNT_ID  = "08b9c4d5-f4ec-44bb-8bc2-099d9848f465";
 const UBS_ACCOUNT_ID       = "7b8c9d0e-1f2a-4b3c-8d4e-5f6a7b8c9d0e";
 
 export default function DevTools() {
+  const { isSuperAdmin } = useAuth();
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resettingAll, setResettingAll] = useState(false);
   const [resetAllLog, setResetAllLog] = useState<string[]>([]);
+  const [includeBackfill, setIncludeBackfill] = useState(false);
+  const [includeSkills, setIncludeSkills] = useState(true);
   const [backfilling, setBackfilling] = useState(false);
   const [backfillResult, setBackfillResult] = useState<string | null>(null);
   const [mirroring, setMirroring] = useState(false);
@@ -25,27 +32,55 @@ export default function DevTools() {
   const [seedingSkills, setSeedingSkills] = useState(false);
   const [seedSkillsResult, setSeedSkillsResult] = useState<string | null>(null);
 
+  if (!isSuperAdmin) return <Navigate to="/" replace />;
+
   const runResetAll = async () => {
     setResettingAll(true);
     setResetAllLog([]);
     const log = (msg: string) => setResetAllLog((prev) => [...prev, msg]);
+
+    const totalSteps = 3 + (includeBackfill ? 1 : 0) + (includeSkills ? 1 : 0);
+    let step = 0;
+    const next = (label: string) => { step++; log(`${step}/${totalSteps}  ${label}`); };
+
     try {
-      log("1/4  Resetting Rathbones learner state…");
+      next("Resetting Rathbones learner state…");
       const { data: r1, error: e1 } = await supabase.functions.invoke("embarksmv2-reset-rathbones-demo", { body: {} });
       if (e1) throw new Error(`Reset failed: ${e1.message}`);
       log(`     ✓ ${(r1 as any)?.counts?.learner_progress ?? "?"} progress rows, ${(r1 as any)?.counts?.assessment_instances ?? "?"} assessments`);
 
-      log("2/4  Seeding persona skills…");
-      const { data: r2, error: e2 } = await supabase.functions.invoke("embarksmv2-seed-rathbones-persona-skills", { body: { account_id: RATHBONES_ACCOUNT_ID } });
-      if (e2) throw new Error(`Seed skills failed: ${e2.message}`);
-      log(`     ✓ ${(r2 as any)?.summary ? Object.keys((r2 as any).summary[RATHBONES_ACCOUNT_ID] ?? {}).length : "?"} personas profiled`);
+      if (includeBackfill) {
+        next("Backfilling empty chapters (looping until complete)…");
+        let pass = 0;
+        let totalFilled = 0;
+        const MAX_PASSES = 20;
+        while (pass < MAX_PASSES) {
+          pass++;
+          const { data: bf, error: bfErr } = await supabase.functions.invoke("embarksmv2-generate-catalog-chapters", {
+            body: { accountId: RATHBONES_ACCOUNT_ID, limit: 25 },
+          });
+          if (bfErr) throw new Error(`Backfill pass ${pass} failed: ${bfErr.message}`);
+          const processed = (bf as any)?.processed ?? 0;
+          totalFilled += processed;
+          log(`     pass ${pass}: ${processed} chapters generated`);
+          if (processed === 0) break;
+        }
+        log(`     ✓ ${totalFilled} chapters backfilled across ${pass} pass${pass !== 1 ? "es" : ""}`);
+      }
 
-      log("3/4  Mirroring Rathbones → Pinnacle…");
+      if (includeSkills) {
+        next("Seeding persona skills…");
+        const { data: r2, error: e2 } = await supabase.functions.invoke("embarksmv2-seed-rathbones-persona-skills", { body: { account_id: RATHBONES_ACCOUNT_ID } });
+        if (e2) throw new Error(`Seed skills failed: ${e2.message}`);
+        log(`     ✓ ${(r2 as any)?.summary ? Object.keys((r2 as any).summary[RATHBONES_ACCOUNT_ID] ?? {}).length : "?"} personas profiled`);
+      }
+
+      next("Mirroring Rathbones → Pinnacle…");
       const { data: r3, error: e3 } = await supabase.functions.invoke("embarksmv2-mirror-account-content", { body: {} });
       if (e3) throw new Error(`Pinnacle mirror failed: ${e3.message}`);
       log(`     ✓ ${(r3 as any)?.counts?.learner_progress ?? "?"} progress rows copied`);
 
-      log("4/4  Mirroring Pinnacle → UBS…");
+      next("Mirroring Pinnacle → UBS…");
       const { data: r4, error: e4 } = await supabase.functions.invoke("embarksmv2-mirror-account-content", {
         body: { source_account_id: PINNACLE_ACCOUNT_ID, target_account_id: UBS_ACCOUNT_ID },
       });
@@ -176,12 +211,38 @@ export default function DevTools() {
         <CardHeader>
           <CardTitle>Reset all demo accounts</CardTitle>
           <CardDescription>
-            One-click full reset: reseeds Rathbones learner state, seeds persona skills, then
-            mirrors everything to Pinnacle Capital and UBS in sequence. Use this before any demo
-            across all three accounts. Takes ~30–60 seconds end-to-end.
+            Reseeds Rathbones learner state, then mirrors everything to Pinnacle and UBS. Use before
+            any demo. Optional steps can be toggled below — backfill is only needed when new content
+            has been added; persona skills are recommended for demos using the skill-gap features.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="include-backfill"
+                checked={includeBackfill}
+                onCheckedChange={(v) => setIncludeBackfill(!!v)}
+                disabled={resettingAll}
+              />
+              <Label htmlFor="include-backfill" className="cursor-pointer font-normal">
+                Backfill empty chapters{" "}
+                <span className="text-muted-foreground text-xs">(first-time setup or after new content)</span>
+              </Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="include-skills"
+                checked={includeSkills}
+                onCheckedChange={(v) => setIncludeSkills(!!v)}
+                disabled={resettingAll}
+              />
+              <Label htmlFor="include-skills" className="cursor-pointer font-normal">
+                Seed persona skills{" "}
+                <span className="text-muted-foreground text-xs">(capability profiles &amp; skill-gap data)</span>
+              </Label>
+            </div>
+          </div>
           <Button onClick={runResetAll} disabled={resettingAll}>
             {resettingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {resettingAll ? "Resetting…" : "Reset all demo accounts"}

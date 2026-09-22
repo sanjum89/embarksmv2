@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { LoginPage } from "./LoginPage";
@@ -6,6 +7,7 @@ import { useSidebarState } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { useBrandColors } from "@/hooks/useBrandColors";
 import { cn } from "@/lib/utils";
@@ -19,18 +21,53 @@ import { WorkforceGroupPicker } from "@/components/workforce-groups/WorkforceGro
 
 export function AppLayout() {
   const { expanded } = useSidebarState();
-  const { styleTheme } = useTheme();
-  const { signedInUserIds } = useUser();
-  const { switching } = useAccount();
+  const { styleTheme, setStyleTheme, setSuperLight } = useTheme();
+  const { signedInUserIds, loginUser, availableUsers } = useUser();
+  const { switching, activeAccountId, loading: accountsLoading } = useAccount();
+  const { authUser, authLoading } = useAuth();
   const location = useLocation();
   const isTraditional = styleTheme === "traditional";
 
   // Apply brand colors from active account
   useBrandColors();
 
-  // When no users are signed in, show login page
-  if (signedInUserIds.length === 0) {
+  // Once auth is established and accounts have loaded, auto-select the default persona.
+  // This fires on every login so the user lands in the app without a manual persona pick.
+  useEffect(() => {
+    if (!authUser || accountsLoading || signedInUserIds.length > 0 || availableUsers.length === 0 || !activeAccountId) return;
+    const lastId = (() => {
+      try { return localStorage.getItem(`lastActiveUser_${activeAccountId}`); } catch { return null; }
+    })();
+    const preferred = lastId ? availableUsers.find((u) => u.id === lastId) : null;
+    const target = preferred || availableUsers.find((u) => u.role === "admin") || availableUsers[0];
+    if (target) {
+      loginUser(target.id);
+      setStyleTheme("new");
+      setSuperLight(true);
+    }
+  }, [authUser, accountsLoading, signedInUserIds.length, availableUsers, activeAccountId]);
+
+  // Show a full-page spinner while auth or accounts are loading
+  if (authLoading || (authUser && accountsLoading)) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Not authenticated — show the email/password login form
+  if (!authUser) {
     return <LoginPage />;
+  }
+
+  // Authenticated but persona not yet selected — spinner while useEffect above resolves
+  if (signedInUserIds.length === 0) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   // Use only the pathname (not search/hash) so in-page tab/query changes

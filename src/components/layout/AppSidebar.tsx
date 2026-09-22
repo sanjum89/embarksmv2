@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { useAccount } from "@/contexts/AccountContext";
+import { supabase } from "@/integrations/supabase/client";
 import { useSidebarState } from "@/contexts/SidebarContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useTour } from "@/contexts/TourContext";
@@ -138,8 +139,18 @@ export function AppSidebar() {
     }, 200);
   };
 
-  const handleLogout = (userId: string) => {
+  const handleLogout = async (userId: string) => {
+    const isLast = signedInUserIds.length <= 1;
     logoutUser(userId);
+    if (isLast) {
+      // Last persona — perform full sign-out so the auth gate shows the login form
+      await supabase.auth.signOut();
+      try {
+        Object.keys(localStorage)
+          .filter((k) => k.startsWith("signedInUsers_") || k.startsWith("lastActiveUser_") || k === "activeAccountId")
+          .forEach((k) => localStorage.removeItem(k));
+      } catch {}
+    }
   };
 
   const wgEnabled = useWorkforceGroups().enabled;

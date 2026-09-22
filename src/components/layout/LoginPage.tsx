@@ -1,96 +1,38 @@
-import { useEffect, useRef, useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useAccount } from "@/contexts/AccountContext";
-import { useUser } from "@/contexts/UserContext";
-import { useTheme } from "@/contexts/ThemeContext";
-import { LogIn } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { LogIn, Loader2 } from "lucide-react";
 import cornerstoneLogo from "@/assets/cornerstone-logo.svg";
 
-const PASSWORD = "workforceai";
-
 export function LoginPage() {
-  const { accounts, activeAccountId, switchAccount, loading: accountsLoading } = useAccount();
-  const { availableUsers, loginUser } = useUser();
-  const { setStyleTheme, setSuperLight } = useTheme();
-
-  const [selectedAccountId, setSelectedAccountId] = useState(activeAccountId ?? "");
+  const { signIn } = useAuth();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  // When true, perform login as soon as activeAccountId catches up to selectedAccountId
-  const pendingLoginRef = useRef(false);
+  const [signingIn, setSigningIn] = useState(false);
 
-  const handleAccountChange = (id: string) => {
-    setSelectedAccountId(id);
-    switchAccount(id);
-    setError("");
-  };
-
-  const performLogin = () => {
-    // Prefer the last-active user for this account if still valid
-    let preferredUser = null as typeof availableUsers[number] | null;
-    try {
-      const lastId = localStorage.getItem(`lastActiveUser_${selectedAccountId}`);
-      if (lastId) preferredUser = availableUsers.find((u) => u.id === lastId) ?? null;
-    } catch {}
-    const targetUser = preferredUser || availableUsers.find((u) => u.role === "admin") || availableUsers[0];
-    if (!targetUser) {
-      setError("No users available for this account.");
-      return;
-    }
-    const success = loginUser(targetUser.id);
-    if (!success) {
-      setError("Login failed. Please try again.");
-      return;
-    }
-    setStyleTheme("new");
-    setSuperLight(true);
-  };
-
-  // If the user submits before the account switch settles, defer until it does.
-  useEffect(() => {
-    if (!pendingLoginRef.current) return;
-    if (activeAccountId !== selectedAccountId) return;
-    pendingLoginRef.current = false;
-    performLogin();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeAccountId, availableUsers]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim() || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
     setError("");
-    if (!selectedAccountId) {
-      setError("Please select an account");
-      return;
+    setSigningIn(true);
+    const { error: authError } = await signIn(email.trim(), password);
+    setSigningIn(false);
+    if (authError) {
+      setError("Invalid email or password. Please try again.");
     }
-    if (password !== PASSWORD) {
-      setError("Incorrect password");
-      return;
-    }
-    // Wait for availableUsers to reflect the selected account before logging in,
-    // otherwise we'd silently fall back to the previous account's admin user.
-    if (activeAccountId !== selectedAccountId) {
-      pendingLoginRef.current = true;
-      return;
-    }
-    performLogin();
+    // On success, AuthContext sets authUser → AppLayout handles the rest
   };
-
-  if (accountsLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-pulse text-muted-foreground">Loading…</div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5">
       <div className="w-full max-w-md mx-4">
         <div className="bg-card rounded-2xl shadow-xl border border-border p-8 space-y-6">
-          {/* Logo & header */}
           <div className="flex flex-col items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
               <img src={cornerstoneLogo} alt="Logo" className="w-7 h-7 brightness-0 invert" />
@@ -102,24 +44,19 @@ export function LoginPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Account selector */}
             <div className="space-y-2">
-              <Label htmlFor="login-account">Account</Label>
-              <Select value={selectedAccountId} onValueChange={handleAccountChange}>
-                <SelectTrigger id="login-account">
-                  <SelectValue placeholder="Select an account…" />
-                </SelectTrigger>
-                <SelectContent position="popper" className="z-[9999]">
-                  {accounts.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>
-                      {a.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="login-email">Email</Label>
+              <Input
+                id="login-email"
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setError(""); }}
+                placeholder="you@company.com"
+                autoComplete="email"
+                autoFocus
+                disabled={signingIn}
+              />
             </div>
-
-            {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="login-password">Password</Label>
               <Input
@@ -127,21 +64,17 @@ export function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                placeholder="Enter password"
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                disabled={signingIn}
               />
             </div>
-
             {error && <p className="text-sm text-destructive">{error}</p>}
-
-            <Button type="submit" className="w-full gap-2">
-              <LogIn className="h-4 w-4" />
-              Sign In
+            <Button type="submit" className="w-full gap-2" disabled={signingIn}>
+              {signingIn ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
+              {signingIn ? "Signing in…" : "Sign In"}
             </Button>
           </form>
-
-          <p className="text-xs text-center text-muted-foreground">
-            Hint: password is <span className="font-mono text-foreground/70">workforceai</span>
-          </p>
         </div>
       </div>
     </div>

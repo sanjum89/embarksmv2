@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useAccount } from "@/contexts/AccountContext";
 import { supabase } from "@/integrations/supabase/client";
-import { COLOR_PRESETS, deriveFromCustomColors, resolvePresetKey } from "@/hooks/useBrandColors";
+import { COLOR_PRESETS, deriveFromCustomColors, resolvePresetKey, resolvePresetKeyByColors } from "@/hooks/useBrandColors";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -78,11 +78,14 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
 
   const accountName = (activeAccount.name ?? "").trim().toLowerCase();
   const isRathbonesFamily = accountName === "rathbones" || accountName === "pinnacle capital";
-  let currentPreset = isRathbonesFamily ? "rathbones-calm" : "navy-amber";
+  let currentPreset: string | null = isRathbonesFamily ? "rathbones-calm" : null;
   try {
     if (activeAccount.accent_color) {
       const config = JSON.parse(activeAccount.accent_color);
-      currentPreset = resolvePresetKey(config.preset) || currentPreset;
+      currentPreset =
+        resolvePresetKey(config.preset) ||
+        resolvePresetKeyByColors(config.primary, config.accent, config.sidebar) ||
+        currentPreset;
     }
   } catch {}
 
@@ -194,9 +197,9 @@ export function BrandingPanel({ trigger }: BrandingPanelProps) {
 
       {/* Preset Color Schemes */}
       <div className="space-y-4">
-        {rathbonesPresets.length > 0 && (
+        {isRathbonesFamily && rathbonesPresets.length > 0 && (
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Rathbones theme</Label>
+            <Label className="text-sm font-medium">{activeAccount.name} theme</Label>
             <div className="grid grid-cols-1 gap-2">
               {rathbonesPresets.map(renderPresetButton)}
             </div>
@@ -278,11 +281,14 @@ function BrandingInner() {
 
   const accountName = (activeAccount.name ?? "").trim().toLowerCase();
   const isRathbonesFamily = accountName === "rathbones" || accountName === "pinnacle capital";
-  let currentPreset = isRathbonesFamily ? "rathbones-calm" : "navy-amber";
+  let currentPreset: string | null = isRathbonesFamily ? "rathbones-calm" : null;
   try {
     if (activeAccount.accent_color) {
       const config = JSON.parse(activeAccount.accent_color);
-      currentPreset = resolvePresetKey(config.preset) || currentPreset;
+      currentPreset =
+        resolvePresetKey(config.preset) ||
+        resolvePresetKeyByColors(config.primary, config.accent, config.sidebar) ||
+        currentPreset;
     }
   } catch {}
 
@@ -387,9 +393,9 @@ function BrandingInner() {
       <Separator />
 
       <div className="space-y-4">
-        {rathbonesPresets.length > 0 && (
+        {isRathbonesFamily && rathbonesPresets.length > 0 && (
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Rathbones theme</Label>
+            <Label className="text-sm font-medium">{activeAccount.name} theme</Label>
             <div className="grid grid-cols-1 gap-2">{rathbonesPresets.map(renderPresetButton)}</div>
           </div>
         )}

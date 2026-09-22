@@ -111,6 +111,14 @@ export function resolvePresetKey(key?: string): string | undefined {
   return PRESET_ALIASES[key] ?? key;
 }
 
+export function resolvePresetKeyByColors(primary?: string, accent?: string, sidebar?: string): string | undefined {
+  if (!primary && !accent) return undefined;
+  return Object.keys(COLOR_PRESETS).find((key) => {
+    const p = COLOR_PRESETS[key];
+    return p.primary === primary && p.accent === accent && (!sidebar || p.sidebar === sidebar);
+  });
+}
+
 function deriveThemeVars(primary: string, accent: string, sidebar: string): Record<string, string> {
   const [pH] = primary.split(" ").map((v) => parseFloat(v));
   const accentParts = accent.split(" ").map((v) => parseFloat(v));

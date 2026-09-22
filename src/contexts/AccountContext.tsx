@@ -176,10 +176,34 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     loadAccounts();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+        loadAccounts();
+      }
+    });
+    return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadAccounts = async () => {
     setLoading(true);
+
+    // Determine which accounts this auth user is allowed to see
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      setAccounts([]);
+      setActiveAccountId(null);
+      setLoading(false);
+      return;
+    }
+    const appMeta = session.user.app_metadata ?? {};
+    const isSuperAdmin = appMeta.role === "superadmin";
+    const allowedIds: string[] | null = isSuperAdmin
+      ? null
+      : Array.isArray(appMeta.account_ids) && appMeta.account_ids.length > 0
+        ? appMeta.account_ids
+        : [];
+
     const { data, error } = await supabase
       .from("accounts")
       .select("*")
@@ -204,7 +228,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       workforce_groups_enabled: row.workforce_groups_enabled ?? false,
     })) as Account[];
 
-    if (accts.length === 0) {
+    if (accts.length === 0 && isSuperAdmin) {
       const defaultAcct = buildDefaultAccount();
       const { data: existing } = await supabase
         .from("accounts")
@@ -318,6 +342,14 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // Filter to accounts this user is allowed to see
+    if (allowedIds !== null && allowedIds.length > 0) {
+      accts = accts.filter((a) => allowedIds.includes(a.id));
+    } else if (allowedIds !== null && allowedIds.length === 0) {
+      // No account_ids configured — no access
+      accts = [];
+    }
+
     // Build normalized cache
     const cache: Record<string, NormalizedAccount> = {};
     // First pass: normalize default + Rathbones (Pinnacle/UBS clone from Rathbones)
@@ -415,13 +447,17 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    const savedId = localStorage.getItem("activeAccountId");
-    if (savedId && accts.some((a) => a.id === savedId)) {
-      setActiveAccountId(savedId);
+    if (accts.length === 0) {
+      setActiveAccountId(null);
     } else {
-      const defaultAcct = accts.find((a) => a.is_default) ?? accts[0];
-      setActiveAccountId(defaultAcct.id);
-      localStorage.setItem("activeAccountId", defaultAcct.id);
+      const savedId = localStorage.getItem("activeAccountId");
+      if (savedId && accts.some((a) => a.id === savedId)) {
+        setActiveAccountId(savedId);
+      } else {
+        const defaultAcct = accts.find((a) => a.is_default) ?? accts[0];
+        setActiveAccountId(defaultAcct.id);
+        localStorage.setItem("activeAccountId", defaultAcct.id);
+      }
     }
 
     setLoading(false);

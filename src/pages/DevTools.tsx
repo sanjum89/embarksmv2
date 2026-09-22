@@ -16,6 +16,8 @@ export default function DevTools() {
   const [mirrorResult, setMirrorResult] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
+  const [seedingSkills, setSeedingSkills] = useState(false);
+  const [seedSkillsResult, setSeedSkillsResult] = useState<string | null>(null);
 
   const runReset = async () => {
     setRunning(true);
@@ -67,6 +69,24 @@ export default function DevTools() {
     }
   };
 
+  const runSeedSkills = async () => {
+    setSeedingSkills(true);
+    setSeedSkillsResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("embarksmv2-seed-rathbones-persona-skills", {
+        body: { account_id: RATHBONES_ACCOUNT_ID },
+      });
+      if (error) throw error;
+      setSeedSkillsResult(JSON.stringify(data, null, 2));
+      toast({ title: "Skills seeded", description: "Persona capability profiles created for Rathbones." });
+    } catch (e: any) {
+      setSeedSkillsResult(String(e?.message ?? e));
+      toast({ title: "Seed skills failed", description: String(e?.message ?? e), variant: "destructive" });
+    } finally {
+      setSeedingSkills(false);
+    }
+  };
+
   const runMirror = async () => {
     setMirroring(true);
     setMirrorResult(null);
@@ -111,6 +131,29 @@ export default function DevTools() {
           {result && (
             <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
               {result}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Seed persona skills &amp; capability profiles</CardTitle>
+          <CardDescription>
+            Populates <code>employee_capability_proficiency</code> and{" "}
+            <code>persona_competency_profiles</code> for the 9 Rathbones personas. This powers
+            the AI chat skill-gap analysis with inline graphs and the "why this content" explanations.
+            Run after Reset Rathbones demo, then re-mirror Pinnacle.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button onClick={runSeedSkills} disabled={seedingSkills} variant="outline">
+            {seedingSkills ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {seedingSkills ? "Seeding skills…" : "Seed persona skills"}
+          </Button>
+          {seedSkillsResult && (
+            <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
+              {seedSkillsResult}
             </pre>
           )}
         </CardContent>

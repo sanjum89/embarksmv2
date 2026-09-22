@@ -342,18 +342,21 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // Filter to accounts this user is allowed to see
+    // Keep a full copy for cache-building — UBS and Pinnacle need Rathbones present to clone from,
+    // even when Rathbones is filtered out of the visible account list.
+    const allAccts = [...accts];
+
+    // Filter the *visible* account list to what this auth user is allowed to see
     if (allowedIds !== null && allowedIds.length > 0) {
       accts = accts.filter((a) => allowedIds.includes(a.id));
     } else if (allowedIds !== null && allowedIds.length === 0) {
-      // No account_ids configured — no access
       accts = [];
     }
 
-    // Build normalized cache
+    // Build normalized cache from the full list so cloning always has a source
     const cache: Record<string, NormalizedAccount> = {};
     // First pass: normalize default + Rathbones (Pinnacle/UBS clone from Rathbones)
-    for (const acct of accts) {
+    for (const acct of allAccts) {
       if (acct.is_default) {
         cache[acct.id] = normalizeFromLegacy(acct);
       } else if (acct.name === "Rathbones") {
@@ -367,7 +370,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       }
     }
     // Second pass: build Pinnacle by cloning the Rathbones normalized data
-    for (const acct of accts) {
+    for (const acct of allAccts) {
       if (acct.name === "Pinnacle Capital") {
         // Find the Rathbones account to clone from
         const rathbonesEntry = Object.values(cache).find((n) => n.branding.name === "Rathbones");
@@ -395,7 +398,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       }
     }
     // Third pass: build UBS by cloning the Rathbones normalized data with UBS branding
-    for (const acct of accts) {
+    for (const acct of allAccts) {
       if (acct.name === "UBS") {
         const rathbonesEntry = Object.values(cache).find((n) => n.branding.name === "Rathbones");
         if (rathbonesEntry) {

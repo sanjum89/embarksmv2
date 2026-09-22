@@ -1,0 +1,1 @@
+DELETE FROM embarksmv2.nudge_cards WHERE grouping_key LIKE '%:bootstrap:%';

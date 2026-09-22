@@ -1,0 +1,9 @@
+ALTER TABLE embarksmv2.catalog_chapters
+  ADD COLUMN IF NOT EXISTS condensed_by_persona jsonb NOT NULL DEFAULT '{}'::jsonb;
+
+ALTER TABLE embarksmv2.micro_learnings
+  ADD COLUMN IF NOT EXISTS topic_tag text,
+  ADD COLUMN IF NOT EXISTS module_code text;
+
+ALTER TABLE embarksmv2.assessment_instances
+  ADD COLUMN IF NOT EXISTS locks_retake_until_chapters jsonb NOT NULL DEFAULT '[]'::jsonb;

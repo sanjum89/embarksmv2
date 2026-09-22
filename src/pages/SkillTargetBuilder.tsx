@@ -234,7 +234,7 @@ export default function SkillTargetBuilder() {
     setIsSearching(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke("content-search", {
+      const { data, error } = await supabase.functions.invoke("embarksmv2-content-search", {
         body: { query: q, contentCatalog: buildContentCatalog(mockLearningModules, mockAssessments, mockRolePlayBank) },
       });
 

@@ -263,7 +263,7 @@ function DeveloperSection() {
     setRunning(true);
     setResult(null);
     try {
-      const { data, error } = await supabase.functions.invoke("reset-rathbones-demo", { body: {} });
+      const { data, error } = await supabase.functions.invoke("embarksmv2-reset-rathbones-demo", { body: {} });
       if (error) throw error;
       setResult(JSON.stringify(data, null, 2));
       toast({ title: "Rathbones demo reset complete", description: "Learner journeys re-seeded from persona specs." });

@@ -1,1 +1,0 @@
-UPDATE public.accounts SET logo_superlight = 'https://oaqbnqghdijlzxexwvfq.supabase.co/storage/v1/object/public/logos/rathbones-logo-dark.png' WHERE name = 'Rathbones';

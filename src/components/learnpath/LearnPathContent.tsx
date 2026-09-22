@@ -649,7 +649,7 @@ export function EmbarkContent() {
                     .select("id")
                     .maybeSingle();
 
-                  supabase.functions.invoke("generate-micro-learning", {
+                  supabase.functions.invoke("embarksmv2-generate-micro-learning", {
                     body: {
                       accountId: activeAccountId,
                       cohortId: journey.cohort.id,

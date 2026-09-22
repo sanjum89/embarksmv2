@@ -39,7 +39,7 @@ export default function RequestReflectionDialog({ open, onOpenChange, accountId,
       const firstName = employeeNames[0] || "the employee";
       const role = targetEmployeeIds[0] ? account.employeesById[targetEmployeeIds[0]]?.title || "" : "";
       
-      const { data, error } = await supabase.functions.invoke("reflection-questions", {
+      const { data, error } = await supabase.functions.invoke("embarksmv2-reflection-questions", {
         body: {
           employeeName: firstName,
           employeeRole: role,

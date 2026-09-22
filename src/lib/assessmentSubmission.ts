@@ -185,7 +185,7 @@ export async function handleAssessmentSubmission(
   if (hasWrong) {
     microLearningRequested = true;
     supabase.functions
-      .invoke("generate-micro-learning", {
+      .invoke("embarksmv2-generate-micro-learning", {
         body: {
           accountId,
           cohortId,

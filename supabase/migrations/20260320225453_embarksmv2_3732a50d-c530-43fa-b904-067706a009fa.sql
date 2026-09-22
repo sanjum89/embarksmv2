@@ -1,0 +1,1 @@
+ALTER TABLE embarksmv2.accounts ADD COLUMN logo_superlight TEXT DEFAULT NULL;

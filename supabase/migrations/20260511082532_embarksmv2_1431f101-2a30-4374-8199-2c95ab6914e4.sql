@@ -1,0 +1,1 @@
+ALTER TABLE embarksmv2.catalog_chapters ADD COLUMN IF NOT EXISTS chapter_long_form_content TEXT;

@@ -123,7 +123,7 @@ export function useCatalogChapter(
         if (!cachedCondensed && personaCode && fetchCondensed) {
           try {
             const { data: condensedData, error: condensedErr } = await supabase.functions.invoke(
-              "condense-chapter",
+              "embarksmv2-condense-chapter",
               { body: { accountId, chapterCode, personaCode } },
             );
             if (condensedErr) throw condensedErr;

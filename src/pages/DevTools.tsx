@@ -17,7 +17,7 @@ export default function DevTools() {
     setRunning(true);
     setResult(null);
     try {
-      const { data, error } = await supabase.functions.invoke("reset-rathbones-demo", { body: {} });
+      const { data, error } = await supabase.functions.invoke("embarksmv2-reset-rathbones-demo", { body: {} });
       if (error) throw error;
       setResult(JSON.stringify(data, null, 2));
       toast({ title: "Rathbones demo reset complete", description: "Learner journeys re-seeded from persona specs." });
@@ -33,7 +33,7 @@ export default function DevTools() {
     setBackfilling(true);
     setBackfillResult(null);
     try {
-      const { data, error } = await supabase.functions.invoke("generate-catalog-chapters", { body: { limit: 25 } });
+      const { data, error } = await supabase.functions.invoke("embarksmv2-generate-catalog-chapters", { body: { limit: 25 } });
       if (error) throw error;
       setBackfillResult(JSON.stringify(data, null, 2));
       toast({ title: "Chapter backfill complete", description: `Processed ${(data as any)?.processed ?? "?"} chapters.` });
@@ -49,7 +49,7 @@ export default function DevTools() {
     setMirroring(true);
     setMirrorResult(null);
     try {
-      const { data, error } = await supabase.functions.invoke("mirror-account-content", { body: {} });
+      const { data, error } = await supabase.functions.invoke("embarksmv2-mirror-account-content", { body: {} });
       if (error) throw error;
       setMirrorResult(JSON.stringify(data, null, 2));
       toast({ title: "Pinnacle mirrored", description: "Pinnacle Capital now matches Rathbones." });

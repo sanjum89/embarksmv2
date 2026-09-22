@@ -90,6 +90,14 @@ export const COLOR_PRESETS: Record<string, { label: string; primary: string; acc
     swatch: ["hsl(0, 0%, 20%)", "hsl(0, 72%, 51%)"],
     family: "generic",
   },
+  "ubs": {
+    label: "UBS",
+    primary: "0 0% 12%",
+    accent: "0 100% 46%",
+    sidebar: "0 0% 7%",
+    swatch: ["hsl(0, 0%, 12%)", "hsl(0, 100%, 46%)"],
+    family: "generic",
+  },
 };
 
 // Back-compat: legacy preset key "rathbones" → "rathbones-calm"

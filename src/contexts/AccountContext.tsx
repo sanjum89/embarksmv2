@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, useRef, ty
 import type { Account, AccountData } from "@/types/account";
 import type { NormalizedAccount } from "@/types/account-v2";
 import { supabase } from "@/integrations/supabase/client";
-import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized, buildPinnacleNormalized, buildRathbonesNormalized } from "@/lib/accountDefaults";
+import { buildDefaultAccount, generateFallbackData, buildDefaultNormalized, buildPinnacleNormalized, buildRathbonesNormalized, buildUBSNormalized } from "@/lib/accountDefaults";
 import { seedDemoNotifications, bootstrapInitialNotifications } from "@/data/agentOneSeeds";
 import { parseAccountJSON } from "@/lib/accountParser";
 import { generateProfileData } from "@/lib/profileDataGenerator";
@@ -248,6 +248,41 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // Seed UBS account if missing — canonical UUID so DevTools mirror button can reference it.
+    const UBS_CANONICAL_ID = "7b8c9d0e-1f2a-4b3c-8d4e-5f6a7b8c9d0e";
+    const hasUBS = accts.some((a) => a.id === UBS_CANONICAL_ID || a.name === "UBS");
+    if (!hasUBS) {
+      const { data: ubsInserted, error: ubsError } = await supabase
+        .from("accounts")
+        .upsert({
+          id: UBS_CANONICAL_ID,
+          name: "UBS",
+          logo: "/ubs-logo.png",
+          logo_superlight: "/ubs-logo.png",
+          accent_color: JSON.stringify({ primary: "0 0% 12%", accent: "0 100% 46%", sidebar: "0 0% 7%" }),
+          use_case_context: "UBS is a leading global wealth manager. This demo shows a UBS Wealth Management Associate Investment Manager onboarding journey.",
+          is_default: false,
+          data: {} as any,
+        }, { onConflict: "id", ignoreDuplicates: true })
+        .select()
+        .single();
+
+      if (!ubsError && ubsInserted) {
+        const ubsAcct: Account = {
+          id: (ubsInserted as any).id,
+          name: "UBS",
+          logo: "/ubs-logo.png",
+          logo_superlight: "/ubs-logo.png",
+          accent_color: JSON.stringify({ primary: "0 0% 12%", accent: "0 100% 46%", sidebar: "0 0% 7%" }),
+          use_case_context: null,
+          is_default: false,
+          data: {} as AccountData,
+          created_at: (ubsInserted as any).created_at,
+        };
+        accts.push(ubsAcct);
+      }
+    }
+
     // Seed Pinnacle Capital account if missing — always use the canonical UUID so
     // mirror-account-content and other edge functions can reference it by a known ID.
     const PINNACLE_CANONICAL_ID = "08b9c4d5-f4ec-44bb-8bc2-099d9848f465";
@@ -285,7 +320,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
     // Build normalized cache
     const cache: Record<string, NormalizedAccount> = {};
-    // First pass: normalize default + Rathbones (Pinnacle clones from Rathbones)
+    // First pass: normalize default + Rathbones (Pinnacle/UBS clone from Rathbones)
     for (const acct of accts) {
       if (acct.is_default) {
         cache[acct.id] = normalizeFromLegacy(acct);
@@ -295,7 +330,7 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         rb.branding.logo = acct.logo || rb.branding.logo;
         rb.branding.accentColor = acct.accent_color || rb.branding.accentColor;
         cache[acct.id] = rb;
-      } else if (acct.name !== "Pinnacle Capital") {
+      } else if (acct.name !== "Pinnacle Capital" && acct.name !== "UBS") {
         cache[acct.id] = normalizeFromLegacy(acct);
       }
     }
@@ -327,6 +362,35 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         }
       }
     }
+    // Third pass: build UBS by cloning the Rathbones normalized data with UBS branding
+    for (const acct of accts) {
+      if (acct.name === "UBS") {
+        const rathbonesEntry = Object.values(cache).find((n) => n.branding.name === "Rathbones");
+        if (rathbonesEntry) {
+          cache[acct.id] = {
+            ...JSON.parse(JSON.stringify(rathbonesEntry)),
+            id: acct.id,
+            isDefault: false,
+            branding: {
+              ...rathbonesEntry.branding,
+              name: "UBS",
+              logo: acct.logo || "/ubs-logo.png",
+              accentColor: acct.accent_color || JSON.stringify({ primary: "0 0% 12%", accent: "0 100% 46%", sidebar: "0 0% 7%" }),
+            },
+            contentNameMap: {
+              "Rathbones": "UBS",
+              "rathbones": "UBS",
+              "RATHBONES": "UBS",
+              "Pinnacle Capital": "UBS",
+              "Pinnacle": "UBS",
+            },
+          };
+        } else {
+          cache[acct.id] = buildUBSNormalized(acct.id);
+        }
+      }
+    }
+
     setNormalizedCache(cache);
     setAccounts(accts);
 

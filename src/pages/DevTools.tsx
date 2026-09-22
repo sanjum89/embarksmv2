@@ -6,6 +6,8 @@ import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
 const RATHBONES_ACCOUNT_ID = "6c49ca7c-fecb-4b34-a690-7e4e28bb2194";
+const PINNACLE_ACCOUNT_ID  = "08b9c4d5-f4ec-44bb-8bc2-099d9848f465";
+const UBS_ACCOUNT_ID       = "7b8c9d0e-1f2a-4b3c-8d4e-5f6a7b8c9d0e";
 
 export default function DevTools() {
   const [running, setRunning] = useState(false);
@@ -14,6 +16,8 @@ export default function DevTools() {
   const [backfillResult, setBackfillResult] = useState<string | null>(null);
   const [mirroring, setMirroring] = useState(false);
   const [mirrorResult, setMirrorResult] = useState<string | null>(null);
+  const [mirroringUBS, setMirroringUBS] = useState(false);
+  const [mirrorUBSResult, setMirrorUBSResult] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<string | null>(null);
   const [seedingSkills, setSeedingSkills] = useState(false);
@@ -100,6 +104,24 @@ export default function DevTools() {
       toast({ title: "Mirror failed", description: String(e?.message ?? e), variant: "destructive" });
     } finally {
       setMirroring(false);
+    }
+  };
+
+  const runMirrorUBS = async () => {
+    setMirroringUBS(true);
+    setMirrorUBSResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("embarksmv2-mirror-account-content", {
+        body: { source_account_id: PINNACLE_ACCOUNT_ID, target_account_id: UBS_ACCOUNT_ID },
+      });
+      if (error) throw error;
+      setMirrorUBSResult(JSON.stringify(data, null, 2));
+      toast({ title: "UBS mirrored", description: "UBS now matches Pinnacle Capital." });
+    } catch (e: any) {
+      setMirrorUBSResult(String(e?.message ?? e));
+      toast({ title: "UBS mirror failed", description: String(e?.message ?? e), variant: "destructive" });
+    } finally {
+      setMirroringUBS(false);
     }
   };
 
@@ -222,6 +244,29 @@ export default function DevTools() {
           {mirrorResult && (
             <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
               {mirrorResult}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Mirror Pinnacle → UBS</CardTitle>
+          <CardDescription>
+            Copies the full Pinnacle Capital data set into the UBS account — cohorts, catalog,
+            chapters, personas, progress, assessments, and micro-learnings. Run this after
+            Re-mirror Pinnacle from Rathbones. UBS branding (red theme, logo) is applied via
+            the frontend; the content in the DB is identical to Pinnacle.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button onClick={runMirrorUBS} disabled={mirroringUBS} variant="outline">
+            {mirroringUBS ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {mirroringUBS ? "Mirroring…" : "Mirror Pinnacle → UBS"}
+          </Button>
+          {mirrorUBSResult && (
+            <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
+              {mirrorUBSResult}
             </pre>
           )}
         </CardContent>

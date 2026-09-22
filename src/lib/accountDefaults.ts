@@ -1158,6 +1158,32 @@ export function buildPinnacleNormalized(id: string): NormalizedAccount {
 
 
 /**
+ * Build a "UBS" account — a clone of the Rathbones demo rebranded for UBS
+ * Wealth Management. Name substitutions and red brand colours are applied at
+ * render time; the underlying DB content is a mirror of Pinnacle / Rathbones.
+ */
+export function buildUBSNormalized(id: string): NormalizedAccount {
+  const base = buildDefaultNormalized(id);
+  return {
+    ...base,
+    isDefault: false,
+    branding: {
+      ...base.branding,
+      name: "UBS",
+      logo: "/ubs-logo.png",
+      accentColor: JSON.stringify({ primary: "0 0% 12%", accent: "0 100% 46%", sidebar: "0 0% 7%" }),
+    },
+    contentNameMap: {
+      "Rathbones": "UBS",
+      "rathbones": "UBS",
+      "RATHBONES": "UBS",
+      "Pinnacle Capital": "UBS",
+      "Pinnacle": "UBS",
+    },
+  };
+}
+
+/**
  * Fill missing fields in uploaded JSON with sensible synthetic fallback data.
  */
 export function generateFallbackData(partial: Partial<AccountData>): AccountData {

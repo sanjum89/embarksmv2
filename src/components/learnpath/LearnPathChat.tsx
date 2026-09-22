@@ -161,6 +161,7 @@ export function EmbarkChat() {
           | "evidence"
           | "condensed"
           | "already_covered"
+          | "assessment"
           | "reading" = "reading";
 
         if (m.status !== "completed" && a) {
@@ -177,6 +178,15 @@ export function EmbarkChat() {
           } else if (a.adaptationType === "skip_after_validation") {
             upNextChapterKind = "already_covered";
           }
+        }
+
+        // Blueprint assessments (*.bp_post / *.bp_mid) are end-of-module checkpoints,
+        // not reading chapters. Tag them so the greeting prompt never auto-opens one.
+        if (
+          upNextChapterCode &&
+          (upNextChapterCode.endsWith(".bp_post") || upNextChapterCode.endsWith(".bp_mid"))
+        ) {
+          upNextChapterKind = "assessment";
         }
 
         return {
@@ -243,6 +253,7 @@ export function EmbarkChat() {
           resumeModuleTitle: cohortResumeModule ? substitute(cohortResumeModule.title) : null,
           resumeChapterCode: cohortResumeModule?.upNextChapterCode ?? null,
           resumeChapterTitle: cohortResumeModule?.upNextChapterTitle ?? null,
+          resumeChapterKind: cohortResumeModule?.upNextChapterKind ?? null,
         }
       : null;
 
@@ -601,7 +612,7 @@ export function EmbarkChat() {
     const context = buildContext();
     const cj = (context as any).cohortJourney;
     const cohortIntro = cj
-      ? `They are enrolled in the cohort "${cj.cohortTitle}" (currently ${cj.overallPct}% complete, ${cj.completedChapters}/${cj.totalChapters} chapters across ${cj.totalModules} modules). ${cj.resumeChapterCode ? `The next chapter to resume is "${cj.resumeChapterTitle}" inside module "${cj.resumeModuleTitle}" (chapterCode: ${cj.resumeChapterCode}, moduleCode: ${cj.resumeModuleCode}, cohortId: ${cj.cohortId}). Welcome them by name and offer to open it now using an open_module action with that chapterCode as moduleId and the cohortId as skillTargetId — only if no module is already open.` : "Welcome them and suggest exploring their tracks."}`
+      ? `They are enrolled in the cohort "${cj.cohortTitle}" (currently ${cj.overallPct}% complete, ${cj.completedChapters}/${cj.totalChapters} chapters across ${cj.totalModules} modules). ${cj.resumeChapterCode ? (cj.resumeChapterKind === "assessment" ? `The next item for module "${cj.resumeModuleTitle}" is the module assessment (chapterCode: ${cj.resumeChapterCode}, cohortId: ${cj.cohortId}). Welcome them by name, let them know they have completed all reading chapters and the module assessment is ready when they are — but DO NOT auto-open it unless the learner explicitly asks to start the assessment.` : `The next chapter to resume is "${cj.resumeChapterTitle}" inside module "${cj.resumeModuleTitle}" (chapterCode: ${cj.resumeChapterCode}, moduleCode: ${cj.resumeModuleCode}, cohortId: ${cj.cohortId}). Welcome them by name and offer to open it now using an open_module action with that chapterCode as moduleId and the cohortId as skillTargetId — only if no module is already open.`) : "Welcome them and suggest exploring their tracks."}`
       : null;
     const greetMessage: ChatMessage = {
       id: "greet-system",

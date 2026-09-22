@@ -39,7 +39,12 @@ export function AppLayout() {
       try { return localStorage.getItem(`lastActiveUser_${activeAccountId}`); } catch { return null; }
     })();
     const preferred = lastId ? availableUsers.find((u) => u.id === lastId) : null;
-    const target = preferred || availableUsers.find((u) => u.role === "admin") || availableUsers[0];
+    // Prefer a learner persona so the demo lands on a rich learner journey (new My360 design).
+    // Admin can still be accessed by switching personas.
+    const target = preferred
+      || availableUsers.find((u) => u.role === "learner")
+      || availableUsers.find((u) => u.role === "admin")
+      || availableUsers[0];
     if (target) {
       loginUser(target.id);
       setStyleTheme("new");

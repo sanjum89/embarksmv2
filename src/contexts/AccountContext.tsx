@@ -192,6 +192,22 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Persist the active account's logo to localStorage so the login page can show it
+  // before AccountContext is populated (i.e. before the user authenticates).
+  useEffect(() => {
+    if (!activeAccountId || accounts.length === 0) return;
+    const acct = accounts.find((a) => a.id === activeAccountId);
+    const logo = acct?.logo ?? "";
+    try {
+      if (logo) {
+        localStorage.setItem("activeBrandLogo", logo);
+      } else {
+        localStorage.removeItem("activeBrandLogo");
+      }
+    } catch {}
+  }, [activeAccountId, accounts]);
+
+
   const loadAccounts = async () => {
     setLoading(true);
 

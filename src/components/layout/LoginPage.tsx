@@ -6,12 +6,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { LogIn, Loader2 } from "lucide-react";
 import cornerstoneLogo from "@/assets/cornerstone-logo.svg";
 
+function getBrandLogo(): string {
+  try { return localStorage.getItem("activeBrandLogo") ?? ""; } catch { return ""; }
+}
+
 export function LoginPage() {
   const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [signingIn, setSigningIn] = useState(false);
+  const brandLogo = getBrandLogo();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,9 +39,13 @@ export function LoginPage() {
       <div className="w-full max-w-md mx-4">
         <div className="bg-card rounded-2xl shadow-xl border border-border p-8 space-y-6">
           <div className="flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
-              <img src={cornerstoneLogo} alt="Logo" className="w-7 h-7 brightness-0 invert" />
-            </div>
+            {brandLogo ? (
+              <img src={brandLogo} alt="Logo" className="h-10 max-w-[160px] object-contain" />
+            ) : (
+              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
+                <img src={cornerstoneLogo} alt="Logo" className="w-7 h-7 brightness-0 invert" />
+              </div>
+            )}
             <div className="text-center">
               <h1 className="text-xl font-bold text-foreground font-heading">Welcome back</h1>
               <p className="text-sm text-muted-foreground mt-1">Sign in to continue to your workspace</p>

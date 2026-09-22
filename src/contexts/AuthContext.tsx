@@ -31,7 +31,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthUser(session?.user ?? null);
+      // Use functional update so we only replace authUser when the identity actually changes.
+      // Supabase fires SIGNED_IN on token refresh and tab-focus restore — those produce a new
+      // User object for the same person. Keeping the old reference prevents cascading re-renders
+      // that cause child pages (My 360, Embark AI) to unmount and reload their data.
+      setAuthUser((prev) => {
+        const next = session?.user ?? null;
+        if (prev?.id === next?.id) return prev;
+        return next;
+      });
     });
 
     return () => subscription.unsubscribe();

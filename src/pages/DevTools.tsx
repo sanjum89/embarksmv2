@@ -12,6 +12,8 @@ const UBS_ACCOUNT_ID       = "7b8c9d0e-1f2a-4b3c-8d4e-5f6a7b8c9d0e";
 export default function DevTools() {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
+  const [resettingAll, setResettingAll] = useState(false);
+  const [resetAllLog, setResetAllLog] = useState<string[]>([]);
   const [backfilling, setBackfilling] = useState(false);
   const [backfillResult, setBackfillResult] = useState<string | null>(null);
   const [mirroring, setMirroring] = useState(false);
@@ -22,6 +24,43 @@ export default function DevTools() {
   const [importResult, setImportResult] = useState<string | null>(null);
   const [seedingSkills, setSeedingSkills] = useState(false);
   const [seedSkillsResult, setSeedSkillsResult] = useState<string | null>(null);
+
+  const runResetAll = async () => {
+    setResettingAll(true);
+    setResetAllLog([]);
+    const log = (msg: string) => setResetAllLog((prev) => [...prev, msg]);
+    try {
+      log("1/4  Resetting Rathbones learner state…");
+      const { data: r1, error: e1 } = await supabase.functions.invoke("embarksmv2-reset-rathbones-demo", { body: {} });
+      if (e1) throw new Error(`Reset failed: ${e1.message}`);
+      log(`     ✓ ${(r1 as any)?.counts?.learner_progress ?? "?"} progress rows, ${(r1 as any)?.counts?.assessment_instances ?? "?"} assessments`);
+
+      log("2/4  Seeding persona skills…");
+      const { data: r2, error: e2 } = await supabase.functions.invoke("embarksmv2-seed-rathbones-persona-skills", { body: { account_id: RATHBONES_ACCOUNT_ID } });
+      if (e2) throw new Error(`Seed skills failed: ${e2.message}`);
+      log(`     ✓ ${(r2 as any)?.summary ? Object.keys((r2 as any).summary[RATHBONES_ACCOUNT_ID] ?? {}).length : "?"} personas profiled`);
+
+      log("3/4  Mirroring Rathbones → Pinnacle…");
+      const { data: r3, error: e3 } = await supabase.functions.invoke("embarksmv2-mirror-account-content", { body: {} });
+      if (e3) throw new Error(`Pinnacle mirror failed: ${e3.message}`);
+      log(`     ✓ ${(r3 as any)?.counts?.learner_progress ?? "?"} progress rows copied`);
+
+      log("4/4  Mirroring Pinnacle → UBS…");
+      const { data: r4, error: e4 } = await supabase.functions.invoke("embarksmv2-mirror-account-content", {
+        body: { source_account_id: PINNACLE_ACCOUNT_ID, target_account_id: UBS_ACCOUNT_ID },
+      });
+      if (e4) throw new Error(`UBS mirror failed: ${e4.message}`);
+      log(`     ✓ ${(r4 as any)?.counts?.learner_progress ?? "?"} progress rows copied`);
+
+      log("✅  All done — Rathbones, Pinnacle and UBS are in sync.");
+      toast({ title: "All demo accounts reset", description: "Rathbones → Pinnacle → UBS all synced." });
+    } catch (e: any) {
+      log(`❌  ${e?.message ?? String(e)}`);
+      toast({ title: "Reset failed", description: String(e?.message ?? e), variant: "destructive" });
+    } finally {
+      setResettingAll(false);
+    }
+  };
 
   const runReset = async () => {
     setRunning(true);
@@ -132,6 +171,28 @@ export default function DevTools() {
         <h1 className="font-display text-2xl font-bold text-foreground">Dev Tools</h1>
         <p className="text-sm text-muted-foreground">Demo data utilities. Not visible to end users.</p>
       </div>
+
+      <Card className="border-primary/40 bg-primary/5">
+        <CardHeader>
+          <CardTitle>Reset all demo accounts</CardTitle>
+          <CardDescription>
+            One-click full reset: reseeds Rathbones learner state, seeds persona skills, then
+            mirrors everything to Pinnacle Capital and UBS in sequence. Use this before any demo
+            across all three accounts. Takes ~30–60 seconds end-to-end.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button onClick={runResetAll} disabled={resettingAll}>
+            {resettingAll ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {resettingAll ? "Resetting…" : "Reset all demo accounts"}
+          </Button>
+          {resetAllLog.length > 0 && (
+            <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
+              {resetAllLog.join("\n")}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

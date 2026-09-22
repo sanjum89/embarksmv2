@@ -23,14 +23,23 @@ interface UserContextType {
   setInitialSignedInUsers: (accountId: string, userIds: string[]) => void;
 }
 
-function accountUserToUser(au: AccountUser): User {
+function applyNameMap(text: string | undefined, map?: Record<string, string>): string | undefined {
+  if (!text || !map) return text;
+  let result = text;
+  for (const [from, to] of Object.entries(map)) {
+    result = result.split(from).join(to);
+  }
+  return result;
+}
+
+function accountUserToUser(au: AccountUser, nameMap?: Record<string, string>): User {
   return {
     id: au.id,
-    name: au.name,
+    name: applyNameMap(au.name, nameMap) ?? au.name,
     email: au.email,
     role: au.role,
     avatarUrl: au.avatarUrl,
-    title: au.title,
+    title: applyNameMap(au.title, nameMap),
     canManage: au.canManage,
   };
 }
@@ -113,7 +122,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   const getUsers = (): User[] => {
     if (normalizedAccount) {
-      const explicitUsers = Object.values(normalizedAccount.usersById).map(accountUserToUser);
+      const nameMap = normalizedAccount.contentNameMap;
+      const explicitUsers = Object.values(normalizedAccount.usersById).map((au) => accountUserToUser(au, nameMap));
       const linkedIds = new Set(Object.values(normalizedAccount.usersById).map((user) => user.linkedEmployeeId || user.id));
       const fallbackUsers = Object.values(normalizedAccount.employeesById)
         .filter((employee) => !linkedIds.has(employee.id))

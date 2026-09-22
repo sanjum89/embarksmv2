@@ -173,11 +173,18 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [switching, setSwitching] = useState(false);
   const switchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Tracks whether accounts have been successfully loaded for the current session.
+  // Prevents SIGNED_IN events (token refresh, tab focus) from re-running loadAccounts.
+  const accountsLoadedRef = useRef(false);
 
   useEffect(() => {
     loadAccounts();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+      if (event === "SIGNED_OUT") {
+        accountsLoadedRef.current = false;
+        loadAccounts();
+      } else if (event === "SIGNED_IN" && !accountsLoadedRef.current) {
+        // Only fires on first login from unauthenticated state, not on token refresh/tab focus
         loadAccounts();
       }
     });
@@ -463,6 +470,8 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       }
     }
 
+    // Mark as loaded — prevents SIGNED_IN events (token refresh, tab focus) from re-triggering
+    accountsLoadedRef.current = true;
     setLoading(false);
   };
 

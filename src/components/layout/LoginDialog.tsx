@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import type { User } from "@/types/learning";
-
-const PASSWORD = "workforceai";
 
 interface LoginDialogProps {
   open: boolean;
@@ -18,7 +15,6 @@ interface LoginDialogProps {
 
 export function LoginDialog({ open, onOpenChange, availableUsers, signedInUserIds, onLogin }: LoginDialogProps) {
   const [selectedUserId, setSelectedUserId] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   // Users not yet signed in
@@ -31,14 +27,8 @@ export function LoginDialog({ open, onOpenChange, availableUsers, signedInUserId
       setError("Please select a user");
       return;
     }
-    if (password !== PASSWORD) {
-      setError("Incorrect password");
-      return;
-    }
     onLogin(selectedUserId);
-    // Reset
     setSelectedUserId("");
-    setPassword("");
     setError("");
     onOpenChange(false);
   };
@@ -46,7 +36,6 @@ export function LoginDialog({ open, onOpenChange, availableUsers, signedInUserId
   const handleOpenChange = (next: boolean) => {
     if (!next) {
       setSelectedUserId("");
-      setPassword("");
       setError("");
     }
     onOpenChange(next);
@@ -56,8 +45,8 @@ export function LoginDialog({ open, onOpenChange, availableUsers, signedInUserId
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[380px]">
         <DialogHeader>
-          <DialogTitle>Sign in as a different user</DialogTitle>
-          <DialogDescription>Select a user and enter the password to sign in.</DialogDescription>
+          <DialogTitle>Switch user</DialogTitle>
+          <DialogDescription>Select a persona to add to this session.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
@@ -79,19 +68,9 @@ export function LoginDialog({ open, onOpenChange, availableUsers, signedInUserId
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="login-password">Password</Label>
-            <Input
-              id="login-password"
-              type="password"
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setError(""); }}
-              placeholder="Enter password"
-            />
-          </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button type="submit" className="w-full" disabled={unsignedUsers.length === 0}>
-            Sign In
+            Switch
           </Button>
         </form>
       </DialogContent>

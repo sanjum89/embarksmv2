@@ -195,7 +195,7 @@ const empty: My360Data = {
 
 
 export function useMy360Data(): My360Data & { refresh: () => void } {
-  const { activeAccount } = useAccount();
+  const { activeAccount, normalizedAccount } = useAccount();
   const { user } = useUser();
   const [tick, setTick] = useState(0);
   const [state, setState] = useState<My360Data>(empty);
@@ -212,9 +212,21 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
     (async () => {
       setState((s) => ({ ...s, loading: true }));
 
-      // Pull employee record + persona assignment from account jsonb
+      // Pull employee record from account jsonb; fall back to normalized account
       const employees = ((activeAccount as any)?.data?.employees ?? []) as EmployeeRecord[];
-      const employee = employees.find((e) => e.id === employeeId);
+      let employee = employees.find((e) => e.id === employeeId);
+      if (!employee) {
+        const normEmp = (normalizedAccount as any)?.employeesById?.[employeeId];
+        if (normEmp) {
+          employee = {
+            id: normEmp.id,
+            name: normEmp.name,
+            title: normEmp.title,
+            email: normEmp.email,
+            reportsTo: normEmp.reportsTo ?? undefined,
+          };
+        }
+      }
 
       // Persona code + role cohort
       const { data: persona } = await supabase
@@ -370,10 +382,34 @@ export function useMy360Data(): My360Data & { refresh: () => void } {
         : null;
 
       if (cancelled) return;
+
+      // Enrich employee with hris data from persona_profile_basics when hris is absent
+      const basicData = (personaContent?.[0] as any)?.data?.data as Record<string, any> | undefined;
+      const enrichedEmployee: EmployeeRecord | undefined = employee
+        ? {
+            ...employee,
+            hris: employee.hris || (basicData
+              ? {
+                  location: basicData.location,
+                  workPattern: basicData.work_pattern,
+                  tenureMonths: basicData.tenure_months,
+                  performanceBand: basicData.performance_band,
+                  engagementScore: basicData.engagement_score,
+                  personaNarrative: basicData.persona_narrative,
+                  priorEmployer: basicData.prior_employer,
+                  priorIndustry: basicData.prior_industry,
+                  yearsExperience: basicData.years_experience,
+                  education: basicData.education,
+                  certifications: basicData.certifications,
+                }
+              : undefined),
+          }
+        : undefined;
+
       setState({
         loading: false,
         eligible: true,
-        employee,
+        employee: enrichedEmployee,
         mentor,
         personaCode,
         roleCohortCode,

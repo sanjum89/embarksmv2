@@ -18,7 +18,7 @@ type Tab = (typeof allTabs)[number];
 
 export default function NewMy360() {
   const data = useMy360Data();
-  const { activeAccount } = useAccount();
+  const { activeAccount, normalizedAccount } = useAccount();
   const [tab, setTab] = useState<Tab>("Overview");
 
   const buckets = useMemo(
@@ -40,7 +40,8 @@ export default function NewMy360() {
 
   const employees = ((activeAccount as any)?.data?.employees ?? []) as Array<{ id: string; name: string }>;
   const managerName = data.employee?.reportsTo
-    ? employees.find((e) => e.id === data.employee?.reportsTo)?.name
+    ? (employees.find((e) => e.id === data.employee?.reportsTo)?.name
+        ?? (normalizedAccount as any)?.employeesById?.[data.employee.reportsTo]?.name)
     : undefined;
   const mentorName = data.mentor?.name;
 

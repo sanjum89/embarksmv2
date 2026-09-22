@@ -120,8 +120,10 @@ const KOFI: PersonaSpec = {
   ],
 };
 
-// Generic on-track baseline used for rb-l1, rb-l4, rb-l6, rb-l8, rb-l9.
+// Generic on-track baseline used for rb-l1, rb-l3, rb-l4, rb-l8, rb-l9.
 function baselineSpec(employee_id: string, weeksAgoStart: number, modulesDone: number): PersonaSpec {
+  // Full ordered progression across all tracks so the manager 360 shows
+  // realistic multi-track coverage, not just BK/TK modules.
   const ordered = [
     "bk1.intro_wealth_rathbones",
     "bk2.kyc_suitability",
@@ -131,35 +133,48 @@ function baselineSpec(employee_id: string, weeksAgoStart: number, modulesDone: n
     "tk1.charles_river_ims",
     "tk2.bloomberg_essentials",
     "tk3.performance_attribution",
+    "bs1.client_communication",
+    "cps3.smcr_conduct",
+    "cps4.aml_financial_crime",
   ];
+  // Varied scores — avoids the mechanical 82/84/86/88 pattern.
+  const scores = [86, 79, 92, 84, 88, 77, 91, 83, 89, 94, 82];
   const startDays = weeksAgoStart * 7;
-  const stepDays = Math.max(2, Math.floor(startDays / Math.max(1, modulesDone + 1)));
+  const stepDays = Math.max(3, Math.floor(startDays / Math.max(1, modulesDone + 1)));
   const modules: PersonaModuleSpec[] = [];
   for (let i = 0; i < Math.min(modulesDone, ordered.length); i++) {
     modules.push({
       module_code: ordered[i],
       state: "completed",
-      assessment_score: 82 + (i % 4) * 2,
+      assessment_score: scores[i % scores.length],
       days_ago: Math.max(2, startDays - (i + 1) * stepDays),
     });
   }
   if (modulesDone < ordered.length) {
-    modules.push({ module_code: ordered[modulesDone], state: "in_progress", in_progress_at: Math.floor(Math.random() * 3), days_ago: 3 });
+    modules.push({
+      module_code: ordered[modulesDone],
+      state: "in_progress",
+      in_progress_at: 1,
+      days_ago: 2,
+    });
   }
   modules.push({ module_code: "oe1.systems_tour", state: "completed", days_ago: startDays - 2 });
-  return { employee_id, last_activity_days_ago: 3, modules };
+  if (weeksAgoStart >= 7) {
+    modules.push({ module_code: "oe2.mentor_buddy", state: "completed", days_ago: startDays - 8 });
+  }
+  return { employee_id, last_activity_days_ago: 2, modules };
 }
 
 const ALL_SPECS: PersonaSpec[] = [
-  baselineSpec("rb-l1", 6, 4),
+  baselineSpec("rb-l1", 6, 4),   // Sophie  — 6 wks, BK1-4 done, BK5 in-progress
   THEO,
-  baselineSpec("rb-l3", 7, 5),
-  baselineSpec("rb-l4", 7, 5),
+  baselineSpec("rb-l3", 7, 5),   // Theo M  — 7 wks, BK1-5 done, TK1 in-progress
+  baselineSpec("rb-l4", 8, 7),   // Owen    — 8 wks, BK1-5 + TK1-2 done, TK3 in-progress
   BETH,
   CLARA,
   KOFI,
-  baselineSpec("rb-l8", 5, 3),
-  baselineSpec("rb-l9", 8, 6),
+  baselineSpec("rb-l8", 5, 3),   // Felix   — 5 wks, BK1-3 done, BK4 in-progress
+  baselineSpec("rb-l9", 9, 9),   // Elliot  — 9 wks, BK1-5 + TK1-3 + BS1 done, CPS3 in-progress
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────

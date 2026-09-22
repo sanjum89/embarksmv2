@@ -41,7 +41,7 @@ interface ChatMessage {
   isNudge?: boolean;
 }
 
-const LEARNPATH_CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/learnpath-chat`;
+const LEARNPATH_CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/embarksmv2-learnpath-chat`;
 const MAX_TRANSCRIPT_CONTEXT_CHARS = 5000;
 
 /**

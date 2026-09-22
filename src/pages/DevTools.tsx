@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
+const RATHBONES_ACCOUNT_ID = "6c49ca7c-fecb-4b34-a690-7e4e28bb2194";
+
 export default function DevTools() {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
@@ -12,6 +14,8 @@ export default function DevTools() {
   const [backfillResult, setBackfillResult] = useState<string | null>(null);
   const [mirroring, setMirroring] = useState(false);
   const [mirrorResult, setMirrorResult] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState<string | null>(null);
 
   const runReset = async () => {
     setRunning(true);
@@ -42,6 +46,24 @@ export default function DevTools() {
       toast({ title: "Backfill failed", description: String(e?.message ?? e), variant: "destructive" });
     } finally {
       setBackfilling(false);
+    }
+  };
+
+  const runCatalogImport = async () => {
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("embarksmv2-catalog-import", {
+        body: { accountId: RATHBONES_ACCOUNT_ID },
+      });
+      if (error) throw error;
+      setImportResult(JSON.stringify(data, null, 2));
+      toast({ title: "Catalog import complete", description: "Modules and chapters seeded for Rathbones." });
+    } catch (e: any) {
+      setImportResult(String(e?.message ?? e));
+      toast({ title: "Import failed", description: String(e?.message ?? e), variant: "destructive" });
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -88,6 +110,29 @@ export default function DevTools() {
           {result && (
             <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
               {result}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Import catalog (Step 1 — run first on a fresh DB)</CardTitle>
+          <CardDescription>
+            Calls <code>catalog-import</code> with the Rathbones account ID. Uses OpenAI to expand
+            module skeletons into full chapters, assessment blueprints and evidence tasks. Idempotent
+            — re-running updates existing rows. <strong>Requires OPENAI_API_KEY</strong> set in
+            Supabase Edge Function secrets. Run this before Reset Rathbones demo.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button onClick={runCatalogImport} disabled={importing} variant="outline">
+            {importing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {importing ? "Importing…" : "Import catalog for Rathbones"}
+          </Button>
+          {importResult && (
+            <pre className="bg-muted rounded-md p-3 text-xs whitespace-pre-wrap break-words max-h-72 overflow-auto">
+              {importResult}
             </pre>
           )}
         </CardContent>

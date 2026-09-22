@@ -35,7 +35,7 @@ interface State {
   error: string | null;
 }
 
-const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-evidence-brief`;
+const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/embarksmv2-generate-evidence-brief`;
 
 export function useEvidenceBrief(args: Args | null) {
   const [state, setState] = useState<State>({ brief: null, isLoading: false, error: null });

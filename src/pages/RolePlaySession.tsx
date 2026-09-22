@@ -261,7 +261,7 @@ export default function RolePlaySession() {
 
     try {
       const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/role-play-chat`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/embarksmv2-role-play-chat`,
         {
           method: "POST",
           headers: {

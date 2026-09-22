@@ -248,19 +248,22 @@ export function AccountProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    // Seed Pinnacle Capital account if missing
+    // Seed Pinnacle Capital account if missing — always use the canonical UUID so
+    // mirror-account-content and other edge functions can reference it by a known ID.
+    const PINNACLE_CANONICAL_ID = "08b9c4d5-f4ec-44bb-8bc2-099d9848f465";
     const hasPinnacle = accts.some((a) => a.name === "Pinnacle Capital");
     if (!hasPinnacle) {
       const { data: pinnacleInserted, error: pinnacleError } = await supabase
         .from("accounts")
-        .insert({
+        .upsert({
+          id: PINNACLE_CANONICAL_ID,
           name: "Pinnacle Capital",
           logo: null,
           accent_color: null,
           use_case_context: null,
           is_default: false,
           data: {} as any,
-        })
+        }, { onConflict: "id", ignoreDuplicates: true })
         .select()
         .single();
 

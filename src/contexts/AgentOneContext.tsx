@@ -27,7 +27,7 @@ for (const member of investmentManagerCohort.members) {
   );
 }
 
-const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/super-agent-chat`;
+const SUPER_AGENT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/embarksmv2-super-agent-chat`;
 
 interface ChatMessage {
   role: "user" | "assistant" | "system";

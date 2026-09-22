@@ -191,7 +191,7 @@ export function useDeepResearch(args: {
               }
             : null;
 
-          const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/deep-research-chat`;
+          const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/embarksmv2-deep-research-chat`;
           const resp = await fetch(url, {
             method: "POST",
             headers: {

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import type { PodcastScript } from "@/data/podcastTranscripts";
 
-const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`;
+const TTS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/embarksmv2-elevenlabs-tts`;
 const VOICE_ID = "JBFqnCBsd6RMkjVDRZzb"; // George
 
 interface Props {

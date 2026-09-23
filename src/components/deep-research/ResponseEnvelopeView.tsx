@@ -93,17 +93,24 @@ export function ResponseEnvelopeView({
   const [pinOpen, setPinOpen] = useState(false);
   const [pinTitle, setPinTitle] = useState(() => envelope.executive.slice(0, 60));
 
+  // Guard against null array fields from the live Supabase function
+  const visuals = envelope.visuals ?? [];
+  const evidence = envelope.evidence ?? [];
+  const actions = envelope.actions ?? [];
+  const followups = envelope.followups ?? [];
+  const trace = envelope.trace ?? [];
+
   const ctx = { threadId, messageId, authorId, onSubmitPrompt };
 
   // Count of sections we want to stagger: exec + each visual + evidence + actions + followups
   const sectionCount = useMemo(() => {
     let n = 1; // exec
-    n += envelope.visuals.length;
-    if (envelope.evidence.length) n += 1;
-    if (!readOnly && envelope.actions.length) n += 1;
-    if (!readOnly && envelope.followups.length && onFollowup) n += 1;
+    n += visuals.length;
+    if (evidence.length) n += 1;
+    if (!readOnly && actions.length) n += 1;
+    if (!readOnly && followups.length && onFollowup) n += 1;
     return n;
-  }, [envelope, readOnly, onFollowup]);
+  }, [visuals, evidence, actions, followups, readOnly, onFollowup]);
 
   const reveal = useStagedReveal(readOnly ? 0 : sectionCount, 160, 60);
   const isShown = (i: number) => readOnly || reveal[i] === true;
@@ -163,9 +170,9 @@ export function ResponseEnvelopeView({
       </div>
 
       {/* Visuals */}
-      {envelope.visuals.length > 0 && (
+      {visuals.length > 0 && (
         <div className="space-y-3">
-          {envelope.visuals.map((block, i) => {
+          {visuals.map((block, i) => {
             const visIdx = idx++;
             return (
               <div key={i} className={revealCls(visIdx)}>
@@ -177,7 +184,7 @@ export function ResponseEnvelopeView({
       )}
 
       {/* Evidence */}
-      {envelope.evidence.length > 0 && (() => {
+      {evidence.length > 0 && (() => {
         const evIdx = idx++;
         return (
           <div className={cn("rounded-xl border border-border/60 bg-card p-4", revealCls(evIdx))}>
@@ -185,7 +192,7 @@ export function ResponseEnvelopeView({
               Evidence
             </div>
             <ul className="space-y-1 text-xs">
-              {envelope.evidence.map((e, i) => (
+              {evidence.map((e, i) => (
                 <li key={i} className="flex items-baseline gap-2">
                   <span className="font-medium">{e.label}</span>
                   {e.value && <span className="text-muted-foreground">— {e.value}</span>}
@@ -198,7 +205,7 @@ export function ResponseEnvelopeView({
       })()}
 
       {/* Actions */}
-      {!readOnly && envelope.actions.length > 0 && (() => {
+      {!readOnly && actions.length > 0 && (() => {
         const acIdx = idx++;
         return (
           <div className={cn("space-y-2", revealCls(acIdx))}>
@@ -206,7 +213,7 @@ export function ResponseEnvelopeView({
               Recommended actions
             </div>
             <div className="flex flex-wrap gap-2">
-              {envelope.actions.map((a, i) => (
+              {actions.map((a, i) => (
                 <Button
                   key={a.label}
                   size="sm"
@@ -225,7 +232,7 @@ export function ResponseEnvelopeView({
       })()}
 
       {/* Follow-ups */}
-      {!readOnly && envelope.followups.length > 0 && onFollowup && (() => {
+      {!readOnly && followups.length > 0 && onFollowup && (() => {
         const fuIdx = idx++;
         return (
           <div className={cn("space-y-2", revealCls(fuIdx))}>
@@ -233,7 +240,7 @@ export function ResponseEnvelopeView({
               Follow up
             </div>
             <div className="flex flex-wrap gap-2">
-              {envelope.followups.map((q, i) => (
+              {followups.map((q, i) => (
                 <button
                   key={q}
                   onClick={() => onFollowup(q)}
@@ -247,18 +254,18 @@ export function ResponseEnvelopeView({
           </div>
         );
       })()}
-      {!readOnly && envelope.trace.length > 0 && (
+      {!readOnly && trace.length > 0 && (
         <div className="rounded-xl border border-border/40 bg-muted/20">
           <button
             onClick={() => setTraceOpen((v) => !v)}
             className="flex items-center gap-2 w-full px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
           >
             {traceOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-            Reasoning trace · {envelope.trace.length} step{envelope.trace.length === 1 ? "" : "s"}
+            Reasoning trace · {trace.length} step{trace.length === 1 ? "" : "s"}
           </button>
           {traceOpen && (
             <div className="px-3 pb-3 space-y-1.5">
-              {envelope.trace.map((t, i) => (
+              {trace.map((t, i) => (
                 <div key={i} className="text-[11px] font-mono text-muted-foreground border-l-2 border-border/60 pl-2">
                   <span className="text-foreground/80">{t.tool}</span>
                   {t.args && <span> · {JSON.stringify(t.args)}</span>}

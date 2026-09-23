@@ -207,7 +207,17 @@ export function useDeepResearch(args: {
           });
           if (resp.ok) {
             const data = await resp.json();
-            envelope = data.envelope ?? null;
+            const raw = data.envelope;
+            if (raw) {
+              envelope = {
+                ...raw,
+                visuals: raw.visuals ?? [],
+                evidence: raw.evidence ?? [],
+                actions: raw.actions ?? [],
+                followups: raw.followups ?? [],
+                trace: raw.trace ?? [],
+              };
+            }
           }
         } catch (e) {
           console.warn("Deep Research live call failed", e);

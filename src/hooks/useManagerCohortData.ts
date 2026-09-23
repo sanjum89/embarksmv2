@@ -50,7 +50,7 @@ const empty: ManagerCohortData = { loading: true, cohort: null, learners: [], mo
  *   so the demo always shows a full roster even if live enrollments are sparse.
  */
 export function useManagerCohortData(cohortId: string | null): ManagerCohortData {
-  const { activeAccount } = useAccount();
+  const { activeAccount, normalizedAccount } = useAccount();
   const [data, setData] = useState<ManagerCohortData>(empty);
 
   useEffect(() => {
@@ -107,11 +107,10 @@ export function useManagerCohortData(cohortId: string | null): ManagerCohortData
       const ids = new Set<string>(liveIds);
       if (isRathbonesCohort) RATHBONES_PERSONA_IDS.forEach((id) => ids.add(id));
 
-      // Pull display names from the account directory
-      const employees = (((activeAccount as any)?.data?.employees ?? []) as any[]).reduce<Record<string, any>>(
-        (acc, e) => ({ ...acc, [e.id]: e }),
-        {}
-      );
+      // Pull display names from normalizedAccount.employeesById (contains all
+      // rb-l* → real name mappings). The legacy activeAccount.data.employees
+      // blob is always empty for demo accounts so is not used.
+      const employeesById = normalizedAccount?.employeesById ?? {};
 
       // For each enrolled employee, prefer real DB signals when present;
       // fall back to the hand-authored demo overlay for personas with no rows.
@@ -141,8 +140,8 @@ export function useManagerCohortData(cohortId: string | null): ManagerCohortData
           }
           return {
             employeeId: id,
-            name: employees[id]?.name ?? id,
-            title: employees[id]?.title,
+            name: employeesById[id]?.name ?? id,
+            title: employeesById[id]?.title,
             overlay,
           };
         })

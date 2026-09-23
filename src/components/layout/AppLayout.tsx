@@ -38,9 +38,13 @@ export function AppLayout() {
     const lastId = (() => {
       try { return localStorage.getItem(`lastActiveUser_${activeAccountId}`); } catch { return null; }
     })();
-    const preferred = lastId ? availableUsers.find((u) => u.id === lastId) : null;
-    // Prefer a learner persona so the demo lands on a rich learner journey (new My360 design).
-    // Admin can still be accessed by switching personas.
+    const storedUser = lastId ? availableUsers.find((u) => u.id === lastId) : null;
+    const hasLearners = availableUsers.some((u) => u.role === "learner");
+    // Respect the stored preference only when it's a learner or manager.
+    // If the stored preference is the admin persona and learners exist, override with a learner
+    // so the demo lands on an investment manager view (new My360 design, rich data) by default.
+    // The admin persona can always be accessed via the profile switcher.
+    const preferred = storedUser && (storedUser.role !== "admin" || !hasLearners) ? storedUser : null;
     const target = preferred
       || availableUsers.find((u) => u.role === "learner")
       || availableUsers.find((u) => u.role === "admin")

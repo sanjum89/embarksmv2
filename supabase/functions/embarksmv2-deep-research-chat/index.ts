@@ -56,9 +56,16 @@ narrative:
 learner_list:
   { "type": "learner_list", "ids": ["Alice Chen", "Bob Smith"], "subtitle": "At-risk learners" }
 
-Rules:
-- NEVER return empty arrays for learners, items, subjects, series, or rows — always synthesise realistic data based on context.
-- NEVER use only narrative blocks for data-driven questions — pair with at least one data visual.
+RESPONSE RULES:
+- Always generate 3 or more visual blocks per answer. Typical pattern: kpi_strip → readiness_cards → narrative.
+- The narrative block MUST contain analytical synthesis: WHY the numbers look this way, WHAT the manager should prioritise, and HOW to act. Write it in bold-lead markdown.
+- Populate ALL arrays from the live data provided. Every learner name, score, and module title must come from the data — do not invent names or figures not present.
+- Evidence sources: use labels like "tool:cohort_data", "tool:module_progress", "tool:learner_signals", "tool:assessment_results" as source values.
+- For readiness_cards statusTone: on_track→"green", needs_support→"amber", at_risk→"red".
+- For kpi_strip, always include: cohort avg completion %, count on track, count at risk, count stretch-ready.
+- If asked about a specific learner, include a competency_radar comparing them to the cohort target.
+- If asked about module format differences, include module_adaptation AND competency_radar AND a narrative explaining why paths differ.
+- NEVER return empty arrays — if data is sparse, synthesise intelligently from what is present.
 - If you are given lastEnvelopeContext, ground your new answer in those facts.
 - If asked to DRAFT a message, the FIRST visual MUST be a narrative block with the full written message.
 
@@ -143,10 +150,10 @@ async function buildDataContext(accountId: string): Promise<string> {
         .select("module_code, module_title, track_code, display_order")
         .eq("account_id", accountId)
         .order("display_order")
-        .limit(40),
+        .limit(60),
       supabase
         .from("learner_progress")
-        .select("employee_id, module_code, status, assessment_score, updated_at")
+        .select("employee_id, module_code, status, assessment_score")
         .eq("account_id", accountId),
       supabase
         .from("accounts")
@@ -155,52 +162,137 @@ async function buildDataContext(accountId: string): Promise<string> {
         .maybeSingle(),
     ]);
 
-    // Build employee name lookup from account.data.employees or normalizedEmployees
-    const empById: Record<string, string> = {};
+    // Build employee name/title lookup
+    const empById: Record<string, { name: string; title: string }> = {};
     const accountData = (accountRes as any).data?.data as any;
     const employees: any[] = accountData?.employees ?? accountData?.normalizedEmployees ?? [];
     for (const e of employees) {
-      if (e.id && e.name) empById[e.id] = e.name;
+      if (e.id && e.name) empById[e.id] = { name: e.name, title: e.title ?? "Associate IM" };
     }
 
     const modules = ((modulesRes as any).data ?? []) as any[];
     const progress = ((progressRes as any).data ?? []) as any[];
     const cohorts = ((cohortsRes as any).data ?? []) as any[];
+    const totalModules = modules.length;
 
-    // Aggregate per-employee stats
-    const byEmp: Record<string, { completed: number; inProgress: number; notStarted: number; scores: number[]; moduleDetails: string[] }> = {};
+    // Module lookup by code
+    const modMap: Record<string, { title: string; track: string }> = {};
+    for (const m of modules) modMap[m.module_code] = { title: m.module_title, track: m.track_code };
+
+    // Track display names (derive from track_code)
+    const trackNames: Record<string, string> = {};
+    for (const m of modules) {
+      if (!trackNames[m.track_code]) trackNames[m.track_code] = m.track_code;
+    }
+
+    // Per-employee detail
+    type EmpData = {
+      completed: { title: string; track: string; score?: number }[];
+      inProgress: { title: string; track: string; score?: number }[];
+      locked: string[];
+    };
+    const byEmp: Record<string, EmpData> = {};
     for (const p of progress) {
-      if (!byEmp[p.employee_id]) byEmp[p.employee_id] = { completed: 0, inProgress: 0, notStarted: 0, scores: [], moduleDetails: [] };
-      const e = byEmp[p.employee_id];
-      if (p.status === "completed") { e.completed++; if (p.assessment_score) e.scores.push(p.assessment_score); }
-      else if (p.status === "in_progress") e.inProgress++;
-      else if (p.status === "not_started") e.notStarted++;
-      const mod = modules.find((m: any) => m.module_code === p.module_code);
-      if (mod && p.status !== "not_started") {
-        e.moduleDetails.push(`${mod.module_title}: ${p.status}${p.assessment_score ? ` (${p.assessment_score}%)` : ""}`);
+      if (!byEmp[p.employee_id]) byEmp[p.employee_id] = { completed: [], inProgress: [], locked: [] };
+      const mod = modMap[p.module_code];
+      if (!mod) continue;
+      if (p.status === "completed") {
+        byEmp[p.employee_id].completed.push({ title: mod.title, track: mod.track, score: p.assessment_score ?? undefined });
+      } else if (p.status === "in_progress") {
+        byEmp[p.employee_id].inProgress.push({ title: mod.title, track: mod.track, score: p.assessment_score ?? undefined });
+      } else if (p.status === "locked") {
+        byEmp[p.employee_id].locked.push(mod.title);
       }
     }
 
-    const learnerRows = Object.entries(byEmp).map(([id, s]) => ({
-      name: empById[id] ?? id,
-      modulesCompleted: s.completed,
-      modulesInProgress: s.inProgress,
-      avgAssessmentScore: s.scores.length ? Math.round(s.scores.reduce((a, b) => a + b, 0) / s.scores.length) : null,
-      recentActivity: s.moduleDetails.slice(-4),
-    }));
+    // Build rich learner summaries
+    const learners = Object.entries(byEmp).map(([id, d]) => {
+      const completionPct = totalModules > 0 ? Math.round((d.completed.length / totalModules) * 100) : 0;
+      const scores = d.completed.filter(m => m.score != null).map(m => m.score!);
+      const avgScore = scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
+
+      // Identify top gap track (track with most in-progress modules)
+      const gapTracks: Record<string, number> = {};
+      for (const m of d.inProgress) gapTracks[m.track] = (gapTracks[m.track] ?? 0) + 1;
+      const topGapEntry = Object.entries(gapTracks).sort((a, b) => b[1] - a[1])[0];
+      const topGap = topGapEntry ? `${topGapEntry[0]} (${topGapEntry[1]} module${topGapEntry[1] > 1 ? "s" : ""} in progress)` : "None";
+
+      // Status: at_risk if <30% done, needs_support if <60%, on_track otherwise
+      const status = completionPct >= 60 ? "on_track" : completionPct >= 30 ? "needs_support" : "at_risk";
+
+      return {
+        name: empById[id]?.name ?? id,
+        title: empById[id]?.title ?? "Associate IM",
+        completionPct,
+        modulesCompleted: d.completed.length,
+        modulesInProgress: d.inProgress.length,
+        totalModules,
+        avgScore,
+        status,
+        topGap,
+        completedModules: d.completed.map(m => `${m.title}${m.score != null ? ` [${m.score}%]` : ""}`),
+        inProgressModules: d.inProgress.map(m => `${m.title}${m.score != null ? ` [${m.score}%]` : ""}`),
+      };
+    });
+
+    // Cohort-level aggregates
+    const onTrack = learners.filter(l => l.status === "on_track");
+    const atRisk = learners.filter(l => l.status === "at_risk");
+    const needsSupport = learners.filter(l => l.status === "needs_support");
+    const avgCompletion = learners.length
+      ? Math.round(learners.reduce((a, b) => a + b.completionPct, 0) / learners.length)
+      : 0;
+
+    // Track-level completion summary
+    const trackStats: Record<string, { completed: number; inProgress: number; total: number }> = {};
+    for (const m of modules) {
+      if (!trackStats[m.track_code]) trackStats[m.track_code] = { completed: 0, inProgress: 0, total: 0 };
+      trackStats[m.track_code].total++;
+    }
+    for (const p of progress) {
+      const mod = modMap[p.module_code];
+      if (!mod) continue;
+      if (!trackStats[mod.track]) continue;
+      if (p.status === "completed") trackStats[mod.track].completed++;
+      else if (p.status === "in_progress") trackStats[mod.track].inProgress++;
+    }
+
+    // Top blockers: modules most commonly in-progress/not completed
+    const moduleBlockCounts: Record<string, number> = {};
+    for (const p of progress) {
+      if (p.status === "in_progress" || p.status === "not_started") {
+        const mod = modMap[p.module_code];
+        if (mod) moduleBlockCounts[mod.title] = (moduleBlockCounts[mod.title] ?? 0) + 1;
+      }
+    }
+    const topBlockers = Object.entries(moduleBlockCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([title, count]) => `${title} (${count} learner${count > 1 ? "s" : ""})`);
 
     const ctx = {
       account: (accountRes as any).data?.name ?? accountId,
       cohorts: cohorts.map((c: any) => c.cohort_title),
-      modules: modules.map((m: any) => `${m.module_title} [${m.module_code}]`),
-      learners: learnerRows,
-      totalLearners: learnerRows.length,
-      avgCompletion: learnerRows.length
-        ? Math.round(learnerRows.reduce((a, b) => a + b.modulesCompleted, 0) / learnerRows.length * 10) / 10
-        : 0,
+      totalLearners: learners.length,
+      avgCompletionPct: avgCompletion,
+      onTrackCount: onTrack.length,
+      onTrackNames: onTrack.map(l => l.name),
+      atRiskCount: atRisk.length,
+      atRiskNames: atRisk.map(l => l.name),
+      needsSupportCount: needsSupport.length,
+      needsSupportNames: needsSupport.map(l => l.name),
+      topBlockers,
+      trackSummary: Object.entries(trackStats).map(([code, s]) => ({
+        track: code,
+        completedModules: s.completed,
+        inProgressModules: s.inProgress,
+        totalModules: s.total,
+        completionPct: s.total > 0 ? Math.round((s.completed / s.total) * 100) : 0,
+      })),
+      learners,
     };
 
-    return JSON.stringify(ctx, null, 2).slice(0, 8000);
+    return JSON.stringify(ctx, null, 2).slice(0, 12000);
   } catch (e) {
     console.warn("buildDataContext failed", e);
     return "";
@@ -251,7 +343,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini",
+        model: "gpt-4o",
         messages: [...contextMessages, ...history.slice(-6), { role: "user", content: prompt }],
         tools: [RENDER_ANSWER_TOOL],
         tool_choice: { type: "function", function: { name: "render_answer" } },

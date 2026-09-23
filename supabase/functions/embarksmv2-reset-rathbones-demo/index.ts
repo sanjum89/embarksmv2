@@ -48,29 +48,32 @@ interface PersonaSpec {
 }
 
 // ─── Persona specs ──────────────────────────────────────────────────────────
-// Clara (rb-l6) — Rising star.
+// Clara (rb-l6) — Rising star, ~50% through the programme.
+// BK track fully done (first track complete). TK in progress (tk1+tk2 done, on tk3).
+// BS, CPS, OE each have exactly one module completed — sequential locking keeps the
+// rest correctly locked until the completed one's successor is reached.
+// wrong_tags on tk1 drives the micro-learning remediation demo.
 const CLARA: PersonaSpec = {
   employee_id: "rb-l6",
   last_activity_days_ago: 0,
   modules: [
-    { module_code: "bk1.intro_wealth_rathbones", state: "completed", assessment_score: 96, days_ago: 70 },
-    { module_code: "bk2.kyc_suitability",        state: "completed", assessment_score: 94, days_ago: 64 },
-    { module_code: "bk3.markets_macro_assets",   state: "completed", assessment_score: 100, days_ago: 56 },
-    { module_code: "bk4.portfolio_construction", state: "completed", assessment_score: 92, days_ago: 48 },
-    { module_code: "bk5.regulatory_landscape",   state: "completed", assessment_score: 98, days_ago: 40 },
-    { module_code: "tk1.charles_river_ims",      state: "completed", assessment_score: 95, days_ago: 32 },
-    { module_code: "tk2.bloomberg_essentials",   state: "completed", assessment_score: 93, days_ago: 25 },
-    { module_code: "tk3.performance_attribution",state: "completed", assessment_score: 88, days_ago: 18, wrong_tags: ["attribution_drift"] },
-    { module_code: "tk4.risk_mandate_restrictions", state: "completed", assessment_score: 92, days_ago: 12 },
-    { module_code: "tk5.tax_wrappers",           state: "in_progress", in_progress_at: 1, days_ago: 1 },
-    { module_code: "bs1.client_communication",   state: "completed", assessment_score: 95, days_ago: 22 },
-    { module_code: "bs2.difficult_conversations",state: "completed", assessment_score: 90, days_ago: 15 },
-    { module_code: "cps3.smcr_conduct",          state: "completed", assessment_score: 100, days_ago: 35 },
-    { module_code: "cps4.aml_financial_crime",   state: "completed", assessment_score: 96, days_ago: 28 },
-    { module_code: "oe1.systems_tour",           state: "completed", days_ago: 68 },
-    { module_code: "oe2.mentor_buddy",           state: "completed", days_ago: 62 },
-    { module_code: "oe3.reflective_practice",    state: "completed", days_ago: 50 },
-    { module_code: "str1.lead_client_review",    state: "in_progress", in_progress_at: 0, days_ago: 0 },
+    // ── Business Knowledge — 100% complete ──────────────────────────────
+    { module_code: "bk1.intro_wealth_rathbones", state: "completed", assessment_score: 96, days_ago: 56 },
+    { module_code: "bk2.kyc_suitability",        state: "completed", assessment_score: 94, days_ago: 49 },
+    { module_code: "bk3.markets_macro_assets",   state: "completed", assessment_score: 100, days_ago: 42 },
+    { module_code: "bk4.portfolio_construction", state: "completed", assessment_score: 92, days_ago: 35 },
+    { module_code: "bk5.regulatory_landscape",   state: "completed", assessment_score: 98, days_ago: 28 },
+    // ── Technical Knowledge — tk1+tk2 done, tk3 in progress ──────────────
+    { module_code: "tk1.charles_river_ims",      state: "completed", assessment_score: 88, days_ago: 21, wrong_tags: ["order_workflow"] },
+    { module_code: "tk2.bloomberg_essentials",   state: "completed", assessment_score: 93, days_ago: 14 },
+    { module_code: "tk3.performance_attribution",state: "in_progress", in_progress_at: 1, days_ago: 2 },
+    // ── Behavioural Skills — bs1 done, bs2–bs5 sequential-locked ─────────
+    { module_code: "bs1.client_communication",   state: "completed", assessment_score: 95, days_ago: 18 },
+    // ── Certifications — starts correctly at cps1, cps2–cps5 locked ──────
+    { module_code: "cps1.cisi_ioc_securities",   state: "completed", assessment_score: 90, days_ago: 24 },
+    // ── Other Enablers — systems tour done on day 1, buddy in progress ───
+    { module_code: "oe1.systems_tour",           state: "completed", days_ago: 55 },
+    { module_code: "oe2.mentor_buddy",           state: "in_progress", in_progress_at: 0, days_ago: 3 },
   ],
 };
 

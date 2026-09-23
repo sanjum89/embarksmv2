@@ -1,5 +1,6 @@
-// Generates post-assessment micro-learnings for wrong answers.
-// Called after an assessment submission with score < 100.
+// Generates post-assessment micro-learnings for wrong answers on a PASSING score.
+// Only called when score >= passing_score but < 100 (gap on a pass).
+// Failing scores trigger chapter re-opens instead — see assessmentSubmission.ts.
 //
 // Request body:
 // {
@@ -40,7 +41,7 @@ const TOOL_SCHEMA = {
     teaching_content_outline: {
       type: "string",
       description:
-        "300-500 words of plain-English remediation in Markdown, written as an internal Rathbones playbook. Use ## sub-headings.",
+        "300-500 words of plain-English remediation in Markdown, written as an internal playbook. Use ## sub-headings. Ground every point in the chapter content provided.",
     },
     practical_activity: {
       type: "string",
@@ -55,53 +56,57 @@ const TOOL_SCHEMA = {
 async function generateOne(
   q: any,
   moduleCode: string | undefined,
+  chapterContent: string,
 ): Promise<any> {
-  const resp = await fetch(
-    "https://api.openai.com/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content:
-              `You author short focused micro-learnings for Associate Investment Managers at Rathbones (UK discretionary wealth).
-Voice: senior colleague. British English. Reference Charles River IMS, IFL/MPS model ranges, IOC house view, COBS, Consumer Duty, suitability process where natural.
-No marketing fluff, no emoji. 3-5 minute remediation aimed at the specific misconception.`,
-          },
-          {
-            role: "user",
-            content: `Module: ${moduleCode ?? "(unspecified)"}
+  const contentBlock = chapterContent
+    ? `\nRelevant chapter content (ground your remediation in this):\n---\n${chapterContent.slice(0, 2500)}\n---`
+    : "";
+
+  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content:
+            `You author short focused micro-learnings for Associate Investment Managers (UK discretionary wealth management).
+Voice: senior colleague. British English. Reference systems and processes relevant to the chapter content provided.
+No marketing fluff, no emoji. 3-5 minute remediation aimed at the specific misconception shown by the wrong answer.
+Always derive your teaching points directly from the chapter content supplied — do not invent content not present in it.`,
+        },
+        {
+          role: "user",
+          content: `Module: ${moduleCode ?? "(unspecified)"}
 Topic: ${q.topicTag ?? "(unspecified)"}
 Failed question: ${q.question}
 Learner answered: ${q.learnerAnswer}
 Correct answer: ${q.correctAnswer}
+${contentBlock}
 
-Write a focused micro-learning that closes the specific gap shown by their wrong answer.`,
-          },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "emit_micro_learning",
-              description: "Return the structured micro-learning content.",
-              parameters: TOOL_SCHEMA,
-            },
-          },
-        ],
-        tool_choice: {
-          type: "function",
-          function: { name: "emit_micro_learning" },
+Write a focused micro-learning that closes the specific gap shown by their wrong answer. Every teaching point must be grounded in the chapter content above.`,
         },
-      }),
-    },
-  );
+      ],
+      tools: [
+        {
+          type: "function",
+          function: {
+            name: "emit_micro_learning",
+            description: "Return the structured micro-learning content.",
+            parameters: TOOL_SCHEMA,
+          },
+        },
+      ],
+      tool_choice: {
+        type: "function",
+        function: { name: "emit_micro_learning" },
+      },
+    }),
+  });
   if (!resp.ok) {
     const txt = await resp.text();
     throw new Error(`AI gateway ${resp.status}: ${txt.slice(0, 400)}`);
@@ -130,7 +135,31 @@ Deno.serve(async (req) => {
     if (!accountId || !employeeId || !Array.isArray(wrongAnswers)) {
       throw new Error("accountId, employeeId, wrongAnswers required");
     }
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { db: { schema: 'embarksmv2' } });
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      db: { schema: "embarksmv2" },
+    });
+
+    // Pre-fetch chapter content for all referenced chapters in one query.
+    // realistic_content_outline holds the ~700-word playbook body generated by
+    // generate-catalog-chapters. Falls back to chapter_summary if not yet filled.
+    const allChapterCodes = Array.from(
+      new Set(wrongAnswers.flatMap((w: any) => w.chapterCodes ?? [])),
+    ).filter((c): c is string => typeof c === "string" && c.length > 0);
+
+    const chapterContentMap: Record<string, string> = {};
+    if (allChapterCodes.length > 0) {
+      const { data: chapterRows } = await supabase
+        .from("catalog_chapters")
+        .select("chapter_code, chapter_title, realistic_content_outline, chapter_summary")
+        .eq("account_id", accountId)
+        .in("chapter_code", allChapterCodes);
+      for (const ch of (chapterRows ?? [])) {
+        // Prefer the full playbook body; fall back to summary if not yet backfilled.
+        chapterContentMap[ch.chapter_code] =
+          ch.realistic_content_outline ||
+          (ch.chapter_summary ? `## ${ch.chapter_title}\n${ch.chapter_summary}` : "");
+      }
+    }
 
     // Group wrong answers by topic_tag so we make ONE micro-learning per weak topic.
     const groups = new Map<string, any[]>();
@@ -148,11 +177,18 @@ Deno.serve(async (req) => {
     for (const [topic, items] of groups.entries()) {
       if (created.length >= cap) break;
       const representative = items[0];
+
+      // Combine content from all chapters linked to this topic's wrong answers.
+      const topicChapterCodes = Array.from(
+        new Set(items.flatMap((i: any) => i.chapterCodes ?? [])),
+      );
+      const chapterContent = topicChapterCodes
+        .map((code) => chapterContentMap[code] ?? "")
+        .filter(Boolean)
+        .join("\n\n---\n\n");
+
       try {
-        const out = await generateOne(representative, moduleCode);
-        const chapterCodes = Array.from(
-          new Set(items.flatMap((i) => i.chapterCodes ?? [])),
-        );
+        const out = await generateOne(representative, moduleCode, chapterContent);
         const { data: inserted, error: insErr } = await supabase
           .from("micro_learnings")
           .insert({
@@ -168,7 +204,7 @@ Deno.serve(async (req) => {
             why_wrong: out.why_wrong,
             teaching_content_outline: out.teaching_content_outline,
             practical_activity: out.practical_activity,
-            chapters: chapterCodes,
+            chapters: topicChapterCodes,
             kind: itemKind,
             status: "pending",
           })
@@ -193,8 +229,7 @@ Deno.serve(async (req) => {
         await supabase
           .from("learner_analytics")
           .update({
-            total_micro_learnings:
-              (a.total_micro_learnings ?? 0) + created.length,
+            total_micro_learnings: (a.total_micro_learnings ?? 0) + created.length,
             last_activity_at: new Date().toISOString(),
           })
           .eq("id", a.id);

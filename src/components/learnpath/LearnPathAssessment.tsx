@@ -226,13 +226,11 @@ export function EmbarkAssessment({
             </p>
             <p className="text-xs text-muted-foreground mb-6">
               You got {assessment.questions.filter((q) => answers[q.id] === q.correctIndex).length} of {totalQuestions} correct.
-              {!passed && score < 80
-                ? " A short micro-learning has been added to your Action Centre, and the chapters covering anything you missed have been re-opened. The retake unlocks once they're complete."
-                : !passed
-                  ? " A short micro-learning has been added to your Action Centre to help close the gap."
-                  : score < 100
-                    ? " A short micro-learning has been added to your Action Centre to lock in the topic you missed."
-                    : ""}
+              {!passed
+                ? " The chapters covering the topics you missed have been re-opened. Work through them and the retake will unlock automatically."
+                : score < 100
+                  ? " A short micro-learning has been added to your Action Centre to close the gap on what you missed."
+                  : ""}
             </p>
 
             <div className="space-y-2 text-left mb-6">

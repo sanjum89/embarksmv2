@@ -549,7 +549,23 @@ export function useLearnerJourney(
           chaptersByModule.set(mr.module_code, list);
         });
 
-
+        // Enforce sequential locking within each module: a chapter is locked until
+        // the previous content chapter is completed. This handles "fresh" modules
+        // where chapter_lock_events rows don't exist yet — without this, all
+        // not_started chapters appear simultaneously unlocked.
+        // Rules: first chapter is always available; assessments and remediation
+        // chapters are excluded (they have their own gate/lock logic).
+        for (const chs of chaptersByModule.values()) {
+          chs.sort((a, b) => a.displayOrder - b.displayOrder);
+          let prevDone = true; // first content chapter is always reachable
+          for (const ch of chs) {
+            if (ch.contentType === "assessment" || ch.remediationKind) continue;
+            if (!prevDone && ch.status === "not_started") {
+              ch.status = "locked";
+            }
+            prevDone = ch.status === "completed";
+          }
+        }
 
         // Build modules
         const moduleByCode = new Map<string, JourneyModule>();

@@ -549,18 +549,39 @@ export function useLearnerJourney(
           chaptersByModule.set(mr.module_code, list);
         });
 
-        // Enforce sequential locking within each module: a chapter is locked until
-        // the previous content chapter is completed. This handles "fresh" modules
-        // where chapter_lock_events rows don't exist yet — without this, all
-        // not_started chapters appear simultaneously unlocked.
-        // Rules: first chapter is always available; assessments and remediation
-        // chapters are excluded (they have their own gate/lock logic).
+        // ── Sequential integrity passes ──────────────────────────────────────
+        //
+        // Pass A — backward completion inference (within each module):
+        //   If chapter N is completed but chapter N-1 is not_started, the seed
+        //   data is inconsistent: sequential rules mean N-1 MUST have been done.
+        //   Mark any not_started chapter that precedes the last completed one as
+        //   completed. Does not touch in_progress chapters (those may be legitimately
+        //   mid-work). Assessments and remediation rows are excluded.
+        for (const chs of chaptersByModule.values()) {
+          const content = [...chs]
+            .filter((c) => c.contentType !== "assessment" && !c.remediationKind)
+            .sort((a, b) => a.displayOrder - b.displayOrder);
+          let lastDoneIdx = -1;
+          for (let i = content.length - 1; i >= 0; i--) {
+            if (content[i].status === "completed") { lastDoneIdx = i; break; }
+          }
+          for (let i = 0; i < lastDoneIdx; i++) {
+            if (content[i].status === "not_started") content[i].status = "completed";
+          }
+        }
+
+        // Pass B — forward sequential lock (within each module):
+        //   Chapter N is locked until chapter N-1 is completed.
+        //   Handles fresh modules where no chapter_lock_events rows exist yet, AND
+        //   handles cases where the seed left later chapters as in_progress when
+        //   earlier ones were not yet done.
+        //   Assessments and remediation chapters are excluded (own gate logic).
         for (const chs of chaptersByModule.values()) {
           chs.sort((a, b) => a.displayOrder - b.displayOrder);
           let prevDone = true; // first content chapter is always reachable
           for (const ch of chs) {
             if (ch.contentType === "assessment" || ch.remediationKind) continue;
-            if (!prevDone && ch.status === "not_started") {
+            if (!prevDone && ch.status !== "completed") {
               ch.status = "locked";
             }
             prevDone = ch.status === "completed";
@@ -627,6 +648,39 @@ export function useLearnerJourney(
             }
           }
         });
+
+        // ── Pass C: module-level sequential lock within each track ────────────
+        // Core (non-stretch) modules within a track must be completed in order.
+        // If module N-1 is not completed, module N and everything inside it is
+        // locked, even if the seed data left some of its chapters as in_progress.
+        // This is what prevents multiple "IN PROGRESS" badges in one track.
+        // Stretch modules are parallel/optional and are excluded.
+        const coreModsByTrack = new Map<string, JourneyModule[]>();
+        for (const mod of moduleByCode.values()) {
+          if (!mod.isStretch) {
+            const list = coreModsByTrack.get(mod.trackCode) ?? [];
+            list.push(mod);
+            coreModsByTrack.set(mod.trackCode, list);
+          }
+        }
+        for (const mods of coreModsByTrack.values()) {
+          mods.sort((a, b) => a.displayOrder - b.displayOrder);
+          let prevModCompleted = true;
+          for (const mod of mods) {
+            if (!prevModCompleted && mod.status !== "completed") {
+              mod.status = "locked";
+              mod.chapters.forEach((ch) => {
+                if (ch.status !== "completed") ch.status = "locked";
+              });
+              mod.completedChapters = mod.chapters.filter((c) => c.status === "completed").length;
+              mod.pct =
+                mod.totalChapters > 0
+                  ? Math.round((mod.completedChapters / mod.totalChapters) * 100)
+                  : 0;
+            }
+            prevModCompleted = mod.status === "completed";
+          }
+        }
 
         // Build tracks
         const trackList: JourneyTrack[] = (tracks ?? []).map((t) => {

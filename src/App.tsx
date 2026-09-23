@@ -99,8 +99,7 @@ const App = () => (
               <Route path="/embark-v2" element={<EmbarkAIv2 />} />
               <Route path="/manager/people-graph" element={<PeopleGraphIntelligence />} />
               <Route path="/team" element={<TeamMode />} />
-              <Route path="/team/deep-research" element={<DeepResearch />} />
-              <Route path="/team/deep-research/:threadId" element={<DeepResearch />} />
+              <Route path="/team/deep-research/:threadId?" element={<DeepResearch />} />
               <Route path="/manager/cohort/:cohortId" element={<ManagerCohortHub />} />
               <Route path="/cohort" element={<CohortHub />} />
               <Route path="/action-centre" element={<ActionCentre />} />

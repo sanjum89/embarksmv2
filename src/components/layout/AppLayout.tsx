@@ -81,7 +81,9 @@ export function AppLayout() {
 
   // Use only the pathname (not search/hash) so in-page tab/query changes
   // don't re-trigger the page entrance animation.
-  const routeKey = location.pathname;
+  // Strip deep-research threadId so navigating to a new thread doesn't
+  // trigger the exit → blank → enter transition.
+  const routeKey = location.pathname.replace(/^(\/team\/deep-research)(\/[^/]+)?$/, '$1');
 
   return (
     <TourProvider>

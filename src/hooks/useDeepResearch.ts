@@ -200,6 +200,7 @@ export function useDeepResearch(args: {
             },
             body: JSON.stringify({
               prompt,
+              accountId,
               accountName,
               lastEnvelopeContext,
               history: (t?.messages ?? []).map((m) => ({ role: m.role, content: m.content })),

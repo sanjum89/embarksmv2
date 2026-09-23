@@ -211,6 +211,7 @@ export function useDeepResearch(args: {
             if (raw) {
               envelope = {
                 ...raw,
+                executive: raw.executive ?? "",
                 visuals: raw.visuals ?? [],
                 evidence: raw.evidence ?? [],
                 actions: raw.actions ?? [],

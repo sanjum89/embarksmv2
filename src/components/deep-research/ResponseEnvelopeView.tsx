@@ -91,7 +91,7 @@ export function ResponseEnvelopeView({
 }: Props) {
   const [traceOpen, setTraceOpen] = useState(false);
   const [pinOpen, setPinOpen] = useState(false);
-  const [pinTitle, setPinTitle] = useState(() => envelope.executive.slice(0, 60));
+  const [pinTitle, setPinTitle] = useState(() => (envelope.executive ?? "").slice(0, 60));
 
   // Guard against null array fields from the live Supabase function
   const visuals = envelope.visuals ?? [];
@@ -156,7 +156,7 @@ export function ResponseEnvelopeView({
             <Button
               size="sm"
               onClick={() => {
-                onPinAnswer(envelope, pinTitle.trim() || envelope.executive.slice(0, 60));
+                onPinAnswer(envelope, pinTitle.trim() || (envelope.executive ?? "").slice(0, 60));
                 setPinOpen(false);
               }}
             >

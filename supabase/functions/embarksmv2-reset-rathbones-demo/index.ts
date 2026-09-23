@@ -366,8 +366,10 @@ Deno.serve(async (req) => {
             });
           }
 
-          // Rule A — micro_learnings for the missed slice.
-          if (m.assessment_score < 100) {
+          // Rule A — micro_learnings only for the gap on a PASSING score.
+          // A failing score triggers chapter re-opens (Rule B) instead.
+          const passingScore = bp?.passing_score ?? 80;
+          if (m.assessment_score >= passingScore && m.assessment_score < 100) {
             (m.wrong_tags ?? []).forEach((tag) => {
               microRows.push({
                 account_id: ACCOUNT_ID,

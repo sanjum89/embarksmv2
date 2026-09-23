@@ -84,8 +84,8 @@ export async function handleAssessmentSubmission(
 
   // ── ONE pass mark for every assessment in the journey: the assessment's own
   // passing_score (80% for the Rathbones blueprints). Three outcome bands:
-  //   • below pass          → reopen source chapters, lock retake, micro-learnings
-  //   • pass with a gap     → no reopen, up to 2 "gap module" chapters
+  //   • below pass          → reopen source chapters, lock retake; NO micro-learnings
+  //   • pass with a gap     → micro-learnings for the missed slice (up to 2 gap modules)
   //   • clean pass (100%)   → nothing injected
   const passMark = passingScore > 0 ? passingScore : PASS_MARK;
   const passed = score >= passMark;
@@ -180,9 +180,10 @@ export async function handleAssessmentSubmission(
     console.warn("[assessmentSubmission] assessment_instances insert failed", e);
   }
 
-  // 2. Remediation: micro-learnings on a fail, capped gap modules on a gap pass.
+  // 2. Remediation: micro-learnings only on a gap pass (passed but not 100%).
+  //    Failing learners get chapter re-opens (step 3) — not micro-learnings.
   let microLearningRequested = false;
-  if (hasWrong) {
+  if (gapPass) {
     microLearningRequested = true;
     supabase.functions
       .invoke("embarksmv2-generate-micro-learning", {

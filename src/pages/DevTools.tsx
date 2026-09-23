@@ -14,7 +14,7 @@ const PINNACLE_ACCOUNT_ID  = "08b9c4d5-f4ec-44bb-8bc2-099d9848f465";
 const UBS_ACCOUNT_ID       = "7b8c9d0e-1f2a-4b3c-8d4e-5f6a7b8c9d0e";
 
 export default function DevTools() {
-  const { isSuperAdmin } = useAuth();
+  const { authUser } = useAuth();
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [resettingAll, setResettingAll] = useState(false);
@@ -32,7 +32,7 @@ export default function DevTools() {
   const [seedingSkills, setSeedingSkills] = useState(false);
   const [seedSkillsResult, setSeedSkillsResult] = useState<string | null>(null);
 
-  if (!isSuperAdmin) return <Navigate to="/" replace />;
+  if (!authUser) return <Navigate to="/" replace />;
 
   const runResetAll = async () => {
     setResettingAll(true);

@@ -31,21 +31,22 @@ export function renderBlock(
   block: VisualBlock,
   ctx: { threadId: string; messageId: string; authorId: string; onSubmitPrompt?: (label: string) => void }
 ) {
+  const b = block as any;
   switch (block.type) {
     case "kpi_strip":
-      return <KpiStrip items={block.items} />;
+      return <KpiStrip items={b.items ?? []} />;
     case "readiness_cards":
-      return <ReadinessCardGrid learners={block.learners} />;
+      return <ReadinessCardGrid learners={b.learners ?? []} />;
     case "competency_radar":
-      return <CompetencyRadar subjects={block.subjects} series={block.series} />;
+      return <CompetencyRadar subjects={b.subjects ?? []} series={b.series ?? []} />;
     case "module_adaptation":
-      return <ModuleAdaptationStackedBar learners={block.learners} />;
+      return <ModuleAdaptationStackedBar learners={b.learners ?? []} />;
     case "risk_matrix":
-      return <RiskCriticalMatrix competencies={block.competencies} learners={block.learners} />;
+      return <RiskCriticalMatrix competencies={b.competencies ?? []} learners={b.learners ?? []} />;
     case "action_board":
       return (
         <ManagerActionBoard
-          columns={block.columns}
+          columns={b.columns ?? []}
           onExecute={(card) => {
             if (!card.actionId) return;
             dispatchDeepResearchAction(
@@ -56,19 +57,19 @@ export function renderBlock(
         />
       );
     case "evidence_table":
-      return <EvidenceTable columns={block.columns} rows={block.rows} />;
+      return <EvidenceTable columns={b.columns ?? []} rows={b.rows ?? []} />;
     case "narrative":
       return (
         <div className="rounded-xl border border-border/60 bg-card p-4 text-sm prose prose-sm max-w-none dark:prose-invert">
-          <ReactMarkdown>{block.markdown}</ReactMarkdown>
+          <ReactMarkdown>{b.markdown ?? ""}</ReactMarkdown>
         </div>
       );
     case "learner_list":
       return (
         <div className="rounded-xl border border-border/60 bg-card p-4 text-sm">
-          {block.subtitle && <div className="text-xs text-muted-foreground mb-2">{block.subtitle}</div>}
+          {b.subtitle && <div className="text-xs text-muted-foreground mb-2">{b.subtitle}</div>}
           <div className="flex flex-wrap gap-2">
-            {block.ids.map((id) => (
+            {(b.ids ?? []).map((id: string) => (
               <Badge key={id} variant="secondary">
                 {id}
               </Badge>
@@ -76,6 +77,8 @@ export function renderBlock(
           </div>
         </div>
       );
+    default:
+      return null;
   }
 }
 
